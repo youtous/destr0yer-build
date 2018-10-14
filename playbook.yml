@@ -1,0 +1,8 @@
+---
+- name: Install system requirements
+  hosts: destr0yers
+  remote_user: youtous
+
+  roles:
+    - user
+...
