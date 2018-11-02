@@ -18,7 +18,7 @@ Hostname : destr0yer-N.pool.youtous.me
 - SSH server
 - standard system utilities
 
-## VM onl
+## VM only
 
 Install `vim`.
 
@@ -35,3 +35,8 @@ iface enp0s3 inet static
 ```
 
 Then restart networking : `systemctl restart networking`
+
+Allow root login `/etc/ssh/sshd_config`
+```
+PermitRootLogin yes
+```
