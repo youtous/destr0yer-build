@@ -1,22 +1,37 @@
 # Destr0yer server build recipe
 
-## Debian Configuration
-Settings of the intial debian configuration.
-
-### Installation
+## Installation
 Language : English
 Keyboard : French
 Location : Europe/Paris
 
-### Partioning
+## Partioning
 Guided using LVM :
 	- /home, /var, /temp separate folders
 
-### Network
+## Network
 
 Hostname : destr0yer-N.pool.youtous.me
 
-### Softwares
+## Softwares
 
 - SSH server
 - standard system utilities
+
+## VM onl
+
+Install `vim`.
+
+**Network** : use briged, set a fixed ip on the virtual machine.
+
+
+Edit `/etc/network/interfaces`
+```
+auto enp0s3
+iface enp0s3 inet static
+	address 192.168.1.89
+	netmask 255.255.255.0
+	gateway 192.168.1.1
+```
+
+Then restart networking : `systemctl restart networking`
