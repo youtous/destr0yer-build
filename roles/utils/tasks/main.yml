@@ -1,0 +1,13 @@
+---
+- name: Update apt-cache
+  apt:
+    update_cache: true
+
+- name: Install util packages
+  apt:
+    name: "{{ packages }}"
+    vars:
+      packages:
+      - vim
+      - htop
+      - ncdu

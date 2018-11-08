@@ -1,0 +1,27 @@
+---
+# This playbook contains pseudo-root user creation plays that will be run on all nodes.
+- name: Install sudo
+  apt:
+    name: sudo
+    update_cache: yes
+
+- name: Create if not exists sudo group
+  group:
+    name: sudo
+    state: present
+
+- name: Create arbiter user (the name of our sudo user)
+  user:
+    name: arbiter
+    # see Ansible doc how to generate sha-512 password
+    password: '$6$FWMgyaoZDomp1zd5$3XuKjuDAHJAGzy6bwpz49AoBv2q9sFsOvnP.DoznP0gjiEOr/L74TFIWKFBdNstdkZw3Hg7DjzRO5QU10smvr.'
+    groups:
+    - sudo
+    state: present
+    createhome: yes
+    append: yes
+
+# set the home folder as private, add vim environment
+#- name: Configure User environment and permissions
+
+#- name: Import allowed ssh public keys
