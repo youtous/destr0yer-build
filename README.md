@@ -1,11 +1,12 @@
 # Destr0yer server build recipe
 
 ## Installation
+HDD: 50Go
 Language : English
 Keyboard : French
 Location : Europe/Paris
 
-## Partioning
+## Partitioning
 Guided using LVM :
 	- /home, /var, /temp separate folders
 
@@ -13,7 +14,7 @@ Guided using LVM :
 
 Hostname : destr0yer-N.pool.youtous.me
 
-## Softwares
+## Software
 
 - SSH server
 - standard system utilities
