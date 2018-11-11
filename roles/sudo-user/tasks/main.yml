@@ -14,6 +14,7 @@
   user:
     name: arbiter
     # see Ansible doc how to generate sha-512 password
+    # todo : ask password
     password: '$6$FWMgyaoZDomp1zd5$3XuKjuDAHJAGzy6bwpz49AoBv2q9sFsOvnP.DoznP0gjiEOr/L74TFIWKFBdNstdkZw3Hg7DjzRO5QU10smvr.'
     groups:
     - sudo
