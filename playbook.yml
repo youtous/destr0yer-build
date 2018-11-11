@@ -3,6 +3,7 @@
   hosts: all
   remote_user: root
   roles:
+  - ansible-role-golang
   - cli-tools
 
 - name: Configure pseudo-root user system

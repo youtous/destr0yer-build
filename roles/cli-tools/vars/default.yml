@@ -1,7 +1,21 @@
 ---
 cli_packages:
   - vim
+  - make
   - htop
   - fish
   - ccze
   - ncdu
+  - grc
+
+ruby_packages:
+  - ruby
+  - ruby-dev
+  - g++
+
+python_packages:
+  - python
+  - python-pip
+  - python-setuptools
+
+go_binary_path: /usr/local/go/bin/go

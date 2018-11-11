@@ -41,3 +41,7 @@ Allow root login `/etc/ssh/sshd_config`
 ```
 PermitRootLogin yes
 ```
+
+## Ansible 3rd Roles
+
+- https://github.com/fubarhouse/ansible-role-golang
