@@ -1,0 +1,7 @@
+---
+cli_packages:
+  - vim
+  - htop
+  - fish
+  - ccze
+  - ncdu

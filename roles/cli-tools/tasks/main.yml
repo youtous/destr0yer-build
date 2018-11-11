@@ -1,0 +1,9 @@
+---
+# This playbook contains CLI tools installation
+- name: Include default vars
+  include_vars: default.yml
+
+- name: Install CLI Tools
+  apt:
+    name: "{{ cli_packages }}"
+    update_cache: yes

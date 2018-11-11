@@ -1,4 +1,10 @@
 ---
+- name: Prepare system
+  hosts: all
+  remote_user: root
+  roles:
+  - cli-tools
+
 - name: Configure pseudo-root user system
   hosts: all
   remote_user: root
