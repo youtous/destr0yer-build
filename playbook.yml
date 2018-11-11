@@ -3,8 +3,10 @@
   hosts: all
   remote_user: root
   roles:
+  - apt-upgrading
   - ansible-role-golang
   - cli-tools
+  - system-packages
 
 - name: Configure pseudo-root user system
   hosts: all

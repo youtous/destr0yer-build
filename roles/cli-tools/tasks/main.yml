@@ -1,12 +1,11 @@
 ---
-# This playbook contains CLI tools installation
+# This playbook contains CLI tools installation, CLI tools are for user not for the system
 - name: include default vars
   include_vars: default.yml
 
 - name: install CLI Tools
   apt:
     name: "{{ cli_packages }}"
-    update_cache: yes
 
 - name: configure vim
   copy:

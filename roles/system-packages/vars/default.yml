@@ -1,0 +1,15 @@
+---
+system_packages:
+  - cron
+  - curl
+  - wget
+  - curl
+  - zip
+  - unzip
+  - screen
+  - geoip-database
+  - gnupg
+  - rsync
+  - sqlite
+  - sqlite3
+  - tar

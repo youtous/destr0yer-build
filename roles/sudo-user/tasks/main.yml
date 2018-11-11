@@ -3,7 +3,6 @@
 - name: Install sudo
   apt:
     name: sudo
-    update_cache: yes
 
 - name: Create if not exists sudo group
   group:
