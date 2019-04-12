@@ -42,6 +42,12 @@ Allow root login `/etc/ssh/sshd_config`
 PermitRootLogin yes
 ```
 
+## Ansible usage
+
+- Launch the recipe using : `ansible-playbook -i hosts.yml playbook.yml --ask-vault-pass`
+- Edit secrets using  : `ansible-vault edit secret_vars/all.yml`
+
 ## Ansible 3rd Roles
 
 - https://github.com/fubarhouse/ansible-role-golang
+- https://github.com/unxnn/ansible-users
