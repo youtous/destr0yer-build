@@ -2,11 +2,6 @@
 cli_packages:
   - vim
   - make
-  - htop
-  - fish
-  - ccze
-  - ncdu
-  - grc
 
 ruby_packages:
   - ruby

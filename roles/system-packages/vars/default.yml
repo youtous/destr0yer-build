@@ -13,3 +13,8 @@ system_packages:
   - sqlite
   - sqlite3
   - tar
+  - htop
+  - fish
+  - ncdu
+  - ccze # colorization
+  - grc # colorization
