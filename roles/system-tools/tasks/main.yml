@@ -1,5 +1,5 @@
 ---
-# This playbook contains CLI tools installation, CLI tools are for user not for the system
+# This playbook contains CLI tools installation and configuration, CLI tools are for user not for the system
 - name: include default vars
   include_vars: default.yml
 

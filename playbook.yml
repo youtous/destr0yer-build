@@ -1,12 +1,11 @@
 ---
 
-- name: Prepare system
+- name: Prepare the system
   hosts: all
   remote_user: root
   roles:
     - apt-upgrading # update the system
     - system-packages # system packages (htop, curl etc)
-    - cli-tools # server cli tools (vim, ccat, etc)
 
 - name: Configure users on the system
   hosts: all
@@ -15,4 +14,11 @@
     - users
   vars_files:
     - secret_vars/all.yml
+
+- name: Configure the system
+  hosts: all
+  remote_user: root
+  roles:
+    - system-configuration # system packages (htop, curl etc)
+    - system-tools # server cli tools (vim, ccat, etc)
 ...

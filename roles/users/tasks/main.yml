@@ -2,6 +2,11 @@
 
 # see https://github.com/unxnn/ansible-users
 
+- name: add password to root user
+  user:
+    name: root
+    password: "{{ root_password }}"
+
 - name: setup users
   import_role:
     name: unxnn.users

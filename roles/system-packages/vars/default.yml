@@ -16,6 +16,11 @@ system_packages:
   - htop
   - iftop
   - fish
+  - git
+  - nmap
+  - ca-certificates
+  - time
+  - sudo
   - ncdu
   - ccze # colorization
   - grc # colorization
