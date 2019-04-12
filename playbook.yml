@@ -1,15 +1,18 @@
 ---
+
 - name: Prepare system
   hosts: all
   remote_user: root
   roles:
-  - apt-upgrading # update the system
-  - system-packages # system packages (htop, curl etc)
-  - cli-tools # server cli tools (vim, ccat, etc)
+    - apt-upgrading # update the system
+    - system-packages # system packages (htop, curl etc)
+    - cli-tools # server cli tools (vim, ccat, etc)
 
-- name: Configure pseudo-root user system
+- name: Configure users on the system
   hosts: all
   remote_user: root
   roles:
-  - sudo-user
+    - users
+  vars_files:
+    - secret_vars/all.yml
 ...

@@ -3,3 +3,6 @@
 
 # golang installer
 - src: fubarhouse.golang
+
+# user management
+- src: unxnn.users

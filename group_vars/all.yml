@@ -1,2 +1,23 @@
 ---
 # Variables listed here are applicable to all host groups
+
+users_default_shell: "/usr/bin/fish"
+
+users:
+  # arbiter is the only sudoer
+  - username: "{{ arbiter_username }}"
+    name: System's Arbiter
+    groups: ['admin']
+    uid: 1005
+    home: /home/arbiter
+    profile: |
+      alias ll='ls -ahl'
+    ssh_key: "{{ arbiter_ssh_keys }}"
+    password: "{{ arbiter_password }}"
+    update_password: "always"
+
+groups_to_create:
+  - name: admin
+    gid: 10000
+  - name: users
+    gid: 20000

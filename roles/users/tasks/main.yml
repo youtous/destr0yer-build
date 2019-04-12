@@ -1,3 +1,8 @@
 ---
-# Manage Users of the System
-# - name:
+
+# see https://github.com/unxnn/ansible-users
+
+- name: setup users
+  import_role:
+    name: unxnn.users
+
