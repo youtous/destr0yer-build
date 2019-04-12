@@ -1,0 +1,5 @@
+# Install requirements for the playbook using
+# `ansible-galaxy install -r requirements.yml`
+
+# golang installer
+- src: fubarhouse.golang

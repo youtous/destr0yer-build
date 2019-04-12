@@ -26,16 +26,23 @@
     install_dir: /usr/local/bin/
     user_install: false
 
-- name: install go globally
-  file:
-    src: "{{ go_binary_path }}"
-    dest: "/usr/local/bin/go"
-    state: link
-
 - name: test ccat presence
   command: /usr/local/bin/ccat /dev/null
   register: ccat_present
   ignore_errors: True
+
+- debug:
+    msg: "System {{ inventory_hostname }} has arc {{ ansible_architecture }}"
+
+- name: install golang
+  import_role:
+    name: fubarhouse.golang
+  vars:
+    go_version: '1.12.4'
+    GOROOT: /usr/local/go
+    GOARCH: "{{ 'arm64' if (ansible_architecture == 'aarch64') else 'amd64' }}"
+    # checksum depending of the arch
+    go_checksum: "{{ 'b7d7b4319b2d86a2ed20cef3b47aa23f0c97612b469178deecd021610f6917df' if (ansible_architecture == 'aarch64') else 'd7d1f1f88ddfe55840712dc1747f37a790cbcaa448f6c9cf51bbe10aa65442f5' }}"
 
 - name: install ccat
   shell: |

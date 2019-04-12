@@ -12,5 +12,3 @@ python_packages:
   - python
   - python-pip
   - python-setuptools
-
-go_binary_path: /usr/local/go/bin/go
