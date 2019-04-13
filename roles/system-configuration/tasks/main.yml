@@ -1,13 +1,15 @@
 ---
 # This playbook contains base system configuration
-- name: include default vars
+- name: Include default vars
   include_vars: default.yml
 
-- name: set timezone to Europe/Paris
+- name: Set timezone to Europe/Paris
+  become: true
   timezone:
     name: Europe/Paris
 
-- name: set fish as the root shell
+- name: Set fish as the root shell
+  become: yes
   user:
     name: root
     shell: /usr/bin/fish

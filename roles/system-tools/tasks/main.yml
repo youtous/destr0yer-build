@@ -1,13 +1,15 @@
 ---
 # This playbook contains CLI tools installation and configuration, CLI tools are for user not for the system
-- name: include default vars
+- name: Include default vars
   include_vars: default.yml
 
-- name: install CLI Tools
+- name: Install CLI Tools
+  become: true
   apt:
     name: "{{ cli_packages }}"
 
-- name: configure vim
+- name: Configure vim
+  become: true
   copy:
     src: files/vimrc.local
     dest: /etc/vim/vimrc.local
@@ -15,27 +17,30 @@
     group: root
     mode: u=rw,g=r,o=r
 
-- name: install ruby
+- name: Install ruby
+  become: true
   apt:
     name: "{{ ruby_packages }}"
 
-- name: install colorls gem
+- name: Install colorls gem
+  become: true
   gem:
     name: colorls
     state: latest
     install_dir: /usr/local/bin/
     user_install: false
 
-- name: test ccat presence
+- name: Test ccat presence
   command: /usr/local/bin/ccat /dev/null
   register: ccat_present
   ignore_errors: True
 
-- name: requires golang
+- name: Requires golang
   import_role:
     name: golang
 
-- name: install ccat
+- name: Install ccat
+  become: true
   shell: |
     cd /root &&
     /usr/local/go/bin/go get -u github.com/jingweno/ccat &&
@@ -43,17 +48,20 @@
     sudo rm -Rf github.com/jingweno/ccat
   when: ccat_present is failed
 
-- name: requires python
+- name: Requires python
+  become: true
   apt:
     name: "{{ python_packages }}"
 
-- name: update setuptools
+- name: Update setuptools
+  become: true
   pip:
     name: setuptools
     state: latest
     extra_args: --upgrade
 
-- name: install mdv (Markdown viewer)
+- name: Install mdv (Markdown viewer)
+  become: true
   pip:
     name: mdv
     state: latest

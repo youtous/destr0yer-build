@@ -2,16 +2,19 @@
 
 # see https://github.com/unxnn/ansible-users
 
-- name: add password to root user
+- name: Add password to root user
+  become: true
   user:
     name: root
     password: "{{ root_password }}"
 
-- name: setup users
+- name: Setup users
+  become: true
   import_role:
     name: unxnn.users
 
-- name: allow admin group sudo with password
+- name: Allow admin group sudo with password
+  become: true
   lineinfile:
     path: /etc/sudoers
     state: present

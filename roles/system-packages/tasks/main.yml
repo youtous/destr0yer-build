@@ -1,8 +1,9 @@
 ---
 # This playbook contains system packages installation
-- name: include default vars
+- name: Include default vars
   include_vars: default.yml
 
-- name: install system packages
+- name: Install system packages
+  become: true
   apt:
     name: "{{ system_packages }}"

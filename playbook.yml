@@ -9,8 +9,6 @@
     - apt-upgrading # update the system
     - system-packages # system packages (htop, curl etc)
     - users # create a sudo user that will be used for configuration
-    - system-configuration # system packages (htop, curl etc)
-    - system-tools # server cli tools (vim, ccat, etc)
   vars_files:
     - secret_vars/all.yml
   tags: ["new systems"]
@@ -23,11 +21,11 @@
     - apt-upgrading # update the system
     - system-packages # system packages (htop, curl etc)
     - users # create a sudo user that will be used for configuration
-    - system-configuration # system packages (htop, curl etc)
+    - system-configuration # configure the system (selinux, timezone...)
     - system-tools # server cli tools (vim, ccat, etc)
   vars_files:
     - secret_vars/all.yml
-    - task_vars/sudo-tasks.yml
+    - task_vars/sudo.yml
   tags: ["compliant systems"]
 
 
