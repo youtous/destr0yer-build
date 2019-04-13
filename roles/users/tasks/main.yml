@@ -11,7 +11,7 @@
   import_role:
     name: unxnn.users
 
-- name: Allow admin group sudo with password
+- name: allow admin group sudo with password
   lineinfile:
     path: /etc/sudoers
     state: present

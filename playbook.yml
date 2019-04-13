@@ -1,24 +1,34 @@
 ---
 
-- name: Prepare the system
-  hosts: all
+# This play describes required tasks to build a new destr0yer
+# After being done, use the regular PLAY
+- name: Prepare a new system
+  hosts: factoring_destroyers
   remote_user: root
   roles:
     - apt-upgrading # update the system
     - system-packages # system packages (htop, curl etc)
-
-- name: Configure users on the system
-  hosts: all
-  remote_user: root
-  roles:
-    - users
-  vars_files:
-    - secret_vars/all.yml
-
-- name: Configure the system
-  hosts: all
-  remote_user: root
-  roles:
+    - users # create a sudo user that will be used for configuration
     - system-configuration # system packages (htop, curl etc)
     - system-tools # server cli tools (vim, ccat, etc)
+  vars_files:
+    - secret_vars/all.yml
+  tags: ["new systems"]
+
+# This play describe tasks for an existing destr0yer
+- name: Configure compliant system
+  hosts: destr0yers
+  remote_user: "{{ arbiter_username }}"
+  roles:
+    - apt-upgrading # update the system
+    - system-packages # system packages (htop, curl etc)
+    - users # create a sudo user that will be used for configuration
+    - system-configuration # system packages (htop, curl etc)
+    - system-tools # server cli tools (vim, ccat, etc)
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo-tasks.yml
+  tags: ["compliant systems"]
+
+
 ...
