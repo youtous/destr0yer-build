@@ -10,7 +10,7 @@ arbiter_ssh_keys:
   - "list keys here"
 
 # generate password using  (change password, SALT)
-# openssl passwd -salt <salt> -1
+# openssl passwd -6
 arbiter_password: ""
 
 root_password: ""
