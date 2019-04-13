@@ -10,8 +10,7 @@ users:
     groups: ['admin']
     uid: 1005
     home: /home/arbiter
-    profile: |
-      alias ll='ls -ahl'
+    profile:
     ssh_key: "{{ arbiter_ssh_keys }}"
     password: "{{ arbiter_password }}"
     update_password: "always"

@@ -1,1 +1,7 @@
 ---
+# The state, either disabled, permissive or enforcing.
+selinux_state: enforcing
+
+selinux_utils_packages:
+  - selinux-utils
+  - setools

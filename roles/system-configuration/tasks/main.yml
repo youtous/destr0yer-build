@@ -13,3 +13,66 @@
   user:
     name: root
     shell: /usr/bin/fish
+
+- name: Add /usr/sbin to PATH bash
+  become: true
+  copy:
+    src: files/usr-sbin.sh
+    dest: /etc/profile.d/usr-sbin.sh
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+
+- name: Add /usr/sbin to PATH fish
+  become: true
+  copy:
+    src: files/usr-sbin.fish
+    dest: /etc/fish/conf.d/usr-sbin.fish
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+
+- name: Check if host is a Scaleway aarch
+  shell: "scw-metadata | grep aarch"
+  register: host_scw_aarch64
+  ignore_errors: True
+
+- name: Fix Scaleway reboot command fish
+  become: true
+  copy:
+    src: files/reboot.fish
+    dest: /etc/fish/conf.d/reboot.fish
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+  when: host_scw_aarch64 is not failed
+
+- name: Fix Scaleway reboot command bash
+  become: true
+  copy:
+    src: files/reboot.sh
+    dest: /etc/profile.d/reboot.sh
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+  when: host_scw_aarch64 is not failed
+
+- name: Check SELinux policy is {{ selinux_state }}
+  shell: "/usr/sbin/getenforce | grep {{ selinux_state }}"
+  register: selinux_policy_valid
+  ignore_errors: True
+
+- name: Enable SELinux policy
+  become: yes
+  import_role:
+    name: robertdebock.selinux
+  vars:
+    reboot_command: "{{ 'scw restart' if (host_scw_aarch64 is not failed) else 'reboot' }}"
+  # disable SELinux on Scaleway instances because they do not support it
+  # https://github.com/scaleway/image-centos/issues/30
+  when: selinux_policy_valid is failed and host_scw_aarch64 is failed
+
+- name: Install SELinux utils
+  become: true
+  apt:
+    name: "{{ selinux_utils_packages }}"
