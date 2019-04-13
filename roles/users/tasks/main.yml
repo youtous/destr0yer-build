@@ -11,3 +11,11 @@
   import_role:
     name: unxnn.users
 
+- name: Allow admin group sudo with password
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%admin ALL='
+    line: '%admin ALL=(ALL) PASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+  tags: ["users", "groups", "configuration"]
