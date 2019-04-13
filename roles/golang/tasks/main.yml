@@ -3,11 +3,20 @@
 - name: Include default vars
   include_vars: default.yml
 
-- name: Add golang to PATH
+- name: Add golang to PATH bash
   become: true
   template:
     src: files/golang.sh.j2
     dest: /etc/profile.d/golang.sh
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+
+- name: Add /usr/sbin to PATH fish
+  become: true
+  template:
+    src: files/golang.fish.j2
+    dest: /etc/fish/conf.d/golang.fish
     owner: root
     group: root
     mode: u=rw,g=rx,o=rx
