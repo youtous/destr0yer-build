@@ -1,5 +1,5 @@
 ---
-# Variables listed here are not committed
+# Variables listed here are not committed and are shared between all hosts
 # Moreover this file should be protected using
 # `env EDITOR=vim ansible-vault edit secret_vars/all.yml`
 

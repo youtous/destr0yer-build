@@ -11,6 +11,8 @@
     - users # create a sudo user that will be used for configuration
   vars_files:
     - secret_vars/all.yml
+    # each host has a secret file
+    - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["new systems"]
 
 # This play describe tasks for an existing destr0yer
@@ -26,6 +28,7 @@
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["compliant systems"]
 
 
