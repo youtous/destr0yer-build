@@ -1,5 +1,6 @@
 ---
-
+- name: Include default vars
+  include_vars: default.yml
 # see https://github.com/unxnn/ansible-users
 
 - name: Add password to root user
@@ -12,6 +13,10 @@
   become: true
   import_role:
     name: unxnn.users
+  vars:
+    # concatenate the common and the specific to host users list
+    users: "{{ common_users | default([]) + host_users | default([]) }}"
+    groups_to_create: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
 
 - name: Allow admin group sudo with password
   become: true

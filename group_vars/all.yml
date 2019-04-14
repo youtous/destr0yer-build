@@ -3,7 +3,7 @@
 
 users_default_shell: "/usr/bin/fish"
 
-users:
+common_users:
   # arbiter is the only sudoer
   - username: "{{ arbiter_username }}"
     name: System's Arbiter
@@ -15,7 +15,7 @@ users:
     password: "{{ arbiter_password }}"
     update_password: "always"
 
-groups_to_create:
+common_groups_to_create:
   - name: admin
     gid: 10000
   - name: users
