@@ -1,0 +1,27 @@
+---
+# This playbook contains oh-my-fish global installation
+- name: Include default vars
+  include_vars: default.yml
+
+- name: Define hostname
+  become: true
+  hostname:
+    name: "{{ hostname }}"
+  register: hostname_defined
+
+- name: Setup hosts
+  become: true
+  template:
+    src: files/hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  register: hosts_defined
+
+- name: reload network-manager
+  become: true
+  systemd:
+    name: networking
+    state: restarted
+  # when: hosts_defined.changed or hostname_defined.changed

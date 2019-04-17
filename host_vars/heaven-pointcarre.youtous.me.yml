@@ -1,4 +1,5 @@
 # This file describes specific host vars
+hostname: heaven-pointcarre.youtous.me
 
 host_users:
   - username: specu

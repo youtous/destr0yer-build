@@ -13,7 +13,7 @@
     - secret_vars/all.yml
     # each host has a secret file
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["new systems"]
+  tags: ["new-systems"]
 
 # This play describe tasks for an existing destr0yer
 - name: Configure compliant system
@@ -29,7 +29,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["compliant systems"]
+  tags: ["configure-systems"]
 
 
 ...

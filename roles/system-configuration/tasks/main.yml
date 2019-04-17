@@ -8,6 +8,10 @@
   timezone:
     name: Europe/Paris
 
+- name: Set host configuration
+  import_role:
+    name: host
+
 - name: Set fish as the root shell
   become: yes
   user:
