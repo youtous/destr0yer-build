@@ -16,11 +16,11 @@
     dest: /etc/hosts
     owner: root
     group: root
+    attributes: i # ensure not writable
     mode: u=rwx,g=rx,o=rx
   register: hosts_defined
 
 - name: Configure network settings
-  register: resolv_changed
   import_role:
     name: ahuffman.resolv
   vars:
@@ -30,6 +30,17 @@
     resolv_options:
     - "timeout:2"
     - "rotate"
+  register: resolv_changed
+
+# some server providers tries to overwrite resolv.conf...
+- name: Ensure resolv.conf is not overwritable
+  become: true
+  file:
+    path: /etc/resolv.conf
+    owner: root
+    group: root
+    attributes: i
+    mode: u=rw,g=r,o=r
 
 - name: Reload network-manager
   become: true
