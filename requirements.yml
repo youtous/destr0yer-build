@@ -9,3 +9,6 @@
 
 # SELinux policy
 - src: robertdebock.selinux
+
+# Resolv.conf
+- src: ahuffman.resolv

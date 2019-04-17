@@ -4,6 +4,7 @@ system_packages:
   - curl
   - wget
   - curl
+  - dnsutils
   - zip
   - unzip
   - screen

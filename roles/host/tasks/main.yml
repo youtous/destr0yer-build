@@ -19,9 +19,21 @@
     mode: u=rwx,g=rx,o=rx
   register: hosts_defined
 
-- name: reload network-manager
+- name: Configure network settings
+  register: resolv_changed
+  import_role:
+    name: ahuffman.resolv
+  vars:
+    resolv_domain: "{{ domain_name }}"
+    resolv_search: "{{ domain_search }}"
+    resolv_nameservers: "{{ nameservers }}"
+    resolv_options:
+    - "timeout:2"
+    - "rotate"
+
+- name: Reload network-manager
   become: true
   systemd:
     name: networking
     state: restarted
-  # when: hosts_defined.changed or hostname_defined.changed
+  when: hosts_defined.changed or hostname_defined.changed or resolv_changed is defined
