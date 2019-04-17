@@ -14,6 +14,10 @@
     name: root
     shell: /usr/bin/fish
 
+- name: Install Oh-My-Fish
+  import_role:
+    name: oh-my-fish
+
 - name: Add /usr/sbin to PATH bash
   become: true
   copy:

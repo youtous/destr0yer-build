@@ -1,0 +1,12 @@
+---
+omf_repo: 'https://github.com/oh-my-fish/oh-my-fish'
+omf_installation_directory: '/usr/share/oh-my-fish'
+omf_theme: 'gianu'
+omf_theme_repo: "https://github.com/oh-my-fish/theme-{{ omf_theme }}"
+omf_theme_directory: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
+omf_default_theme_directory: "{{ omf_installation_directory }}/themes/default"
+omf_default_theme_move_directory: "{{ omf_installation_directory }}/themes/default-moved"
+omf_plugin_repo_base: "https://github.com/oh-my-fish/plugin-"
+omf_plugin_directory: "{{ omf_installation_directory }}/pkg"
+omf_plugins:
+  - "vcs"

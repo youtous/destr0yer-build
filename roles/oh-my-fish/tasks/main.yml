@@ -1,0 +1,62 @@
+---
+# This playbook contains oh-my-fish global installation
+- name: Include default vars
+  include_vars: default.yml
+
+- name: Check if OMF is installed
+  command: "ls {{ omf_installation_directory }}"
+  register: omf_present
+  ignore_errors: True
+
+- name: "Clone OMF from {{ omf_repo }}"
+  become: true
+  git:
+    repo: "{{ omf_repo }}"
+    dest: "{{ omf_installation_directory }}"
+  when: omf_present is failed
+
+- name: Install OMF
+  become: true
+  template:
+    src: files/config-omf.fish.j2
+    dest: /etc/fish/conf.d/config-omf.fish
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+
+- name: Check if OMF theme "{{ omf_theme }}" is installed
+  command: "ls {{ omf_installation_directory }}/themes/{{omf_theme}}"
+  register: omf_theme_present
+  ignore_errors: True
+
+- name: "Clone OMF theme \"{{ omf_theme }}\" from {{ omf_theme_repo }}"
+  become: true
+  git:
+    repo: "{{ omf_theme_repo }}"
+    dest: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
+  when: omf_theme_present is failed
+
+- name: Check if default theme already exists
+  stat:
+    path: "{{ omf_default_theme_directory }}"
+  register: omf_default_link
+
+- name: Move default OMF theme
+  become: true
+  command: mv "{{ omf_default_theme_directory }}" "{{ omf_default_theme_move_directory }}"
+  when: omf_default_link.stat.islnk is not defined or not omf_default_link.stat.islnk
+
+- name: Ensure theme {{ omf_theme }} is set as default
+  become: true
+  file:
+    src: "{{ omf_theme_directory }}"
+    dest: "{{ omf_default_theme_directory }}"
+    force: yes
+    state: link
+
+- name: Install OMF plugins
+  become: true
+  git:
+    repo: "{{ omf_plugin_repo_base }}{{item}}"
+    dest: "{{ omf_plugin_directory }}/{{ item }}"
+  with_items: "{{ omf_plugins }}"
