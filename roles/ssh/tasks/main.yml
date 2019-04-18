@@ -1,0 +1,20 @@
+---
+# This playbook contains OpenSSH settings
+- name: Include default vars
+  include_vars: default.yml
+
+# todo: iptables rule
+# todo: conf update
+
+- name: Enable OpenSSH server
+  become: true
+  service:
+    name: sshd
+    state: started
+    enabled: yes
+
+- name: Enable OpenSSH client
+  become: true
+  service:
+    name: ssh
+    enabled: yes
