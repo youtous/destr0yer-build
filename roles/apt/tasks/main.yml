@@ -1,0 +1,32 @@
+---
+# This playbook contains apt settings
+- name: Include default vars
+  include_vars: default.yml
+
+- name: Find source.d files
+  find:
+    paths: "{{ apt_sources_list_directory }}"
+  register: files_sources
+
+- name: Remove unwanted sources.d
+  become: true
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_list: "{{ files_sources.files }}"
+
+- name: Copy sources.list
+  become: true
+  copy:
+    src: "files/sources.list"
+    dest: "{{ apt_directory }}/sources.list"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400 #One day

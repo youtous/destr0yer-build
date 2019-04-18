@@ -1,0 +1,3 @@
+---
+apt_directory: "/etc/apt"
+apt_sources_list_directory: "{{ apt_directory }}/sources.list.d"
