@@ -37,7 +37,7 @@
   hosts: base-destr0yers
   remote_user: "{{ arbiter_username }}"
   roles:
-    #- entrypoint-ssh
+    - entrypoint-ssh
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

@@ -37,6 +37,6 @@
     GOROOT: "{{ GOROOT }}"
     GOARCH: "{{ 'arm64' if (ansible_architecture == 'aarch64') else 'amd64' }}"
     # checksum depending of the arch
-    go_checksum: "{{ '{{ go_arm64_checksum}}' if (ansible_architecture == 'aarch64') else '{{ go_amd64_checksum }}' }}"
+    go_checksum: "{{ go_arm64_checksum if (ansible_architecture == 'aarch64') else go_amd64_checksum }}"
     go_get: # we want a clean install
   when: golang_present is failed
