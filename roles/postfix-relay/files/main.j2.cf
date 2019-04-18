@@ -1,0 +1,25 @@
+# Internet hostname of this mail system.
+myhostname = {{ hostname }}
+
+# Use the default version : hostname - 1 lvl
+#mydomain = domain.tld
+
+# Domain used when no domain is specified, e.g. mailto: youtous => youtous@myorigin
+#myorigin = /etc/mailname
+
+# accept email from localhost only
+inet_interfaces = 127.0.0.1
+
+## RELAY CONFIGURATION
+
+# Enable auth
+smtp_sasl_auth_enable = yes
+
+# Set username and password
+smtp_sasl_password_maps = hash:{{ postfix_sasl_file }}
+smtp_sasl_security_options = noanonymous
+# Turn on tls encryption
+smtp_tls_security_level = encrypt
+
+# Set external SMTP relay host here IP or hostname accepted along with a port number.
+relayhost = [YOUR-SMTP-SERVER-IP-HERE]:587

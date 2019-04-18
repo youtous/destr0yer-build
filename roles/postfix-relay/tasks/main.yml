@@ -1,0 +1,23 @@
+---
+# This playbook contains postfix settings for relay usage
+- name: Install postfix package
+  become: true
+  apt:
+    name:
+      - libsasl2-modules
+      - postfix
+# http://postfix.state-of-mind.de/patrick.koetter/smtpauth/smtp_auth_mailservers.html
+- name: Define /etc/mailname with hostname
+  become: true
+  copy:
+    content: "{{ hostname }}"
+    dest: "/etc/mailname"
+    group: root
+    owner: root
+    mode: u=rw,g=r,o=r
+
+- name: Secure SASL password file
+  become: true
+  file:
+    path: "{{ postfix_sasl_file }}"
+    mode: u=rw,g=,o=

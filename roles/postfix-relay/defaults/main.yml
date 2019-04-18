@@ -1,0 +1,2 @@
+---
+postfix_sasl_file: /etc/postfix/sasl_passwd

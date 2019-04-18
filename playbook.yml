@@ -44,5 +44,14 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["configure-slaves-systems"]
 
-
+- name: Configure Postfix relay servers
+  hosts: smtp-relays
+  remote_user: "{{ arbiter_username }}"
+  roles:
+    - postfix-relay
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["smtp-relay"]
 ...
