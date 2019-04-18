@@ -6,7 +6,6 @@
   include_vars: default.yml
 
 # todo: iptables rule
-# todo: client conf update
 
 - name: Ensure files for weak algorithms are not present
   become: true
@@ -90,6 +89,16 @@
     name: sshd
     state: started
     enabled: yes
+
+- name: Copy ssh client configuration
+  become: true
+  copy:
+    src: files/ssh_config.sh
+    dest: /etc/ssh/ssh_config
+    owner: root
+    group: root
+    mode: u=rw,g=rw,o=r
+  register: ssh_config_copied
 
 - name: Enable OpenSSH client
   become: true
