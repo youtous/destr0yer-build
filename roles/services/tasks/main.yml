@@ -1,0 +1,24 @@
+---
+# This playbook contains default services settings
+- name: Include default vars
+  include_vars: default.yml
+
+- name: List enabled Scaleway services
+  become: true
+  shell: systemctl list-unit-files --state=enabled | grep -o -P "scw(\-|\w|\d)*"
+  register: scw_services_enabled
+  ignore_errors: True
+
+- name: List running Scaleway services
+  become: true
+  shell: systemctl --state=running | grep -o -P "scw(\-|\w|\d)*"
+  register: scw_services_running
+  ignore_errors: True
+
+- name: Stop Scaleway services
+  become: true
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items: "{{ scw_services_running.stdout_lines | default([]) + scw_services_enabled.stdout_lines | default([])  }}"
