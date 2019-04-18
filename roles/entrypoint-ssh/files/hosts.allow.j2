@@ -1,0 +1,8 @@
+{% if ssh_entrypoints|length > 0 %}
+
+{% for host_ssh_allowed in ssh_entrypoints %}
+sshd : {{ host_ssh_allowed }} : allow
+{% endfor %}
+
+sshd : ALL : deny
+{% endif %}

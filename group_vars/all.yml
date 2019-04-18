@@ -31,3 +31,7 @@ common_groups_to_create:
     gid: 20000
   - name: sshusers
     gid: 20500
+
+# entrypoints are domains or ip from where we can access base-destr0yers
+ssh_entrypoints:
+  - "vpn.youtous.me"
