@@ -1,10 +1,35 @@
 ---
 # This playbook contains OpenSSH settings
+# Use https://github.com/arthepsy/ssh-audit to check ssh
 - name: Include default vars
   include_vars: default.yml
 
 # todo: iptables rule
-# todo: conf update
+# todo: client conf update
+
+- name: Ensure files for weak algorithms are not present
+  become: true
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items: "{{ algorithms_files_to_remove  }}"
+
+- name: Copy sshd server configuration
+  become: true
+  copy:
+    src: files/sshd_config.sh
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: u=rw,g=rw,o=r
+  register: sshd_config_copied
+
+- name: Restart OpenSSH server
+  become: true
+  service:
+    name: sshd
+    state: restarted
+  when: sshd_config_copied.changed
 
 - name: Enable OpenSSH server
   become: true

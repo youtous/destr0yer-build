@@ -42,6 +42,14 @@ Allow root login `/etc/ssh/sshd_config`
 PermitRootLogin yes
 ```
 
+Remember to generate secure keys for the server 
+```
+cd /etc/ssh
+rm ssh_host_*key*
+ssh-keygen -t ed25519 -f ssh_host_ed25519_key < /dev/null
+ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key < /dev/null
+```
+
 ## Ansible usage
 
 - Launch the recipe using : `ansible-playbook -i hosts.yml playbook.yml --vault-password-file ./.vault_password`

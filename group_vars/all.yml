@@ -16,7 +16,7 @@ common_users:
   # arbiter is the only sudoer
   - username: "{{ arbiter_username }}"
     name: System's Arbiter
-    groups: ['admin']
+    groups: ['admin', 'sshusers']
     uid: 1005
     home: /home/arbiter
     profile:
@@ -29,3 +29,5 @@ common_groups_to_create:
     gid: 10000
   - name: users
     gid: 20000
+  - name: sshusers
+    gid: 20500

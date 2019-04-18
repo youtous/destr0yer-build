@@ -1,1 +1,7 @@
 ---
+algorithms_files_to_remove:
+  - /etc/ssh/moduli # no DH used, this file is not useful anymore
+  - /etc/ssh/ssh_host_dsa_key.pub
+  - /etc/ssh/ssh_host_dsa_key
+  - /etc/ssh/ssh_host_ecdsa_key.pub
+  - /etc/ssh/ssh_host_ecdsa_key
