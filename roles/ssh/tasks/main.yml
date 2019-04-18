@@ -1,6 +1,7 @@
 ---
 # This playbook contains OpenSSH settings
-# Use https://github.com/arthepsy/ssh-audit to check ssh
+# Use https://cryptcheck.fr/ to check ssh
+# Use https://sshcheck.com to check ssh
 - name: Include default vars
   include_vars: default.yml
 
@@ -13,6 +14,58 @@
     path: "{{ item }}"
     state: absent
   with_items: "{{ algorithms_files_to_remove  }}"
+
+- name: Checking if keys has been regenerated
+  stat:
+    path: "{{ key_generated_flag_file }}"
+  register: flag_keys_generated
+
+- name: Remove old host keys
+  become: true
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/ssh/ssh_host_ed25519_key
+    - /etc/ssh/ssh_host_rsa_key
+  when: flag_keys_generated.stat.exists == False
+
+- name: Generate ed25519 host key
+  become: true
+  command: ssh-keygen -q -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -C "" -N ""
+  when: flag_keys_generated.stat.exists == False
+
+- name: Generate rsa host key
+  become: true
+  command: ssh-keygen -q -t rsa -b "{{ rsa_key_size }}" -f /etc/ssh/ssh_host_rsa_key -C "" -N ""
+  when: flag_keys_generated.stat.exists == False
+
+# Will be available in Ansible 2.8
+#- name: Generate ed25519 host key
+#  become: true
+#  openssh_keypair:
+#    path: /etc/ssh/ssh_host_ed25519_key
+#    type: ed25519
+#    force: True
+#  when: flag_keys_generated.stat.exists == False
+#
+#- name: Generate rsa host key
+#  become: true
+#  openssh_keypair:
+#    path: /etc/ssh/ssh_host_rsa_key
+#    size: "{{ rsa_key_size }}"
+#    force: True
+#  when: flag_keys_generated.stat.exists == False
+
+- name: Lock host keys
+  become: true
+  copy:
+    content: ""
+    dest: "{{ key_generated_flag_file }}"
+    force: no
+    group: root
+    owner: root
+    mode: u=rw,g=rw,o=r
 
 - name: Copy sshd server configuration
   become: true
