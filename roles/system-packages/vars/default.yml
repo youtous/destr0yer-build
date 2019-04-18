@@ -6,6 +6,7 @@ system_packages:
   - curl
   - dnsutils
   - zip
+  - grc # colorize terminal
   - unzip
   - screen
   - geoip-database

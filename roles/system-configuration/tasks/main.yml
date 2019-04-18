@@ -12,6 +12,10 @@
   import_role:
     name: host
 
+- name: Setup motd
+  import_role:
+    name: motd
+
 - name: Set fish as the root shell
   become: yes
   user:

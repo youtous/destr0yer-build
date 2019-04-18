@@ -1,0 +1,3 @@
+---
+motd_file: "60-motd"
+motd_directory: "/etc/update-motd.d"
