@@ -5,8 +5,6 @@
 - name: Include default vars
   include_vars: default.yml
 
-# todo: iptables rule
-
 - name: Ensure files for weak algorithms are not present
   become: true
   file:
