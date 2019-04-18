@@ -1,8 +1,5 @@
 ---
 # This playbook contains oh-my-fish global installation
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Define hostname
   become: true
   hostname:

@@ -1,8 +1,5 @@
 ---
 # This playbook contains base system configuration
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Set timezone to Europe/Paris
   become: true
   timezone:

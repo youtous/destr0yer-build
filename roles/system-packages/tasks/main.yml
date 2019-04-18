@@ -1,8 +1,5 @@
 ---
 # This playbook contains system packages installation
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Install system packages
   become: true
   apt:

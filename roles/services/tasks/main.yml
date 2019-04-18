@@ -1,8 +1,5 @@
 ---
 # This playbook contains default services settings
-- name: Include default vars
-  include_vars: default.yml
-
 - name: List enabled Scaleway services
   become: true
   shell: systemctl list-unit-files --state=enabled | grep -o -P "scw(\-|\w|\d)*"

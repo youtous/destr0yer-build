@@ -1,8 +1,5 @@
 ---
 # This playbook contains apt settings
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Find source.d files
   find:
     paths: "{{ apt_sources_list_directory }}"

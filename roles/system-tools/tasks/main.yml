@@ -1,8 +1,5 @@
 ---
 # This playbook contains CLI tools installation and configuration, CLI tools are for user not for the system
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Install CLI Tools
   become: true
   apt:

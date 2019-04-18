@@ -1,6 +1,4 @@
 ---
-- name: Include default vars
-  include_vars: default.yml
 # see https://github.com/unxnn/ansible-users
 
 - name: Add password to root user
