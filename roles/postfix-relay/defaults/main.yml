@@ -1,2 +1,25 @@
 ---
+# the email domain used by this host
+# domain of the mail after @
+mydomain: "localhost"
+
+# file which contain credentials for relay auth
 postfix_sasl_file: /etc/postfix/sasl_passwd
+
+# users created on the host
+users: "{{ common_users | default([]) + host_users | default([]) }}"
+
+# system emails will be delivered to
+# postmaster email should unique per host
+postmaster_email: "monitoring@youtous.me"
+
+# for each host, provide login values :
+# the email for the host
+relay_email: ""
+# the user for the host
+relay_user: ""
+# the password for the host
+relay_password: ""
+
+# relay address and port used to deliver emails
+relayhost: "[localhost]:587"

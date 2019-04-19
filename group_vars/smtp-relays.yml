@@ -1,0 +1,14 @@
+# domain of the mail after @
+mydomain: "youtous.me"
+
+# postmaster email is centralized between all hosts
+postmaster_email: "monitoring@youtous.me"
+
+# for each host, provide login values :
+#
+# relay_email     - the email for the host
+# relay_user      - the user for the host
+# relay_password  - the password for the host
+
+# relay address and port used to deliver emails
+relayhost: "[mail.youtous.me]:587"

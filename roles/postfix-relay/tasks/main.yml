@@ -6,15 +6,51 @@
     name:
       - libsasl2-modules
       - postfix
+
 # http://postfix.state-of-mind.de/patrick.koetter/smtpauth/smtp_auth_mailservers.html
 - name: Define /etc/mailname with hostname
   become: true
   copy:
-    content: "{{ hostname }}"
+    content: "{{ mydomain }}"
     dest: "/etc/mailname"
     group: root
     owner: root
     mode: u=rw,g=r,o=r
+  notify:
+    - reload postfix
+
+- name: Copy aliases
+  become: true
+  template:
+    src: files/aliases.j2
+    dest: /etc/aliases
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - newaliases
+
+- name: Copy sasl_passwd
+  become: true
+  template:
+    src: files/sasl_passwd.j2
+    dest: "{{ postfix_sasl_file }}"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - hash sasl passwd
+
+- name: Copy postfix configuration
+  become: true
+  template:
+    src: files/main.j2.cf
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - restart postfix
 
 - name: Secure SASL password file
   become: true
