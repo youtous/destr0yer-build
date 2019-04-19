@@ -34,4 +34,6 @@ common_groups_to_create:
 
 # entrypoints are domains or ip from where we can access base-destr0yers
 ssh_entrypoints:
+  - "vpn.youtous.me"
+  - "srv.youtous.me"
   - "163.172.154.21"
