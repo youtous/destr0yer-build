@@ -4,7 +4,8 @@
   become: true
   hostname:
     name: "{{ hostname }}"
-  register: hostname_defined
+  notify:
+    - restart network-manager
 
 - name: Unlock /etc/hosts
   become: true
@@ -21,7 +22,14 @@
     group: root
     attributes: i # ensure not writable
     mode: u=rwx,g=rx,o=rx
-  register: hosts_defined
+  notify:
+    - restart network-manager
+
+- name: Unlock /etc/resolv.conf
+  become: true
+  file:
+    path: /etc/resolv.conf
+    attributes: -i
 
 - name: Configure network settings
   import_role:
@@ -31,15 +39,10 @@
     resolv_search: "{{ domain_search }}"
     resolv_nameservers: "{{ nameservers }}"
     resolv_options:
-    - "timeout:2"
-    - "rotate"
-  register: resolv_changed
-
-- name: Unlock /etc/resolv.conf
-  become: true
-  file:
-    path: /etc/resolv.conf
-    attributes: -i
+      - "timeout:2"
+      - "rotate"
+  notify:
+    - restart network-manager
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable
@@ -50,10 +53,3 @@
     group: root
     attributes: i
     mode: u=rw,g=r,o=r
-
-- name: Reload network-manager
-  become: true
-  systemd:
-    name: networking
-    state: restarted
-  when: hosts_defined.changed or hostname_defined.changed or resolv_changed is defined

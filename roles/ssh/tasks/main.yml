@@ -70,14 +70,8 @@
     owner: root
     group: root
     mode: u=rw,g=rw,o=r
-  register: sshd_config_copied
-
-- name: Restart OpenSSH server
-  become: true
-  service:
-    name: sshd
-    state: restarted
-  when: sshd_config_copied.changed
+  notify:
+    - restart sshd
 
 - name: Enable OpenSSH server
   become: true
@@ -94,7 +88,6 @@
     owner: root
     group: root
     mode: u=rw,g=rw,o=r
-  register: ssh_config_copied
 
 - name: Enable OpenSSH client
   become: true
