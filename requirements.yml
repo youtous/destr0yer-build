@@ -20,3 +20,8 @@
 - name: ahuffman.resolv
   src: https://github.com/ahuffman/ansible-resolv.git
   version: bf111291a0e0145bdb91b8fa00510bd826bb3c55
+
+# Email notification on login
+- name: grzegorznowak.ansible_ssh_login_notifications
+  src: https://github.com/spottmedia/ansible-ssh-login-notifications.git
+  version: 917a89466630c95a4d5807422b656c9402734121

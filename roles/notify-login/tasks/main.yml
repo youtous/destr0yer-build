@@ -1,0 +1,8 @@
+---
+# This playbook contains notify-login settings for monitoring connexions
+- name: Setup notify-login
+  become: true
+  import_role:
+    name: grzegorznowak.ansible_ssh_login_notifications
+  vars:
+    ssh_login_notifications_slack_enable: false

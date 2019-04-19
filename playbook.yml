@@ -27,6 +27,7 @@
     - system-tools # server cli tools (vim, ccat, etc)
     - services # define services policy
     - ssh # define OpenSSH policy
+    - notify-login # notify when an user connects
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
