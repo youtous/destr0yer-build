@@ -17,10 +17,10 @@
   notify:
     - restart ufw
 
-- name: Set logging
+- name: Define ufw logging policy
   become: true
   ufw:
-    logging: on
+    logging: "{{ ufw_logging }}"
   notify:
     - restart ufw
 
