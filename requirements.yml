@@ -11,7 +11,13 @@
   src: https://github.com/unxnn/ansible-users.git
   version: b88eb9bf2af46b0ad9623ccb6344b91fc3dadeed
 
-# SELinux policy
+# SELinux policy and his dependencies
+- name: robertdebock.bootstrap
+  src: https://github.com/robertdebock/ansible-role-bootstrap.git
+  version: 97b1fd2c5751f0e4aff0669478d04cdf5e86d52e
+- name: robertdebock.reboot
+  src: https://github.com/robertdebock/ansible-role-reboot.git
+  version: 43ef2c4476b0a13b80afa5e6f6385f1f346fab7f
 - name: robertdebock.selinux
   src: https://github.com/robertdebock/ansible-role-selinux.git
   version: 071532806628baaab0b409adff3110a449faf793
