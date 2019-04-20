@@ -1,5 +1,5 @@
 ---
-# This playbook contains notify-login settings for monitoring connexions
+# This role contains notify-login settings for monitoring connexions
 - name: Setup notify-login
   become: true
   import_role:

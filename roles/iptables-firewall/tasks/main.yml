@@ -1,5 +1,5 @@
 ---
-# This playbook contains base rules of the firewall
+# This role contains base rules of the firewall
 - name: Install ufw package
   become: true
   apt:

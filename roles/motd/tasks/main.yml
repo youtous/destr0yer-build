@@ -1,5 +1,5 @@
 ---
-# This playbook contains oh-my-fish global installation
+# This role contains oh-my-fish global installation
 - name: Find motd.d files
   find:
     paths: "{{ motd_directory }}"

@@ -1,5 +1,5 @@
 ---
-# This playbook contains CLI tools installation and configuration, CLI tools are for user not for the system
+# This role contains CLI tools installation and configuration, CLI tools are for user not for the system
 - name: Install CLI Tools
   become: true
   apt:

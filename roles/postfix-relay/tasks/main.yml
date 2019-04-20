@@ -1,5 +1,5 @@
 ---
-# This playbook contains postfix settings for relay usage
+# This role contains postfix settings for relay usage
 - name: Install postfix package
   become: true
   apt:

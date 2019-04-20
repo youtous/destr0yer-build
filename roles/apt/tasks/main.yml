@@ -1,5 +1,5 @@
 ---
-# This playbook contains apt settings
+# This role contains apt settings
 - name: Find source.d files
   find:
     paths: "{{ apt_sources_list_directory }}"

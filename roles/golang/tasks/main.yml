@@ -1,5 +1,5 @@
 ---
-# This playbook contains golang installation
+# This role contains golang installation
 - name: Include default vars
   include_vars: default.yml
 

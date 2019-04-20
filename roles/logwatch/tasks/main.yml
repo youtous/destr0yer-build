@@ -1,5 +1,5 @@
 ---
-# This playbook contains the default policy for logrotate
+# This role contains the default policy for logrotate
 - name: Include default vars
   include_vars: default.yml
 

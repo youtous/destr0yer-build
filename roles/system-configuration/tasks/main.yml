@@ -1,5 +1,5 @@
 ---
-# This playbook contains base system configuration
+# This role contains base system configuration
 - name: Set timezone to Europe/Paris
   become: true
   timezone:

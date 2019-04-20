@@ -1,5 +1,5 @@
 ---
-# This playbook contains oh-my-fish global installation
+# This role contains oh-my-fish global installation
 - name: Check if OMF is installed
   command: "ls {{ omf_installation_directory }}"
   register: omf_present

@@ -1,5 +1,5 @@
 ---
-# This playbook contains system packages installation
+# This role contains system packages installation
 - name: Install system packages
   become: true
   apt:

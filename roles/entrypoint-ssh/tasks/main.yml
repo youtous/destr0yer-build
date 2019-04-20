@@ -1,5 +1,5 @@
 ---
-# This playbook contains settings that will only allow SSH connections from
+# This role contains settings that will only allow SSH connections from
 # a specific authoritative server
 - name: Generate list of allowed ssh entrypoints
   become: true

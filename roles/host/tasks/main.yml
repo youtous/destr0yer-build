@@ -1,5 +1,5 @@
 ---
-# This playbook contains oh-my-fish global installation
+# This role contains oh-my-fish global installation
 - name: Define hostname
   become: true
   hostname:
