@@ -35,6 +35,10 @@ common_groups_to_create:
   - name: sshusers
     gid: 20500
 
+# ips which should never be banned
+fail2ban_trusted_ips:
+  - "163.172.154.21"
+
 # entrypoints are domains or ip from where we can access base-destr0yers
 ssh_entrypoints:
   - "vpn.youtous.me"

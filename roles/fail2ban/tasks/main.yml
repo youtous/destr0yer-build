@@ -1,0 +1,36 @@
+---
+# This role contains the default policy for fail2ban
+- name: Include default vars
+  include_vars: default.yml
+
+- name: Setup fail2ban
+  become: true
+  import_role:
+    name: oefenweb.fail2ban
+  vars:
+    fail2ban_ignoreips: "{{ fail2ban_ignoreips }}"
+    fail2ban_destemail: "{{ fail2ban_destemail }}"
+    fail2ban_services:
+      - name: sshd
+        port: ssh
+      - name: recidive
+
+- name: Configure logrotate for fail2ban
+  import_role:
+    name: logrotate
+  vars:
+    logrotate_applications:
+      - name: fail2ban
+        definitions:
+          - logs:
+              - "{{ fail2ban_logtarget }}"
+              - "{{ fail2ban_syslog_target }}"
+            options:
+              - monthly
+              - rotate 12
+              - size 10M
+              - compress
+              - delaycompress
+              - missingok
+              - notifempty
+              - create 0640 root root

@@ -47,3 +47,8 @@
 - name: anxs.logwatch
   src: https://github.com/ANXS/logwatch.git
   version: 8a816416c78905ffdf83cdfb66611dd3c1e89f55
+
+# Fail2ban
+- name: oefenweb.fail2ban
+  src: https://github.com/Oefenweb/ansible-fail2ban.git
+  version: 4b02c28f346fddcd32f329ac1eacc5d420b35382

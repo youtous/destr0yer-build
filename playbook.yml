@@ -29,6 +29,7 @@
     - logrotate # manage log rotation
     - logwatch # monitor server using emails
     - notify-login # notify when an user connects
+    - fail2ban
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
