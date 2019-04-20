@@ -1,0 +1,58 @@
+---
+# This playbook contains base rules of the firewall
+- name: Install ufw package
+  become: true
+  apt:
+    name:
+      - ufw
+
+- name: Configure ufw defaults
+  become: true
+  ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  with_items:
+    - { direction: 'incoming', policy: 'deny' }
+    - { direction: 'outgoing', policy: 'allow' }
+  notify:
+    - restart ufw
+
+- name: Set logging
+  become: true
+  ufw:
+    logging: on
+  notify:
+    - restart ufw
+
+- name: Insert custome rules in before.rules
+  become: true
+  blockinfile:
+    dest: "/etc/ufw/before.rules"
+    block: "{{ lookup('file', 'files/before.rules') }}"
+    insertbefore: "^# don't delete the 'COMMIT'"
+  notify:
+    - restart ufw
+
+- name: OpenSSH default policy limit
+  become: true
+  ufw:
+    rule: limit
+    port: ssh
+    proto: tcp
+  notify:
+    - restart ufw
+
+# IP forwarding is disabled by default
+- name: Disable IPv4 forwarding
+  become: true
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 0
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Enable ufw
+  become: true
+  ufw:
+    state: enabled

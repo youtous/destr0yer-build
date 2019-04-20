@@ -25,7 +25,8 @@
     - users # create a sudo user that will be used for configuration
     - system-configuration # configure the system (selinux, timezone...)
     - system-tools # server cli tools (vim, ccat, etc)
-    - services # define services policy
+    - services # define services policy (disable scaleway etc)
+    - iptables-firewall # define firewall policy
     - ssh # define OpenSSH policy
     - notify-login # notify when an user connects
   vars_files:

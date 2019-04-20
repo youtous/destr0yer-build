@@ -57,3 +57,9 @@
   file:
     path: "{{ postfix_sasl_file }}"
     mode: u=rw,g=,o=
+
+- name: Enable postfix
+  become: true
+  service:
+    name: postfix
+    enabled: yes
