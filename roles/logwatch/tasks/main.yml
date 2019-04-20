@@ -1,0 +1,12 @@
+---
+# This playbook contains the default policy for logrotate
+- name: Include default vars
+  include_vars: default.yml
+
+- name: Setup Logwatch
+  become: true
+  import_role:
+    name: anxs.logwatch
+  vars:
+    logwatch_email: "{{ logwatch_email }}"
+    logwatch_detail: "{{ logwatch_detail }}"
