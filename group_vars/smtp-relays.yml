@@ -2,7 +2,7 @@
 mydomain: "youtous.me"
 
 # postmaster email is centralized between all hosts
-postmaster_email: "monitoring@youtous.me"
+postmaster_email: "{{ monitoring_email }}"
 
 # for each host, provide login values :
 #

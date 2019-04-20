@@ -12,6 +12,9 @@ nameservers:
   - 2606:4700:4700::1111
   - 2606:4700:4700::1001
 
+# Email that will receive all notifications, useful for monitoring
+monitoring_email: "monitoring@youtous.me"
+
 common_users:
   # arbiter is the only sudoer
   - username: "{{ arbiter_username }}"
