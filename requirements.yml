@@ -25,3 +25,8 @@
 - name: grzegorznowak.ansible_ssh_login_notifications
   src: https://github.com/spottmedia/ansible-ssh-login-notifications.git
   version: 917a89466630c95a4d5807422b656c9402734121
+
+# Logrotate
+- name: arillso.logrotate
+  src: https://github.com/arillso/ansible.logrotate.git
+  version: 0aced5bf8e938b8eee2d902bd3c9262c764c2e54

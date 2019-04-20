@@ -71,3 +71,22 @@
     enabled: no
     state: stopped
   ignore_errors: True
+
+- name: Configure logrotate for postfix
+  import_role:
+    name: logrotate
+  vars:
+    logrotate_applications:
+      - name: postfix
+        definitions:
+          - logs:
+              - '/var/log/mail.*'
+            options:
+              - monthly
+              - rotate 12
+              - size 10M
+              - compress
+              - delaycompress
+              - missingok
+              - notifempty
+              - create 0640 root root

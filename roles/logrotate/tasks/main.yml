@@ -1,0 +1,6 @@
+---
+# This playbook contains the default policy for logrotate
+- name: Setup Logrotate
+  become: true
+  import_role:
+    name: arillso.logrotate
