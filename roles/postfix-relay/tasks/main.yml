@@ -63,3 +63,11 @@
   service:
     name: postfix
     enabled: yes
+
+- name: Ensure exim4 is disabled
+  become: true
+  service:
+    name: exim4
+    enabled: no
+    state: stopped
+  ignore_errors: True
