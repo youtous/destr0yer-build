@@ -9,6 +9,15 @@
   import_role:
     name: host
 
+- name: Ensure system folder permissions are correct
+  become: true
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  with_items: "{{ system_folders_write_root_only }}"
+
 - name: Setup motd
   import_role:
     name: motd

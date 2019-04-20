@@ -5,3 +5,19 @@ selinux_state: enforcing
 selinux_utils_packages:
   - selinux-utils
   - setools
+
+system_folders_write_root_only:
+  - /etc
+  - /dev
+  - /bin
+  - /boot
+  - /lib
+  - /media
+  - /mnt
+  - /usr
+  - /opt
+  - /proc
+  - /run
+  - /sbin
+  - /srv
+  - /var
