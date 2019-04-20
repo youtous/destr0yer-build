@@ -1,5 +1,4 @@
 ---
-
 # This play describes required tasks to build a new destr0yer
 # After being done, use the regular PLAY
 - name: Prepare new systems
@@ -28,8 +27,10 @@
     - services # define services policy (disable scaleway etc)
     - logrotate # manage log rotation
     - logwatch # monitor server using emails
+    - iptables-firewall # define firewall policy
+    - ssh # define OpenSSH policy
+    - fail2ban # define the fail2ban policy
     - notify-login # notify when an user connects
-    - fail2ban
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
