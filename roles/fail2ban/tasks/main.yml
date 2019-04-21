@@ -24,7 +24,6 @@
         definitions:
           - logs:
               - "{{ fail2ban_logtarget }}"
-              - "{{ fail2ban_syslog_target }}"
             options:
               - monthly
               - rotate 12
