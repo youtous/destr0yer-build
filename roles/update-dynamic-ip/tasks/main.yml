@@ -30,3 +30,22 @@
     name: "update host ip records"
     minute: "*/5"
     job: "{{ update_ip_directory }}/update-ip-cloudflare.sh"
+
+- name: Configure logrotate for update-ip
+  import_role:
+    name: logrotate
+  vars:
+    logrotate_applications:
+      - name: update-ip
+        definitions:
+          - logs:
+              - "{{ update_ip_log_file }}"
+            options:
+              - monthly
+              - rotate 12
+              - size 10M
+              - compress
+              - delaycompress
+              - missingok
+              - notifempty
+              - create 0640 root root
