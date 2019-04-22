@@ -34,7 +34,7 @@ printf "System load:\t%s\t\tSystem uptime:\t%s\n" "$load" "$time"
 printf "Memory usage:\t%s\n" $memory_usage
 printf "Usage on /:\t%s\t\tSwap usage:\t%s\n" $root_usage $swap_usage
 printf "Local Users:\t%s\t\tProcesses:\t%s\n" $users $processes
-printf "Pub IPv4:\t%s\t\Pub IPv6:\t%s\n" $public_ipv4 $public_ipv6
+printf "Pub IPv4:\t%s\tPub IPv6:\t%s\n" $public_ipv4 $public_ipv6
 printf "_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-\n"
 # volumes info
 timeout --signal=kill 2s df -h | grep -E "^(/dev/|Filesystem)"
