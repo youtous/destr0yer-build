@@ -58,4 +58,14 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["smtp-relay"]
+
+- name: Configure servers with dynamic ip
+  hosts: dynamic-hosts
+  roles:
+    - update-dynamic-ip
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["dynamic-ip"]
 ...

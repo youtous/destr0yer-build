@@ -1,0 +1,32 @@
+---
+# This role contains dynamic ip updating setup
+- name: Install cron package
+  become: true
+  apt:
+    name:
+      - cron
+
+- name: Creates update-ip directory
+  become: true
+  file:
+    path: "{{ update_ip_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=
+
+# todo: in order to use this script in production, we need API with scope & restrictions
+- name: Copy update-ip script
+  become: true
+  template:
+    src: files/update-ip-cloudflare.j2.sh
+    dest: "{{ update_ip_directory }}/update-ip-cloudflare.sh"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Cron update-ip every 5mins
+  cron:
+    name: "update host ip records"
+    minute: "*/5"
+    job: "{{ update_ip_directory }}/update-ip-cloudflare.sh"

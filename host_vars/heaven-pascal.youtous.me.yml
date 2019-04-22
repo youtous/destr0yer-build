@@ -9,3 +9,7 @@ host_users:
     ssh_key: "{{ specu_ssh_keys }}"
     password: "{{ specu_password }}"
     update_password: "always"
+
+# dynamic-ip parameters
+update_ip_cloudflare_zone_name: youtous.me
+update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.me

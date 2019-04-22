@@ -1,0 +1,10 @@
+---
+update_ip_directory: /etc/auto-update-ip
+update_ip_cloudflare_email: user@example.com
+update_ip_cloudflare_auth_key: # get it on, it should be UNIQUE per host
+update_ip_cloudflare_zone_name: youtous.me
+update_ip_cloudflare_record_name: dynamic-ip-sample.youtous.me # replace with the sub-domain
+update_ip_ids_file: cloudflare.ids
+update_ip_log_file: /var/log/auto-update-ip.log
+# ipv4, ipv6
+update_ip_protocol: ipv4
