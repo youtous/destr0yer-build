@@ -49,5 +49,7 @@ PermitRootLogin yes
 
 ## Ansible 3rd Roles
 
-- https://github.com/fubarhouse/ansible-role-golang
-- https://github.com/unxnn/ansible-users
+Install requirements using
+`ansible-galaxy install -r requirements.yml`
+
+*See requirements.yml*
