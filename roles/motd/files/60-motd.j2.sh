@@ -16,7 +16,8 @@ swap_usage=`free -m | awk '/Swap/ { printf("%3.1f%%", "exit !$2;$3/$2*100") }'`
 users=`users | wc -w`
 time=`uptime | grep -ohe 'up .*' | sed 's/,/\ hours/g' | awk '{ printf $2" "$3 }'`
 processes=`ps aux | wc -l`
-public_ip=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com)
+public_ipv4=$(dig TXT +short whoami.cloudflare.com @ns1.cloudflare.com -4)
+public_ipv6=$(dig TXT +short whoami.cloudflare.com @ns1.cloudflare.com -6)
 
 KERNEL_VERSION=$(uname -r)
 if [[ $KERNEL_VERSION =~ ^3\.2\.[35][24].* ]]; then
@@ -33,7 +34,7 @@ printf "System load:\t%s\t\tSystem uptime:\t%s\n" "$load" "$time"
 printf "Memory usage:\t%s\n" $memory_usage
 printf "Usage on /:\t%s\t\tSwap usage:\t%s\n" $root_usage $swap_usage
 printf "Local Users:\t%s\t\tProcesses:\t%s\n" $users $processes
-printf "Pub IP Address:\t%s\n" $public_ip
+printf "Pub IPv4:\t%s\t\Pub IPv6:\t%s\n" $public_ipv4 $public_ipv6
 printf "_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-\n"
 # volumes info
 timeout --signal=kill 2s df -h | grep -E "^(/dev/|Filesystem)"
