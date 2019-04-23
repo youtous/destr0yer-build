@@ -1,0 +1,9 @@
+# This file describes specific host vars
+hostname: heaven-roberval.youtous.me
+
+host_users: []
+
+# smtp relay parameters
+relay_email: monitoring-heaven-pascal@youtous.me
+relay_user: monitoring-heaven-pascal@youtous.me
+relay_password: "{{ secret_relay_password }}"
