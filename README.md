@@ -1,10 +1,7 @@
 # Destr0yer server build recipe
 
 ## Installation
-HDD: 50Go
-Language : English
-Keyboard : French
-Location : Europe/Paris
+*Tested on Debian (9) Strech only.*
 
 ## Partitioning
 Guided using LVM :
