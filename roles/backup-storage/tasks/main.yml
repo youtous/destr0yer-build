@@ -98,6 +98,16 @@
   loop_control:
     loop_var: account
 
+- name: Fix sudoers admin group sudo with password
+  become: true
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%admin ALL='
+    line: '%admin ALL=(ALL) PASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+  tags: ["users", "groups", "configuration"]
+
 - name: Ensure backup folders permissions
   become: true
   file:
