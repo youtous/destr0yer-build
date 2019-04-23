@@ -59,7 +59,7 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["smtp-relay"]
 
-- name: Configure servers with dynamic ip
+- name: Configure backup storage systems
   hosts: backup-storage
   roles:
     - backup-storage
