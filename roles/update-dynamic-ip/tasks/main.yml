@@ -26,12 +26,14 @@
     mode: u=rwx,g=,o=
 
 - name: Cron update-ip every 5mins
+  become: true
   cron:
     name: "update host ip records"
     minute: "*/5"
     job: "{{ update_ip_directory }}/update-ip-cloudflare.sh"
 
 - name: Configure logrotate for update-ip
+  become: true
   import_role:
     name: logrotate
   vars:
