@@ -1,0 +1,11 @@
+---
+# This role setup a backup server using sftp and chroot
+# ssh role must be used in order to have a properly configured server
+- name: Install duply and duplicity packages
+  become: true
+  apt:
+    name:
+      - duplicity
+      - duply
+
+# todo : configure using this role : https://github.com/Oefenweb/ansible-duply-backup

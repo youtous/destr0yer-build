@@ -1,0 +1,6 @@
+---
+
+
+duply_backup_profiles.key.conf.gpg_keys_enc: Public key to encrypt to (optional)
+
+duply_backup_profiles.key.conf.gpg_key_sign: A secret key for signing (optional)
