@@ -1,7 +1,7 @@
 ---
 # the email domain used by this host
 # domain of the mail after @
-mydomain: "localhost"
+myhostname: "localhost"
 
 # file which contain credentials for relay auth
 postfix_sasl_file: /etc/postfix/sasl_passwd

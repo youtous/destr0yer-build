@@ -1,5 +1,5 @@
 # domain of the mail after @
-mydomain: "youtous.me"
+myhostname: "{{ hostname }}"
 
 # postmaster email is centralized between all hosts
 postmaster_email: "{{ monitoring_email }}"

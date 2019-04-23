@@ -11,7 +11,7 @@
 - name: Define /etc/mailname with hostname
   become: true
   copy:
-    content: "{{ mydomain }}"
+    content: "{{ myhostname }}"
     dest: "/etc/mailname"
     group: root
     owner: root

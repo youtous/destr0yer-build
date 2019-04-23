@@ -2,10 +2,10 @@
 compatibility_level = 2
 
 # Internet hostname of this mail system.
-myhostname = {{ hostname }}
+myhostname = {{ myhostname }}
 
 # email domain
-mydomain = {{ mydomain }}
+mydomain = $myhostname
 
 # Domain used when no domain is specified, e.g. mailto: youtous => youtous@myorigin
 myorigin = $mydomain
