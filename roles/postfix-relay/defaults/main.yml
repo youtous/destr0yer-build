@@ -15,11 +15,11 @@ postmaster_email: "monitoring@youtous.me"
 
 # for each host, provide login values :
 # the email for the host
-relay_email: ""
+#relay_email: ""
 # the user for the host
-relay_user: ""
+#relay_user: ""
 # the password for the host
-relay_password: ""
+#relay_password: ""
 
 # relay address and port used to deliver emails
 relayhost: "[localhost]:587"
