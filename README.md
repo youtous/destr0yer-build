@@ -42,7 +42,7 @@ PermitRootLogin yes
 ## Ansible usage
 
 - Launch the recipe using : `ansible-playbook -i hosts.yml playbook.yml --vault-password-file ./.vault_password`
-- Edit secrets using  : `ansible-vault edit secret_vars/all.yml --vault-password-file ./.vault_password`
+- Edit secrets using  : `env EDITOR=vim ansible-vault edit secret_vars/all.yml --vault-password-file ./.vault_password`
 
 ## Ansible 3rd Roles
 
