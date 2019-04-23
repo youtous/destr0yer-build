@@ -24,7 +24,7 @@
   notify:
     - restart ufw
 
-- name: Insert custome rules in before.rules
+- name: Insert customs rules in before.rules
   become: true
   blockinfile:
     dest: "/etc/ufw/before.rules"
