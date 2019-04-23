@@ -6,7 +6,16 @@
   user:
     name: root
     password: "{{ root_password }}"
-# todo : remove debian default user
+
+- name: Remove default users if exist
+  become: true
+  user:
+    name: "{{ item }}"
+    state: absent
+    remove: yes
+  with_items:
+    - debian
+
 - name: Setup users
   become: true
   import_role:
