@@ -1,8 +1,9 @@
 ---
-# This play describes required tasks to build a new destr0yer
-# After being done, use the regular PLAY
+# This play describes configure destr0yers.
+# For a new destr0yer system, add it to factoring_destroyers hosts, then run this play
+# using --tags="new-systems"
 - name: Prepare new systems
-  hosts: factoring_destroyers
+  hosts: factoring-destroyers
   remote_user: root
   roles:
     - apt # update the system
