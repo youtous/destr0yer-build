@@ -30,10 +30,11 @@
 
 - name: Add sftp-backup group to allowed groups
   become: true
-  lineinfile:
+  blockinfile:
     dest: "/etc/ssh/sshd_config"
-    line: "AllowGroups {{ backup_group_name }}"
+    block: "AllowGroups {{ backup_group_name }}"
     insertafter: "^AllowGroups"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp allow groups ssh ###"
     validate: "/usr/sbin/sshd -T -f %s"
   notify:
       - restart sshd
@@ -90,9 +91,9 @@
     users_default_shell: /bin/false # don't create home folder for these accounts
     users_group: "{{ backup_group_name }}"
     users:
-      - username: "backup_{{ account.hostname }}"
-        name: "backup_{{ account.hostname }}"
-        home: "{{ backup_root_directory }}/backup_{{ account.hostname }}"
+      - username: "backup_{{ account.username }}"
+        name: "backup_{{ account.username }}"
+        home: "{{ backup_root_directory }}/backup_{{ account.username }}"
         ssh_key: "{{ account.ssh_keys|default([]) }}"
   with_items: "{{ backup_users }}"
   loop_control:
@@ -112,7 +113,7 @@
   become: true
   file:
     state: directory
-    path: "{{ backup_root_directory }}/backup_{{ item.hostname }}"
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}"
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx
@@ -121,7 +122,7 @@
 - name: Lock ssh authorized keys
   become: true
   file:
-    path: "{{ backup_root_directory }}/backup_{{ item.hostname }}/.ssh/authorized_keys"
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
     owner: root
     group: root
   with_items: "{{ backup_users }}"
@@ -130,8 +131,8 @@
   become: true
   file:
     state: directory
-    path: "{{ backup_root_directory }}/backup_{{ item.hostname }}/home"
-    owner: "backup_{{ item.hostname }}"
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}/home"
+    owner: "backup_{{ item.username }}"
     group: "{{ backup_group_name }}"
     mode: u=rwx,g=,o=
   with_items: "{{ backup_users }}"

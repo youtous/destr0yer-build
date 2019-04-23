@@ -3,7 +3,7 @@
 {% for user in backup_users %}
 {% if user.restrict_ips is defined and user.restrict_ips|length > 0 %}
 # Deny all locations except specified : https://serverfault.com/questions/704597/how-to-disable-ssh-access-for-user-from-any-ip-except-the-specified-one
-DenyUsers  backup_{{ user.hostname }}@{% for ip in user.restrict_ips %}!{{ ip }},{% endfor %}*
+DenyUsers  backup_{{ user.username }}@{% for ip in user.restrict_ips %}!{{ ip }},{% endfor %}*
 
 {% endif %}
 {% endfor %}
