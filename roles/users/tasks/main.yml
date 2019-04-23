@@ -6,7 +6,7 @@
   user:
     name: root
     password: "{{ root_password }}"
-
+# todo : remove debian default user
 - name: Setup users
   become: true
   import_role:
