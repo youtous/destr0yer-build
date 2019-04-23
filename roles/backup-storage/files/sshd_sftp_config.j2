@@ -1,0 +1,8 @@
+Match Group {{ backup_group_name }}
+    ChrootDirectory %h
+    ForceCommand internal-sftp
+    PermitTunnel no
+    AllowAgentForwarding no
+    AllowTcpForwarding no
+    X11Forwarding no
+    PasswordAuthentication no

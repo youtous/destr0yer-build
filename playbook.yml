@@ -60,7 +60,15 @@
   tags: ["smtp-relay"]
 
 - name: Configure servers with dynamic ip
-  hosts: dynamic-hosts
+  hosts: backup-storage
+  roles:
+    - backup-storage
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["backup-storage"]
+
 - name: Configure servers with dynamic ip
   hosts: dynamic-ip
   roles:

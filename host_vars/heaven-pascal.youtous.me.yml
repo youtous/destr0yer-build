@@ -13,3 +13,14 @@ host_users:
 # dynamic-ip parameters
 update_ip_cloudflare_zone_name: youtous.me
 update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.me
+
+# backup-storage parameters
+backup_users:
+  - hostname: roberval3.youtous.me
+    ssh_keys: # specify host public key
+      - "{{ {{ specu_ssh_keys }} }}"
+  - hostname: roberval4.youtous.me
+    restrict_ips:
+      - 163.172.154.21
+    ssh_keys: # specify host public key
+      - "{{ {{ specu_ssh_keys }} }}"

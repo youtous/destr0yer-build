@@ -1,0 +1,127 @@
+---
+# This role setup a backup server using sftp and chroot
+# ssh role must be used in order to have a properly configured server
+- name: Install openssh-server package
+  become: true
+  apt:
+    name:
+      - openssh-server
+
+- name: Create root backup directory
+  become: true
+  file:
+    path: "{{ backup_root_directory }}"
+    state: directory
+    owner: root
+    group: root
+    # everybody should be allowed to list the directory, it will be the root
+    # of the sftp server
+    mode: u=rwx,g=rx,o=x
+
+- name: Configure sshd to use internal-sftp server
+  become: true
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^Subsystem"
+    line: "Subsystem sftp internal-sftp"
+    validate: "/usr/sbin/sshd -T -f %s"
+  notify:
+      - restart sshd
+
+- name: Add sftp-backup group to allowed groups
+  become: true
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    line: "AllowGroups {{ backup_group_name }}"
+    insertafter: "^AllowGroups"
+    validate: "/usr/sbin/sshd -T -f %s"
+  notify:
+      - restart sshd
+
+- name: Configure sftp access with restricted ip
+  become: true
+  blockinfile:
+    dest: "/etc/ssh/sshd_config"
+    block: "{{ lookup('template', 'files/sshd_restrict_ip_config.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp restrict ips access ###"
+    insertbefore: "^Subsystem"
+    validate: "/usr/sbin/sshd -T -f %s"
+  notify:
+    - restart sshd
+
+- name: Whitelists allowed ips of accounts to access ssh
+  become: true
+  blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
+    insertbefore: BOF
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - backup ip whitelist ###"
+
+- name: Configure sftp group policy
+  become: true
+  blockinfile:
+    dest: "/etc/ssh/sshd_config"
+    block: "{{ lookup('template', 'files/sshd_sftp_config.j2') }}"
+    # Match MUST BE SET at the end of the file... (https://unix.stackexchange.com/questions/67334/openssh-how-to-end-a-match-block)
+    validate: "/usr/sbin/sshd -T -f %s"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp group policy ###"
+  notify:
+    - restart sshd
+
+- name: Create backup group
+  become: true
+  import_role:
+    name: unxnn.users
+  vars:
+    groups_to_create:
+      - name: "{{ backup_group_name }}"
+        gid: "{{ backup_group_gid }}"
+
+- name: Create backup accounts
+  become: true
+  include_role:
+    name: unxnn.users
+  vars:
+    # pass sudo vars which are passed when using include_role (https://github.com/ansible/ansible/issues/29159#issuecomment-380800491)
+    ansible_become: true
+
+    users_create_per_user_group: false # don't create group for these accounts
+    users_create_homedirs: true # home folder must be present, it's the root of the sftp server
+    users_default_shell: /bin/false # don't create home folder for these accounts
+    users_group: "{{ backup_group_name }}"
+    users:
+      - username: "backup_{{ account.hostname }}"
+        name: "backup_{{ account.hostname }}"
+        home: "{{ backup_root_directory }}/backup_{{ account.hostname }}"
+        ssh_key: "{{ account.ssh_keys|default([]) }}"
+  with_items: "{{ backup_users }}"
+  loop_control:
+    loop_var: account
+
+- name: Ensure backup folders permissions
+  become: true
+  file:
+    state: directory
+    path: "{{ backup_root_directory }}/backup_{{ item.hostname }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  with_items: "{{ backup_users }}"
+
+- name: Lock ssh authorized keys
+  become: true
+  file:
+    path: "{{ backup_root_directory }}/backup_{{ item.hostname }}/.ssh/authorized_keys"
+    owner: root
+    group: root
+  with_items: "{{ backup_users }}"
+
+- name: Ensure backup folders permissions
+  become: true
+  file:
+    state: directory
+    path: "{{ backup_root_directory }}/backup_{{ item.hostname }}/home"
+    owner: "backup_{{ item.hostname }}"
+    group: "{{ backup_group_name }}"
+    mode: u=rwx,g=,o=
+  with_items: "{{ backup_users }}"

@@ -1,0 +1,11 @@
+# whitelist access for backup
+{% for user in backup_users %}
+
+{% if user.restrict_ips is defined %}
+{% for ip in user.restrict_ips %}
+sshd : {{ ip }} : allow
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+# end of whitelist

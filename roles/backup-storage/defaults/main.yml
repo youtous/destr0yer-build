@@ -1,0 +1,11 @@
+---
+# root of the chroot backup system
+backup_root_directory: /home/backups
+
+backup_group_name: "backup-sftp"
+backup_group_gid: 25555
+
+backup_users: []
+#  - hostname: backup_hostname
+#    ssh_keys: [] # specify host public key
+#    restrict_ips: [] # specify list of allowed ips, no restriction if the list is empty, DO NOT USE DOMAINS, it will not be resolved
