@@ -22,10 +22,9 @@ update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.me
 # backup-storage parameters
 backup_users:
   - hostname: roberval3.youtous.me
-    ssh_keys: # specify host public keys
-      - "{{ {{ specu_ssh_keys }} }}"
+    # specify host public keys
+    ssh_keys: "{{ specu_ssh_keys }}"
   - hostname: roberval4.youtous.me
     restrict_ips:
       - 163.172.154.21
-    # specify host public keys
-    ssh_keys: "{{ {{ specu_ssh_keys }} }}"
+    ssh_keys: "{{ specu_ssh_keys }}"
