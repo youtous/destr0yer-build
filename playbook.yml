@@ -29,7 +29,7 @@
     - logwatch # monitor server using emails
     - iptables-firewall # define firewall policy
     - ssh # define OpenSSH policy
-    - fail2ban # define the fail2ban policy
+    - ssh-user-keys # deploy ssh keys on the server
     - notify-login # notify when an user connects
   vars_files:
     - secret_vars/all.yml

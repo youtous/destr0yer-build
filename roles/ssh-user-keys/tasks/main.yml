@@ -1,0 +1,19 @@
+---
+# This role setup deploys keys of users of the server
+- name: Deploy public key for user
+  become: true
+  become_user: "{{ item.username }}" # keys are created using the specified user
+  copy:
+    content: "{{ item.public_key }}"
+    dest: "~/.ssh/id_key.pub"
+    mode: u=rw,g=r,o=r
+  with_items: "{{ users_ssh_keys }}"
+
+- name: Deploy private key for user
+  become: true
+  become_user: "{{ item.username }}" # keys are created using the specified user
+  copy:
+    content: "{{ item.private_key }}"
+    dest: "~/.ssh/id_key"
+    mode: u=rw,g=,o=r
+  with_items: "{{ users_ssh_keys }}"

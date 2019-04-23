@@ -15,6 +15,12 @@ relay_email: monitoring-heaven-pascal@youtous.me
 relay_user: monitoring-heaven-pascal@youtous.me
 relay_password: "{{ secret_relay_password }}"
 
+# deploy generated ssh keys for root
+users_ssh_keys:
+  - username: root
+    public_key: "{{ root_public_key }}"
+    private_key: "{{ root_private_key }}"
+
 # dynamic-ip parameters
 update_ip_cloudflare_zone_name: youtous.me
 update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.me
