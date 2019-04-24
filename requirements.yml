@@ -52,3 +52,8 @@
 - name: oefenweb.fail2ban
   src: https://github.com/Oefenweb/ansible-fail2ban.git
   version: 4b02c28f346fddcd32f329ac1eacc5d420b35382
+
+# Duplicity backups
+- name: oefenweb.duply-backup
+  src: https://github.com/Oefenweb/ansible-duply-backup.git
+  version: bc8d65b7ff445e6aea3cedf5c8cd238d2c4f8820

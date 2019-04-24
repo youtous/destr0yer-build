@@ -8,4 +8,24 @@
       - duplicity
       - duply
 
-# todo : configure using this role : https://github.com/Oefenweb/ansible-duply-backup
+# generate per host GPG key using : https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled
+- name: Import GPG keys for root user
+  import_tasks: gpg.yml
+
+- name: Setup Duplicity backup strategy
+  become: true
+  import_role:
+    name: oefenweb.duply-backup
+  vars:
+    duply_backup_profiles: "{{ backup_profiles }}"
+    duply_backup_jobs: "{{ backup_jobs }}"
+
+
+- name: Ensure cache backup directory is present
+  become: true
+  file:
+    state: directory
+    path: "{{ backup_cache_directory }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=

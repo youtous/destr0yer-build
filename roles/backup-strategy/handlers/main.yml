@@ -1,1 +1,5 @@
 ---
+- name: update trustdb
+  become: true
+  become_user: root
+  command: gpg --update-trustdb

@@ -14,3 +14,28 @@ users_ssh_keys:
   - username: root
     public_key: "{{ root_public_key }}"
     private_key: "{{ root_private_key }}"
+
+# backup strategy
+global_backup_gpg_public_key:
+  name:
+  key:
+# key used for signing backups
+global_backup_gpg_private_key:
+  name:
+  key:
+global_backup_gpg_ownertrust:
+  name:
+  value:
+# passphrase of the signing and decrypting keys
+global_backup_gpg_private_key_passphrase: "{{ secret_backup_gpg_private_key_passphrase }}"
+
+global_backup_destination: "sftp://backup_heaven-roberval@heaven-pascal.youtous.me/home/backup"
+# change the cron-job minute
+global_backup_jobs:
+  - name: duply-backup-global
+    job: /user/local/bin/duply global backup
+    minute: "15"
+    hour: "6"
+    day: "*"
+    month: "*"
+    weekday: "*"

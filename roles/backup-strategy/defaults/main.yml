@@ -1,6 +1,101 @@
 ---
+# In order to simply backup, we define a default backup profile
+# feel free to add others using the appropriate syntax (https://github.com/Oefenweb/ansible-duply-backup)
+# using the backup_profiles_additional collection
+#  => if you do not want to load the global_backup, override backup_profiles directly
+backup_profiles_additional: []
+# additional cron jobs
+#  => if you do not want to load the global_backup, override backup_jobs directly
+backup_jobs_additional: []
+
+# additional gpg keys to import
+# => if you do not want to load the global_backup_public_key you can override backup_gpg_public_keys directly
+# same for private and ownertrusts
+backup_gpg_additional_public_keys: []
+  #- name: keyID
+  #  key: the key value
+backup_gpg_additional_private_keys: []
+  #- name: keyID
+  #  key: the key value
+backup_gpg_additional_ownertrusts: []
+  #- name: keyID
+  #  value: the ownertrust value
+
+# a folder that will be used to store meta-data of previous backups,
+#  allowing incremental backups without providing decrypt key
+backup_cache_directory: "/var/duplicity/.duply-cache"
 
 
-duply_backup_profiles.key.conf.gpg_keys_enc: Public key to encrypt to (optional)
+# Parameters of the global backup
 
-duply_backup_profiles.key.conf.gpg_key_sign: A secret key for signing (optional)
+# key used for encrypting backups
+# generate per host GPG key using : https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled
+global_backup_gpg_public_key:
+  name:
+  key:
+# key used for signing backups
+global_backup_gpg_private_key:
+  name:
+  key:
+global_backup_gpg_ownertrust:
+  name:
+  value:
+
+# passphrase of the signing and decrypting keys
+global_backup_gpg_private_key_passphrase: ""
+
+# what do we want to backup ?
+global_backup_source_directory: "/home"
+# where to store the backup ? (http://duplicity.nongnu.org/duplicity.1.html#sect7)
+global_backup_destination: ""
+# duration how long to keep backups
+global_backup_retention: "1W"
+# full backup period
+global_backup_full_backup_period: "2W"
+# verbosity of duplicity (http://duplicity.nongnu.org/duplicity.1.html)
+global_backup_verbosity: "4"
+# script called pre/post backup
+global_backup_pre_script: "files/pre.sh"
+global_backup_post_script: "files/post.sh"
+# a folder that will be used to store meta-data of previous backups,
+#  allowing incremental backups without providing decrypt key
+global_backup_cache_directory: "{{ backup_cache_directory }}"
+# backup at 6:05AM each day
+# /!\ it advisable to change it per host in order to have smooth bandwidth usage
+global_backup_jobs:
+  - name: duply-backup-global
+    job: /user/local/bin/duply global backup
+    minute: "5"
+    hour: "6"
+    day: "*"
+    month: "*"
+    weekday: "*"
+
+# list of global backup profiles
+global_backup_profiles:
+  global:
+    conf:
+      gpg_key: "{{ global_backup_gpg_public_key.name }}"
+      gpg_key_sign: "{{ global_backup_gpg_private_key.name }}"
+      gpg_pw_sign: "{{ global_backup_gpg_private_key_passphrase }}"
+
+      target: "{{ global_backup_destination }}"
+      source: "{{ global_backup_source_directory }}"
+
+      max_age: "{{ global_backup_retention }}"
+      max_fullbkp_age: "{{ global_backup_full_backup_period }}"
+
+      verbosity: "{{ global_backup_verbosity }}"
+      arch_dir: "{{ global_backup_cache_directory }}"
+    pre: "{{ global_backup_pre_script }}"
+    post: "{{ global_backup_post_script }}"
+
+# list of backup profiles
+backup_profiles: "{{ backup_profiles_additional|default([]) + backup_profiles_additional|default([]) }}"
+# list of cron jobs
+backup_jobs: "{{ backup_jobs_additional|default([]) + global_backup_jobs|default([]) }}"
+
+# additional gpg keys to import
+backup_gpg_public_keys: "{{ backup_gpg_additional_public_keys|default([]) + [global_backup_gpg_public_key] }}"
+backup_gpg_private_keys: "{{ backup_gpg_additional_private_keys|default([]) + [global_backup_gpg_private_key] }}"
+backup_gpg_ownertrusts: "{{ backup_gpg_additional_ownertrusts|default([]) + [global_backup_gpg_ownertrust] }}"
