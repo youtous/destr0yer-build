@@ -30,3 +30,38 @@
     owner: root
     group: root
     mode: u=rwx,g=,o=
+
+- name: Remove old version of paramiko
+  become: true
+  apt:
+    name: python-paramiko
+    state: absent
+
+- name: Install required librairies for paramiko
+  become: true
+  apt:
+    # list of packages according to https://cryptography.io/en/latest/installation/#building-cryptography-on-linux
+    name:
+      - build-essential
+      - libssl-dev
+      - libffi-dev
+      - python-dev
+
+- name: Update python build tools
+  become: true
+  pip:
+    executable: pip2 # it's a python 2 package
+    name:
+      - setuptools
+      - wheel
+    state: latest
+    extra_args: --upgrade
+
+# our ssh client needs to be upgraded in order to support secure cyphers
+- name: Update paramiko to latest version
+  become: true
+  pip:
+    executable: pip2 # it's a python 2 package
+    name: paramiko
+    state: latest
+    extra_args: --upgrade

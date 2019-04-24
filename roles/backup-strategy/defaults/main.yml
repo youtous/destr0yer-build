@@ -96,6 +96,7 @@ global_backup_profiles:
 
       verbosity: "{{ global_backup_verbosity }}"
       arch_dir: "{{ global_backup_cache_directory }}"
+
     pre: "{{ global_backup_pre_script }}"
     post: "{{ global_backup_post_script }}"
 
