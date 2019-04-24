@@ -49,25 +49,34 @@ global_backup_gpg_ownertrust:
 
 # passphrase of the signing and decrypting keys /!\ PLEASE ESCAPE THE PASSPHRASE IF IT CONTAINS ' CHARACTERS
 global_backup_gpg_key_passphrase: ""
+
 # set a passphrase for the private key (used for signing and decryption) if it defers from global_backup_gpg_key_passphrase
 global_backup_gpg_private_key_passphrase: "{{ global_backup_gpg_key_passphrase }}"
 
 # what do we want to backup ?
 global_backup_source_directory: "/home"
+
 # where to store the backup ? (http://duplicity.nongnu.org/duplicity.1.html#sect7)
+# if you use SFTP, we use pexpect backend in order to work with local agent and support KEX algorithms
 global_backup_destination: ""
+
 # duration how long to keep backups
 global_backup_retention: "1W"
+
 # full backup period
 global_backup_full_backup_period: "2W"
+
 # verbosity of duplicity (http://duplicity.nongnu.org/duplicity.1.html)
 global_backup_verbosity: "4"
+
 # script called pre/post backup
 global_backup_pre_script: "files/pre.sh"
 global_backup_post_script: "files/post.sh"
+
 # a folder that will be used to store meta-data of previous backups,
 #  allowing incremental backups without providing decrypt key
 global_backup_cache_directory: "{{ backup_cache_directory }}"
+
 # backup at 6:05AM each day
 # /!\ it advisable to change it per host in order to have smooth bandwidth usage
 global_backup_jobs:
@@ -87,6 +96,14 @@ global_backup_profiles:
       gpg_pw: "{{ global_backup_gpg_key_passphrase }}"
       gpg_key_sign: "{{ global_backup_gpg_private_key.name }}"
       gpg_pw_sign: "{{ global_backup_gpg_private_key_passphrase }}"
+
+      # fix ioctl bug (https://wiki.archlinux.org/index.php/Duply)
+      gpg_opts: "--pinentry-mode loopback"
+
+      # TODO : add accept new keys : https://serverfault.com/questions/638600/auto-accept-rsa-key-fingerprint-from-command-line
+      # --ssh-options \\\"-oStrictHostKeyChecking=accept-new\\\"
+      # fix permanent prompt of the gpg passphrase, accept new host keys
+      dupl_params: "--use-agent "
 
       target: "{{ global_backup_destination }}"
       source: "{{ global_backup_source_directory }}"
