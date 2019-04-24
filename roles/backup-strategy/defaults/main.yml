@@ -36,7 +36,7 @@ backup_cache_directory: "/var/duplicity/.duply-cache"
 # key used for encrypting backups - it's the SUB-KEY, more info https://wiki.debian.org/Subkeys
 global_backup_gpg_public_key:
   name: # get the name using `gpg --list-public-keys --keyid-format LONG`, pick the SUB-KEY (ssb)
-  key:
+  key: # use | syntax in order to have the key well-formated
 # key used for signing backups - it's the MASTER key, more info https://wiki.debian.org/Subkeys
 global_backup_gpg_private_key:
   name: # get the name using `gpg --list-secret-keys --keyid-format LONG`, pick the MASTER KEY (sec)
