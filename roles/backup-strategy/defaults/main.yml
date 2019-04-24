@@ -29,6 +29,8 @@ backup_cache_directory: "/var/duplicity/.duply-cache"
 # Parameters of the global backup
 
 # generate per host GPG key using : https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled
+# /!\ Be careful about ' characters, it's better not to have one in the passphrase
+
 # `gpg --full-gen-key`
 # to get the ownertrust value, find key fingerprint using gpg PUBLIC_KEY.pub.asc
 # then compare with `gpg --export-ownertrust`
