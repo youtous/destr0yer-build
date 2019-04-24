@@ -95,7 +95,7 @@ global_backup_profiles:
     post: "{{ global_backup_post_script }}"
 
 # list of backup profiles
-backup_profiles: "{{ backup_profiles_additional|default([]) + backup_profiles_additional|default([]) }}"
+backup_profiles: "{{ backup_profiles_additional|default([]) + global_backup_profiles|default([]) }}"
 # list of cron jobs
 backup_jobs: "{{ backup_jobs_additional|default([]) + global_backup_jobs|default([]) }}"
 
