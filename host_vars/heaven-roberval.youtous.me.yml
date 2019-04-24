@@ -26,8 +26,8 @@ global_backup_gpg_private_key:
 global_backup_gpg_ownertrust:
   name: "{{ global_backup_gpg_public_key.name }}.ownertrust.txt"
   value: "3892070272A27D94AAC650F6DD736F204C981335:6:"
-# passphrase of the signing and decrypting keys
-global_backup_gpg_private_key_passphrase: "{{ secret_backup_gpg_private_key_passphrase }}"
+# passphrase of the signing and decrypting keys /!\ PLEASE ESCAPE THE PASSPHRASE IF IT CONTAINS ' CHARACTERS
+global_backup_gpg_key_passphrase: "{{ secret_backup_gpg_key_passphrase }}"
 
 global_backup_destination: "sftp://backup_heaven-roberval@heaven-pascal.youtous.me/home/backup"
 # change the cron-job minute
