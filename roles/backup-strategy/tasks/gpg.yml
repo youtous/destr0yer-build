@@ -1,6 +1,6 @@
 # tasks file for duply-backup that import GPG keys
 ---
-- name: create (lock) directory
+- name: Create (lock) directory which will contain flags
   become: true
   file:
     path: "{{ duply_backup_lock_directory }}"
@@ -9,13 +9,27 @@
     group: root
     mode: u=rwx,g=,o=
 
+- name: Copy public keys
+  become: true
+  copy:
+    content: "{{ item.key }}"
+    dest: "{{ duply_backup_lock_directory }}/{{ item.name }}"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  with_items: "{{ backup_gpg_public_keys }}"
+  register: copied_pub_keys
+
+- debug: msg="Gets printed only if this item changed - {{item}}"
+  with_items: "{{copied_pub_keys.results}}"
+
 - name: import public keys
   become: true
   become_user: root
   shell: >
-    echo '{{ item.key }}' | gpg --import && touch {{ duply_backup_lock_directory }}/{{ item.name }}
+    gpg --import && touch {{ duply_backup_lock_directory }}/{{ item.name }}
   args:
-    creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
+    creates:
   with_items: "{{ backup_gpg_public_keys }}"
 
 - name: import ownertrusts
