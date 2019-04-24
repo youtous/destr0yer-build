@@ -70,7 +70,7 @@ global_backup_cache_directory: "{{ backup_cache_directory }}"
 # /!\ it advisable to change it per host in order to have smooth bandwidth usage
 global_backup_jobs:
   - name: duply-backup-global
-    job: /user/local/bin/duply global backup
+    job: /usr/bin/duply global backup
     minute: "5"
     hour: "6"
     day: "*"
