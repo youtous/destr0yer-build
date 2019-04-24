@@ -15,17 +15,17 @@ users_ssh_keys:
     public_key: "{{ root_public_key }}"
     private_key: "{{ root_private_key }}"
 
-# backup strategy
+# backup strategy (see role for more details)
 global_backup_gpg_public_key:
-  name:
-  key:
+  name: F5EAF9D1E402E6DF
+  key: "{{ secret_backup_gpg_public_key }}"
 # key used for signing backups
 global_backup_gpg_private_key:
-  name:
-  key:
+  name: DD736F204C981335
+  key: "{{ secret_backup_gpg_private_key }}"
 global_backup_gpg_ownertrust:
-  name:
-  value:
+  name: "{{ global_backup_gpg_public_key.name }}.ownertrust.txt"
+  value: "3892070272A27D94AAC650F6DD736F204C981335:6:"
 # passphrase of the signing and decrypting keys
 global_backup_gpg_private_key_passphrase: "{{ secret_backup_gpg_private_key_passphrase }}"
 
