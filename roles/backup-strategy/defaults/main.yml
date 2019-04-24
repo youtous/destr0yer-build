@@ -3,7 +3,7 @@
 # feel free to add others using the appropriate syntax (https://github.com/Oefenweb/ansible-duply-backup)
 # using the backup_profiles_additional collection
 #  => if you do not want to load the global_backup, override backup_profiles directly
-backup_profiles_additional: []
+backup_profiles_additional: {}
 # additional cron jobs
 #  => if you do not want to load the global_backup, override backup_jobs directly
 backup_jobs_additional: []
@@ -95,7 +95,7 @@ global_backup_profiles:
     post: "{{ global_backup_post_script }}"
 
 # list of backup profiles
-backup_profiles: "{{ backup_profiles_additional|default([]) + global_backup_profiles|default([]) }}"
+backup_profiles: "{{ backup_profiles_additional|default({}) | combine(global_backup_profiles|default({})) }}"
 # list of cron jobs
 backup_jobs: "{{ backup_jobs_additional|default([]) + global_backup_jobs|default([]) }}"
 
