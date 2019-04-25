@@ -119,14 +119,6 @@
     mode: u=rwx,g=rx,o=rx
   with_items: "{{ backup_users }}"
 
-- name: Lock ssh authorized keys
-  become: true
-  file:
-    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
-    owner: root
-    group: root
-  with_items: "{{ backup_users }}"
-
 - name: Ensure backup folders permissions
   become: true
   file:
