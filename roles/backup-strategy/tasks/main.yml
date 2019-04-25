@@ -20,6 +20,7 @@
   vars:
     duply_backup_profiles: "{{ backup_profiles }}"
     duply_backup_jobs: "{{ backup_jobs }}"
+  no_log: true
 
 
 - name: Ensure cache backup directory is present

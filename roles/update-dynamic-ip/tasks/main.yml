@@ -24,6 +24,7 @@
     owner: root
     group: root
     mode: u=rwx,g=,o=
+  no_log: true
 
 - name: Cron update-ip every 5mins
   become: true

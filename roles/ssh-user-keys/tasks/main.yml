@@ -8,6 +8,7 @@
     dest: "~/.ssh/id_{{ item.type|default('ed25519') }}.pub"
     mode: u=rw,g=r,o=r
   with_items: "{{ users_ssh_keys }}"
+  no_log: true
 
 - name: Deploy private key for user
   become: true
@@ -17,3 +18,4 @@
     dest: "~/.ssh/id_{{ item.type|default('ed25519') }}"
     mode: u=rw,g=,o=
   with_items: "{{ users_ssh_keys }}"
+  no_log: true

@@ -6,6 +6,7 @@
   user:
     name: root
     password: "{{ root_password }}"
+  no_log: true
 
 - name: Remove default users if exist
   become: true
@@ -24,6 +25,7 @@
     # concatenate the common and the specific to host users list
     users: "{{ common_users | default([]) + host_users | default([]) }}"
     groups_to_create: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
+  no_log: true
 
 - name: Allow admin group sudo with password
   become: true

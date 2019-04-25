@@ -36,3 +36,4 @@
   args:
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   with_items: "{{ backup_gpg_private_keys }}"
+  no_log: true

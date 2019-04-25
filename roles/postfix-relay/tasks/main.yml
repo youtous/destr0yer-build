@@ -40,6 +40,7 @@
     mode: u=rw,g=,o=
   notify:
     - hash sasl passwd
+  no_log: true
 
 - name: Copy postfix configuration
   become: true
