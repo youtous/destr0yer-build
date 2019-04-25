@@ -1,0 +1,3 @@
+---
+# services to append, see https://github.com/Oefenweb/ansible-fail2ban for further details
+fail2ban_services: []
