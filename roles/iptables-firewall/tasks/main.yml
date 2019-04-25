@@ -24,12 +24,23 @@
   notify:
     - restart ufw
 
-- name: Insert customs rules in before.rules
+- name: Insert customs IPv4 rules in before.rules
   become: true
   blockinfile:
     dest: "/etc/ufw/before.rules"
-    block: "{{ lookup('file', 'files/before.rules') }}"
+    block: "{{ lookup('file', 'files/before-ipv4.rules') }}"
     insertbefore: "^# don't delete the 'COMMIT'"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv4 before rules ###"
+  notify:
+    - restart ufw
+
+- name: Insert customs IPv6 rules in before6.rules
+  become: true
+  blockinfile:
+    dest: "/etc/ufw/before6.rules"
+    block: "{{ lookup('file', 'files/before-ipv6.rules') }}"
+    insertbefore: "^# don't delete the 'COMMIT'"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv6 before rules ###"
   notify:
     - restart ufw
 
