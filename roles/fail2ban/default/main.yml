@@ -1,0 +1,3 @@
+---
+# additional services that you would to define, see https://github.com/Oefenweb/ansible-fail2ban
+fail2ban_additional_services: []

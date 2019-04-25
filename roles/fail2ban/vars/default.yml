@@ -7,8 +7,15 @@
 # fail2ban_pidfile: /var/run/fail2ban/fail2ban.pid
 # fail2ban_dbpurgeage: 86400
 
-# fail2ban_sendername: 'Fail2ban'
+# default services watched by fail2ban
+fail2ban_default_services:
+  - name: sshd
+    port: ssh
+  - name: recidive
+  - name: pam-generic
 
+# fail2ban_sendername: 'Fail2ban'
+fail2ban_services: "{{ fail2ban_default_services|default([]) + fail2ban_additional_services|default([]) }}"
 # all entrypoints are allowed
 fail2ban_ignoreips: "['127.0.0.1/8', '::1'] + {{ fail2ban_trusted_ips }}"
 # fail2ban_bantime: 600

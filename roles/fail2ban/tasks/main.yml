@@ -10,11 +10,7 @@
   vars:
     fail2ban_ignoreips: "{{ fail2ban_ignoreips }}"
     fail2ban_destemail: "{{ fail2ban_destemail }}"
-    fail2ban_services:
-      - name: sshd
-        port: ssh
-      - name: recidive
-      - name: pam-generic
+    fail2ban_services: "{{ fail2ban_services }}"
 
 - name: Update fail2ban using latest version from stretch-backport
   become: true
