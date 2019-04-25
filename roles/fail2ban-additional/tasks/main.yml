@@ -1,5 +1,5 @@
 ---
-# This permits to append additional services to the fail2ban jail
+# This role permits to append additional services to the fail2ban jail
 # see https://github.com/Oefenweb/ansible-fail2ban for naming details
 - name: Update fail2ban jail configuration with additional services
   become: true
