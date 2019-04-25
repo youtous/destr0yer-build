@@ -36,7 +36,6 @@ backup_users:
   - username: heaven-pascal
     restrict_ips:
       - 51.158.97.41
-      - 127.0.0.1 # add localhost, because it's the same host!
     # specify host public keys
     ssh_keys:
       - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCyrGHzqWzTDhsWusHWOwulSstvx6x1ECxTbhXIUTsR root@heaven-pascal.youtous.me"
