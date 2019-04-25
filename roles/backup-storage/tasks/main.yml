@@ -26,7 +26,7 @@
     line: "Subsystem sftp internal-sftp"
     validate: "/usr/sbin/sshd -T -f %s"
   notify:
-      - restart sshd
+    - restart sshd
 
 - name: Add sftp-backup group to allowed groups
   become: true
@@ -37,7 +37,7 @@
     marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp allow groups ssh ###"
     validate: "/usr/sbin/sshd -T -f %s"
   notify:
-      - restart sshd
+    - restart sshd
 
 - name: Configure sftp access with restricted ip
   become: true
