@@ -39,6 +39,16 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["configure-systems"]
 
+- name: Configure systems with specifics interfaces
+  hosts: interfaces
+  roles:
+    - network
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["interfaces"]
+
 - name: Configure underwall destr0yers systems
   hosts: base-destr0yers
   remote_user: "{{ arbiter_username }}"

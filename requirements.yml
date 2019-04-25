@@ -57,3 +57,8 @@
 - name: oefenweb.duply-backup
   src: https://github.com/Oefenweb/ansible-duply-backup.git
   version: bc8d65b7ff445e6aea3cedf5c8cd238d2c4f8820
+
+# Network interfaces
+- name: MichaelRigart.interfaces
+  src: https://github.com/michaelrigart/ansible-role-interfaces.git
+  version: cd3bbd715c29276f642e0841e09eeb67d3a07e5a
