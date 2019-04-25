@@ -14,6 +14,7 @@
       - name: sshd
         port: ssh
       - name: recidive
+      - name: pam-generic
 
 - name: Configure logrotate for fail2ban
   import_role:
