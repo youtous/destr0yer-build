@@ -40,3 +40,31 @@ backup_users:
     # specify host public keys
     ssh_keys:
       - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCyrGHzqWzTDhsWusHWOwulSstvx6x1ECxTbhXIUTsR root@heaven-pascal.youtous.me"
+
+
+# backup strategy (see role for more details)
+global_backup_gpg_public_key:
+  name: 8DD9CF31319D84D9 # get the name using `gpg --list-secret-keys --keyid-format LONG`, pick the SUB-KEY (ssb)
+  key: "{{ secret_backup_gpg_public_key }}"
+# key used for signing backups
+global_backup_gpg_private_key:
+  name: 05772F3F9FC0EC9A # get the name using `gpg --list-secret-keys --keyid-format LONG`, pick the MASTER KEY (sec)
+  key: "{{ secret_backup_gpg_private_key }}"
+# to get the ownertrust value, find key fingerprint using gpg PUBLIC_KEY.pub.asc
+# then compare with `gpg --export-ownertrust`
+global_backup_gpg_ownertrust:
+  name: "{{ global_backup_gpg_public_key.name }}.ownertrust.txt"
+  value: "20D2F257283B2513213E360005772F3F9FC0EC9A:6:"
+# passphrase of the signing and decrypting keys /!\ PLEASE ESCAPE THE PASSPHRASE IF IT CONTAINS ' CHARACTERS
+global_backup_gpg_key_passphrase: "{{ secret_backup_gpg_key_passphrase }}"
+
+global_backup_destination: "pexpect+sftp://backup_heaven-pascal@heaven-pascal.youtous.me/home"
+# change the cron-job minute
+global_backup_jobs:
+  - name: duply-backup-global
+    job: /usr/bin/duply global backup
+    minute: "0"
+    hour: "6"
+    day: "*"
+    month: "*"
+    weekday: "*"
