@@ -15,5 +15,5 @@
   copy:
     content: "{{ item.private_key }}"
     dest: "~/.ssh/id_{{ item.type|default('ed25519') }}"
-    mode: u=rw,g=,o=r
+    mode: u=rw,g=,o=
   with_items: "{{ users_ssh_keys }}"
