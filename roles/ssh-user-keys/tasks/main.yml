@@ -5,7 +5,7 @@
   become_user: "{{ item.username }}" # keys are created using the specified user
   copy:
     content: "{{ item.public_key }}"
-    dest: "~/.ssh/id_key.pub"
+    dest: "~/.ssh/id_{{ item.type|default('ed25519') }}.pub"
     mode: u=rw,g=r,o=r
   with_items: "{{ users_ssh_keys }}"
 
@@ -14,6 +14,6 @@
   become_user: "{{ item.username }}" # keys are created using the specified user
   copy:
     content: "{{ item.private_key }}"
-    dest: "~/.ssh/id_key"
+    dest: "~/.ssh/id_{{ item.type|default('ed25519') }}"
     mode: u=rw,g=,o=r
   with_items: "{{ users_ssh_keys }}"

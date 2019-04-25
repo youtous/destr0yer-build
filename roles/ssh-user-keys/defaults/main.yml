@@ -3,5 +3,6 @@ users_ssh_keys: []
 #  - username: name_of_user
 #    public_key: "" # the public key of the user
 #    private_key: "" # the private key of the user - make sure to use | syntax for multlines format
+#    type: "ed25519" # optional, by default it will be ed25519
 
 # you can generate a couple of keys using `ssh-keygen -t ed25519 -C "username@hostname"`
