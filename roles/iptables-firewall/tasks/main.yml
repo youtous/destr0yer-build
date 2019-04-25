@@ -66,7 +66,7 @@
 - name: Disable IPv6 forwarding
   become: true
   sysctl:
-    name: net.ipv6.ip_forward
+    name: net.ipv6.conf.all.forwarding
     value: 0
     sysctl_set: yes
     state: present
