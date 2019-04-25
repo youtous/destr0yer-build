@@ -31,18 +31,19 @@ backup_cache_directory: "/var/duplicity/.duply-cache"
 # generate per host GPG key using : https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled
 # /!\ Be careful about ' characters, it's better not to have one in the passphrase
 
-# `gpg --full-gen-key`
-# to get the ownertrust value, find key fingerprint using gpg PUBLIC_KEY.pub.asc
-# then compare with `gpg --export-ownertrust`
-
+# => `gpg --full-gen-key`
+# 1. Export public key `gpg --output {public key name}.pub.asc --armor --export {public key name}`
+# 2. Export private key `gpg --output {private key name}.sec.asc --armor --export-secret-key {private key name}`
 # key used for encrypting backups - it's the SUB-KEY, more info https://wiki.debian.org/Subkeys
 global_backup_gpg_public_key:
-  name: # get the name using `gpg --list-public-keys --keyid-format LONG`, pick the SUB-KEY (ssb)
+  name: # get the name using `gpg --list-secret-keys --keyid-format LONG`, pick the SUB-KEY (ssb)
   key: # use | syntax in order to have the key well-formated
 # key used for signing backups - it's the MASTER key, more info https://wiki.debian.org/Subkeys
 global_backup_gpg_private_key:
   name: # get the name using `gpg --list-secret-keys --keyid-format LONG`, pick the MASTER KEY (sec)
   key:
+# to get the ownertrust value, find key fingerprint using gpg PUBLIC_KEY.pub.asc
+# then compare with `gpg --export-ownertrust`
 global_backup_gpg_ownertrust:
   name: "{{ global_backup_gpg_public_key.name }}.ownertrust.txt"
   value:
