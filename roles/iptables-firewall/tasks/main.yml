@@ -63,6 +63,15 @@
     state: present
     reload: yes
 
+- name: Disable IPv6 forwarding
+  become: true
+  sysctl:
+    name: net.ipv6.ip_forward
+    value: 0
+    sysctl_set: yes
+    state: present
+    reload: yes
+
 - name: Enable ufw
   become: true
   ufw:
