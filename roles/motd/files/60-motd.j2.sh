@@ -16,8 +16,8 @@ swap_usage=`free -m | awk '/Swap/ { printf("%3.1f%%", "exit !$2;$3/$2*100") }'`
 users=`users | wc -w`
 time=`uptime | grep -ohe 'up .*' | sed 's/,/\ hours/g' | awk '{ printf $2" "$3 }'`
 processes=`ps aux | wc -l`
-public_ipv4=$(dig TXT +short whoami.cloudflare.com @ns1.cloudflare.com -4)
-public_ipv6=$(dig TXT +short whoami.cloudflare.com @ns1.cloudflare.com -6)
+public_ipv4=$(dig -4 TXT +short whoami.cloudflare.com @ns1.cloudflare.com -4)
+public_ipv6=$(ip -6 addr | grep inet6 | grep -Poi '(?<=inet6\s).*(?=\sscope global)')
 
 KERNEL_VERSION=$(uname -r)
 if [[ $KERNEL_VERSION =~ ^3\.2\.[35][24].* ]]; then
