@@ -33,7 +33,7 @@ global_backup_destination: "pexpect+sftp://backup_heaven-roberval@heaven-pascal.
 # change the cron-job minute
 global_backup_jobs:
   - name: duply-backup-global
-    job: /user/local/bin/duply global backup
+    job: /usr/bin/duply global backup
     minute: "15"
     hour: "6"
     day: "*"
