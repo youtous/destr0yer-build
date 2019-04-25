@@ -16,6 +16,16 @@
       - name: recidive
       - name: pam-generic
 
+- name: Update fail2ban using latest version from stretch-backport
+  become: true
+  apt:
+    name: fail2ban
+    state: latest
+    default_release: stretch-backports
+    update_cache: yes
+  notify:
+    - restart fail2ban
+
 - name: Configure logrotate for fail2ban
   import_role:
     name: logrotate
