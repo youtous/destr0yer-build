@@ -4,11 +4,16 @@ hostname: heaven-pascal.youtous.me
 host_users:
   - username: specu
     name: Specific user on heaven
-    groups: ['users']
+    groups: ['users', 'sshusers', 'docker']
     uid: 10020
     ssh_key: "{{ specu_ssh_keys }}"
     password: "{{ specu_password }}"
     update_password: "always"
+
+# assert docker group is present
+host_groups_to_create:
+  - name: docker
+    gid: 999
 
 # smtp relay parameters
 relay_email: monitoring-heaven-pascal@youtous.me

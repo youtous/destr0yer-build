@@ -100,4 +100,14 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["dynamic-ip"]
+
+- name: Configure docker systems
+  hosts: docker
+  roles:
+    - docker
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker"]
 ...

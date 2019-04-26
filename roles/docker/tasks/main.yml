@@ -1,0 +1,9 @@
+---
+# This role contains docker installation
+
+- name: Setup docker
+  become: true
+  import_role:
+    name: geerlingguy.docker
+  vars:
+    docker_apt_arch: "{{ 'arm64' if (ansible_architecture == 'aarch64') else 'amd64' }}"

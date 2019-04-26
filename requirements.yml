@@ -62,3 +62,8 @@
 - name: MichaelRigart.interfaces
   src: https://github.com/michaelrigart/ansible-role-interfaces.git
   version: cd3bbd715c29276f642e0841e09eeb67d3a07e5a
+
+# Docker
+- name: geerlingguy.docker
+  src: https://github.com/geerlingguy/ansible-role-docker.git
+  version: 5afc0f8ab487e31047c3c1f7013f66025aeb1cdd
