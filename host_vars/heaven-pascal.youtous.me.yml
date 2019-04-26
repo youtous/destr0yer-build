@@ -30,12 +30,14 @@ backup_users:
   - username: heaven-roberval
     restrict_ips:
       - 51.158.106.217
+      - 2001:bc8:4400:2700::15a7
     # specify host public keys
     ssh_keys:
       - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH6vcZbXLfRAj2g8RvdU2RRc/EYsMtLZTMEPhvDkAEir root@heaven-roberval.youtous.me"
   - username: heaven-pascal
     restrict_ips:
       - 51.158.97.41
+      - 2001:bc8:4400:2700::159f
     # specify host public keys
     ssh_keys:
       - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCyrGHzqWzTDhsWusHWOwulSstvx6x1ECxTbhXIUTsR root@heaven-pascal.youtous.me"
