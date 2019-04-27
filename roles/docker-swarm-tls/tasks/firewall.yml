@@ -1,0 +1,95 @@
+---
+# Firewall configuration
+# Revocation rules
+- name: Revoke nodes firewall - tcp/2376
+  become: true
+  ufw:
+    rule: allow
+    port: 2376
+    src: "{{ item }}"
+    delete: yes
+  with_items: "{{ revoked_nodes_ips }}"
+
+- name: Revoke nodes firewall - tcp/2377
+  become: true
+  ufw:
+    rule: allow
+    port: 2377
+    src: "{{ item }}"
+    delete: yes
+  with_items: "{{ revoked_nodes_ips }}"
+
+- name: Revoke nodes firewall - tcp,udp/7946
+  become: true
+  ufw:
+    rule: allow
+    port: 7946
+    src: "{{ item }}"
+    delete: yes
+  with_items: "{{ revoked_nodes_ips }}"
+
+- name: Revoke nodes firewall - tcp,udp/4789
+  become: true
+  ufw:
+    rule: allow
+    port: 4789
+    src: "{{ item }}"
+    delete: yes
+  with_items: "{{ revoked_nodes_ips }}"
+
+- name: Allow nodes ips to pass firewall - tcp/2376
+  become: true
+  block:
+    - name: Reset docker firewall rules - tcp/2376
+      ufw:
+        rule: deny
+        port: 2376
+    - name: Allow nodes - tcp/2376
+      ufw:
+        rule: allow
+        port: 2376
+        src: "{{ item }}"
+      with_items: "{{ nodes_ips }}"
+
+- name: Allow nodes ips to pass firewall - tcp/2377
+  become: true
+  block:
+    - name: Reset docker firewall rules - tcp/2377
+      ufw:
+        rule: deny
+        port: 2377
+    - name: Allow nodes - tcp/2377
+      ufw:
+        rule: allow
+        port: 2377
+        src: "{{ item }}"
+      with_items: "{{ nodes_ips }}"
+
+- name: Allow nodes ips to pass firewall - tcp,udp/7946
+  become: true
+  block:
+    - name: Reset docker firewall rules - tcp,udp/7946
+      ufw:
+        rule: deny
+        port: 7946
+    - name: Allow nodes - tcp,udp/7946
+      ufw:
+        rule: allow
+        port: 7946
+        src: "{{ item }}"
+      with_items: "{{ nodes_ips }}"
+
+- name: Allow nodes ips to pass firewall - tcp,udp/4789
+  become: true
+  block:
+    - name: Reset docker firewall rules - tcp,udp/4789
+      ufw:
+        rule: deny
+        port: 4789
+    - name: Allow nodes - tcp,udp/4789
+      ufw:
+        rule: allow
+        port: 4789
+        src: "{{ item }}"
+      with_items: "{{ nodes_ips }}"
+...

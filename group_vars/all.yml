@@ -62,6 +62,9 @@ nodes_ips:
     - 51.158.97.41
     - 2001:bc8:4400:2700::159f
 
+# when you delete a node from the cluster, add it ip here in order to revoke his access
+revoked_nodes_ips:
+
 # CA cert issuer of the node certs
 docker_swarm_CA_certificate: |
   -----BEGIN CERTIFICATE-----

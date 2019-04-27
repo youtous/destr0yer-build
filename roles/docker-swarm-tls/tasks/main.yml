@@ -23,7 +23,7 @@
   notify:
     - restart docker
 
-- name: Copy Node certificate
+- name: Copy node certificate
   become: true
   copy:
     content: "{{ docker_swarm_node_certificate }}"
@@ -34,7 +34,7 @@
   notify:
     - restart docker
 
-- name: Copy Node private key
+- name: Copy node private key
   become: true
   copy:
     content: "{{ docker_swarm_node_private_key }}"
@@ -79,3 +79,6 @@
     mode: u=rw,g=,o=
   notify:
     - restart docker
+
+- name: Firewall
+  import_tasks: firewall.yml
