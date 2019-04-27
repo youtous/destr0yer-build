@@ -1,0 +1,14 @@
+---
+# This play a docker swarm network.
+
+- name: Install docker on all systems
+  hosts: all
+  roles:
+    - docker
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-setup"]
+
+...

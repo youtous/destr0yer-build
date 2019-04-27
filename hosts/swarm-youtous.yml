@@ -1,0 +1,11 @@
+# There are 2 types of nodes in swarm mode : master, workers
+# https://docs.docker.com/engine/swarm/how-swarm-mode-works/nodes/
+
+# Manager nodes
+managers:
+  hosts:
+    heaven-pascal.youtous.me:
+
+workers:
+  hosts:
+    heaven-pascal.youtous.me:

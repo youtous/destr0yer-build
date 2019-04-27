@@ -1,5 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea
+certs/*
+!certs/.keep
 secret_vars/*
 !secret_vars/all.sample.yml
 !secret_vars/host.sample.yml
