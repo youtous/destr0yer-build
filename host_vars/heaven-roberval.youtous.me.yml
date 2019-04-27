@@ -1,5 +1,9 @@
 # This file describes specific host vars
 hostname: heaven-roberval.youtous.me
+ipv4:
+  - 51.158.106.217
+ipv6:
+  - 2001:bc8:4400:2700::15a7
 
 host_users: []
 
