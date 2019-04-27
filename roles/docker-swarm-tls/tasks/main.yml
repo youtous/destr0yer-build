@@ -1,0 +1,41 @@
+---
+# This role contains docker swarm TLS configuration.
+# In order to have a working TLS cluster, it is required to deploy certificates.
+# Each node will receive the ROOT cert-key, his own private and public key (3 files).
+
+- name: Setup docker certificates folder
+  become: true
+  file:
+    path: "{{ docker_swarm_certificates_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Copy RootCA certificate
+  become: true
+  copy:
+    content: "{{ docker_swarm_CA_certificate }}"
+    dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_root_CA_certificate_name }}"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+
+- name: Copy Node certificate
+  become: true
+  copy:
+    content: "{{ docker_swarm_node_certificate }}"
+    dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_node_certificate_name }}.crt"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+
+- name: Copy Node private key
+  become: true
+  copy:
+    content: "{{ docker_swarm_node_private_key }}"
+    dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_node_certificate_name }}.key"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  no_log: true

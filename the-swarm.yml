@@ -11,4 +11,14 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-setup"]
 
+- name: Setup docker swarm mode on all systems
+  hosts: all
+  roles:
+    - docker-swarm-tls
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-setup"]
+
 ...

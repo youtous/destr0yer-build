@@ -46,6 +46,28 @@ Use it for Docker infrastructures.
 
 Hosts are located in `hosts/{hosts groups list}.yml`. Use separate files for separate clusters.
 
+## A word about Create CA
+
+Using a personal Root CA is useful for swarm mode over TLS.
+Details of the procedure are available on : https://gist.github.com/fntlnz/cf14feb5a46b2eda428e000157447309
+**Important :** use a secure encryption for root CA using `openssl genrsa -chacha20...`
+
+To sum up :
+- Root CA 
+    1. RootCA (private !) : `openssl genrsa -chacha20 -out certs/heaven.youtous.me-rootCA.key 4096`
+    2. Root CERTIFICATE (crt) (to be shared and renewed in 2500 days) : `openssl req -x509 -new -nodes -key certs/heaven.youtous.me-rootCA.key -sha256 -days 2500 -out certs/heaven.youtous.me-rootCA.crt`
+- For each server :
+    1. Certificate key (private !) : `openssl genrsa -out certs/heaven-pascal.youtous.me.key 4096`
+    2. Certificate signing (csr) : `openssl req -new -key certs/heaven-pascal.youtous.me.key -out certs/heaven-pascal.youtous.me.csr`
+    3. Generate the CERTIFICATE (crt) (to be renewed in 1024 days) : `openssl x509 -req -in certs/heaven-pascal.youtous.me.csr -CA certs/heaven.youtous.me-rootCA.crt -CAkey certs/heaven.youtous.me-rootCA.key -CAcreateserial -out certs/heaven-pascal.youtous.me.crt -days 1024 -sha256`
+    4. Next time, don't use `-CAcreateserial` but `-CAserial certs/heavean.youtous.me-rootCA.srl` (http://users.skynet.be/pascalbotte/art/server-cert.htm)
+    5. On the certificate has been generated, it to host secrets, there is no need to save it.
+
+*Notes :*
+
+ - chacha20 is currently secured enought and resists against timing guess attacks
+ - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121) 
+
 ## Ansible 3rd Roles
 
 Install requirements using
