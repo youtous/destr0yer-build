@@ -8,10 +8,3 @@ arbiter_username: "john"
 
 arbiter_ssh_keys:
   - "list keys here"
-
-# generate password using  (change password, SALT)
-# openssl passwd -6
-arbiter_password: ""
-arbiter_clear_password: ""
-
-root_password: ""
