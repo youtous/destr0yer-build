@@ -20,6 +20,8 @@
     owner: root
     group: root
     mode: u=rw,g=,o=
+  notify:
+    - restart docker
 
 - name: Copy Node certificate
   become: true
@@ -29,6 +31,8 @@
     owner: root
     group: root
     mode: u=rw,g=,o=
+  notify:
+    - restart docker
 
 - name: Copy Node private key
   become: true
@@ -39,3 +43,39 @@
     group: root
     mode: u=rw,g=,o=
   no_log: true
+  notify:
+    - restart docker
+
+- name: Create systemd docker.service.d directory
+  become: true
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Override default systemd docker exec start
+  become: true
+  copy:
+    src: files/override.conf
+    dest: /etc/systemd/system/docker.service.d/override.conf
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - daemon-reload systemd
+    - restart docker
+
+- name: Copy docker daemon configuration
+  become: true
+  template:
+    src: files/daemon.json.j2
+    # host is used to listen orders from a specific ip,
+    # in this configuration, we assume that all of our docker nodes can send an order to other docker nodes.
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - restart docker

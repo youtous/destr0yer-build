@@ -1,6 +1,7 @@
 ---
 # Variables listed here are applicable to all host groups
 
+###  Beginning of destr0yers vars  ###
 users_default_shell: "/usr/bin/fish"
 
 # Network configuration
@@ -45,10 +46,21 @@ ssh_entrypoints:
   - "srv.youtous.me"
   - "163.172.154.21"
 
-### Begin of The-Swarm vars ###
+###  End of destr0yers vars  ###
+
+### Begin of the-swarm global vars ###
 
 # version of docker-compose to install
 docker_compose_version: "1.24.0"
+
+# ips of the nodes of the swarm
+nodes_ips:
+    # heaven-roberval.youtous.me
+    - 51.158.106.217
+    - 2001:bc8:4400:2700::15a7
+    # heaven-pascal.youtous.me
+    - 51.158.97.41
+    - 2001:bc8:4400:2700::159f
 
 # CA cert issuer of the node certs
 docker_swarm_CA_certificate: |

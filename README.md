@@ -62,7 +62,7 @@ To sum up :
     1. Certificate key (private !) : `openssl genrsa -out certs/heaven-pascal.youtous.me.key 4096`
     2. Certificate signing (csr) : `openssl req -new -key certs/heaven-pascal.youtous.me.key -out certs/heaven-pascal.youtous.me.csr`
     3. Generate the CERTIFICATE (crt) (to be renewed in 1024 days) : `openssl x509 -req -in certs/heaven-pascal.youtous.me.csr -CA certs/heaven.youtous.me-rootCA.crt -CAkey certs/heaven.youtous.me-rootCA.key -CAcreateserial -out certs/heaven-pascal.youtous.me.crt -days 1024 -sha256`
-    4. Next time, don't use `-CAcreateserial` but `-CAserial certs/heavean.youtous.me-rootCA.srl` (http://users.skynet.be/pascalbotte/art/server-cert.htm)
+    4. Next time, don't use `-CAcreateserial` but `-CAserial certs/heaven.youtous.me-rootCA.srl` (http://users.skynet.be/pascalbotte/art/server-cert.htm)
     5. On the certificate has been generated, it to host secrets, there is no need to save it.
 
 *Notes :*
