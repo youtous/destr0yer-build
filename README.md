@@ -3,6 +3,8 @@
 ## Installation
 *Tested on Debian (9) Strech only.*
 
+Please fork this repo for each different server configuration.
+
 ## Requirements Software
 
 - SSH access
