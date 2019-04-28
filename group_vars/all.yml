@@ -68,8 +68,8 @@ primary_manager_ipv4: "{{ groups['primary_manager'] | map('extract', hostvars, [
 
 # when you delete a node from the cluster, add his ip here in order to revoke his access
 revoked_nodes_ips: []
-# list his hostname too
-revoked_nodes_hostname: []
+# list of node ids to remove from the cluster
+revoked_nodes_ids: []
 
 # CA cert issuer of the node certs
 docker_swarm_CA_certificate: |
