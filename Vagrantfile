@@ -37,10 +37,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			node.vm.box = machine[:box]
 			node.vm.hostname = machine[:hostname]
 
-			node.vm.network :private_network, ip: machine[:ipv4]
+			# enable ipv6
+			node.vm.provision :shell, inline: "sed -i 's/net.ipv6.conf.all.disable_ipv6 = 1/net.ipv6.conf.all.disable_ipv6 = 0/g' /etc/sysctl.conf"
+			
+			node.vm.network :private_network, ip: machine[:ipv4],
+				auto_config: false
 
-			node.vm.network :private_network, ip: machine[:ipv6]
-
+			node.vm.network :private_network, ip: machine[:ipv6],
+				auto_config: false
+				
 			node.vm.provider :virtualbox do |vb|
 				vb.customize ["modifyvm", :id, "--memory", machine[:ram]]
 				vb.customize ["modifyvm", :id, "--cpus", machine[:cpu]]
