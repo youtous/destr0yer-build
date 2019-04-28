@@ -18,6 +18,8 @@
     name: "{{ ansible_user }}"
     groups: "{{ docker_group_name }}"
     append: true
+  notify:
+    - reset session
 
 - name: Setup docker
   become: true

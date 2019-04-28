@@ -1,0 +1,4 @@
+---
+- name:
+    # todo : reset ssh connection using
+  # https://docs.ansible.com/ansible/latest/modules/meta_module.html:
