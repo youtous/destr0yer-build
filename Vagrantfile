@@ -6,14 +6,16 @@ VAGRANTFILE_API_VERSION = "2"
 servers=[
     {
         :hostname => "heaven-pascal.youtous.dv",
-        :ip => "192.168.100.10",
+        :ipv4 => "192.168.100.10",
+        :ipv6 => "fde4:8dba:82e1::c1",
         :box => "generic/debian9",
         :ram => 2048,
         :cpu => 2
     },
     {
         :hostname => "heaven-roberval.youtous.dv",
-        :ip => "192.168.100.11",
+        :ipv4 => "192.168.100.11",
+        :ipv6 => "fde4:8dba:82e1::c2",
         :box => "generic/debian9",
         :ram => 2048,
         :cpu => 2
@@ -34,7 +36,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			# define the VM
 			node.vm.box = machine[:box]
 			node.vm.hostname = machine[:hostname]
-			node.vm.network :private_network, ip: machine[:ip]
+
+			node.vm.network :private_network, ip: machine[:ipv4]
+
+			node.vm.network :private_network, ip: machine[:ipv6]
 
 			node.vm.provider :virtualbox do |vb|
 				vb.customize ["modifyvm", :id, "--memory", machine[:ram]]
