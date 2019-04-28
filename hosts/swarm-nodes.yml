@@ -4,11 +4,11 @@
 # The first manager node is used by Ansible as an entry point
 primary_manager:
   hosts:
-    heaven-pascal.youtous.me:
+    heaven-pascal.youtous.dv:
 
 # Other manager nodes
 managers:
 
 workers:
   hosts:
-    heaven-roberval.youtous.me:
+    heaven-roberval.youtous.dv:

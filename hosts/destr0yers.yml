@@ -4,8 +4,8 @@ factoring-destroyers:
 # destr0yers under a commander
 base-destr0yers:
   hosts:
-    heaven-pascal.youtous.me:
-    heaven-roberval.youtous.me:
+    heaven-pascal.youtous.dv:
+    heaven-roberval.youtous.dv:
 
 # destr0yers that are public exposed
 commander-destr0yers:
@@ -13,27 +13,27 @@ commander-destr0yers:
 # hosts that will be able to deliver mails using an smtp relay
 smtp-relays:
   hosts:
-    heaven-pascal.youtous.me:
-    heaven-roberval.youtous.me:
+    heaven-pascal.youtous.dv:
+    heaven-roberval.youtous.dv:
 
 # hosts that will be backed-up on a backup-storage
 backed-up-hosts:
   hosts:
-    heaven-pascal.youtous.me:
-    heaven-roberval.youtous.me:
+    heaven-pascal.youtous.dv:
+    heaven-roberval.youtous.dv:
 
 # hosts that will be use docker
 docker:
   hosts:
-    heaven-pascal.youtous.me:
-    heaven-roberval.youtous.me:
+    heaven-pascal.youtous.dv:
+    heaven-roberval.youtous.dv:
 
 # hosts with a dynamic ip
 dynamic-ip:
   #hosts:
-  #  heaven-pascal.youtous.me:
+  #  heaven-pascal.youtous.dv:
 
 # hosts used as backup server
 backup-storage:
   hosts:
-    heaven-pascal.youtous.me:
+    heaven-pascal.youtous.dv:

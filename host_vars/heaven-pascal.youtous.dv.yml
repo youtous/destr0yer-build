@@ -1,5 +1,5 @@
 # This file describes specific host vars
-hostname: heaven-pascal.youtous.me
+hostname: heaven-pascal.youtous.dv
 ipv4:
   - 51.158.97.41
 ipv6:
@@ -32,20 +32,20 @@ users_ssh_keys:
 
 # dynamic-ip parameters
 update_ip_cloudflare_zone_name: youtous.me
-update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.me
+update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
 
 # backup-storage parameters
 backup_users:
   - username: heaven-roberval
-    restrict_ips: "{{ hostvars['heaven-roberval.youtous.me']['ipv4'] + hostvars['heaven-roberval.youtous.me']['ipv6'] }}"
+    restrict_ips: "{{ hostvars['heaven-roberval.youtous.dv']['ipv4'] + hostvars['heaven-roberval.youtous.dv']['ipv6'] }}"
     # specify host public keys
     ssh_keys:
-      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH6vcZbXLfRAj2g8RvdU2RRc/EYsMtLZTMEPhvDkAEir root@heaven-roberval.youtous.me"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH6vcZbXLfRAj2g8RvdU2RRc/EYsMtLZTMEPhvDkAEir root@heaven-roberval.youtous.dv"
   - username: heaven-pascal
-    restrict_ips: "{{ hostvars['heaven-pascal.youtous.me']['ipv4'] + hostvars['heaven-pascal.youtous.me']['ipv6'] }}"
+    restrict_ips: "{{ hostvars['heaven-pascal.youtous.dv']['ipv4'] + hostvars['heaven-pascal.youtous.dv']['ipv6'] }}"
     # specify host public keys
     ssh_keys:
-      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCyrGHzqWzTDhsWusHWOwulSstvx6x1ECxTbhXIUTsR root@heaven-pascal.youtous.me"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCyrGHzqWzTDhsWusHWOwulSstvx6x1ECxTbhXIUTsR root@heaven-pascal.youtous.dv"
 
 
 # backup strategy (see role for more details)
@@ -64,7 +64,7 @@ global_backup_gpg_ownertrust:
 # passphrase of the signing and decrypting keys /!\ PLEASE ESCAPE THE PASSPHRASE IF IT CONTAINS ' CHARACTERS
 global_backup_gpg_key_passphrase: "{{ secret_backup_gpg_key_passphrase }}"
 
-global_backup_destination: "pexpect+sftp://backup_heaven-pascal@{{ hostvars['heaven-pascal.youtous.me']['hostname'] }}/home"
+global_backup_destination: "pexpect+sftp://backup_heaven-pascal@{{ hostvars['heaven-pascal.youtous.dv']['hostname'] }}/home"
 # change the cron-job minute
 global_backup_jobs:
   - name: duply-backup-global
