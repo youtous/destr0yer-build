@@ -26,7 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # manage hosts file https://github.com/devopsgroup-io/vagrant-hostmanager
     config.hostmanager.enabled = true
     # each vm will have his /etc/hosts updated, run  `vagrant hostmanager` to manually update
-    config.hostmanager.manage_guest = true
+    config.hostmanager.manage_guest = false
     # do not modify hosts on host
     config.hostmanager.manage_host = false
 
