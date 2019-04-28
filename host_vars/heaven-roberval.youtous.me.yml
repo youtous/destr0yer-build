@@ -33,7 +33,7 @@ global_backup_gpg_ownertrust:
 # passphrase of the signing and decrypting keys /!\ PLEASE ESCAPE THE PASSPHRASE IF IT CONTAINS ' CHARACTERS
 global_backup_gpg_key_passphrase: "{{ secret_backup_gpg_key_passphrase }}"
 
-global_backup_destination: "pexpect+sftp://backup_heaven-roberval@heaven-pascal.youtous.me/home"
+global_backup_destination: "pexpect+sftp://backup_heaven-roberval@{{ hostvars['heaven-pascal.youtous.me']['hostname'] }}/home"
 # change the cron-job minute
 global_backup_jobs:
   - name: duply-backup-global
