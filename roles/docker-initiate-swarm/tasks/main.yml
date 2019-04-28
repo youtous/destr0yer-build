@@ -1,0 +1,23 @@
+---
+# This role will initiate the swarm on a first node and generate join tokens
+- name: Create primary swarm manager
+  docker_swarm:
+    node_id: "{{ hostname }}"
+    state: present
+    advertise_addr: "{{ primary_manager_ipv4 }}"
+
+- name: Remove revoked nodes from swarm
+  docker_swarm:
+    state: remove
+    node_id: "{{ item }}"
+  with_items: "{{ revoked_nodes_hostname }}"
+
+- name: Inspect swarm to get tokens
+  docker_swarm:
+    state: inspect
+  register: swarm_info
+
+- name: Register swarm_info in swarm_first_manager host
+  add_host:
+    hostname: swarm_first_manager
+    swarm_info: "{{ swarm_info }}"

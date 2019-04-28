@@ -61,8 +61,13 @@ nodes_ips: "{{
   groups['managers'] | map('extract', hostvars, ['ipv6']) | first
 }}"
 
+# first manager ipv4
+primary_manager_ipv4: "{{ groups['primary_manager'] | map('extract', hostvars, ['ipv4']) | first | first }}"
+
 # when you delete a node from the cluster, add his ip here in order to revoke his access
-revoked_nodes_ips:
+revoked_nodes_ips: []
+# list his hostname too
+revoked_nodes_hostname: []
 
 # CA cert issuer of the node certs
 docker_swarm_CA_certificate: |

@@ -1,0 +1,9 @@
+---
+# This role will attach workers to a swarm cluster
+- name: Attach workers to swarm cluster
+  docker_swarm:
+    node_id: "{{ hostname }}"
+    state: join
+    advertise_addr: "{{ ipv4 }}"
+    join_token: "{{ hostvars['swarm_first_manager']['swarm_info']['swarm_facts']['JoinTokens']['Worker'] }}"
+    remote_addrs: ["{{ primary_manager_ipv4 }}"]

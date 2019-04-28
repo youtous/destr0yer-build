@@ -1,10 +1,13 @@
 # There are 2 types of nodes in swarm mode : master, workers
 # https://docs.docker.com/engine/swarm/how-swarm-mode-works/nodes/
 
-# Manager nodes
-managers:
+# The first manager node is used by Ansible as an entry point
+primary_manager:
   hosts:
     heaven-pascal.youtous.me:
+
+# Other manager nodes
+managers:
 
 workers:
   hosts:

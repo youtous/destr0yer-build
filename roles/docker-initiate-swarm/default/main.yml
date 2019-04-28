@@ -1,0 +1,2 @@
+# the advertise address
+docker_swarm_advertise_addr: 192.168.1.1

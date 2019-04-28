@@ -21,4 +21,34 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-setup"]
 
+- name: Initiate the primary manager
+  hosts: primary_manager
+  roles:
+    - docker-initiate-swarm
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-init"]
+
+- name: Initiate managers
+  hosts: managers
+  roles:
+    - docker-initiate-managers
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-init"]
+
+- name: Initiate workers
+  hosts: workers
+  roles:
+    - docker-initiate-workers
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-init"]
+
 ...
