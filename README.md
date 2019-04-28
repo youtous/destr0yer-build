@@ -12,26 +12,11 @@ Please fork this repo for each different server configuration.
 
 ## VM only
 
-Install `vim`.
+- Start machines using `vagrant up`.
+- Stop machines using `vagrant halt`.
+- Update /etc/hosts using `vagrant hostmanager`
 
-**Network** : use briged, set a fixed ip on the virtual machine.
-
-
-Edit `/etc/network/interfaces`
-```
-auto enp0s3
-iface enp0s3 inet static
-	address 192.168.1.89
-	netmask 255.255.255.0
-	gateway 192.168.1.1
-```
-
-Then restart networking : `systemctl restart networking`
-
-Allow root login `/etc/ssh/sshd_config`
-```
-PermitRootLogin yes
-```
+[vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager) plugin is used for name resolution.
 
 ## Ansible usage
 
@@ -59,9 +44,9 @@ To sum up :
     1. RootCA (private !) : `openssl genrsa -chacha20 -out certs/heaven.youtous.me-rootCA.key 4096`
     2. Root CERTIFICATE (crt) (to be shared and renewed in 2500 days) : `openssl req -x509 -new -nodes -key certs/heaven.youtous.me-rootCA.key -sha256 -days 2500 -out certs/heaven.youtous.me-rootCA.crt`
 - For each server :
-    1. Certificate key (private !) : `openssl genrsa -out certs/heaven-pascal.youtous.me.key 4096`
-    2. Certificate signing (csr) : `openssl req -new -key certs/heaven-pascal.youtous.me.key -out certs/heaven-pascal.youtous.me.csr`
-    3. Generate the CERTIFICATE (crt) (to be renewed in 1024 days) : `openssl x509 -req -in certs/heaven-pascal.youtous.me.csr -CA certs/heaven.youtous.me-rootCA.crt -CAkey certs/heaven.youtous.me-rootCA.key -CAcreateserial -out certs/heaven-pascal.youtous.me.crt -days 1024 -sha256`
+    1. Certificate key (private !) : `openssl genrsa -out certs/heaven-pascal.youtous.dv.key 4096`
+    2. Certificate signing (csr) : `openssl req -new -key certs/heaven-pascal.youtous.dv.key -out certs/heaven-pascal.youtous.dv.csr`
+    3. Generate the CERTIFICATE (crt) (to be renewed in 1024 days) : `openssl x509 -req -in certs/heaven-pascal.youtous.dv.csr -CA certs/heaven.youtous.me-rootCA.crt -CAkey certs/heaven.youtous.me-rootCA.key -CAcreateserial -out certs/heaven-pascal.youtous.dv.crt -days 1024 -sha256`
     4. Next time, don't use `-CAcreateserial` but `-CAserial certs/heaven.youtous.me-rootCA.srl` (http://users.skynet.be/pascalbotte/art/server-cert.htm)
     5. On the certificate has been generated, it to host secrets, there is no need to save it.
 

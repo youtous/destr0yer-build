@@ -6,3 +6,4 @@ secret_vars/*
 !secret_vars/all.sample.yml
 !secret_vars/host.sample.yml
 playbook.retry
+.vagrant
