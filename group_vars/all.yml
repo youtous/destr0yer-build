@@ -54,15 +54,14 @@ ssh_entrypoints:
 docker_compose_version: "1.24.0"
 
 # ips of the nodes of the swarm
-nodes_ips:
-    # heaven-roberval.youtous.me
-    - 51.158.106.217
-    - 2001:bc8:4400:2700::15a7
-    # heaven-pascal.youtous.me
-    - 51.158.97.41
-    - 2001:bc8:4400:2700::159f
+nodes_ips: "{{
+  groups['workers'] | map('extract', hostvars, ['ipv4']) | first  +
+  groups['workers'] | map('extract', hostvars, ['ipv6']) | first  +
+  groups['managers'] | map('extract', hostvars, ['ipv4']) | first  +
+  groups['managers'] | map('extract', hostvars, ['ipv6']) | first
+}}"
 
-# when you delete a node from the cluster, add it ip here in order to revoke his access
+# when you delete a node from the cluster, add his ip here in order to revoke his access
 revoked_nodes_ips:
 
 # CA cert issuer of the node certs
