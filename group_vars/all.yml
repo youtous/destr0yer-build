@@ -45,6 +45,7 @@ ssh_entrypoints:
   - "vpn.youtous.me"
   - "srv.youtous.me"
   - "163.172.154.21"
+  - "192.168.100.1"
 
 ###  End of destr0yers vars  ###
 
