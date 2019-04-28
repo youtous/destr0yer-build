@@ -22,12 +22,6 @@ backed-up-hosts:
     heaven-pascal.youtous.dv:
     heaven-roberval.youtous.dv:
 
-# hosts that will be use docker
-docker:
-  hosts:
-    heaven-pascal.youtous.dv:
-    heaven-roberval.youtous.dv:
-
 # hosts with a dynamic ip
 dynamic-ip:
   #hosts:
