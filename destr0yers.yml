@@ -1,5 +1,6 @@
 ---
 # This play describes configure destr0yers.
+
 # For a new destr0yer system, add it to factoring_destroyers hosts, then run this play
 # using --tags="new-systems"
 - name: Prepare new systems
