@@ -1,5 +1,23 @@
 ---
 # This role contains docker installation
+- name: Install python docker module
+  become: true
+  pip:
+    state: latest
+    name: docker
+
+- name: Ensure docker group is present
+  become: true
+  group:
+    gid: "{{ docker_group_gid }}"
+    name: "{{ docker_group_name }}"
+
+- name: Adding user '{{ ansible_user }}' to docker group
+  become: true
+  user:
+    name: "{{ ansible_user }}"
+    groups: "{{ docker_group_name }}"
+    append: true
 
 - name: Setup docker
   become: true
