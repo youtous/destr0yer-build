@@ -4,6 +4,7 @@
   become: true
   apt:
     name:
+      - mailutils
       - libsasl2-modules
       - postfix
 
