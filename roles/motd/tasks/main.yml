@@ -33,3 +33,11 @@
     owner: root
     group: root
     mode: u=rw,g=rw,o=r
+
+- name: Add dynamic motd loading to pam.d configuration
+  become: true
+  blockinfile:
+    dest: "/etc/pam.d/sshd"
+    insertafter: "^session    optional     pam_motd.so  motd="
+    block: "session    optional     pam_motd.so  motd=/run/motd.dynamic"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - load dynamic motd at login ###"
