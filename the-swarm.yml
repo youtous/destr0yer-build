@@ -15,6 +15,7 @@
   hosts: all
   roles:
     - docker-swarm-tls
+    - docker-log
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

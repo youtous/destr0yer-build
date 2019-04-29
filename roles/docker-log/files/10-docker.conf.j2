@@ -1,0 +1,6 @@
+# Docker logging
+# see https://www.wolfe.id.au/2015/05/03/syslog-logging-driver-for-docker/
+daemon.* {
+ {{ docker_log_file }}
+ stop
+}
