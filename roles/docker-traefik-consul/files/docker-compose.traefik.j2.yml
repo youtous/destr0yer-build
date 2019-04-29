@@ -84,7 +84,7 @@ services:
       --docker.exposedbydefault=false
       --constraints=tag==traefik-public
       --entrypoints='Name:http Address::80 Compress:true'
-      --entrypoints='Name:https Address::443 Compress:true TLS Auth.Basic.Users:{{ backend_users|join(',') | replace('$', '$$') }} WhiteList.SourceRange:{{ trusted_backend_ips|join(',') }},127.0.0.1'
+      --entrypoints='Name:https Address::443 Compress:true TLS TLS.MinVersion:{{ traefik_min_tls_version }} TLS.CipherSuites:{{ traefik_cipher_suites|join(',') }} TLS.SniStrict:true Auth.Basic.Users:{{ backend_users|join(',') | replace('$', '$$') }} WhiteList.SourceRange:{{ trusted_backend_ips|join(',') }},127.0.0.1'
       --consul
       --consul.endpoint="consul-leader:8500"
       --acme

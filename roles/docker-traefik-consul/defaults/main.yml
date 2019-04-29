@@ -11,6 +11,17 @@ traefik_ui_domain: "traefik.{{ hostname }}"
 # number of traefik replicas
 traefik_replicas: 3
 
+# minimal TLS version
+traefik_min_tls_version: "VersionTLS12"
+
+# list of supported ciphers
+traefik_cipher_suites:
+  - TLS_AES_256_GCM_SHA384
+  - TLS_CHACHA20_POLY1305_SHA256
+  - TLS_AES_128_GCM_SHA256
+  - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+  - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+
 # let's encrypt email for certificates
 lets_encrypt_email: ""
 
