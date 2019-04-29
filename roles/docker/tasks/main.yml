@@ -14,11 +14,12 @@
 
 - name: Adding user '{{ ansible_user }}' to docker group
   become: true
-  user:
-    name: "{{ ansible_user }}"
-    groups: "{{ docker_group_name }}"
-    append: true
-  meta: reset_connection
+  block:
+    - user:
+        name: "{{ ansible_user }}"
+        groups: "{{ docker_group_name }}"
+        append: true
+    - meta: reset_connection
 
 - name: Setup docker
   become: true
