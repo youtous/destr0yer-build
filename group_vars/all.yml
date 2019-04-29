@@ -40,16 +40,17 @@ common_groups_to_create:
 fail2ban_trusted_ips:
   - "163.172.154.21"
 
-# entrypoints are domains or ip from where we can access base-destr0yers
+# entrypoints ips from where we can access base-destr0yers
 ssh_entrypoints:
-  - "vpn.youtous.me"
-  - "srv.youtous.me"
   - "163.172.154.21"
   - "192.168.100.1"
 
 ###  End of destr0yers vars  ###
 
 ### Begin of the-swarm global vars ###
+
+# ips that will be allowed to access the backend
+trusted_backend_ips: "{{ ssh_entrypoints }}"
 
 # version of docker-compose to install
 docker_compose_version: "1.24.0"
