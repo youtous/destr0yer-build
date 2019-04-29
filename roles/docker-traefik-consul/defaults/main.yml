@@ -1,0 +1,22 @@
+---
+# version of traefik to use
+traefik_version: "1.7"
+
+# name of the traefik network
+traefik_network: "traefik-public"
+
+# domain used by traefik UI
+traefik_ui_domain: "traefik.{{ hostname }}"
+
+# number of traefik replicas
+traefik_replicas: 3
+
+# let's encrypt email for certificates
+lets_encrypt_email: ""
+
+# domain used by consul UI
+consul_ui_domain: "consul.{{ hostname }}"
+
+# number of consul replicas
+consul_replicas: 3
+...

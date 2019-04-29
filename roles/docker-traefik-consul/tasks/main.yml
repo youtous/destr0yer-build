@@ -1,0 +1,21 @@
+---
+# This role setup a reverse-proxy/load balancer for the swarm using traefik and consul
+- name: Create traefik-public network with encryption
+  docker_network:
+    name: "{{ traefik_network }}"
+    driver: overlay
+    driver_options:
+      encrypted: ""
+
+- name: Ensure traefik directory exists
+  file:
+    state: directory
+    path: "{{ traefik_compose_file_dest_directory }}"
+
+- name: Copy Traefik-Consul stack
+  template:
+    src: files/docker-compose.traefik.j2.yml
+    dest: "{{ traefik_compose_file_dest }}"
+    mode: u=rwx,g=,o=r
+  notify:
+    - deploy traefik

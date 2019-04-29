@@ -29,6 +29,14 @@ relay_password: "{{ secret_relay_password }}"
 ### End of relay-smtp parameters ###
 
 ### Begin of docker Traefik parameters ###
+
+# let's encrypt email for certificates
+lets_encrypt_email: "admin+heaven-pascal@youtous.me"
+# number of traefik replicas
+traefik_replicas: 0
+# number of consul replicas
+consul_replicas: 0
+
 ### End of docker Traefik parameters ###
 
 
