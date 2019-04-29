@@ -19,20 +19,29 @@ host_groups_to_create:
   - name: docker
     gid: 1099
 
+### Begin of relay-smtp parameters ###
+
 # smtp relay parameters
 relay_email: monitoring-heaven-pascal@youtous.me
 relay_user: monitoring-heaven-pascal@youtous.me
 relay_password: "{{ secret_relay_password }}"
 
-# deploy generated ssh keys for root
-users_ssh_keys:
-  - username: root
-    public_key: "{{ root_public_key }}"
-    private_key: "{{ root_private_key }}"
+### End of relay-smtp parameters ###
+
+### Begin of docker Traefik parameters ###
+### End of docker Traefik parameters ###
+
+
+### Begin of dynamic updating parameters ###
 
 # dynamic-ip parameters
 update_ip_cloudflare_zone_name: youtous.me
 update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
+
+### End of Backup strategy parameters ###
+
+
+### Begin of Backup storage parameters ###
 
 # backup-storage parameters
 backup_users:
@@ -47,6 +56,16 @@ backup_users:
     ssh_keys:
       - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCyrGHzqWzTDhsWusHWOwulSstvx6x1ECxTbhXIUTsR root@heaven-pascal.youtous.dv"
 
+### End of Backup storage parameters ###
+
+
+### Begin of Backup strategy parameters ###
+
+# deploy generated ssh keys for root
+users_ssh_keys:
+  - username: root
+    public_key: "{{ root_public_key }}"
+    private_key: "{{ root_private_key }}"
 
 # backup strategy (see role for more details)
 global_backup_gpg_public_key:
@@ -74,3 +93,6 @@ global_backup_jobs:
     day: "*"
     month: "*"
     weekday: "*"
+
+### End of Backup strategy parameters ###
+
