@@ -8,3 +8,7 @@ arbiter_username: "john"
 
 arbiter_ssh_keys:
   - "list keys here"
+
+# list of auth users for the backend user:md5(pass) `openssl passwd -apr1`
+backend_users:
+  - "john:IgXLP6ewTrSuBkTrqE8wj"
