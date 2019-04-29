@@ -18,14 +18,7 @@
     name: "{{ ansible_user }}"
     groups: "{{ docker_group_name }}"
     append: true
-  register: docker_user_group
-
-- user:
-    name: "{{ ansible_user }}"
-    groups: input
-- name: Reset connection after docker installation
   meta: reset_connection
-  when: docker_user_group.changed
 
 - name: Setup docker
   become: true
