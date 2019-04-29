@@ -7,11 +7,17 @@ ipv6:
 
 host_users: []
 
+### Begin of smtp relay parameters ###
+
 # smtp relay parameters
 relay_email: monitoring-heaven-pascal@youtous.me
 relay_user: monitoring-heaven-pascal@youtous.me
 relay_password: "{{ secret_relay_password }}"
 
+### End of smtp relay parameters ###
+
+
+### Begin of Backup strategy parameters ###
 
 # deploy generated ssh keys for root
 users_ssh_keys:
@@ -43,3 +49,5 @@ global_backup_jobs:
     day: "*"
     month: "*"
     weekday: "*"
+
+### End of Backup strategy parameters ###
