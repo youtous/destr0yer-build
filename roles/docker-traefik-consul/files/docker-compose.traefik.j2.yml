@@ -75,14 +75,15 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     # see https://docs.traefik.io/configuration/backends/docker/ for details
+    # todo: configure entrypoints as secure as possible (TLS) https://docs.traefik.io/configuration/entrypoints/
     command: >
       --docker
       --docker.swarmmode
       --docker.watch
       --docker.exposedbydefault=false
       --constraints=tag==traefik-public
-      --entrypoints='Name:http Address::80'
-      --entrypoints='Name:https Address::443 TLS'
+      --entrypoints='Name:http Address::80 Compress:true'
+      --entrypoints='Name:https Address::443 Compress:true TLS'
       --consul
       --consul.endpoint="consul-leader:8500"
       --acme
