@@ -13,6 +13,11 @@ services:
       - default
       - traefik-public
     deploy:
+      placement:
+        constraints:
+          - node.role == manager
+        preferences:
+          - spread: node.id
       labels:
         - "traefik.frontend.rule=Host:{{ consul_ui_domain }}"
         - traefik.enable=true
@@ -37,7 +42,7 @@ services:
         # Auth
         - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
-    restart: always
+    #restart: always
   consul-replica:
     image: consul
     command: agent -server -client=0.0.0.0 -retry-join="consul-leader"
