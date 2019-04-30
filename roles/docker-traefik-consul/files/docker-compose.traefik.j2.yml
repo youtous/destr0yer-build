@@ -103,6 +103,10 @@ services:
         # Auth                                                          because '$' is evaluated, remember to escape it
         - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+    logging:
+      options:
+        # this tag is used by fail2ban using `journalctl CONTAINER_TAG=traefik-consul`
+        tag: "traefik-consul"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     # see https://docs.traefik.io/configuration/backends/docker/ for details

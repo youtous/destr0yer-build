@@ -1,0 +1,29 @@
+---
+# fail2ban for traefik
+# resource : https://github.com/crazy-max/docker-fail2ban/
+- name: Add traefik filters to fail2ban
+  become: true
+  copy:
+    src: files/filter.d/{{ item }}
+    dest: /etc/fail2ban/filter.d/{{ item }}
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - traefik-auth.conf
+    - traefik-botsearch.conf
+  notify:
+    - restart fail2ban
+
+- name: Activate traefik jails using fail2ban
+  import_role:
+    name: fail2ban-additional
+  vars:
+    fail2ban_services:
+      - name: traefik-auth
+        port: http,https
+        backend: systemd
+      - name: traefik-botsearch
+        port: http,https
+        backend: systemd
+...

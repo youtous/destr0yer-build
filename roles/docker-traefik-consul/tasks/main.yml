@@ -19,3 +19,6 @@
     mode: u=rwx,g=,o=r
   notify:
     - deploy traefik
+
+- name: Fail2ban for traefik
+  import_tasks: fail2ban.yml
