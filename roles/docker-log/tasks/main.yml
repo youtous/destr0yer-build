@@ -33,10 +33,10 @@
 
 - name: Setup {{ docker_log_backend }} as log-driver for docker
   become: true
-  lineinfile:
+  blockinfile:
+    marker: ""
     dest: "/etc/docker/daemon.json"
-    regexp: "^\"log-driver\":"
-    line: "\"log-driver\": \"{{ docker_log_backend }}\","
+    block: "{{ lookup('template', 'files/daemon.json.j2') }}"
     insertafter: '^{'
   notify:
     - restart docker
