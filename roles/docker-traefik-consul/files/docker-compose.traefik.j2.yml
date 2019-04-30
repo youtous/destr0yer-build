@@ -24,6 +24,19 @@ services:
         - traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
         - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ consul_ui_domain }}" # todo, check behavior with real domain
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
     restart: always
   consul-replica:
     image: consul
@@ -72,6 +85,19 @@ services:
         - traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
         - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ traefik_ui_domain }}" # todo, check behavior with real domain
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth                                                          because '$' is evaluated, remember to escape it
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     # see https://docs.traefik.io/configuration/backends/docker/ for details
@@ -84,7 +110,7 @@ services:
       --docker.exposedbydefault=false
       --constraints=tag==traefik-public
       --entrypoints='Name:http Address::80 Compress:true'
-      --entrypoints='Name:https Address::443 Compress:true TLS TLS.MinVersion:{{ traefik_min_tls_version }} TLS.SniStrict:true TLS.CipherSuites:{{ traefik_cipher_suites|join(',') }} Auth.Basic.Users:{{ backend_users|join(',') | replace('$', '$$') }} WhiteList.SourceRange:{{ trusted_backend_ips|join(',') }},127.0.0.1'
+      --entrypoints='Name:https Address::443 Compress:true TLS TLS.MinVersion:{{ traefik_min_tls_version }} TLS.SniStrict:true TLS.CipherSuites:{{ traefik_cipher_suites|join(',') }}'
       --consul
       --consul.endpoint="consul-leader:8500"
       --acme
