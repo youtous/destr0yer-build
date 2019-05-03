@@ -16,7 +16,7 @@
   template:
     src: files/docker-compose.traefik.j2.yml
     dest: "{{ traefik_compose_file_dest }}"
-    mode: u=rwx,g=,o=r
+    mode: u=rw,g=,o=
   notify:
     - deploy traefik
 

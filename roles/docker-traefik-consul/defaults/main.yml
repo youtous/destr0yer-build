@@ -11,6 +11,9 @@ traefik_ui_domain: "traefik.{{ hostname }}"
 # number of traefik replicas
 traefik_replicas: 3
 
+# traefik public-tag, this tag is used to mark a service as public
+traefik_public_tag: "traefik-public"
+
 # minimal TLS version
 traefik_min_tls_version: "VersionTLS12"
 

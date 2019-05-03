@@ -53,7 +53,7 @@
   tags: ["docker-swarm-init"]
 
 - name: Setup traefik reverse-proxy with consul
-  hosts: primary_manager
+  hosts: primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
   roles:
     - docker-traefik-consul
   vars_files:

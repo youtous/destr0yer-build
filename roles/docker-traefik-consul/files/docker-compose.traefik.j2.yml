@@ -22,7 +22,7 @@ services:
         - "traefik.frontend.rule=Host:{{ consul_ui_domain }}"
         - traefik.enable=true
         - traefik.port=8500
-        - traefik.tags=traefik-public
+        - "traefik.tags={{ traefik_public_tag }}"
         - "traefik.docker.network={{ traefik_network }}"
         # Traefik service that listens to HTTP
         - traefik.redirectorservice.frontend.entryPoints=http
@@ -83,7 +83,7 @@ services:
         - "traefik.frontend.rule=Host:{{ traefik_ui_domain }}"
         - traefik.enable=true
         - traefik.port=8080
-        - traefik.tags=traefik-public
+        - "traefik.tags={{ traefik_public_tag }}"
         - "traefik.docker.network={{ traefik_network }}"
         # Traefik service that listens to HTTP
         - traefik.redirectorservice.frontend.entryPoints=http
@@ -117,7 +117,7 @@ services:
       --docker.swarmmode
       --docker.watch
       --docker.exposedbydefault=false
-      --constraints=tag==traefik-public
+      --constraints=tag=={{ traefik_public_tag }}
       --entrypoints='Name:http Address::80 Compress:true'
       --entrypoints='Name:https Address::443 Compress:true TLS TLS.MinVersion:{{ traefik_min_tls_version }} TLS.SniStrict:true TLS.CipherSuites:{{ traefik_cipher_suites|join(',') }}'
       --consul
