@@ -62,4 +62,13 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-traefik"]
 
+- name: Setup docker-swarm monitoring tools
+  hosts: primary_manager
+  roles:
+    - docker-swarmprom
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-monitoring"]
 ...

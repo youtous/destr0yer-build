@@ -1,0 +1,46 @@
+---
+# This role setup a complete monitoring application for containers in swarm mode
+# see https://github.com/stefanprodan/swarmprom for more details
+
+- name: Ensure swarmprom directory exists
+  file:
+    state: directory
+    path: "{{ swarmprom_compose_file_dest_directory }}"
+
+- name: Ensure dockerd-exporter directory exists
+  file:
+    state: directory
+    path: "{{ swarmprom_compose_file_dest_directory }}/dockerd-exporter"
+
+- name: Copy Swarmprom Caddyfile configuration
+  template:
+    src: files/dockerd-exporter/Caddyfile.j2
+    dest: "{{ swarmprom_compose_file_dest_directory }}/dockerd-exporter/Caddyfile"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy swarmprom
+
+- name: Ensure prometheus rules directory exists
+  file:
+    state: directory
+    path: "{{ swarmprom_compose_file_dest_directory }}/prometheus/rules"
+
+- name: Copy prometheus rules configuration
+  copy:
+    src: "files/prometheus/rules/{{ item }}"
+    dest: "{{ swarmprom_compose_file_dest_directory }}/prometheus/rules/{{ item }}"
+    mode: u=rw,g=,o=
+  with_items:
+    - swarm_node.rules.yml
+    - swarm_task.rules.yml
+  notify:
+    - deploy swarmprom
+
+- name: Copy Swarmprom stack
+  template:
+    src: files/docker-compose.swarmprom.j2.yml
+    dest: "{{ swarmprom_compose_file_dest }}"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy swarmprom
+...

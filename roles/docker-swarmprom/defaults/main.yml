@@ -1,0 +1,15 @@
+---
+# base domain of swarmprom
+swarmprom_base_domain: "prom.{{ hostname }}"
+
+# traefik public-tag
+traefik_public_tag: "traefik-public"
+
+# name of the traefik network
+traefik_network: "traefik-public"
+
+prometheus_domain: "prom.{{ swarmprom_base_domain }}"
+unsee_domain: "unsee.{{ swarmprom_base_domain }}"
+alertmanager_domain: "alerts.{{ swarmprom_base_domain }}"
+grafana_domain: "graph.{{ swarmprom_base_domain }}"
+...
