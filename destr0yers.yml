@@ -4,7 +4,7 @@
 # For a new destr0yer system, add it to factoring_destroyers hosts, then run this play
 # using --tags="new-systems"
 - name: Prepare new systems
-  hosts: factoring-destroyers
+  hosts: factoring_destroyers
   remote_user: root
   roles:
     - apt # update the system
@@ -19,7 +19,7 @@
 # This play describe tasks for an existing destr0yer
 # /!\ Nature of the roles in this play will OVERWRITE any existing configuration such as sshd. Do not run this role alone
 - name: Configure destr0yers systems
-  hosts: [base-destr0yers, commander-destr0yers]
+  hosts: [base_destr0yers, commander_destr0yers]
   remote_user: "{{ arbiter_username }}"
   roles:
     - apt # update the system
@@ -52,7 +52,7 @@
   tags: ["interfaces"]
 
 - name: Configure underwall destr0yers systems
-  hosts: base-destr0yers
+  hosts: base_destr0yers
   remote_user: "{{ arbiter_username }}"
   roles:
     - entrypoint-ssh
@@ -63,7 +63,7 @@
   tags: ["configure-slaves-systems"]
 
 - name: Configure Postfix relay servers
-  hosts: smtp-relays
+  hosts: smtp_relays
   remote_user: "{{ arbiter_username }}"
   roles:
     - postfix-relay
@@ -74,7 +74,7 @@
   tags: ["smtp-relay"]
 
 - name: Configure backup storage systems
-  hosts: backup-storage
+  hosts: backup_storage
   roles:
     - backup-storage
   vars_files:
@@ -84,7 +84,7 @@
   tags: ["backup-storage"]
 
 - name: Configure backed-up systems
-  hosts: backed-up-hosts
+  hosts: backed_up_hosts
   roles:
     - backup-strategy
   vars_files:
@@ -94,7 +94,7 @@
   tags: ["backup-strategy"]
 
 - name: Configure servers with dynamic ip
-  hosts: dynamic-ip
+  hosts: dynamic_ip
   roles:
     - update-dynamic-ip
   vars_files:
