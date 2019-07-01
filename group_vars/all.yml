@@ -39,6 +39,7 @@ common_groups_to_create:
 # ips which should never be banned
 fail2ban_trusted_ips:
   - "163.172.154.21"
+  - "192.168.100.1"
 
 # entrypoints ips from where we can access base-destr0yers
 ssh_entrypoints:
