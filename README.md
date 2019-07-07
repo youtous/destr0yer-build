@@ -11,7 +11,7 @@ Please fork this repo for each different server configuration.
 - Python
 
 ## VM only
-
+ _*Commands :*_ 
 - Start machines using `vagrant up`.
 - Stop machines using `vagrant halt`.
 - Update /etc/hosts using `vagrant hostmanager`

@@ -3,12 +3,15 @@
 
 VAGRANTFILE_API_VERSION = "2"
 
+
+# {FIX} In order to have Virtualbox Guest Additions synced with the host, install
+# vagrant plugin install vagrant-vbguest
 servers=[
     {
         :hostname => "heaven-pascal.youtous.dv",
         :ipv4 => "192.168.100.10",
         :ipv6 => "fde4:8dba:82e1::c1",
-        :box => "generic/debian9",
+        :box => "debian/buster64",
         :ram => 2048,
         :cpu => 2
     },
@@ -16,7 +19,7 @@ servers=[
         :hostname => "heaven-roberval.youtous.dv",
         :ipv4 => "192.168.100.11",
         :ipv6 => "fde4:8dba:82e1::c2",
-        :box => "generic/debian9",
+        :box => "debian/buster64",
         :ram => 2048,
         :cpu => 2
     }
@@ -24,25 +27,24 @@ servers=[
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # manage hosts file https://github.com/devopsgroup-io/vagrant-hostmanager
-    config.hostmanager.enabled = true
+    #config.hostmanager.enabled = true
     # each vm will have his /etc/hosts updated, run  `vagrant hostmanager` to manually update
-    config.hostmanager.manage_guest = false
+    #config.hostmanager.manage_guest = false
     # do not modify hosts on host
-    config.hostmanager.manage_host = false
+    #config.hostmanager.manage_host = false
 
 	servers.each do |machine|
 		config.vm.define machine[:hostname] do |node|
 			
 			# define the VM
 			node.vm.box = machine[:box]
-			node.vm.hostname = machine[:hostname]
 
+			# configure network
 			# enable ipv6
 			node.vm.provision :shell, inline: "sed -i 's/net.ipv6.conf.all.disable_ipv6 = 1/net.ipv6.conf.all.disable_ipv6 = 0/g' /etc/sysctl.conf"
-			
-			node.vm.network :private_network, ip: machine[:ipv4] #, auto_config: false
-
-			node.vm.network :private_network, ip: machine[:ipv6] #, auto_config: false
+			node.vm.hostname = machine[:hostname]
+			node.vm.network :private_network, ip: machine[:ipv4]  #, auto_config: false
+			node.vm.network :private_network, ip: machine[:ipv6]  #, auto_config: false
 
 			node.vm.provider :virtualbox do |vb|
 				vb.customize ["modifyvm", :id, "--memory", machine[:ram]]
