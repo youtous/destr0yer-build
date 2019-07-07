@@ -12,12 +12,12 @@
     fail2ban_destemail: "{{ fail2ban_destemail }}"
     fail2ban_services: "{{ fail2ban_services }}"
 
-- name: Update fail2ban using latest version from stretch-backport
-  become: true
+- name: Update fail2ban using latest version from buster-backport
+  become: yes
   apt:
     name: fail2ban
     state: latest
-    default_release: stretch-backports
+    default_release: buster-backports
     update_cache: yes
   notify:
     - restart fail2ban
