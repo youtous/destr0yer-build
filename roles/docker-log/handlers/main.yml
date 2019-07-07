@@ -1,12 +1,12 @@
 ---
 - name: restart rsyslog
-  become: true
+  become: yes
   systemd:
     name: rsyslog
     state: restarted
 
 - name: restart docker
-  become: true
+  become: yes
   systemd:
     name: docker
     state: restarted

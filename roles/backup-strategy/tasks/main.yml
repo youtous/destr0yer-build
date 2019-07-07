@@ -2,7 +2,7 @@
 # This role setup a backup server using sftp and chroot
 # ssh role must be used in order to have a properly configured server
 - name: Install duply and duplicity packages
-  become: true
+  become: yes
   apt:
     name:
       - duplicity
@@ -14,7 +14,7 @@
   import_tasks: gpg.yml
 
 - name: Setup Duplicity backup strategy
-  become: true
+  become: yes
   import_role:
     name: oefenweb.duply-backup
   vars:
@@ -24,7 +24,7 @@
 
 
 - name: Ensure cache backup directory is present
-  become: true
+  become: yes
   file:
     state: directory
     path: "{{ backup_cache_directory }}"
@@ -33,7 +33,7 @@
     mode: u=rwx,g=,o=
 
 - name: Update python build tools
-  become: true
+  become: yes
   pip:
     executable: pip2 # it's a python 2 package
     name:
@@ -44,7 +44,7 @@
 
 # our ssh client needs to be upgraded in order to support secure cyphers
 - name: Install pexpect at latest version
-  become: true
+  become: yes
   pip:
     executable: pip2 # it's a python 2 package
     name: pexpect

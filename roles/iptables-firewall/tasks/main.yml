@@ -1,13 +1,13 @@
 ---
 # This role contains base rules of the firewall
 - name: Install ufw package
-  become: true
+  become: yes
   apt:
     name:
       - ufw
 
 - name: Configure ufw defaults
-  become: true
+  become: yes
   ufw:
     direction: "{{ item.direction }}"
     policy: "{{ item.policy }}"
@@ -18,14 +18,14 @@
     - restart ufw
 
 - name: Define ufw logging policy
-  become: true
+  become: yes
   ufw:
     logging: "{{ ufw_logging }}"
   notify:
     - restart ufw
 
 - name: Insert customs IPv4 rules in before.rules
-  become: true
+  become: yes
   blockinfile:
     dest: "/etc/ufw/before.rules"
     block: "{{ lookup('file', 'files/before-ipv4.rules') }}"
@@ -35,7 +35,7 @@
     - restart ufw
 
 - name: Insert customs IPv6 rules in before6.rules
-  become: true
+  become: yes
   blockinfile:
     dest: "/etc/ufw/before6.rules"
     block: "{{ lookup('file', 'files/before-ipv6.rules') }}"
@@ -45,7 +45,7 @@
     - restart ufw
 
 - name: OpenSSH default policy limit
-  become: true
+  become: yes
   ufw:
     rule: limit
     port: ssh
@@ -55,7 +55,7 @@
 
 # IP forwarding is disabled by default
 - name: Disable IPv4 forwarding
-  become: true
+  become: yes
   sysctl:
     name: net.ipv4.ip_forward
     value: 0
@@ -64,7 +64,7 @@
     reload: yes
 
 - name: Disable IPv6 forwarding
-  become: true
+  become: yes
   sysctl:
     name: net.ipv6.conf.all.forwarding
     value: 0
@@ -73,6 +73,6 @@
     reload: yes
 
 - name: Enable ufw
-  become: true
+  become: yes
   ufw:
     state: enabled

@@ -2,7 +2,7 @@
 # This role configure docker to use syslog or journald for logs. Rotation of logs will be setup too.
 
 - name: Setup docker rsyslog config
-  become: true
+  become: yes
   template:
     src: files/10-docker.conf.j2
     dest: /etc/rsyslog.d/10-docker.conf
@@ -32,7 +32,7 @@
   when: docker_log_backend == 'rsyslog'
 
 - name: Setup {{ docker_log_backend }} as log-driver for docker
-  become: true
+  become: yes
   blockinfile:
     marker: ""
     dest: "/etc/docker/daemon.json"

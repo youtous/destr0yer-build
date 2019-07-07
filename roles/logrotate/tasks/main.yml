@@ -1,6 +1,6 @@
 ---
 # This role contains the default policy for logrotate
 - name: Setup Logrotate
-  become: true
+  become: yes
   import_role:
     name: arillso.logrotate

@@ -1,7 +1,7 @@
 # tasks file for duply-backup that import GPG keys
 ---
 - name: Create (lock) directory which will contain flags
-  become: true
+  become: yes
   file:
     path: "{{ duply_backup_lock_directory }}"
     state: directory
@@ -10,7 +10,7 @@
     mode: u=rwx,g=,o=
 
 - name: import public keys
-  become: true
+  become: yes
   become_user: root
   shell: >
     echo '{{ item.key }}' | gpg --import && touch {{ duply_backup_lock_directory }}/{{ item.name }}
@@ -19,7 +19,7 @@
   with_items: "{{ backup_gpg_public_keys }}"
 
 - name: import ownertrusts
-  become: true
+  become: yes
   become_user: root
   shell: >
     echo '{{ item.value }}' | gpg --import-ownertrust && touch {{ duply_backup_lock_directory }}/{{ item.name }}
@@ -29,7 +29,7 @@
   with_items: "{{ backup_gpg_ownertrusts }}"
 
 - name: import private keys
-  become: true
+  become: yes
   become_user: root
   shell: >
     echo '{{ item.key }}' | gpg --allow-secret-key-import --batch --import && touch {{ duply_backup_lock_directory }}/{{ item.name }}

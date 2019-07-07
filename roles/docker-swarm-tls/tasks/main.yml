@@ -4,7 +4,7 @@
 # Each node will receive the ROOT cert-key, his own private and public key (3 files).
 
 - name: Setup docker certificates folder
-  become: true
+  become: yes
   file:
     path: "{{ docker_swarm_certificates_directory }}"
     state: directory
@@ -13,7 +13,7 @@
     mode: u=rwx,g=,o=
 
 - name: Copy RootCA certificate
-  become: true
+  become: yes
   copy:
     content: "{{ docker_swarm_CA_certificate }}"
     dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_root_CA_certificate_name }}"
@@ -24,7 +24,7 @@
     - restart docker
 
 - name: Copy node certificate
-  become: true
+  become: yes
   copy:
     content: "{{ docker_swarm_node_certificate }}"
     dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_node_certificate_name }}.crt"
@@ -35,7 +35,7 @@
     - restart docker
 
 - name: Copy node private key
-  become: true
+  become: yes
   copy:
     content: "{{ docker_swarm_node_private_key }}"
     dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_node_certificate_name }}.key"
@@ -47,7 +47,7 @@
     - restart docker
 
 - name: Create systemd docker.service.d directory
-  become: true
+  become: yes
   file:
     path: /etc/systemd/system/docker.service.d
     state: directory
@@ -56,7 +56,7 @@
     mode: u=rwx,g=,o=
 
 - name: Override default systemd docker exec start
-  become: true
+  become: yes
   copy:
     src: files/override.conf
     dest: /etc/systemd/system/docker.service.d/override.conf
@@ -68,7 +68,7 @@
     - restart docker
 
 - name: Copy docker daemon configuration
-  become: true
+  become: yes
   template:
     src: files/daemon.json.j2
     # host is used to listen orders from a specific ip,

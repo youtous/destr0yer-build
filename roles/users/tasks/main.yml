@@ -2,14 +2,14 @@
 # see https://github.com/unxnn/ansible-users
 
 - name: Add password to root user
-  become: true
+  become: yes
   user:
     name: root
     password: "{{ root_password }}"
   no_log: true
 
 - name: Remove default users if exist
-  become: true
+  become: yes
   user:
     name: "{{ item }}"
     state: absent
@@ -18,7 +18,7 @@
     - debian
 
 - name: Setup users
-  become: true
+  become: yes
   import_role:
     name: unxnn.users
   vars:
@@ -28,7 +28,7 @@
   no_log: true
 
 - name: Allow admin group sudo with password
-  become: true
+  become: yes
   lineinfile:
     path: /etc/sudoers
     state: present

@@ -4,7 +4,7 @@
   include_vars: default.yml
 
 - name: Setup fail2ban
-  become: true
+  become: yes
   import_role:
     name: oefenweb.fail2ban
   vars:

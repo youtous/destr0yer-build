@@ -2,7 +2,7 @@
 # This role permits to append additional services to the fail2ban jail
 # see https://github.com/Oefenweb/ansible-fail2ban for naming details
 - name: Update fail2ban jail configuration with additional services
-  become: true
+  become: yes
   blockinfile:
     dest: "/etc/fail2ban/jail.local"
     block: "{{ lookup('template', 'files/additional-services.j2') }}"

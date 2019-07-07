@@ -1,7 +1,7 @@
 ---
 # This role contains postfix settings for relay usage
 - name: Install postfix package
-  become: true
+  become: yes
   apt:
     name:
       - mailutils
@@ -10,7 +10,7 @@
 
 # http://postfix.state-of-mind.de/patrick.koetter/smtpauth/smtp_auth_mailservers.html
 - name: Define /etc/mailname with hostname
-  become: true
+  become: yes
   copy:
     content: "{{ myhostname }}"
     dest: "/etc/mailname"
@@ -21,7 +21,7 @@
     - reload postfix
 
 - name: Copy aliases
-  become: true
+  become: yes
   template:
     src: files/aliases.j2
     dest: /etc/aliases
@@ -32,7 +32,7 @@
     - newaliases
 
 - name: Copy sasl_passwd
-  become: true
+  become: yes
   template:
     src: files/sasl_passwd.j2
     dest: "{{ postfix_sasl_file }}"
@@ -44,7 +44,7 @@
   no_log: true
 
 - name: Copy postfix configuration
-  become: true
+  become: yes
   template:
     src: files/main.j2.cf
     dest: /etc/postfix/main.cf
@@ -55,19 +55,19 @@
     - restart postfix
 
 - name: Secure SASL password file
-  become: true
+  become: yes
   file:
     path: "{{ postfix_sasl_file }}"
     mode: u=rw,g=,o=
 
 - name: Enable postfix
-  become: true
+  become: yes
   service:
     name: postfix
     enabled: yes
 
 - name: Ensure exim4 is disabled
-  become: true
+  become: yes
   service:
     name: exim4
     enabled: no

@@ -4,7 +4,7 @@
   include_vars: default.yml
 
 - name: Setup Logwatch
-  become: true
+  become: yes
   import_role:
     name: anxs.logwatch
   vars:
