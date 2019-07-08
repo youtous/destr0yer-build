@@ -1,0 +1,101 @@
+version: "3.7"
+
+services:
+  app:
+    image: swarmpit/swarmpit:latest
+    environment:
+      - SWARMPIT_DB=http://db:5984
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - net
+      - {{ traefik_network }}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.frontend.rule=Host:{{ swarmpit_domain }}"
+        - traefik.enable=true
+        - traefik.port=8080
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ swarmpit_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth is done using internal system, todo : check logging
+        #- "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        #- "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+    restart: always
+
+  db:
+    image: couchdb:2.3.0
+    volumes:
+      - db-data:/opt/couchdb/data
+    networks:
+      - net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: 256M
+        reservations:
+          cpus: '0.07'
+          memory: 128M
+      placement:
+        constraints:
+          - node.role == manager
+        preferences:
+          - spread: node.id
+    restart: always
+
+  agent:
+    image: swarmpit/agent:latest
+    environment:
+      - DOCKER_API_VERSION=1.35
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - net
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+    restart: always
+
+networks:
+  net:
+    driver: overlay
+    attachable: true
+    driver_opts:
+      encrypted: ""
+  {{ traefik_network }}:
+    external: true
+
+volumes:
+  db-data:
+    driver: local
