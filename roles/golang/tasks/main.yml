@@ -4,7 +4,7 @@
   include_vars: default.yml
 
 - name: Add golang to PATH bash
-  become: true
+  become: yes
   template:
     src: files/golang.sh.j2
     dest: /etc/profile.d/golang.sh
@@ -13,7 +13,7 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Add /usr/sbin to PATH fish
-  become: true
+  become: yes
   template:
     src: files/golang.fish.j2
     dest: /etc/fish/conf.d/golang.fish
@@ -29,7 +29,7 @@
     PATH: "{{ ansible_env.PATH }}:{{ GOROOT }}/bin"
 
 - name: Install golang
-  become: true
+  become: yes
   import_role:
     name: fubarhouse.golang
   vars:

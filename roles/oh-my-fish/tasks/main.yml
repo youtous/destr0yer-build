@@ -6,14 +6,14 @@
   ignore_errors: True
 
 - name: "Clone OMF from {{ omf_repo }}"
-  become: true
+  become: yes
   git:
     repo: "{{ omf_repo }}"
     dest: "{{ omf_installation_directory }}"
   when: omf_present is failed
 
 - name: Install OMF
-  become: true
+  become: yes
   template:
     src: files/config-omf.fish.j2
     dest: /etc/fish/conf.d/config-omf.fish
@@ -27,7 +27,7 @@
   ignore_errors: True
 
 - name: "Clone OMF theme \"{{ omf_theme }}\" from {{ omf_theme_repo }}"
-  become: true
+  become: yes
   git:
     repo: "{{ omf_theme_repo }}"
     dest: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
@@ -39,13 +39,13 @@
   register: omf_default_link
 
 - name: Move default OMF theme
-  become: true
+  become: yes
   command: mv "{{ omf_default_theme_directory }}" "{{ omf_default_theme_move_directory }}"
   ignore_errors: True
   when: omf_default_link.stat.islnk is not defined or not omf_default_link.stat.islnk
 
 - name: Ensure theme {{ omf_theme }} is set as default
-  become: true
+  become: yes
   file:
     src: "{{ omf_theme_directory }}"
     dest: "{{ omf_default_theme_directory }}"
@@ -53,7 +53,7 @@
     state: link
 
 - name: Install OMF plugins
-  become: true
+  become: yes
   git:
     repo: "{{ omf_plugin_repo_base }}{{item}}"
     dest: "{{ omf_plugin_directory }}/{{ item }}"

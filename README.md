@@ -11,7 +11,7 @@ Please fork this repo for each different server configuration.
 - Python
 
 ## VM only
-
+ _*Commands :*_ 
 - Start machines using `vagrant up`.
 - Stop machines using `vagrant halt`.
 - Update /etc/hosts using `vagrant hostmanager`
@@ -20,8 +20,9 @@ Please fork this repo for each different server configuration.
 
 ## Ansible usage
 
-- Launch the recipe using : `ansible-playbook -i hosts/hosts.yml destr0yers.yml --vault-password-file ./.vault_password`
-- Edit secrets using  : `env EDITOR=vim ansible-vault edit secret_vars/all.yml --vault-password-file ./.vault_password`
+- First configuration a new hosts: `ansible-playbook -i hosts/destr0yers.yml  destr0yers.yml --vault-password-file ./.vault_password --tag="new-systems"`
+- Launch the recipe using: `ansible-playbook -i hosts/destr0yers.yml destr0yers.yml --vault-password-file ./.vault_password`
+- Edit secrets using : `env EDITOR=vim ansible-vault edit secret_vars/all.yml --vault-password-file ./.vault_password`
 
 ## Playbooks description :
 
@@ -52,7 +53,7 @@ To sum up :
 
 *Notes :*
 
- - chacha20 is currently secured enought and resists against timing guess attacks
+ - chacha20 is currently secured enough and resists against timing guess attacks
  - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121) 
 
 ## Ansible 3rd Roles
@@ -61,3 +62,4 @@ Install requirements using
 `ansible-galaxy install -r requirements.yml`
 
 *See requirements.yml*
+*Ansible version:* _2.8_ 

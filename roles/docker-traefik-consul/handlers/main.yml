@@ -11,7 +11,7 @@
   command: "docker stack deploy -c {{ traefik_compose_file_dest }} traefik-consul"
 
 - name: restart fail2ban
-  become: true
+  become: yes
   systemd:
     name: fail2ban
     state: restarted

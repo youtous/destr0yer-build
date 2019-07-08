@@ -1,3 +1,4 @@
 ---
 apt_directory: "/etc/apt"
 apt_sources_list_directory: "{{ apt_directory }}/sources.list.d"
+apt_buster_flag_path: "{{ apt_directory }}/buster_update_flag"

@@ -1,12 +1,12 @@
 ---
 # This role contains CLI tools installation and configuration, CLI tools are for user not for the system
 - name: Install CLI Tools
-  become: true
+  become: yes
   apt:
     name: "{{ cli_packages }}"
 
 - name: Configure vim
-  become: true
+  become: yes
   copy:
     src: files/vimrc.local
     dest: /etc/vim/vimrc.local
@@ -15,12 +15,12 @@
     mode: u=rw,g=r,o=r
 
 - name: Install ruby
-  become: true
+  become: yes
   apt:
     name: "{{ ruby_packages }}"
 
 - name: Install colorls gem
-  become: true
+  become: yes
   gem:
     name: colorls
     state: latest
@@ -37,7 +37,7 @@
     name: golang
 
 - name: Install ccat
-  become: true
+  become: yes
   shell: |
     cd /root &&
     /usr/local/go/bin/go get -u github.com/jingweno/ccat &&
@@ -46,19 +46,19 @@
   when: ccat_present is failed
 
 - name: Requires python
-  become: true
+  become: yes
   apt:
     name: "{{ python_packages }}"
 
 - name: Update setuptools
-  become: true
+  become: yes
   pip:
     name: setuptools
     state: latest
     extra_args: --upgrade
 
 - name: Install mdv (Markdown viewer)
-  become: true
+  become: yes
   pip:
     name: mdv
     state: latest

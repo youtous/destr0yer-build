@@ -1,7 +1,7 @@
 ---
 # This role contains base system configuration
 - name: Set timezone to Europe/Paris
-  become: true
+  become: yes
   timezone:
     name: Europe/Paris
 
@@ -10,7 +10,7 @@
     name: host
 
 - name: Ensure system folder permissions are correct
-  become: true
+  become: yes
   file:
     path: "{{ item }}"
     owner: root
@@ -33,7 +33,7 @@
     name: oh-my-fish
 
 - name: Add /usr/sbin to PATH bash
-  become: true
+  become: yes
   copy:
     src: files/usr-sbin.sh
     dest: /etc/profile.d/usr-sbin.sh
@@ -42,7 +42,7 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Add /usr/sbin to PATH fish
-  become: true
+  become: yes
   copy:
     src: files/usr-sbin.fish
     dest: /etc/fish/conf.d/usr-sbin.fish
@@ -56,7 +56,7 @@
   ignore_errors: True
 
 - name: Fix Scaleway reboot command fish
-  become: true
+  become: yes
   copy:
     src: files/reboot.fish
     dest: /etc/fish/conf.d/reboot.fish
@@ -66,7 +66,7 @@
   when: host_scw_aarch64 is not failed
 
 - name: Fix Scaleway reboot command bash
-  become: true
+  become: yes
   copy:
     src: files/reboot.sh
     dest: /etc/profile.d/reboot.sh
@@ -91,6 +91,6 @@
   when: selinux_policy_valid is failed and host_scw_aarch64 is failed
 
 - name: Install SELinux utils
-  become: true
+  become: yes
   apt:
     name: "{{ selinux_utils_packages }}"

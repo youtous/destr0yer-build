@@ -1,6 +1,6 @@
 ---
 # This role contains system packages installation
 - name: Install system packages
-  become: true
+  become: yes
   apt:
     name: "{{ system_packages }}"

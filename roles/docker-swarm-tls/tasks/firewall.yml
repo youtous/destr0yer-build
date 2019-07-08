@@ -2,7 +2,7 @@
 # Firewall configuration
 # Revocation rules
 - name: Revoke nodes firewall - tcp/2376
-  become: true
+  become: yes
   ufw:
     rule: allow
     port: 2376
@@ -11,7 +11,7 @@
   with_items: "{{ revoked_nodes_ips }}"
 
 - name: Revoke nodes firewall - tcp/2377
-  become: true
+  become: yes
   ufw:
     rule: allow
     port: 2377
@@ -20,7 +20,7 @@
   with_items: "{{ revoked_nodes_ips }}"
 
 - name: Revoke nodes firewall - tcp,udp/7946
-  become: true
+  become: yes
   ufw:
     rule: allow
     port: 7946
@@ -29,7 +29,7 @@
   with_items: "{{ revoked_nodes_ips }}"
 
 - name: Revoke nodes firewall - tcp,udp/4789
-  become: true
+  become: yes
   ufw:
     rule: allow
     port: 4789
@@ -38,7 +38,7 @@
   with_items: "{{ revoked_nodes_ips }}"
 
 - name: Allow nodes ips to pass firewall - tcp/2376
-  become: true
+  become: yes
   ufw:
     rule: allow
     port: 2376
@@ -46,7 +46,7 @@
   with_items: "{{ nodes_ips }}"
 
 - name: Allow nodes ips to pass firewall - tcp/2377
-  become: true
+  become: yes
   ufw:
     rule: allow
     port: 2377
@@ -54,7 +54,7 @@
   with_items: "{{ nodes_ips }}"
 
 - name: Allow nodes ips to pass firewall - tcp,udp/7946
-  become: true
+  become: yes
   ufw:
     rule: allow
     port: 7946
@@ -62,7 +62,7 @@
   with_items: "{{ nodes_ips }}"
 
 - name: Allow nodes ips to pass firewall - tcp,udp/4789
-  become: true
+  become: yes
   ufw:
     rule: allow
     port: 4789

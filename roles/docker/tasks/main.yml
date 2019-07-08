@@ -1,19 +1,19 @@
 ---
 # This role contains docker installation
 - name: Install python docker module
-  become: true
+  become: yes
   pip:
     state: latest
     name: docker
 
 - name: Ensure docker group is present
-  become: true
+  become: yes
   group:
     gid: "{{ docker_group_gid }}"
     name: "{{ docker_group_name }}"
 
 - name: Adding user '{{ ansible_user }}' to docker group
-  become: true
+  become: yes
   block:
     - user:
         name: "{{ ansible_user }}"
@@ -22,7 +22,7 @@
     - meta: reset_connection
 
 - name: Setup docker
-  become: true
+  become: yes
   import_role:
     name: geerlingguy.docker
   vars:

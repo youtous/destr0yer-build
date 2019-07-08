@@ -1,20 +1,20 @@
 ---
 - name: restart postfix
-  become: true
+  become: yes
   systemd:
     name: postfix
     state: restarted
 
 - name: reload postfix
-  become: true
+  become: yes
   systemd:
     name: postfix
     state: reloaded
 
 - name: hash sasl passwd
-  become: true
+  become: yes
   command: "postmap hash:{{ postfix_sasl_file }}"
 
 - name: newaliases
-  become: true
+  become: yes
   command: "newaliases"

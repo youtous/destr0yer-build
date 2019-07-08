@@ -1,14 +1,14 @@
 ---
 # This role contains oh-my-fish global installation
 - name: Define hostname
-  become: true
+  become: yes
   hostname:
     name: "{{ hostname }}"
   notify:
     - restart network-manager
 
 - name: Unlock /etc/hosts
-  become: true
+  become: yes
   file:
     path: /etc/hosts
     attributes: -i
@@ -16,7 +16,7 @@
   ignore_errors: yes
 
 - name: Setup hosts
-  become: true
+  become: yes
   template:
     src: files/hosts.j2
     dest: /etc/hosts
@@ -30,7 +30,7 @@
   ignore_errors: yes
 
 - name: Unlock /etc/resolv.conf
-  become: true
+  become: yes
   file:
     path: /etc/resolv.conf
     attributes: -i
@@ -52,7 +52,7 @@
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable
-  become: true
+  become: yes
   file:
     path: /etc/resolv.conf
     owner: root

@@ -6,14 +6,14 @@
   register: files_sources
 
 - name: Remove unwanted sources.d
-  become: true
+  become: yes
   file:
     path: "{{ item.path }}"
     state: absent
   with_list: "{{ files_sources.files }}"
 
 - name: Copy sources.list
-  become: true
+  become: yes
   copy:
     src: "files/sources.list"
     dest: "{{ apt_directory }}/sources.list"
@@ -21,8 +21,18 @@
     group: root
     mode: u=rw,g=r,o=r
 
+- name: Checking if Buster update channel Done
+  stat:
+    path: "{{ apt_buster_flag_path }}"
+  register: buster_channel_flag
+
+- name: Update to Buster stable channel
+  become: yes
+  shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path }}"
+  when: buster_channel_flag.stat.exists == False
+
 - name: Update and upgrade apt packages
-  become: true
+  become: yes
   apt:
     upgrade: yes
     update_cache: yes

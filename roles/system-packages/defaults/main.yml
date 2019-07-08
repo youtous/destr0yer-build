@@ -5,6 +5,7 @@ system_packages:
   - wget
   - curl
   - dnsutils
+  - screenfetch
   - zip
   - grc # colorize terminal
   - unzip
