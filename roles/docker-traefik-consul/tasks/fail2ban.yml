@@ -16,7 +16,7 @@
     - restart fail2ban
 
 - name: Activate traefik jails using fail2ban
-  import_role:
+  include_role:
     name: fail2ban-additional
   vars:
     fail2ban_services:
