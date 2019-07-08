@@ -17,7 +17,7 @@ traefik_public_tag: "traefik-public"
 # minimal TLS version
 traefik_min_tls_version: "VersionTLS12"
 
-# list of supported ciphers; the server will fail if one cipher is not valmid
+# list of supported ciphers; the server will fail if one cipher is not valid
 traefik_cipher_suites:
     - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
