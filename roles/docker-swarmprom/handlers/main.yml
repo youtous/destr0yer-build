@@ -1,13 +1,8 @@
 ---
-# todo : available in ansible 2.8
-#- name: deploy swarmprom
-#  docker_stack:
-#    state: present
-#    name: swarmprom
-#    compose:
-#      - "{{ swarmprom_compose_file_dest }}"
-
 - name: deploy swarmprom
-  command: "docker stack deploy -c {{ swarmprom_compose_file_dest }} swarmprom"
-
+  docker_stack:
+    state: present
+    name: swarmprom
+    compose:
+      - "{{ swarmprom_compose_file_dest }}"
 ...
