@@ -1,30 +1,23 @@
 version: "3.7"
 
 services:
-  app:
-    image: swarmpit/swarmpit:latest
-    environment:
-      - SWARMPIT_DB=http://db:5984
+  portainer:
+    image: portainer/portainer
+    command: -H tcp://tasks.agent:9001 --tlsskipverify
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer-data:/data
     networks:
-      - net
+      - agent-network
       - {{ traefik_network }}
     deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 256M
-        reservations:
-          cpus: '0.1'
-          memory: 128M
       placement:
         constraints:
           - node.role == manager
+          - node.labels.portainer.portainer-data == true
       labels:
-        - "traefik.frontend.rule=Host:{{ swarmpit_domain }}"
+        - "traefik.frontend.rule=Host:{{ portainer_domain }}"
         - traefik.enable=true
-        - traefik.port=8080
+        - traefik.port=9000
         - "traefik.tags={{ traefik_public_tag }}"
         - "traefik.docker.network={{ traefik_network }}"
         # Traefik service that listens to HTTP
@@ -38,46 +31,36 @@ services:
         - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ swarmpit_domain }}"
+        - "traefik.frontend.headers.SSLHost={{ portainer_domain }}"
         - traefik.frontend.headers.STSSeconds=315360000
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
         # Auth is done using internal system, todo : check logging
         #- "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         #- "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
-    restart: always
-
-  db:
-    image: couchdb:2.3.0
-    volumes:
-      - db-data:/opt/couchdb/data
-    networks:
-      - net
-    deploy:
       resources:
         limits:
-          cpus: '0.15'
+          cpus: '0.2'
           memory: 256M
         reservations:
-          cpus: '0.07'
+          cpus: '0.1'
           memory: 128M
-      placement:
-        constraints:
-          - node.role == manager
-        preferences:
-          - spread: node.id
     restart: always
 
   agent:
-    image: swarmpit/agent:latest
+    image: portainer/agent
     environment:
-      - DOCKER_API_VERSION=1.35
+      AGENT_CLUSTER_ADDR: tasks.agent
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
     networks:
-      - net
+      - agent-network
     deploy:
       mode: global
+      placement:
+        constraints:
+          - node.platform.os == linux
       resources:
         limits:
           cpus: '0.10'
@@ -88,7 +71,7 @@ services:
     restart: always
 
 networks:
-  net:
+  agent-network:
     driver: overlay
     attachable: true
     driver_opts:
@@ -97,5 +80,5 @@ networks:
     external: true
 
 volumes:
-  db-data:
+  portainer-data:
     driver: local

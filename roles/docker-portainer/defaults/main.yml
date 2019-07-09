@@ -1,6 +1,6 @@
 ---
-# base domain of swarmpit
-swarmpit_domain: "pit.{{ hostname }}"
+# base domain of portainer
+portainer_domain: "portainer.{{ hostname }}"
 
 # traefik public-tag
 traefik_public_tag: "traefik-public"

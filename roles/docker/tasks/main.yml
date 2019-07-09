@@ -3,9 +3,16 @@
 - name: Install python docker module
   become: yes
   pip:
-    executable: pip3  # because docker-ansible uses python2
+    executable: pip3
     state: latest
     name: "docker"
+
+- name: Install others python docker dependancies
+  become: yes
+  pip:
+    executable: pip3
+    state: latest
+    name: "jsondiff"
 
 - name: Ensure docker group is present
   become: yes

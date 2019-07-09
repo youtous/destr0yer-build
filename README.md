@@ -58,6 +58,26 @@ To sum up :
  - chacha20 is currently secured enough and resists against timing guess attacks
  - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121) 
 
+## DockerSwarm hosts
+Swarm comes with several admin applications which require domains,
+here is a list of the required domains :
+
+```
+# prom domains
+192.168.100.10  prom.heaven-pascal.youtous.dv
+192.168.100.10  prom.prom.heaven-pascal.youtous.dv
+192.168.100.10  unsee.prom.heaven-pascal.youtous.dv
+192.168.100.10  alerts.prom.heaven-pascal.youtous.dv
+192.168.100.10  graph.prom.heaven-pascal.youtous.dv
+
+# traefik domains
+192.168.100.10  traefik.heaven-pascal.youtous.dv
+192.168.100.10  consul.heaven-pascal.youtous.dv
+
+# portainer
+192.168.100.10  portainer.heaven-pascal.youtous.dv
+```
+
 ## Ansible 3rd Roles
 
 Install requirements using

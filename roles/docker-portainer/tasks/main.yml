@@ -1,0 +1,23 @@
+---
+# This role setup a portainer managing application for a docker swarm cluster
+# see https://portainer.io/ for more details
+
+- name: Ensure portainer directory exists
+  file:
+    state: directory
+    path: "{{ portainer_compose_file_dest_directory }}"
+
+- name: Tag current node as portainer origin
+  docker_node:
+    hostname: "{{ hostname }}"
+    labels:
+      portainer.portainer-data: "true"
+
+- name: Copy Portainer stack
+  template:
+    src: files/docker-compose.portainer.j2.yml
+    dest: "{{ portainer_compose_file_dest }}"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy portainer
+...
