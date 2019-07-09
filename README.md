@@ -64,7 +64,6 @@ here is a list of the required domains :
 
 ```
 # prom domains
-192.168.100.10  prom.heaven-pascal.youtous.dv
 192.168.100.10  prom.prom.heaven-pascal.youtous.dv
 192.168.100.10  unsee.prom.heaven-pascal.youtous.dv
 192.168.100.10  alerts.prom.heaven-pascal.youtous.dv
