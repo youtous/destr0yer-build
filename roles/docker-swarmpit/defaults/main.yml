@@ -1,0 +1,10 @@
+---
+# base domain of swarmpit
+swarmpit_domain: "pit.{{ hostname }}"
+
+# traefik public-tag
+traefik_public_tag: "traefik-public"
+
+# name of the traefik network
+traefik_network: "traefik-public"
+...
