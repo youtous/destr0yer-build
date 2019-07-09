@@ -24,6 +24,8 @@ Please fork this repo for each different server configuration.
 - Launch the recipe using: `ansible-playbook -i hosts/destr0yers.yml destr0yers.yml --vault-password-file ./.vault_password`
 - Edit secrets using : `env EDITOR=vim ansible-vault edit secret_vars/all.yml --vault-password-file ./.vault_password`
 
+- Launch the docker recipe using: `ansible-playbook -i hosts/swarm-nodes.yml the-swarm.yml --vault-password-file ./.vault_password`
+
 ## Playbooks description :
 
 - **destr0yers** : this play setup debian based systems with a secured base configuration. Use it as a _base_.

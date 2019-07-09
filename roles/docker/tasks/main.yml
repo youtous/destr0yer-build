@@ -3,8 +3,9 @@
 - name: Install python docker module
   become: yes
   pip:
+    executable: pip3  # because docker-ansible uses python2
     state: latest
-    name: docker
+    name: "docker-py"
 
 - name: Ensure docker group is present
   become: yes
