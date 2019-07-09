@@ -47,12 +47,11 @@ services:
 
   grafana:
     image: stefanprodan/swarmprom-grafana:5.3.4
-    networks:
-      - net
     environment: # todo : check this !!
-      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
-      - GF_USERS_ALLOW_SIGN_UP=false
+      # allow everyone to register, traefik will be used as auth firewall
+      #- "GF_SECURITY_ADMIN_USER=admin"
+      #- "GF_SECURITY_ADMIN_PASSWORD=admin"
+      - GF_USERS_ALLOW_SIGN_UP=true
       #- GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-localhost}
       #- GF_SMTP_ENABLED=${GF_SMTP_ENABLED:-false}
       #- GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS:-grafana@test.com}
