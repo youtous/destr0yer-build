@@ -5,7 +5,7 @@
   pip:
     executable: pip3  # because docker-ansible uses python2
     state: latest
-    name: "docker-py"
+    name: "docker"
 
 - name: Ensure docker group is present
   become: yes
