@@ -35,9 +35,9 @@ services:
         - traefik.frontend.headers.STSSeconds=315360000
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
-        # Auth is done using internal system, todo : check logging
+        # Auth is done using internal system (XHR request does not support cookies), todo : check logging
         #- "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
-        #- "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
       resources:
         limits:
           cpus: '0.2'
