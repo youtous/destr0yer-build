@@ -36,8 +36,7 @@
 
 - name: Add dynamic motd loading to pam.d configuration
   become: yes
-  blockinfile:
+  lineinfile:
     dest: "/etc/pam.d/sshd"
-    insertafter: "^session    optional     pam_motd.so  motd="
-    block: "session    optional     pam_motd.so  motd=/run/motd.dynamic"
-    marker: "### {mark} ANSIBLE MANAGED BLOCK - load dynamic motd at login ###"
+    regexp: "^session    optional     pam_motd.so  motd="
+    line: "session    optional     pam_motd.so  motd=/run/motd.dynamic"
