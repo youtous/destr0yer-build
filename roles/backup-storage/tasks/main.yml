@@ -64,7 +64,7 @@
     dest: "/etc/ssh/sshd_config"
     block: "{{ lookup('template', 'files/sshd_sftp_config.j2') }}"
     # Match MUST BE SET at the end of the file... (https://unix.stackexchange.com/questions/67334/openssh-how-to-end-a-match-block)
-    validate: "/usr/sbin/sshd -T -f %s"
+    validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp group policy ###"
   notify:
     - restart sshd
