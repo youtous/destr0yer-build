@@ -12,15 +12,16 @@
     fail2ban_destemail: "{{ fail2ban_destemail }}"
     fail2ban_services: "{{ fail2ban_services }}"
 
-- name: Update fail2ban using latest version from buster-backport
+- name: Update fail2ban using latest version from strech-backport (handle ipv6)
   become: yes
   apt:
     name: fail2ban
     state: latest
-    default_release: buster-backports
+    default_release: strech-backports
     update_cache: yes
   notify:
     - restart fail2ban
+  when: ansible_os_family == "Debian" and ansible_lsb.major_release|int < 10
 
 - name: Configure logrotate for fail2ban
   import_role:
