@@ -57,10 +57,9 @@ monit_mailserver_host: "localhost"
 # monit_mailserver_encryption:
 monit_mailserver_timeout: 60
 
-# disable Monit web interface
-monit_enable_webinterface: no
-monit_port:
-monit_address:
+# Monit should not be exposed
+monit_port: 2812
+monit_address: localhost
 monit_allow: ["localhost"]
 # monit_username:
 # monit_password:

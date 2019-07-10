@@ -49,7 +49,6 @@
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx
-  when: monit_present is failed
 
 - name: Create Monit additional configuration directory
   become: yes
@@ -59,7 +58,15 @@
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx
-  when: monit_present is failed
+
+- name: Create Monit var directory
+  become: yes
+  file:
+    path: "{{ monit_var_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
 
 - name: Copy Monit default configuration
   become: yes
@@ -80,7 +87,6 @@
     owner: root
     group: root
     state: link
-  when: monit_present is failed
 
 # according https://mmonit.com/wiki/Monit/Systemd
 - name: Create systemd startup script for Monit
@@ -91,7 +97,6 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  when: monit_present is failed
 
 - name: Clean temporary directory
   become: yes
