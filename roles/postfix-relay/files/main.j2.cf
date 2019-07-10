@@ -15,7 +15,7 @@ inet_interfaces = $myhostname, localhost
 
 # local forwarding only
 mynetworks_style = host
-mynetworks = 127.0.0.0/8
+mynetworks = 127.0.0.0/8, ::1/128
 
 # aliases
 alias_maps = hash:/etc/aliases
