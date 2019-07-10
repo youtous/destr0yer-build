@@ -34,8 +34,8 @@ relay_password: "{{ secret_relay_password }}"
 lets_encrypt_email: "admin+heaven-pascal@youtous.me"
 # number of traefik replicas
 traefik_replicas: 0
-# number of consul replicas
-consul_replicas: 0
+# number of consul replicas => keep the certificates at least on two servers
+consul_replicas: 1
 
 ### End of docker Traefik parameters ###
 
