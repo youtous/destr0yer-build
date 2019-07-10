@@ -1,6 +1,11 @@
 # Install requirements for the playbook using
 # `ansible-galaxy install -r requirements.yml`
 
+# NTP
+- name: geerlingguy.ntp
+  src: https://github.com/geerlingguy/ansible-role-ntp.git
+  version: 99955a37a7856becf0a6eef249dba1bf60e3a09d
+
 # golang installer
 - name: fubarhouse.golang
   src: https://github.com/fubarhouse/ansible-role-golang.git
@@ -67,3 +72,4 @@
 - name: geerlingguy.docker
   src: https://github.com/geerlingguy/ansible-role-docker.git
   version: 5afc0f8ab487e31047c3c1f7013f66025aeb1cdd
+

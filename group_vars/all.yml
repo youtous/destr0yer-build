@@ -4,6 +4,9 @@
 ###  Beginning of destr0yers vars  ###
 users_default_shell: "/usr/bin/fish"
 
+# Time configuration
+timezone: "Europe/Paris"
+
 # Network configuration
 domain_name: youtous.me
 domain_search: []

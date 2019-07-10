@@ -1,9 +1,16 @@
 ---
 # This role contains base system configuration
-- name: Set timezone to Europe/Paris
+- name: Setup NTP
+  become: yes
+  import_role:
+    name: geerlingguy.ntp
+  vars:
+    ntp_timezone: "{{ timezone }}"
+
+- name: "Set timezone to {{ timezone }}"
   become: yes
   timezone:
-    name: Europe/Paris
+    name: "{{ timezone }}"
 
 - name: Set host configuration
   import_role:
