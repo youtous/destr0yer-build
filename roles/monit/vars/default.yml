@@ -1,0 +1,3 @@
+monit_package_name: "monit-{{ monit_version }}-linux-{{ 'arm64' if (ansible_architecture == 'aarch64') else 'x64' }}.tar.gz"
+monit_download_uri: "https://bitbucket.org/tildeslash/monit/downloads/{{ monit_package_name }}"
+monit_download_dest_directory: "/tmp/monit"

@@ -1,0 +1,103 @@
+---
+# Install Monit from sources
+- name: Include default vars
+  include_vars: default.yml
+
+- name: Check Monit version is {{ monit_version }}
+  shell: "monit --version | grep {{ monit_version }}"
+  register: monit_present
+  ignore_errors: True
+
+- name: Create temporary download directory
+  file:
+    path: /tmp/monit
+    state: directory
+    mode: u=rwx,g=rx,o=rx
+  when: monit_present is failed
+
+- name: Download Monit archive
+  get_url:
+    url: "{{ monit_download_uri }}"
+    dest: "{{ monit_download_dest_directory }}/monit.tar.gz"
+    checksum: "{{ monit_download_checksum }}"
+    mode: u=rwx,g=,o=
+  when: monit_present is failed
+
+- name: Extract Monit archive
+  unarchive:
+    remote_src: yes
+    src: "{{ monit_download_dest_directory }}/monit.tar.gz"
+    dest: "{{ monit_download_dest_directory }}"
+  when: monit_present is failed
+
+- name: Copy Monit binary
+  become: yes
+  copy:
+    remote_src: yes
+    src: "{{ monit_download_dest_directory }}/monit-{{ monit_version }}/bin/monit"
+    dest: /usr/local/bin/monit
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  when: monit_present is failed
+
+- name: Create Monit configuration directory
+  become: yes
+  file:
+    path: /etc/monit
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  when: monit_present is failed
+
+- name: Create Monit additional configuration directory
+  become: yes
+  file:
+    path: /etc/monit/conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  when: monit_present is failed
+
+- name: Copy Monit default configuration
+  become: yes
+  copy:
+    remote_src: yes
+    src: "{{ monit_download_dest_directory }}/monit-{{ monit_version }}/conf/monitrc"
+    dest: /etc/monit/monitrc
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  when: monit_present is failed
+
+- name: Create a symbolic link for monitrc
+  become: yes
+  file:
+    src: /etc/monit/monitrc
+    dest: /etc/monitrc
+    owner: root
+    group: root
+    state: link
+  when: monit_present is failed
+
+# according https://mmonit.com/wiki/Monit/Systemd
+- name: Create systemd startup script for Monit
+  become: yes
+  copy:
+    src: "files/systemd/monit.service"
+    dest: "/lib/systemd/system/monit.service"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  when: monit_present is failed
+
+- name: Clean temporary directory
+  become: yes
+  file:
+    state: absent
+    path: "/tmp/monit"
+  when: monit_present is failed
+
+...

@@ -1,0 +1,24 @@
+---
+# This role contains the default configuration for setting up Monit (a monitoring tool)
+- name: Install Monit
+  import_tasks: install.yml
+
+- name: Setup Monit
+  become: yes
+  import_tasks: anxs.yml
+
+- name: Setup additional Monit configurations
+  become: yes
+  template:
+    src: "templates/etc/monit/conf.d/{{item}}.j2"
+    dest: "/etc/monit/conf.d/{{item}}"
+  with_items:
+    - system
+  notify:
+    - reload monit
+
+- name: Enable Monit
+  become: yes
+  service:
+    name: monit
+    enabled: yes
