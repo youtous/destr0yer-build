@@ -35,3 +35,7 @@
     name: geerlingguy.docker
   vars:
     docker_apt_arch: "{{ 'arm64' if (ansible_architecture == 'aarch64') else 'amd64' }}"
+
+- name: Monit docker
+  import_role:
+    name: monit-docker
