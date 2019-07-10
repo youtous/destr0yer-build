@@ -19,13 +19,13 @@
 # SELinux policy and his dependencies
 - name: robertdebock.bootstrap
   src: https://github.com/robertdebock/ansible-role-bootstrap.git
-  version: 97b1fd2c5751f0e4aff0669478d04cdf5e86d52e
+  version: 6e919718cc292dab06d4e07b668dac375267d885
 - name: robertdebock.reboot
   src: https://github.com/robertdebock/ansible-role-reboot.git
-  version: 43ef2c4476b0a13b80afa5e6f6385f1f346fab7f
+  version: f2a2cc3ca953fe9721e96d05cff20092dae15eda
 - name: robertdebock.selinux
   src: https://github.com/robertdebock/ansible-role-selinux.git
-  version: 071532806628baaab0b409adff3110a449faf793
+  version: 146e970c095af5bae55b8ac86c91382e3505a838
 
 # Resolv.conf
 - name: ahuffman.resolv
