@@ -101,10 +101,9 @@ global_backup_profiles:
       # fix ioctl bug (https://wiki.archlinux.org/index.php/Duply)
       gpg_opts: "--pinentry-mode loopback"
 
-      # TODO : add accept new keys : https://serverfault.com/questions/638600/auto-accept-rsa-key-fingerprint-from-command-line
-      # --ssh-options \\\"-oStrictHostKeyChecking=accept-new\\\"
+      # add accept new keys : https://serverfault.com/questions/638600/auto-accept-rsa-key-fingerprint-from-command-line
       # fix permanent prompt of the gpg passphrase, accept new host keys
-      dupl_params: "--use-agent "
+      dupl_params: "--use-agent --ssh-options \\\"-oStrictHostKeyChecking=accept-new\\\""
 
       target: "{{ global_backup_destination }}"
       source: "{{ global_backup_source_directory }}"
