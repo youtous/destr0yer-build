@@ -1,4 +1,6 @@
 ---
+activate_selinux: no
+
 # The state, either disabled, permissive or enforcing.
 selinux_state: enforcing
 
