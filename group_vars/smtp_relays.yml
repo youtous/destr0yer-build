@@ -11,4 +11,4 @@ postmaster_email: "{{ monitoring_email }}"
 #relay_password  - the password for the host
 
 # relay address and port used to deliver emails
-relayhost: "[mail.youtous.me]:587"
+relayhost: "[{{ relay_server }}]:{{ relay_port }}"

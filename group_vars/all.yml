@@ -19,6 +19,10 @@ nameservers:
 # Email that will receive all notifications, useful for monitoring
 monitoring_email: "monitoring@youtous.me"
 
+# email server used to deliver emails
+relay_server: "mail.youtous.me"
+relay_port: 587
+
 common_users:
   # arbiter is the only sudoer
   - username: "{{ arbiter_username }}"
