@@ -34,6 +34,16 @@
     group: root
     mode: u=rw,g=rw,o=r
 
+- name: Update static motd
+  become: yes
+  copy:
+    remote_src: yes
+    src: "/etc/issue.net"
+    dest: "/etc/motd"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
 - name: Add dynamic motd loading to pam.d configuration
   become: yes
   lineinfile:
