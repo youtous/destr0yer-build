@@ -1,0 +1,15 @@
+global:
+  # The smarthost and SMTP sender used for mail notifications.
+  smtp_smarthost: '{{ alert_email_server }}:{{ alert_email_port }}'
+  smtp_from: '{{ alert_email_from }}'
+  smtp_auth_username: '{{ alert_email_user }}'
+  smtp_auth_password: '{{ alert_email_password }}'
+
+# The root route on which each incoming alert enters.
+route:
+  receiver: 'email'
+
+receivers:
+  - name: 'email'
+    email_configs:
+      - to: '{{ alert_email_to }}'

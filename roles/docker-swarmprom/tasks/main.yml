@@ -36,6 +36,19 @@
   notify:
     - deploy swarmprom
 
+- name: Ensure alertmanager directory exists
+  file:
+    state: directory
+    path: "{{ swarmprom_compose_file_dest_directory }}/alertmanager"
+
+- name: Copy Swarmprom AlertManager configuration file
+  template:
+    src: templates/alertmanager/alertmanager.j2.yml
+    dest: "{{ swarmprom_compose_file_dest_directory }}/alertmanager/alertmanager.yml"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy swarmprom
+
 - name: Copy Swarmprom stack
   template:
     src: files/docker-compose.swarmprom.j2.yml

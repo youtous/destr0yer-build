@@ -3,6 +3,7 @@
 alert_email_server: "{{ relay_server }}"
 alert_email_port: "{{ relay_port }}"
 alert_email_from: "{{ relay_email }}"
+alert_email_to: "{{ monitoring_email }}"
 alert_email_user: "{{ relay_user }}"
 alert_email_password: "{{ relay_password }}"
 

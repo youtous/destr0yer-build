@@ -7,6 +7,8 @@ configs:
     file: ./prometheus/rules/swarm_node.rules.yml
   task_rules:
     file: ./prometheus/rules/swarm_task.rules.yml
+  alertmanager:
+    file: ./alertmanager/alertmanager.yml
 
 services:
 
@@ -108,12 +110,12 @@ services:
       - net
       - {{ traefik_network }}
 
+  # sends alerts
   alertmanager:
-    image: stefanprodan/swarmprom-alertmanager:v0.14.0
-    environment: # todo : configure alerts with mail ! => requires an other image
-       - SLACK_URL=${SLACK_URL:-https://hooks.slack.com/services/TOKEN}
-       - SLACK_CHANNEL=${SLACK_CHANNEL:-general}
-       - SLACK_USER=${SLACK_USER:-alertmanager}
+    image: prom/alertmanager
+    configs:
+      - source: alertmanager
+        target: /etc/alertmanager/alertmanager.yml
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -160,41 +162,41 @@ services:
       - {{ traefik_network }}
 
   # helps to visualize alerts generated
-  unsee:
-    image: cloudflare/unsee:v0.8.0
-    environment:
-      - "ALERTMANAGER_URIS=default:http://alertmanager:9093"
-    deploy:
-      mode: replicated
-      replicas: 1
-      labels:
-        - "traefik.frontend.rule=Host:{{ unsee_domain }}"
-        - traefik.enable=true
-        - traefik.port=8080
-        - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.docker.network={{ traefik_network }}"
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
-        # security labels
-        - traefik.frontend.headers.browserXSSFilter=true
-        - traefik.frontend.headers.frameDeny=true
-        - traefik.frontend.headers.contentTypeNosniff=true
-        # HSTS
-        - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ unsee_domain }}"
-        - traefik.frontend.headers.STSSeconds=315360000
-        - traefik.frontend.headers.STSIncludeSubdomains=true
-        - traefik.frontend.headers.STSPreload=true
-        # Auth
-        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
-        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
-    networks:
-      - default
-      - net
-      - {{ traefik_network }}
+#  unsee:
+#    image: cloudflare/unsee:v0.8.0
+#    environment:
+#      - "ALERTMANAGER_URIS=default:http://alertmanager:9093"
+#    deploy:
+#      mode: replicated
+#      replicas: 1
+#      labels:
+#        - "traefik.frontend.rule=Host:{{ unsee_domain }}"
+#        - traefik.enable=true
+#        - traefik.port=8080
+#        - "traefik.tags={{ traefik_public_tag }}"
+#        - "traefik.docker.network={{ traefik_network }}"
+#        # Traefik service that listens to HTTP
+#        - traefik.redirectorservice.frontend.entryPoints=http
+#        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+#        # Traefik service that listens to HTTPS
+#        - traefik.webservice.frontend.entryPoints=https
+#        # security labels
+#        - traefik.frontend.headers.browserXSSFilter=true
+#        - traefik.frontend.headers.frameDeny=true
+#        - traefik.frontend.headers.contentTypeNosniff=true
+#        # HSTS
+#        - traefik.frontend.headers.SSLRedirect=true
+#        - "traefik.frontend.headers.SSLHost={{ unsee_domain }}"
+#        - traefik.frontend.headers.STSSeconds=315360000
+#        - traefik.frontend.headers.STSIncludeSubdomains=true
+#        - traefik.frontend.headers.STSPreload=true
+#        # Auth
+#        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+#        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+#    networks:
+#      - default
+#      - net
+#      - {{ traefik_network }}
 
   # metrics of the host
   node-exporter:
