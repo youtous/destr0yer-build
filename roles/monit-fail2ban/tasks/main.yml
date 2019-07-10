@@ -1,5 +1,5 @@
 ---
-# This role contains the default configuration for monitoring postfix with Monit
+# This role contains the default configuration for monitoring fail2ban with Monit
 - name: Setup additional Monit configurations
   become: yes
   template:
