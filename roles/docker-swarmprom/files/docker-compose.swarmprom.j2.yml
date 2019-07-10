@@ -7,6 +7,8 @@ configs:
     file: ./prometheus/rules/swarm_node.rules.yml
   task_rules:
     file: ./prometheus/rules/swarm_task.rules.yml
+
+secrets:
   alertmanager:
     file: ./alertmanager/alertmanager.yml
 
@@ -29,6 +31,7 @@ services:
           memory: 128M
         reservations:
           memory: 64M
+    restart: unless-stopped
 
   # collects metrics from containers
   cadvisor:
@@ -49,6 +52,7 @@ services:
           memory: 128M
         reservations:
           memory: 64M
+    restart: unless-stopped
 
   # visualization
   grafana:
@@ -109,11 +113,12 @@ services:
       - default
       - net
       - {{ traefik_network }}
+    restart: unless-stopped
 
   # sends alerts
   alertmanager:
     image: prom/alertmanager
-    configs:
+    secrets:
       - source: alertmanager
         target: /etc/alertmanager/alertmanager.yml
     command:
@@ -160,6 +165,7 @@ services:
       - default
       - net
       - {{ traefik_network }}
+    restart: unless-stopped
 
   # helps to visualize alerts generated
 #  unsee:
@@ -197,6 +203,7 @@ services:
 #      - default
 #      - net
 #      - {{ traefik_network }}
+#    restart: unless-stopped
 
   # metrics of the host
   node-exporter:
@@ -223,6 +230,7 @@ services:
           memory: 128M
         reservations:
           memory: 64M
+    restart: unless-stopped
 
   # database metrics
   prometheus:
@@ -277,6 +285,7 @@ services:
       - default
       - net
       - {{ traefik_network }}
+    restart: unless-stopped
 
 networks:
   net:

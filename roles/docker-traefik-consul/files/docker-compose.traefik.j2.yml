@@ -42,7 +42,7 @@ services:
         # Auth
         - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
-    #restart: always
+    restart: unless-stopped
   consul-replica:
     image: consul
     command: agent -server -client=0.0.0.0 -retry-join="consul-leader"
@@ -59,7 +59,7 @@ services:
       placement:
         preferences:
           - spread: node.id
-    restart: always
+    restart: unless-stopped
   traefik:
     image: "traefik:v{{ traefik_version }}"
     ports:
@@ -137,7 +137,7 @@ services:
       - "{{ traefik_network }}"
     depends_on:
       - consul-leader
-    restart: always
+    restart: unless-stopped
 
 volumes:
   consul-data-leader:
