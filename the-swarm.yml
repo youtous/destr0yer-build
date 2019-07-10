@@ -65,7 +65,7 @@
 - name: Setup docker-swarm monitoring tools
   hosts: primary_manager
   roles:
-    #- docker-portainer
+    - docker-portainer
     - docker-swarmprom
   vars_files:
     - secret_vars/all.yml
