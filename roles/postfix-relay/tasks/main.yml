@@ -74,6 +74,10 @@
     state: stopped
   ignore_errors: True
 
+- name: Monit postfix
+  import_role:
+    name: monit-postfix
+
 - name: Activate postfix-sasl and postfix jails using fail2ban
   include_role:
     name: fail2ban-additional
