@@ -11,11 +11,13 @@ mydomain = $myhostname
 myorigin = $mydomain
 
 # accept email from localhost only
-inet_interfaces = $myhostname, localhost
+inet_interfaces = loopback-only
+# accept ipv6 if supported
+inet_protocols = all
 
 # local forwarding only
 mynetworks_style = host
-mynetworks = 127.0.0.0/8, ::1/128
+mynetworks = 127.0.0.0/8, [::1]/128
 
 # aliases
 alias_maps = hash:/etc/aliases
