@@ -62,7 +62,6 @@ services:
       # Grafana alert system with emails
       - GF_SMTP_ENABLED=true
       - GF_SMTP_FROM_NAME=Grafana
-      - "GF_SERVER_ROOT_URL={{ alert_email_server }}"
       - "GF_SMTP_FROM_ADDRESS={{ alert_email_from }}"
       - "GF_SMTP_HOST={{ alert_email_server }}:{{ alert_email_port }}"
       - "GF_SMTP_USER={{ alert_email_user }}"
