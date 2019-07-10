@@ -3,7 +3,7 @@ version: "3.7"
 services:
   portainer:
     image: portainer/portainer
-    command: -H tcp://tasks.agent:9001 --tlsskipverify
+    command: -H tcp://tasks.agent:9001 --tlsskipverify --no-auth # disable auth, traefik will handle it
     volumes:
       - portainer-data:/data
     networks:
@@ -35,8 +35,8 @@ services:
         - traefik.frontend.headers.STSSeconds=315360000
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
-        # Auth is done using internal system (XHR request does not support cookies), todo : check logging
-        #- "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        # Auth
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
       resources:
         limits:
