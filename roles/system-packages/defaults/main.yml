@@ -1,6 +1,7 @@
 ---
 system_packages:
   - cron
+  - attr
   - curl
   - wget
   - curl
