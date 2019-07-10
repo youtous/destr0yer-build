@@ -17,15 +17,6 @@
   notify:
     - reload monit
 
-- name: Configure firewall to allow Monit on lo
-  become: yes
-  ufw:
-    name: Monit
-    rule: allow
-    port: "2812"
-    interface: lo
-    direction: in
-
 - name: Enable Monit
   become: yes
   service:
