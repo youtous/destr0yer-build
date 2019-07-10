@@ -1,14 +1,10 @@
 ---
-# todo : available in ansible 2.8
-#- name: deploy traefik
-#  docker_stack:
-#    state: present
-#    name: traefik-consul
-#    compose:
-#      - "{{ traefik_compose_file_dest }}"
-
 - name: deploy traefik
-  command: "docker stack deploy -c {{ traefik_compose_file_dest }} traefik-consul"
+  docker_stack:
+    state: present
+    name: traefik-consul
+    compose:
+      - "{{ traefik_compose_file_dest }}"
 
 - name: restart fail2ban
   become: yes
