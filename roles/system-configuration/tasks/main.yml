@@ -95,7 +95,7 @@
     reboot_command: "{{ 'scw restart' if (host_scw_aarch64 is not failed) else 'reboot' }}"
   # disable SELinux on Scaleway instances because they do not support it
   # https://github.com/scaleway/image-centos/issues/30
-  when: selinux_policy_valid is failed and host_scw_aarch64 is failed and activate_selinux|bool == true
+  when: selinux_policy_valid is failed and host_scw_aarch64 is failed
 
 - name: Install SELinux utils
   become: yes
