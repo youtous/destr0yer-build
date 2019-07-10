@@ -1,0 +1,5 @@
+# from https://wiki.debian-fr.xyz/Monit#postfix
+
+check process fail2ban with pidfile /var/run/fail2ban/fail2ban.pid
+  start program = "/usr/bin/systemctl start fail2ban" with timeout 60 seconds
+  stop  program = "/usr/bin/systemctl stop fail2ban"

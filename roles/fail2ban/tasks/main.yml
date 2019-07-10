@@ -23,6 +23,10 @@
     - restart fail2ban
   when: ansible_os_family == "Debian" and ansible_lsb.major_release|int < 10
 
+- name: Monit fail2ban
+  import_role:
+    name: monit-fail2ban
+
 - name: Configure logrotate for fail2ban
   import_role:
     name: logrotate
