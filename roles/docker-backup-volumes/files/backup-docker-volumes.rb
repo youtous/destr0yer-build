@@ -11,14 +11,18 @@ puts "[#{Time.now}] Saving docker volumes to #{save_path}"
 
 File.readlines(__dir__ + '/docker-volumes.txt').each do |docker_volume|
   docker_volume = docker_volume.strip
+  unless system( "docker volume inspect #{docker_volume}" )
+    puts "[#{Time.now}] Docker volume \"#{docker_volume}\" not found."
+    break
+  end
+
   puts "[#{Time.now}] Saving docker volume: #{docker_volume}"
 
   # stop all other containers using this volume
   containers_ids = `docker ps -aq --filter volume=#{docker_volume}`.split("\n")
   puts "[#{Time.now}] Containers #{containers_ids} have to be paused. Processing..."
   containers_ids.each do |id|
-    command = `docker pause #{id}`
-    puts "[#{Time.now}] #{command}"
+    `docker pause #{id}`
   end
 
   command = "docker run -v #{docker_volume}:/volume --rm loomchild/volume-backup backup - > #{save_path}/#{docker_volume}.taz.bz2"
@@ -28,8 +32,7 @@ File.readlines(__dir__ + '/docker-volumes.txt').each do |docker_volume|
 
   puts "[#{Time.now}] Unpause paused containers."
   containers_ids.each do |id|
-    command = `docker unpause #{id}`
-    puts "[#{Time.now}] #{command}"
+    `docker unpause #{id}`
   end
 end
 
