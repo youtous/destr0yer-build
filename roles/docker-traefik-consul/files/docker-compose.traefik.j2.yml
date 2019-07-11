@@ -18,10 +18,10 @@ services:
           - node.role == manager
         preferences:
           - spread: node.id
-        restart_policy:
-          condition: any
-          delay: 5s
-          window: 15s
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       labels:
         - "traefik.frontend.rule=Host:{{ consul_ui_domain }}"
         - traefik.enable=true
