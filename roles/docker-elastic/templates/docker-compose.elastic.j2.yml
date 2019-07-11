@@ -1,0 +1,196 @@
+---
+version: '3.7'
+
+services:
+  elasticsearch:
+    image: "blacktop/elasticsearch:{{ elastic_version }}"
+    environment:
+      - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m"
+    secrets:
+      - source: elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 30s
+      resources:
+        limits:
+          memory: "{{ elasticsearch_memory }}M"
+        reservations:
+          memory: "{{ elasticsearch_memory_reservation }}M"
+      labels:
+        - "traefik.frontend.rule=Host:{{ elasticsearch_domain }}"
+        - traefik.enable=true
+        - traefik.port=9200
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ elasticsearch_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+    networks:
+      - stack
+      - {{ traefik_network }}
+    volumes:
+      - 'es_data:/usr/share/elasticsearch/data'
+      - './scripts/setup-users.sh:/usr/local/bin/setup-users.sh:ro'
+    healthcheck:
+      test: curl -s http://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kibana:
+    image: "blacktop/kibana:{{ elastic_version }}"
+    secrets:
+      - source: kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
+    depends_on:
+      - 'elasticsearch'
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+      labels:
+        - "traefik.frontend.rule=Host:{{ kibana_domain }}"
+        - traefik.enable=true
+        - traefik.port=5601
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ kibana_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+    networks:
+      - stack
+      - {{ traefik_network }}
+    healthcheck:
+      test: curl -s http://localhost:5601 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  logstash:
+    image: "blacktop/logstash:{{ elastic_version }}"
+    secrets:
+      - source: logstash.conf
+        target: /usr/share/logstash/pipeline/logstash.conf
+      - source: logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+      labels:
+        - "traefik.frontend.rule=Host:{{ logstash_domain }}"
+        - traefik.enable=true
+        - traefik.port=8080
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ logstash_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth => here we can configure access for other clusters to submit logs
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}" # todo : configure accounts for other services (other clusters)
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1" # todo : configure trusted cluster ips
+    networks:
+      - stack
+      - {{ traefik_network }}
+    depends_on:
+      - "elasticsearch"
+    healthcheck:
+      test: bin/logstash -t
+      interval: 60s
+      timeout: 50s
+      retries: 5
+
+networks:
+  stack:
+    driver: overlay
+#    driver_opts: # /!\ if running elastic-stack on multiple nodes, make sure network is encrypted
+#      encrypted: ""
+#    attachable: true
+
+# use docker volume to persist ES data outside of a container.
+volumes:
+  es_data:
+
+secrets:
+  # documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
+  # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
+  logstash.conf:
+    file: ./config/logstash/pipeline/logstash.conf
+  logstash.yml:
+    file: ./config/logstash/logstash.yml
+  elasticsearch.yml:
+    file: ./config/elasticsearch/elasticsearch.yml
+  kibana.yml:
+    file: ./config/kibana/kibana.yml

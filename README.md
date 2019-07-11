@@ -75,6 +75,11 @@ here is a list of the required domains :
 
 # portainer
 192.168.100.10  portainer.heaven-pascal.youtous.dv
+
+# elastic stack
+192.168.100.10  kibana.heaven-pascal.youtous.dv
+192.168.100.10  elasticsearch.heaven-pascal.youtous.dv
+192.168.100.10  logstash.heaven-pascal.youtous.dv
 ```
 
 ## Ansible 3rd Roles

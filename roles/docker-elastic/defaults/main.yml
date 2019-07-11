@@ -1,0 +1,16 @@
+---
+elastic_version: 7.2
+
+# how much memory to allocate (in Mo)
+elasticsearch_memory: 256
+
+# name of the traefik network
+traefik_network: "traefik-public"
+# traefik public-tag
+traefik_public_tag: "traefik-public"
+
+# domains
+kibana_domain: "kibana.{{ hostname }}"
+elasticsearch_domain: "elasticsearch.{{ hostname }}"
+logstash_domain: "logstash.{{ hostname }}"
+...

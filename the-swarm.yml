@@ -72,4 +72,14 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-monitoring"]
+
+- name: Setup docker-swarm logging tools
+  hosts: primary_manager
+  roles:
+    - docker-elastic
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-elastic"]
 ...
