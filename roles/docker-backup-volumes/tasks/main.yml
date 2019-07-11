@@ -1,0 +1,50 @@
+---
+# This role setup a script called by duply before backup. The script will save all docker volumes listed.
+
+- name: Ensure backup script directory is present
+  become: yes
+  file:
+    state: directory
+    path: "{{ docker_volumes_backup_script_directory }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Ensure backup directory is present
+  become: yes
+  file:
+    state: directory
+    path: "{{ docker_volumes_backup_output }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Ensure ruby is installed
+  become: yes
+  apt:
+    name: ruby
+    state: present
+
+- name: "Copy backup script to {{ docker_volumes_backup_script_directory }}"
+  become: yes
+  copy:
+    src: "files/backup-docker-volumes.rb"
+    dest: "{{ docker_volumes_backup_script_directory }}/backup-docker-volumes.rb"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Add docker volumes to backup list
+  become: yes
+  lineinfile:
+    path: "{{ docker_volumes_backup_script_directory }}/{{ docker_volumes_list_file }}"
+    line: "{{ item }}"
+    create: yes
+  with_items: "{{ docker_volumes_backup }}"
+
+- name: Add backup script to Duply pre scripts
+  become: yes
+  blockinfile:
+    dest: "{{ duply_prescript_path }}"
+    block: "{{ lookup('template', 'templates/register-backup-script.sh.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - call docker volumes backup script ###"
