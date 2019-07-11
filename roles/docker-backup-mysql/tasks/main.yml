@@ -1,0 +1,64 @@
+---
+# This role setup a script called by duply before backup. The script will save all databases present in the mysql docker containers
+- name: Ensure backup script directory is present
+  become: yes
+  file:
+    state: directory
+    path: "{{ docker_mysql_backup_script_directory }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Ensure backup directory is present
+  become: yes
+  file:
+    state: directory
+    path: "{{ docker_mysql_backup_output }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Ensure ruby is installed
+  become: yes
+  apt:
+    name: ruby
+    state: present
+
+- name: "Copy backup script to {{ docker_mysql_backup_script_directory }}"
+  become: yes
+  copy:
+    src: "files/backup-mysql-containers.rb"
+    dest: "{{ docker_mysql_backup_script_directory }}/backup-mysql-containers.rb"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Add mysql docker containers to backup list
+  become: yes
+  lineinfile:
+    path: "{{ docker_mysql_backup_script_directory }}/{{ docker_mysql_containers_list_file }}"
+    line: "{{ item.stack }}_{{ item.service }}"
+    create: yes
+  with_items: "{{ docker_mysql_containers_backup }}"
+
+- name: Remove undesirable mysql docker containers from backup list
+  become: yes
+  lineinfile:
+    path: "{{ docker_mysql_backup_script_directory }}/{{ docker_mysql_containers_list_file }}"
+    line: "{{ item.stack }}_{{ item.service }}"
+    state: absent
+  with_items: "{{ docker_mysql_containers_backup_to_remove }}"
+
+- name: Add backup script to Duply pre scripts
+  become: yes
+  blockinfile:
+    dest: "{{ duply_prescript_path }}"
+    block: "{{ lookup('template', 'templates/register-backup-script.sh.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - call mysql docker containers backup script ###"
+
+- name: Add cleanup script to Duply post scripts
+  become: yes
+  blockinfile:
+    dest: "{{ duply_postscript_path }}"
+    block: "{{ lookup('template', 'templates/register-cleanup-backup-script.sh.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - cleanup mysql docker containers backups ###"

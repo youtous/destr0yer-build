@@ -1,0 +1,19 @@
+---
+# list of docker volumes to backup
+docker_mysql_containers_backup: []
+# - {stack: mystack, service: db}
+
+# list of volumes to remove from the backup list
+docker_mysql_containers_backup_to_remove: []
+# - {stack: mystack, service: db}
+
+
+# paths of duply scripts
+duply_prescript_path: "/etc/duply/global/pre"
+duply_postscript_path: "/etc/duply/global/post"
+
+# path where backup sql dump will be output
+docker_mysql_backup_output: "/home/docker-volumes-backup/mysqldump"
+
+# path where the backup script will reside
+docker_mysql_backup_script_directory: "/etc/docker-volumes-backup"

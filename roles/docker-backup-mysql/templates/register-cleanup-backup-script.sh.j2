@@ -1,0 +1,3 @@
+echo "Cleanup mysql docker dump backup in {{ docker_mysql_backup_output }}..."
+find {{ docker_mysql_backup_output }}/. -type f -delete
+echo "All mysql docker dumps backed-up has been removed!"

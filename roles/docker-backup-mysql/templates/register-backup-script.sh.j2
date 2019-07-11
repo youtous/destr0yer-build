@@ -1,0 +1,3 @@
+echo "Calling mysql docker containers backup script..."
+/usr/bin/env ruby {{ docker_mysql_backup_script_directory }}/backup-mysql-containers.rb "{{ docker_mysql_backup_output }}"
+echo "Mysql docker containers backed-up to {{ docker_mysql_backup_output }}..."
