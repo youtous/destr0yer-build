@@ -18,6 +18,10 @@ services:
           - node.role == manager
         preferences:
           - spread: node.id
+        restart_policy:
+          condition: any
+          delay: 5s
+          window: 15s
       labels:
         - "traefik.frontend.rule=Host:{{ consul_ui_domain }}"
         - traefik.enable=true
@@ -42,7 +46,7 @@ services:
         # Auth
         - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
-    restart: unless-stopped
+
   consul-replica:
     image: consul
     command: agent -server -client=0.0.0.0 -retry-join="consul-leader"
@@ -59,7 +63,10 @@ services:
       placement:
         preferences:
           - spread: node.id
-    restart: unless-stopped
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
   traefik:
     image: "traefik:v{{ traefik_version }}"
     ports:
@@ -79,6 +86,10 @@ services:
           - node.role == manager
         preferences:
           - spread: node.id
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       labels:
         - "traefik.frontend.rule=Host:{{ traefik_ui_domain }}"
         - traefik.enable=true
@@ -137,7 +148,6 @@ services:
       - "{{ traefik_network }}"
     depends_on:
       - consul-leader
-    restart: unless-stopped
 
 volumes:
   consul-data-leader:

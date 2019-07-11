@@ -14,6 +14,10 @@ services:
         constraints:
           - node.role == manager
           - node.labels.portainer.portainer-data == true
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       labels:
         - "traefik.frontend.rule=Host:{{ portainer_domain }}"
         - traefik.enable=true
@@ -45,7 +49,6 @@ services:
         reservations:
           cpus: '0.1'
           memory: 128M
-    restart: unless-stopped
 
   agent:
     image: portainer/agent
@@ -61,6 +64,10 @@ services:
       placement:
         constraints:
           - node.platform.os == linux
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       resources:
         limits:
           cpus: '0.10'
@@ -68,7 +75,6 @@ services:
         reservations:
           cpus: '0.05'
           memory: 32M
-    restart: unless-stopped
 
 networks:
   agent-network:

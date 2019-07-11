@@ -26,12 +26,15 @@ services:
         target: /etc/caddy/Caddyfile
     deploy:
       mode: global
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 10s
       resources:
         limits:
           memory: 128M
         reservations:
           memory: 64M
-    restart: unless-stopped
 
   # collects metrics from containers
   cadvisor:
@@ -47,12 +50,15 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     deploy:
       mode: global
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       resources:
         limits:
           memory: 128M
         reservations:
           memory: 64M
-    restart: unless-stopped
 
   # visualization
   grafana:
@@ -80,6 +86,10 @@ services:
       placement:
         constraints:
           - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       resources:
         limits:
           memory: 128M
@@ -113,7 +123,6 @@ services:
       - default
       - net
       - {{ traefik_network }}
-    restart: unless-stopped
 
   # sends alerts
   alertmanager:
@@ -132,6 +141,10 @@ services:
       placement:
         constraints:
           - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       resources:
         limits:
           memory: 128M
@@ -165,7 +178,6 @@ services:
       - default
       - net
       - {{ traefik_network }}
-    restart: unless-stopped
 
   # helps to visualize alerts generated
 #  unsee:
@@ -175,6 +187,10 @@ services:
 #    deploy:
 #      mode: replicated
 #      replicas: 1
+#      restart_policy:
+#       condition: any
+#       delay: 5s
+#       window: 15s
 #      labels:
 #        - "traefik.frontend.rule=Host:{{ unsee_domain }}"
 #        - traefik.enable=true
@@ -203,7 +219,6 @@ services:
 #      - default
 #      - net
 #      - {{ traefik_network }}
-#    restart: unless-stopped
 
   # metrics of the host
   node-exporter:
@@ -225,12 +240,15 @@ services:
       - '--no-collector.ipvs'
     deploy:
       mode: global
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       resources:
         limits:
           memory: 128M
         reservations:
           memory: 64M
-    restart: unless-stopped
 
   # database metrics
   prometheus:
@@ -252,6 +270,10 @@ services:
       placement:
         constraints:
           - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
       resources:
         limits:
           memory: 256M
@@ -285,7 +307,6 @@ services:
       - default
       - net
       - {{ traefik_network }}
-    restart: unless-stopped
 
 networks:
   net:
