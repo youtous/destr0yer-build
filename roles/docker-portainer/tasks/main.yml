@@ -20,4 +20,11 @@
     mode: u=rw,g=,o=
   notify:
     - deploy portainer
+
+- name: Add Portainer volume to backup list
+  import_role:
+    name: docker-backup-volumes
+  vars:
+    docker_volumes_backup:
+      - portainer_portainer-data
 ...
