@@ -13,7 +13,7 @@ File.readlines(__dir__ + '/docker-volumes.txt').each do |docker_volume|
   docker_volume = docker_volume.strip
   unless system( "docker volume inspect #{docker_volume}" )
     puts "[#{Time.now}] Docker volume \"#{docker_volume}\" not found."
-    break
+    next
   end
 
   puts "[#{Time.now}] Saving docker volume: #{docker_volume}"
