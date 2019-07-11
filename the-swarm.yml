@@ -66,7 +66,7 @@
   hosts: primary_manager
   roles:
     - docker-portainer
-    - docker-swarmprom
+    - docker-swarmprom # todo : add possibility to disable grafana
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -74,7 +74,7 @@
   tags: ["docker-swarm-monitoring"]
 
 - name: Setup docker-swarm logging tools
-  hosts: primary_manager
+  hosts: primary_manager # todo restrict to elk hosts only
   roles:
     - docker-elastic
   vars_files:

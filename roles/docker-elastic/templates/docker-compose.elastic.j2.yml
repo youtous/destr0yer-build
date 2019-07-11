@@ -178,10 +178,12 @@ networks:
 #    driver_opts: # /!\ if running elastic-stack on multiple nodes, make sure network is encrypted
 #      encrypted: ""
 #    attachable: true
+  {{ traefik_network }}:
+    external: true
 
 # use docker volume to persist ES data outside of a container.
 volumes:
-  es_data:
+  es_data: {}
 
 secrets:
   # documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
