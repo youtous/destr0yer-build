@@ -56,4 +56,13 @@
     mode: u=rw,g=,o=
   notify:
     - deploy swarmprom
+
+- name: Add Swarmprom volumes to backup list
+  import_role:
+    name: docker-backup-volumes
+  vars:
+    docker_volumes_backup:
+      - swarmprom_prometheus
+      - swarmprom_grafana
+      - swarmprom_alertmanager
 ...

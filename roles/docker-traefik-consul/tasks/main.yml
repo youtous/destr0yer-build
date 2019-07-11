@@ -22,3 +22,11 @@
 
 - name: Fail2ban for traefik
   import_tasks: fail2ban.yml
+
+- name: Add Traefik volumes (consul) to backup list
+  import_role:
+    name: docker-backup-volumes
+  vars:
+    docker_volumes_backup:
+      - traefik-consul_consul-data-leader
+      - traefik-consul_consul-data-replica
