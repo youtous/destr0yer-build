@@ -2,6 +2,9 @@
 # list of docker volumes to backup
 docker_volumes_backup: []
 
+# list of volumes to remove from the backup list
+docker_volumes_backup_to_remove: []
+
 # paths of duply scripts
 duply_prescript_path: "/etc/duply/global/pre"
 duply_postscript_path: "/etc/duply/global/post"

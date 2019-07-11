@@ -1,6 +1,5 @@
 ---
 # This role setup a script called by duply before backup. The script will save all docker volumes listed.
-
 - name: Ensure backup script directory is present
   become: yes
   file:
@@ -42,9 +41,24 @@
     create: yes
   with_items: "{{ docker_volumes_backup }}"
 
+- name: Remove undesirable docker volumes from backup list
+  become: yes
+  lineinfile:
+    path: "{{ docker_volumes_backup_script_directory }}/{{ docker_volumes_list_file }}"
+    line: "{{ item }}"
+    state: absent
+  with_items: "{{ docker_volumes_backup_to_remove }}"
+
 - name: Add backup script to Duply pre scripts
   become: yes
   blockinfile:
     dest: "{{ duply_prescript_path }}"
     block: "{{ lookup('template', 'templates/register-backup-script.sh.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - call docker volumes backup script ###"
+
+- name: Add cleanup script to Duply post scripts
+  become: yes
+  blockinfile:
+    dest: "{{ duply_postscript_path }}"
+    block: "{{ lookup('template', 'templates/register-cleanup-backup-script.sh.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - cleanup docker volumes backups ###"
