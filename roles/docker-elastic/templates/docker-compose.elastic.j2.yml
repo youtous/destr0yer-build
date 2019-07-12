@@ -6,7 +6,7 @@ services:
     image: "blacktop/elasticsearch:{{ elastic_version }}"
     environment:
       - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m"
-    secrets:
+    configs:
       - source: elasticsearch.yml
         target: /usr/share/elasticsearch/config/elasticsearch.yml
     deploy:
@@ -61,7 +61,7 @@ services:
 
   kibana:
     image: "blacktop/kibana:{{ elastic_version }}"
-    secrets:
+    configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
     depends_on:
@@ -116,7 +116,7 @@ services:
 
   logstash:
     image: "blacktop/logstash:{{ elastic_version }}"
-    secrets:
+    configs:
       - source: logstash.conf
         target: /usr/share/logstash/pipeline/logstash.conf
       - source: logstash.yml
@@ -184,9 +184,9 @@ networks:
 volumes:
   es_data: {}
 
-secrets:
-  # documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
-  # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
+# documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
+# an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
+configs:
   logstash.conf:
     file: ./config/logstash/pipeline/logstash.conf
   logstash.yml:
