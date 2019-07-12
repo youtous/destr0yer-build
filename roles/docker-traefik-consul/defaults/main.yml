@@ -35,5 +35,8 @@ lets_encrypt_email: ""
 consul_ui_domain: "consul.{{ hostname }}"
 
 # number of consul replicas
-consul_replicas: 3
+# It is expected that there be between three to five servers.
+# So, you probably want to set CONSUL_REPLICAS=3 or CONSUL_REPLICAS=5, but not more.
+# It can leads to quorum vote issue if menuconfigure
+consul_replicas: 1
 ...
