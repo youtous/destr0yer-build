@@ -146,8 +146,6 @@ services:
     networks:
       - default
       - "{{ traefik_network }}"
-    depends_on:
-      - consul-leader
 
 volumes:
   consul-data-leader:
