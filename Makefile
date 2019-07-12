@@ -17,7 +17,7 @@ push-certs: ## Save secrets on Nextcloud
 	cp -R certs/* ~/Nextcloud/linux/destr0yer-certs/
 
 pull-certs: ## Copy secrets from Nextcloud
-	cp -aR ~/Nextcloud/linux/destr0yer-secrets/* certs
+	cp -aR ~/Nextcloud/linux/destr0yer-certs/* certs
 
 help: ## Show this help prompt.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
