@@ -2,6 +2,11 @@
 elastic_version: 7.2
 elastic_official_version: "{{ elastic_version }}.0"
 
+# a list of allowed ips to access logstash thought socket
+logstash_allowed_ips: [] # /!\ set both ipv6 and ipv4
+# list of revoked ips for logstash
+revoked_logstash_allowed_ips: []
+
 # how much memory to allocate (in Mo)
 # /!\ less than 350 leads to startup issues
 elasticsearch_memory: 350

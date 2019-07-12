@@ -123,6 +123,10 @@ services:
         target: /usr/share/logstash/config/logstash.yml
     environment:
       - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m"
+    ports: # in order to receive logs from allowed origins, theses ports are opened, access are filtered using UFW
+      - target: 5000
+        published: 5000
+        mode: host
     deploy:
       mode: replicated
       replicas: 1

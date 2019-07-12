@@ -1,0 +1,24 @@
+---
+# Setup the required components to send logs from docker nodes to the logstash processor node.
+# Transport will be done using TLS certificates (ensure encryption && identity)
+# Logstash node will filter any non-authorized ip using UFW and internal mechanism.
+
+- name: Revoke nodes firewall - tcp,udp/5000 (logstash)
+  become: yes
+  ufw:
+    rule: allow
+    port: 5000
+    src: "{{ item }}"
+    delete: yes
+  with_items: "{{ revoked_logstash_allowed_ips }}"
+
+- name: Allow nodes firewall - tcp,udp/5000 (logstash)
+  become: yes
+  ufw:
+    rule: allow
+    port: 5000
+    src: "{{ item }}"
+  with_items: "{{ logstash_allowed_ips }}"
+
+# each part (server and clients) will require a single certificate (.crt + .key)
+...

@@ -29,6 +29,9 @@
   notify:
     - deploy elastic
 
+- name: Configure additional parameters for logstash with docker
+  import_tasks: docker-logstash.yml
+
 - name: Add Elastic volumes to backup list
   import_role:
     name: docker-backup-volumes

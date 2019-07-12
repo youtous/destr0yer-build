@@ -39,6 +39,13 @@ consul_replicas: 0
 
 ### End of docker Traefik parameters ###
 
+### Begin of docker elastic parameters ###
+
+# list of nodes (ips) allowed to submit log data
+logstash_allowed_ips: "{{ nodes_ips }}" # by default, all nodes are allowed to send logs data, list can be completed
+                                        # with external addresses
+
+### End of docker elastic parameters ###
 
 ### Begin of dynamic updating parameters ###
 
