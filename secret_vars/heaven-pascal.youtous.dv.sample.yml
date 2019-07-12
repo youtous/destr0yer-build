@@ -1,0 +1,41 @@
+---
+# Variables listed here are not committed and are specific to heave-pascal.youtous.dv
+
+# generate password using
+# openssl passwd -6
+arbiter_password: ""
+arbiter_clear_password: ""
+
+root_password: ""
+
+# users vars
+specu_ssh_keys: "{{ arbiter_ssh_keys }}"
+specu_password: ""
+
+# smtp relay
+secret_relay_password: ""
+
+# generated keys for root
+root_public_key: ""
+root_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  -----END RSA PRIVATE KEY-----
+
+docker_swarm_node_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  -----END OPENSSH PRIVATE KEY-----
+
+docker_swarm_node_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+secret_backup_gpg_public_key: |
+  -----BEGIN PGP PUBLIC KEY BLOCK-----
+  -----END PGP PUBLIC KEY BLOCK-----
+
+secret_backup_gpg_private_key: |
+  -----BEGIN PGP PRIVATE KEY BLOCK-----
+  -----END PGP PRIVATE KEY BLOCK-----
+
+secret_backup_gpg_key_passphrase: ''
+...
