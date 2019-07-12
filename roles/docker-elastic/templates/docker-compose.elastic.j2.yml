@@ -113,13 +113,16 @@ services:
       timeout: 10s
       retries: 5
 
+  # process logs from everywhere
   logstash:
-    image: "elastic/logstash:{{ elastic_official_version }}"
+    image: "blacktop/logstash:{{ elastic_version }}"
     configs:
       - source: logstash.conf
         target: /usr/share/logstash/pipeline/logstash.conf
       - source: logstash.yml
         target: /usr/share/logstash/config/logstash.yml
+    environment:
+      - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m"
     deploy:
       mode: replicated
       replicas: 1
@@ -132,9 +135,7 @@ services:
         window: 15s
       resources:
         limits:
-          memory: 128M
-        reservations:
-          memory: 64M
+          memory: "{{ logstash_memory }}M"
       labels:
         - "traefik.frontend.rule=Host:{{ logstash_domain }}"
         - traefik.enable=true
@@ -163,9 +164,9 @@ services:
       - stack
       - {{ traefik_network }}
     healthcheck:
-      test: bin/logstash -t
-      interval: 60s
-      timeout: 50s
+      test: curl -s http://localhost:8080 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
       retries: 5
 
   # check if services are up
@@ -201,7 +202,6 @@ networks:
     driver: overlay
     driver_opts:
       encrypted: ""
-    attachable: true
   {{ traefik_network }}:
     external: true
 

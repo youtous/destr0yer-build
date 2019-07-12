@@ -3,7 +3,9 @@ elastic_version: 7.2
 elastic_official_version: "{{ elastic_version }}.0"
 
 # how much memory to allocate (in Mo)
-elasticsearch_memory: 348
+# /!\ less than 350 leads to startup issues
+elasticsearch_memory: 350
+logstash_memory: 350
 
 # name of the traefik network
 traefik_network: "traefik-public"
