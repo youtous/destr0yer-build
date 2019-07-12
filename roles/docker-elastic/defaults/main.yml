@@ -1,8 +1,9 @@
 ---
 elastic_version: 7.2
+elastic_official_version: "{{ elastic_version }}.0"
 
 # how much memory to allocate (in Mo)
-elasticsearch_memory: 256
+elasticsearch_memory: 348
 
 # name of the traefik network
 traefik_network: "traefik-public"

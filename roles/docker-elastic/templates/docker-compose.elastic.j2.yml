@@ -2,6 +2,7 @@
 version: '3.7'
 
 services:
+
   elasticsearch:
     image: "blacktop/elasticsearch:{{ elastic_version }}"
     environment:
@@ -64,8 +65,6 @@ services:
     configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
-    depends_on:
-      - 'elasticsearch'
     deploy:
       mode: replicated
       replicas: 1
@@ -115,7 +114,7 @@ services:
       retries: 5
 
   logstash:
-    image: "blacktop/logstash:{{ elastic_version }}"
+    image: "elastic/logstash:{{ elastic_official_version }}"
     configs:
       - source: logstash.conf
         target: /usr/share/logstash/pipeline/logstash.conf
@@ -163,20 +162,46 @@ services:
     networks:
       - stack
       - {{ traefik_network }}
-    depends_on:
-      - "elasticsearch"
     healthcheck:
       test: bin/logstash -t
       interval: 60s
       timeout: 50s
       retries: 5
 
+  # check if services are up
+  heartbeat:
+    image: "elastic/heartbeat:{{ elastic_official_version }}"
+    command: --strict.perms=false -e  # -e flag to log to stderr and disable syslog/file output
+    configs:
+      - source: heartbeat.yml
+        target: /usr/share/heartbeat/heartbeat.yml
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+      resources:
+        limits:
+          memory: 64M
+    networks:
+      - stack
+    healthcheck:
+      test: heartbeat test config
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
 networks:
-  stack:
+  stack: # encrypted if Swarm want to split services on managers
     driver: overlay
-#    driver_opts: # /!\ if running elastic-stack on multiple nodes, make sure network is encrypted
-#      encrypted: ""
-#    attachable: true
+    driver_opts:
+      encrypted: ""
+    attachable: true
   {{ traefik_network }}:
     external: true
 
@@ -186,7 +211,7 @@ volumes:
 
 # documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
 # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
-configs:
+configs: # config are immutable :/
   logstash.conf:
     file: ./config/logstash/pipeline/logstash.conf
   logstash.yml:
@@ -195,3 +220,5 @@ configs:
     file: ./config/elasticsearch/elasticsearch.yml
   kibana.yml:
     file: ./config/kibana/kibana.yml
+  heartbeat.yml:
+    file: ./config/heartbeat/heartbeat.yml

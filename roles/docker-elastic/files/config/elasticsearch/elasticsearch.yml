@@ -3,11 +3,12 @@ network.host: 0.0.0.0
 transport.host: 0.0.0.0
 
 # set a master node
+node.name: node-1
 cluster.initial_master_nodes: node-1
 
 # disable some features
 xpack.security.enabled: false
-xpack.monitoring.enabled: false
+xpack.monitoring.enabled: true
 xpack.ml.enabled: false
 xpack.graph.enabled: false
 xpack.watcher.enabled: false
