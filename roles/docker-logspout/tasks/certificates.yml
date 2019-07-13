@@ -1,0 +1,35 @@
+---
+# Setup the required components to send logs from docker nodes to the logstash processor node.
+
+# Setup TLS using x509 certificates
+- name: Setup logspout certificates folder
+  file:
+    path: "{{ logstash_certificates_directory }}"
+    state: directory
+    mode: u=rwx,g=,o=
+
+- name: Copy logstash RootCA certificate
+  copy:
+    content: "{{ logstash_CA_certificate }}"
+    dest: "{{ logspout_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy logspout
+
+- name: Copy logspout node certificate
+  copy:
+    content: "{{ logspout_node_certificate }}"
+    dest: "{{ logspout_certificates_directory }}/{{ logspout_node_certificate_name }}.crt"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy logspout
+
+- name: Copy logspout node private key
+  copy:
+    content: "{{ logspout_node_private_key }}"
+    dest: "{{ logspout_certificates_directory }}/{{ logspout_node_certificate_name }}.key"
+    mode: u=rw,g=,o=
+  no_log: true
+  notify:
+    - deploy logspout
+...

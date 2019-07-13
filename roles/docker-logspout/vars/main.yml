@@ -1,0 +1,9 @@
+logspout_compose_file_dest_directory: ~/logspout
+logspout_compose_file_dest_name: docker-compose.logspout.yml
+logspout_compose_file_dest: "{{ logspout_compose_file_dest_directory }}/{{ logspout_compose_file_dest_name }}"
+
+# logstash certificates naming
+logspout_certificates_relative_directory: "certs/"
+logspout_certificates_directory: "{{ logspout_compose_file_dest_directory }}/{{ logspout_certificates_relative_directory }}"
+logstash_root_CA_certificate_name: logstash-RootCA.crt
+logspout_node_certificate_name: logspout-node

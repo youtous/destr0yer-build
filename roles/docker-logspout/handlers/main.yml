@@ -1,0 +1,8 @@
+---
+- name: deploy logspout
+  docker_stack:
+    state: present
+    name: logspout
+    compose:
+      - "{{ logspout_compose_file_dest }}"
+...

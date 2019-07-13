@@ -122,6 +122,10 @@ docker_swarm_CA_certificate: |
   tS9sqqee09FCbKoIHYDxErbK5Q==
   -----END CERTIFICATE-----
 
+# address (ip + port) of the elastic logstash node that will receive all docker logs
+# nodes must be allowed to reach it using TLS and the generated certificate
+logspout_output_server_address: "{{ primary_manager_ipv4 }}:5000"
+
 # CA cert issuer of the logstash/logspout certs
 logstash_CA_certificate: |
   -----BEGIN CERTIFICATE-----

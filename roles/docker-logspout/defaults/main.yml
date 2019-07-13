@@ -1,0 +1,13 @@
+---
+# logstash server address (ip + port) receiving logs from logspout
+# /!\ setup TLS in order to reach it
+logspout_output_server_address: "localhost:5000"
+
+
+# Provide X509 certificates for TLS
+# you can use pipe syntax
+
+# logstash_CA_certificate: | # usually logstash-rootCA.crt
+# logspout_node_private_key: | # usually logstash-node-hostname.key
+# logspout_node_certificate: | # usually logstash-node-hostname.crt
+...
