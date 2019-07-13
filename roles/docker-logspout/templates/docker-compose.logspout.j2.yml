@@ -19,7 +19,7 @@ services:
       - LOGSPOUT_TLS_CA_CERTS=/etc/ca.crt
       - LOGSPOUT_TLS_CLIENT_CERT=/etc/client.crt
       - LOGSPOUT_TLS_CLIENT_KEY=/etc/client.key
-      - LOGSPOUT_TLS_CLIENT_KEY=true
+      - LOGSPOUT_TLS_HARDENING=true
     secrets:
       - source: logstash-rootCA.crt
         target: /etc/ca.crt
