@@ -1,8 +1,15 @@
 ---
-- name: deploy logspout
+- name: clean current logspout stack
+  docker_stack:
+    state: absent
+    name: logspout
+  listen: "deploy logspout"
+
+- name: deploy logspout stack
   docker_stack:
     state: present
     name: logspout
     compose:
       - "{{ logspout_compose_file_dest }}"
+  listen: "deploy logspout"
 ...
