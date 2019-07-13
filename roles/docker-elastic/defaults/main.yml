@@ -21,4 +21,12 @@ traefik_public_tag: "traefik-public"
 kibana_domain: "kibana.{{ hostname }}"
 elasticsearch_domain: "elasticsearch.{{ hostname }}"
 logstash_domain: "logstash.{{ hostname }}"
+
+
+# Provide X509 certificates for TLS
+# you can use pipe syntax
+
+# logstash_CA_certificate: | # usually logstash-rootCA.crt
+# logstash_node_private_key: | # usually logstash-node-hostname.key
+# logstash_node_certificate: | # usually logstash-node-hostname.crt
 ...

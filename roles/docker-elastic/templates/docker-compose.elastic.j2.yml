@@ -121,6 +121,13 @@ services:
         target: /usr/share/logstash/pipeline/logstash.conf
       - source: logstash.yml
         target: /usr/share/logstash/config/logstash.yml
+    secrets:
+      - source: logstash-rootCA.crt
+        target: /etc/ca.crt
+      - source: logstash-certificate.crt
+        target: /etc/server.crt
+      - source: logstash-private-key.key
+        target: /etc/server.key
     environment:
       - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m"
     ports: # in order to receive logs from allowed origins, theses ports are opened, access are filtered using UFW
@@ -226,3 +233,11 @@ configs: # config are immutable :/
     file: ./config/kibana/kibana.yml
   heartbeat.yml:
     file: ./config/heartbeat/heartbeat.yml
+
+secrets:
+  logstash-rootCA.crt:
+    file: "{{ logstash_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
+  logstash-certificate.crt:
+    file: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.crt"
+  logstash-private-key.key:
+    file: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.key"

@@ -4,3 +4,8 @@ elastic_compose_file_dest: "{{ elastic_compose_file_dest_directory }}/{{ elastic
 
 # memory reserved for elasticsearch (half of max memory)
 elasticsearch_memory_reservation: "{{ (elasticsearch_memory|int / 2) | round }}"
+
+# logstash certificates naming
+logstash_certificates_directory: "{{ elastic_compose_file_dest_directory }}/certs/logstash"
+logstash_root_CA_certificate_name: logstash-RootCA.crt
+logstash_node_certificate_name: logstash-node

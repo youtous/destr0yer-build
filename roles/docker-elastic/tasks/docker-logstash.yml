@@ -20,5 +20,35 @@
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
-# each part (server and clients) will require a single certificate (.crt + .key)
+# Setup TLS using x509 certificates
+- name: Setup logstash certificates folder
+  file:
+    path: "{{ logstash_certificates_directory }}"
+    state: directory
+    mode: u=rwx,g=,o=
+
+- name: Copy logstash RootCA certificate
+  copy:
+    content: "{{ logstash_CA_certificate }}"
+    dest: "{{ logstash_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy elastic
+
+- name: Copy logstash node certificate
+  copy:
+    content: "{{ logstash_node_certificate }}"
+    dest: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.crt"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy elastic
+
+- name: Copy logstash node private key
+  copy:
+    content: "{{ logstash_node_private_key }}"
+    dest: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.key"
+    mode: u=rw,g=,o=
+  no_log: true
+  notify:
+    - deploy elastic
 ...
