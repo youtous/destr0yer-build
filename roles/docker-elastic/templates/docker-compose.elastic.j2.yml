@@ -115,7 +115,7 @@ services:
 
   # process logs from everywhere
   logstash:
-    image: "blacktop/logstash:{{ elastic_version }}"
+    image: "elastic/logstash:{{ elastic_official_version }}"
     configs:
       - source: logstash.conf
         target: /usr/share/logstash/pipeline/logstash.conf
@@ -143,7 +143,7 @@ services:
       restart_policy:
         condition: any
         delay: 5s
-        window: 15s
+        window: 30s
       resources:
         limits:
           memory: "{{ logstash_memory }}M"
