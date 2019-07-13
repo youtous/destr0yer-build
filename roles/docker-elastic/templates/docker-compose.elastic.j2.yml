@@ -236,8 +236,8 @@ configs: # config are immutable :/
 
 secrets:
   logstash-rootCA.crt:
-    file: "{{ logstash_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
+    file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_root_CA_certificate_name }}"
   logstash-certificate.crt:
-    file: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.crt"
+    file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.crt"
   logstash-private-key.key:
-    file: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.key"
+    file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.key"

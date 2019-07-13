@@ -38,4 +38,22 @@ secret_backup_gpg_private_key: |
   -----END PGP PRIVATE KEY BLOCK-----
 
 secret_backup_gpg_key_passphrase: ''
+
+# logstash TLS
+logstash_node_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+logstash_node_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  -----END OPENSSH PRIVATE KEY-----
+
+# logspout TLS
+logspout_node_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+logspout_node_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  -----END OPENSSH PRIVATE KEY-----
 ...
