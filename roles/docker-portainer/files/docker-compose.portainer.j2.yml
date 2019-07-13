@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   portainer:
-    image: portainer/portainer
+    image: portainerci/portainer:develop
     command: -H tcp://tasks.agent:9001 --tlsskipverify --no-auth # disable auth, traefik will handle it
     volumes:
       - portainer-data:/data
@@ -51,7 +51,7 @@ services:
           memory: 128M
 
   agent:
-    image: portainer/agent
+    image: portainerci/agent:develop
     environment:
       AGENT_CLUSTER_ADDR: tasks.agent
     volumes:
