@@ -3,7 +3,7 @@
 # Transport will be done using TLS certificates (ensure encryption && identity)
 # Logstash node will filter any non-authorized ip using UFW and internal mechanism.
 
-- name: Revoke nodes firewall - tcp,udp/5000 (logstash)
+- name: Revoke nodes firewall - tcp/5000 (logstash)
   become: yes
   ufw:
     rule: allow
@@ -12,7 +12,7 @@
     delete: yes
   with_items: "{{ revoked_logstash_allowed_ips }}"
 
-- name: Allow nodes firewall - tcp,udp/5000 (logstash)
+- name: Allow nodes firewall - tcp/5000 (logstash)
   become: yes
   ufw:
     rule: allow
