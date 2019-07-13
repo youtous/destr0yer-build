@@ -55,7 +55,7 @@
 - name: Setup traefik reverse-proxy with consul
   hosts: primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
   roles:
-    - docker-traefik-consul
+    - docker-traefik-consul # smart reverse proxy for docker swarm
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -65,8 +65,8 @@
 - name: Setup docker-swarm monitoring tools
   hosts: primary_manager
   roles:
-    - docker-portainer
-    - docker-swarmprom # todo : add possibility to disable grafana
+    - docker-portainer # web manager of the cluster
+    - docker-swarmprom # monitoring and metrics tools todo : add possibility to disable grafana
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -76,7 +76,8 @@
 - name: Setup docker-swarm logging tools
   hosts: primary_manager # todo restrict to elk hosts only
   roles:
-    - docker-elastic
+    - docker-elastic # setup an elastic stack cluster
+    - docker-logspout # output docker logs to elastic cluster
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
