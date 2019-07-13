@@ -36,7 +36,7 @@ def select_root_ca
       File.delete("#{SAVE_PATH}#{name}-rootCA.key") if File.exists? "#{SAVE_PATH}#{name}-rootCA.key"
       raise "Could not generate RootCA private key."
     end
-    puts "RootCA RSA private key (4096 bit) generated using chacha20. [#{name}-rootCA.key]"
+    puts "RootCA RSA private key (4096 bit) generated, encrypted with chacha20. [#{name}-rootCA.key]"
 
     unless system "openssl req -x509 -new -nodes -key #{SAVE_PATH}#{name}-rootCA.key -sha256 -days #{ROOT_CA_VALIDITY} -out #{SAVE_PATH}#{name}-rootCA.crt"
       File.delete("#{SAVE_PATH}#{name}-rootCA.crt") if File.exists? "#{SAVE_PATH}#{name}-rootCA.crt"
@@ -63,11 +63,11 @@ puts "Please indicate a name for the client certificate:"
 name = gets.chomp
 
 # private key
-unless system "openssl genrsa -chacha20 -out #{SAVE_PATH}#{name}.key 4096"
+unless system "openssl genrsa -out #{SAVE_PATH}#{name}.key 4096"
   File.delete("#{SAVE_PATH}#{name}.key") if File.exists? "#{SAVE_PATH}#{name}.key"
   raise "Could not generate client private key."
 end
-puts "Client RSA private key (4096 bit) generated using chacha20. [#{name}.key]"
+puts "Client RSA private key (4096 bit) generated. [#{name}.key]"
 
 # certificate signature request
 unless system "openssl req -new -key #{SAVE_PATH}#{name}.key -out #{SAVE_PATH}#{name}.csr"
