@@ -12,4 +12,4 @@ logstash_root_CA_certificate_name: logstash-RootCA.crt
 logstash_node_certificate_name: logstash-node
 
 # docker config version, increment for new configs
-docker_elastic_config_version: 0.0.1
+docker_elastic_config_version: 0.0.29
