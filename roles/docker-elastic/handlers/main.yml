@@ -1,16 +1,16 @@
 ---
-# due to immutable configs of docker in swarm mode, we must remove the stack...
-- name: cleanup current elastic stack
-  docker_stack:
-    state: absent
-    name: elastic
-  listen: "deploy elastic"
-
-- name: deploy elastic stack
+- name: deploy elastic
   docker_stack:
     state: present
     name: elastic
     compose:
       - "{{ elastic_compose_file_dest }}"
-  listen: "deploy elastic"
+  notify: docker prune
+
+- name: docker prune
+  docker_prune:
+    containers: yes
+    images: yes
+    networks: yes
+    builder_cache: yes
 ...

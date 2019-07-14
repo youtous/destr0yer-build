@@ -5,4 +5,12 @@
     name: swarmprom
     compose:
       - "{{ swarmprom_compose_file_dest }}"
+  notify: docker prune
+
+- name: docker prune
+  docker_prune:
+    containers: yes
+    images: yes
+    networks: yes
+    builder_cache: yes
 ...

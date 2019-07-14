@@ -1,15 +1,16 @@
 ---
-- name: clean current logspout stack
-  docker_stack:
-    state: absent
-    name: logspout
-  listen: "deploy logspout"
-
-- name: deploy logspout stack
+- name: deploy logspout
   docker_stack:
     state: present
     name: logspout
     compose:
       - "{{ logspout_compose_file_dest }}"
-  listen: "deploy logspout"
+  notify: docker prune
+
+- name: docker prune
+  docker_prune:
+    containers: yes
+    images: yes
+    networks: yes
+    builder_cache: yes
 ...
