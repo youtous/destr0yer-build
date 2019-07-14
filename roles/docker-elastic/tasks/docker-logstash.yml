@@ -20,6 +20,13 @@
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
+- name: Allow from docker containers networks to this host - tcp/5000 (logstash)
+  become: yes
+  ufw:
+    rule: allow
+    src: "172.16.0.0/12"
+    port: 5000
+
 # Setup TLS using x509 certificates
 - name: Setup logstash certificates folder
   file:

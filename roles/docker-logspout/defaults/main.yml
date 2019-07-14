@@ -1,7 +1,8 @@
 ---
-# logstash server address (ip + port) receiving logs from logspout
-# /!\ setup TLS in order to reach it
-logspout_output_server_address: "localhost:5000"
+# logstash server address (ip, port) receiving logs from logspout
+# /!\ setup TLS in order to reach it, the certificate must be set accordingly the address
+logspout_output_server_address: "localhost"
+logspout_output_server_port: "5000"
 
 
 # Provide X509 certificates for TLS
