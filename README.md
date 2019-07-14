@@ -1,7 +1,7 @@
 # Destr0yer playbooks
 
 ## Installation
-*Tested on Debian (9) Strech only.*
+*Tested on Debian 10 Buster only.*
 
 Please fork this repo for each different server configuration.
 
