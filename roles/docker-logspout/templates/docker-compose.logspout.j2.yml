@@ -17,7 +17,7 @@ services:
     command:
       "multiline+syslog+tls://{{ logspout_output_server_address }}:{{ logspout_output_server_port }}"
     environment:
-      - SYSLOG_FORMAT=rfc3164
+      - SYSLOG_FORMAT=rfc5424 # default value
       - LOGSPOUT=ignore
       - LOGSPOUT_TLS_DISABLE_SYSTEM_ROOTS=true
       - LOGSPOUT_TLS_CA_CERTS=/etc/ca.crt
