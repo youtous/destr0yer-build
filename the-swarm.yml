@@ -66,21 +66,30 @@
   hosts: primary_manager
   roles:
     - docker-portainer # web manager of the cluster
-    - docker-swarmprom # monitoring and metrics tools todo : add possibility to disable grafana
+    - docker-swarmprom # monitoring and metrics tools
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-monitoring"]
 
-- name: Setup docker-swarm logging tools
-  hosts: primary_manager # todo restrict to elk hosts only
+- name: Setup docker elastic cluster
+  hosts: primary_manager_elastic
   roles:
     - docker-elastic # setup an elastic stack cluster
-    - docker-logspout # output docker logs to elastic cluster
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-elastic"]
+
+- name: Setup docker-swarm logging tools
+  hosts: primary_manager
+  roles:
+    - docker-logspout # output docker logs to elastic cluster
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-elastic-logging"]
 ...
