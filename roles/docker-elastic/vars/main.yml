@@ -10,3 +10,6 @@ logstash_certificates_relative_directory: "certs/logstash"
 logstash_certificates_directory: "{{ elastic_compose_file_dest_directory }}/{{ logstash_certificates_relative_directory }}"
 logstash_root_CA_certificate_name: logstash-RootCA.crt
 logstash_node_certificate_name: logstash-node
+
+# docker config version, increment for new configs
+docker_elastic_config_version: 0.0.1
