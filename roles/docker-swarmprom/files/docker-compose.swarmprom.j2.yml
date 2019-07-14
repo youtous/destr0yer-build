@@ -222,7 +222,7 @@ services:
 
   # metrics of the host
   node-exporter:
-    image: stefanprodan/swarmprom-node-exporter:v0.16.0
+    image: stefanprodan/swarmprom-node-exporter:v0.18.1
     networks:
       - net
     environment:
