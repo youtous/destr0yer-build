@@ -16,6 +16,9 @@ traefik_public_tag: "traefik-public"
 # name of the traefik network
 traefik_network: "traefik-public"
 
+# activate grafana
+grafana_activated: true
+
 prometheus_domain: "prom.{{ swarmprom_base_domain }}"
 unsee_domain: "unsee.{{ swarmprom_base_domain }}"
 alertmanager_domain: "alerts.{{ swarmprom_base_domain }}"
