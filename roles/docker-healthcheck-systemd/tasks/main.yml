@@ -1,0 +1,13 @@
+---
+# This role fix systemd spamming mount in logs when docker healthcheck is enabled
+# see https://github.com/docker/for-linux/issues/679
+
+- name: Copy filter to rsyslog filters
+  become: yes
+  copy:
+    src: files/01-block-systemd-mount-docker.conf
+    dest: /etc/rsyslog.d/01-block-systemd-mount-docker.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify: restart rsyslog

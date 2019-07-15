@@ -36,6 +36,10 @@
   vars:
     docker_apt_arch: "{{ 'arm64' if (ansible_architecture == 'aarch64') else 'amd64' }}"
 
+- name: Apply docker systemd fix
+  import_role:
+    name: docker-healthcheck-systemd
+
 - name: Monit docker
   import_role:
     name: monit-docker
