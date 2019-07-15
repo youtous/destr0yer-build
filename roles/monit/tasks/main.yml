@@ -17,7 +17,6 @@
     dest: "/etc/monit/conf.d/{{item}}"
   with_items:
     - system
-    - rsyslogd
   notify:
     - reload monit
 
