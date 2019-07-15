@@ -1,13 +1,10 @@
 heartbeat.monitors:
   - type: http
     schedule: '@every 10s'
-    urls:
-      - http://elasticsearch:9200
-      - http://kibana:5601
-      - http://logstash:8082
+    urls: "{{ elastic_heartbeat_default_urls|default([]) + elastic_heartbeat_urls|default([]) }}"
 
 processors:
-  - add_cloud_metadata:
+  #- add_cloud_metadata:
 
 output.elasticsearch:
   hosts: ['elasticsearch:9200']

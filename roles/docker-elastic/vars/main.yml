@@ -12,5 +12,8 @@ logstash_certificates_directory: "{{ elastic_compose_file_dest_directory }}/{{ l
 logstash_root_CA_certificate_name: logstash-RootCA.crt
 logstash_node_certificate_name: logstash-node
 
-# docker config version, increment for new configs
-docker_elastic_config_version: 0.0.32
+# default urls to monitor
+elastic_heartbeat_default_urls:
+  - http://elasticsearch:9200
+  - http://kibana:5601
+  - http://logstash:8082
