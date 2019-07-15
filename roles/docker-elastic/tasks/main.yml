@@ -21,6 +21,21 @@
   notify:
     - deploy elastic
 
+- name: Ensure elastic heartbeat directory exists
+  file:
+    state: directory
+    path: "{{ elastic_compose_file_dest_directory }}/config/heartbeat"
+  notify:
+    - deploy elastic
+
+- name: Copy elastic heartbeat config
+  template:
+    src: "templates/config/heartbeat/heartbeat.j2.yml"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/heartbeat/heartbeat.yml"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy elastic
+
 - name: Copy elastic stack
   template:
     src: templates/docker-compose.elastic.j2.yml

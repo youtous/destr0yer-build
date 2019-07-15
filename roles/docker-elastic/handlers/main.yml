@@ -1,4 +1,10 @@
 ---
+- name: stop elastic stack
+  docker_stack:
+    state: absent
+    name: "{{ docker_elastic_stack_name }}"
+  listen: deploy elastic
+
 - name: list elastic configs
   shell: "docker config ls | awk '{ print $1,$2 }' | grep \".* {{ docker_elastic_stack_name }}_\" | awk '{ print $2 }'"
   register: elastic_configs
@@ -20,7 +26,7 @@
   docker_secret:
     name: "{{ item }}"
     state: absent
-  with_items: "{{ elastic_configs.stdout_lines }}"
+  with_items: "{{ elastic_secrets.stdout_lines }}"
   listen: deploy elastic
 
 - name: deploy elastic stack
