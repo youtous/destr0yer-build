@@ -54,11 +54,11 @@ networks:
 
 secrets:
   logstash-rootCA.crt:
-    name: "logstash-rootCA.crt-{{ docker_logspout_config_version }}"
+    name: "{{ docker_logspout_stack_name }}_logstash-rootCA.crt"
     file: "./{{ logspout_certificates_relative_directory }}/{{ logstash_root_CA_certificate_name }}"
   logspout-certificate.crt:
-    name: "logspout-certificate.crt-{{ docker_logspout_config_version }}"
+    name: "{{ docker_logspout_stack_name }}_logspout-certificate.crt"
     file: "./{{ logspout_certificates_relative_directory }}/{{ logspout_node_certificate_name }}.crt"
   logspout-private-key.key:
-    name: "logspout-private-key.key-{{ docker_logspout_config_version }}"
+    name: "{{ docker_logspout_stack_name }}_logspout-private-key.key"
     file: "./{{ logspout_certificates_relative_directory }}/{{ logspout_node_certificate_name }}.key"

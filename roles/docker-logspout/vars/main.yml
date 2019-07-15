@@ -8,5 +8,4 @@ logspout_certificates_directory: "{{ logspout_compose_file_dest_directory }}/{{ 
 logstash_root_CA_certificate_name: logstash-RootCA.crt
 logspout_node_certificate_name: logspout-node
 
-# docker config version, increment for new configs
-docker_logspout_config_version: 0.0.1
+docker_logspout_stack_name: "logspout"
