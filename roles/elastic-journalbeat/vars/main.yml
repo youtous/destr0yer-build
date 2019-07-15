@@ -1,0 +1,6 @@
+journalbeat_configuration_directory: /etc/journalbeat
+
+# certificates naming
+journalbeat_certificates_directory: "{{ journalbeat_configuration_directory }}/certs"
+logstash_root_CA_certificate_name: logstash-RootCA.crt
+journalbeat_node_certificate_name: journalbeat-node

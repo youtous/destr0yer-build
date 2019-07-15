@@ -91,5 +91,15 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-swarm-elastic-logging"]
+  tags: ["docker-swarm-elastic-collectors"]
+
+- name: Setup elastic for each node logging tools
+  hosts: all
+  roles:
+    - elastic-journalbeat # output system logs from journalctl to elastic cluster
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["elastic-logging-collectors"]
 ...

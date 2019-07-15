@@ -1,0 +1,7 @@
+---
+- name: restart journalbeat
+  become: yes
+  systemd:
+    name: journalbeat
+    state: restarted
+...

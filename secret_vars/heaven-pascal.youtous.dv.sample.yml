@@ -56,4 +56,13 @@ logspout_node_certificate: |
 logspout_node_private_key: |
   -----BEGIN OPENSSH PRIVATE KEY-----
   -----END OPENSSH PRIVATE KEY-----
+
+# journalbeat TLS
+journalbeat_node_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+journalbeat_node_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  -----END OPENSSH PRIVATE KEY-----
 ...

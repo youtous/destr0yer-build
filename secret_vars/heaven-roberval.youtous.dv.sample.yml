@@ -34,4 +34,13 @@ secret_backup_gpg_private_key: |
   -----END PGP PRIVATE KEY BLOCK-----
 
 secret_backup_gpg_key_passphrase: ''
+
+# journalbeat TLS
+journalbeat_node_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+journalbeat_node_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  -----END OPENSSH PRIVATE KEY-----
 ...

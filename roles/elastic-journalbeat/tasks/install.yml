@@ -1,0 +1,24 @@
+---
+# Install journalbeat on debian like systems
+
+- name: "Import elastic GPG key from {{ elastic_gpg_keyserver }}"
+  become: yes
+  apt_key:
+    keyserver: "{{ elastic_gpg_keyserver }}"
+    id: "{{ elastic_gpg_key }}"
+    state: present
+
+
+- name: Add elastic repository to apt-repositories
+  become: yes
+  apt_repository:
+    repo: "deb {{ elastic_deb_repository }} stable main"
+    state: present
+    filename: elastic
+
+- name: Install journalbeat
+  become: yes
+  apt:
+    name:
+      - journalbeat
+...

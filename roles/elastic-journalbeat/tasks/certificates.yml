@@ -1,0 +1,47 @@
+---
+# Setup the required components to send logs from journalctl to the logstash processor node.
+
+# Setup TLS using x509 certificates
+- name: Setup journalbeat certificates folder
+  become: yes
+  file:
+    path: "{{ journalbeat_certificates_directory }}"
+    owner: root
+    group: root
+    state: directory
+    mode: u=rwx,g=,o=
+
+- name: Copy logstash RootCA certificate
+  become: yes
+  copy:
+    content: "{{ logstash_CA_certificate }}"
+    dest: "{{ journalbeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - restart journalbeat
+
+- name: Copy journalbeat node certificate
+  become: yes
+  copy:
+    content: "{{ journalbeat_node_certificate }}"
+    dest: "{{ journalbeat_certificates_directory }}/{{ journalbeat_node_certificate_name }}.crt"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - restart journalbeat
+
+- name: Copy journalbeat node private key
+  become: yes
+  copy:
+    content: "{{ journalbeat_node_private_key }}"
+    dest: "{{ journalbeat_certificates_directory }}/{{ journalbeat_node_certificate_name }}.key"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  no_log: true
+  notify:
+    - restart journalbeat
+...
