@@ -1,5 +1,8 @@
 ---
 # This role contains the default configuration for setting up Monit (a monitoring tool)
+- set_fact:
+    mounted_devices_path: "{{ ansible_mounts|json_query('[].mount') }}"
+
 - name: Install Monit
   import_tasks: install.yml
 
@@ -14,6 +17,7 @@
     dest: "/etc/monit/conf.d/{{item}}"
   with_items:
     - system
+    - rsyslogd
   notify:
     - reload monit
 
