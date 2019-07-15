@@ -1,11 +1,36 @@
 ---
-- name: deploy elastic
+- name: list elastic configs
+  shell: "docker config ls | awk '{ print $1,$2 }' | grep \".* {{ docker_elastic_stack_name }}_\" | awk '{ print $2 }'"
+  register: elastic_configs
+  listen: deploy elastic
+
+- name: remove elastic configs
+  docker_config:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ elastic_configs.stdout_lines }}"
+  listen: deploy elastic
+
+- name: list elastic secrets
+  shell: "docker secret ls | awk '{ print $1,$2 }' | grep \".* {{ docker_elastic_stack_name }}_\" | awk '{ print $2 }'"
+  register: elastic_secrets
+  listen: deploy elastic
+
+- name: remove elastic configs
+  docker_secret:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ elastic_configs.stdout_lines }}"
+  listen: deploy elastic
+
+- name: deploy elastic stack
   docker_stack:
     state: present
-    name: elastic
+    name: "{{ docker_elastic_stack_name }}"
     compose:
       - "{{ elastic_compose_file_dest }}"
   notify: docker prune
+  listen: deploy elastic
 
 - name: docker prune
   docker_prune:

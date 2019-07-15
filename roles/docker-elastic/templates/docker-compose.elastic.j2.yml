@@ -227,28 +227,28 @@ volumes:
 # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
 configs: # config are immutable :/
   logstash.conf:
-    name: "logstash.conf-{{ docker_elastic_config_version }}"
+    name: "{{ docker_elastic_stack_name }}_logstash.conf"
     file: ./config/logstash/pipeline/logstash.conf
   logstash.yml:
-    name: "logstash.yml-{{ docker_elastic_config_version }}"
+    name: "{{ docker_elastic_stack_name }}_logstash.yml"
     file: ./config/logstash/logstash.yml
   elasticsearch.yml:
-    name: "elasticsearch.yml-{{ docker_elastic_config_version }}"
+    name: "{{ docker_elastic_stack_name }}_elasticsearch.yml"
     file: ./config/elasticsearch/elasticsearch.yml
   kibana.yml:
-    name: "kibana.yml-{{ docker_elastic_config_version }}"
+    name: "{{ docker_elastic_stack_name }}_kibana.yml"
     file: ./config/kibana/kibana.yml
   heartbeat.yml:
-    name: "heartbeat.yml-{{ docker_elastic_config_version }}"
+    name: "{{ docker_elastic_stack_name }}_heartbeat.yml"
     file: ./config/heartbeat/heartbeat.yml
 
 secrets:
   logstash-rootCA.crt:
-    name: "logstash-rootCA.crt-{{ docker_elastic_config_version }}"
+    name: "{{ docker_elastic_stack_name }}_logstash-rootCA.crt"
     file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_root_CA_certificate_name }}"
   logstash-certificate.crt:
-    name: "logstash-certificate.crt-{{ docker_elastic_config_version }}"
+    name: "{{ docker_elastic_stack_name }}_logstash-certificate.crt"
     file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.crt"
   logstash-private-key.key:
-    name: "logstash-private-key.key-{{ docker_elastic_config_version }}"
+    name: "{{ docker_elastic_stack_name }}_logstash-private-key.key"
     file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.key"

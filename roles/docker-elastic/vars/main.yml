@@ -1,6 +1,7 @@
 elastic_compose_file_dest_directory: ~/elastic
 elastic_compose_file_dest_name: docker-compose.elastic.yml
 elastic_compose_file_dest: "{{ elastic_compose_file_dest_directory }}/{{ elastic_compose_file_dest_name }}"
+docker_elastic_stack_name: "elastic"
 
 # memory reserved for elasticsearch (half of max memory)
 elasticsearch_memory_reservation: "{{ (elasticsearch_memory|int / 2) | round }}"
