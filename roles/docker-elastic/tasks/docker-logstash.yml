@@ -20,12 +20,32 @@
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
-- name: Allow from docker containers networks to this host - tcp/5000 (logstash)
+- name: Revoke nodes firewall - tcp/5044 (logstash)
+  become: yes
+  ufw:
+    rule: allow
+    port: 5044
+    src: "{{ item }}"
+    delete: yes
+  with_items: "{{ revoked_logstash_allowed_ips }}"
+
+- name: Allow nodes firewall - tcp/5044 (logstash)
+  become: yes
+  ufw:
+    rule: allow
+    port: 5044
+    src: "{{ item }}"
+  with_items: "{{ logstash_allowed_ips }}"
+
+- name: Allow from docker containers networks to this host - tcp/5000,5044 (logstash)
   become: yes
   ufw:
     rule: allow
     src: "172.16.0.0/12"
-    port: 5000
+    port: "{{ item }}"
+  with_items:
+    - 5000
+    - 5044
 
 # Setup TLS using x509 certificates
 - name: Setup logstash certificates folder
