@@ -141,7 +141,9 @@ processors:
   - drop_event: # fix spamming from docker healthcheck systemd bug https://github.com/docker/for-linux/issues/679
       when:
         regexp:
-          message: "*-docker-*.mount: Succeeded."
+          message: ".*-docker-.*.mount: Succeeded."
+  - drop_fields:
+      fields: ["journald.custom", "event.created"]
   #- add_cloud_metadata: ~
 
 #================================ Logging =====================================
