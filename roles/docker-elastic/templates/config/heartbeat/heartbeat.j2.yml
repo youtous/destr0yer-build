@@ -1,7 +1,10 @@
 heartbeat.monitors:
   - type: http
     schedule: '@every 10s'
-    urls: "{{ elastic_heartbeat_default_urls|default([]) + elastic_heartbeat_urls|default([]) }}"
+    urls:
+{% for url in elastic_heartbeat_default_urls|default([]) + elastic_heartbeat_urls|default([]) %}
+      - "{{ url }}"
+{% endfor %}
 
 processors:
   #- add_cloud_metadata:
