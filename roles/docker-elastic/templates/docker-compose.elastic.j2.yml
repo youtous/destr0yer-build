@@ -237,8 +237,8 @@ services:
           memory: 64M
     healthcheck:
       test: curl --fail http://elasticsearch:9200/ || exit 1
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 5
 
 networks:
