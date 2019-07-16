@@ -214,7 +214,7 @@ services:
 
   # alerting service
   elastalert:
-    image: jertel/elastalert-docker:latest-es7
+    image: "registry.gitlab.com/youtous/elastalert-docker:{{ elastic_official_version|replace(".","-") }}"
     networks:
       - stack
     configs:
