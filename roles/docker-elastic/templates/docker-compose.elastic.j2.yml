@@ -211,6 +211,38 @@ services:
       timeout: 15s
       retries: 5
 
+
+  # alerting service
+  elastalert:
+    image: bitsensor/elastalert:3.0.0-beta.0
+    networks:
+      - stack
+    configs:
+      - source: elastalert.yml
+        target: /opt/elastalert/config.yaml
+      - source: elastalert.json
+        target: /opt/elastalert-server/config/config.json
+      - source: elastalert-rule-error-on-server.yml
+        target: /opt/elastalert/rules/elastalert-rule-error-on-server.yaml
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+      resources:
+        limits:
+          memory: 64M
+    healthcheck:
+      test: "curl -s http://localhost:3030/status | grep 'READY' || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
 networks:
   stack: # encrypted if Swarm want to split services on managers
     driver: overlay
@@ -227,28 +259,38 @@ volumes:
 # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
 configs: # config are immutable :/
   logstash.conf:
-    name: "{{ docker_elastic_stack_name }}_logstash.conf"
+    name: "{{ docker_elastic_stack_name }}_logstash-${DEPLOY_TIMESTAMP}.conf"
     file: ./config/logstash/pipeline/logstash.conf
   logstash.yml:
-    name: "{{ docker_elastic_stack_name }}_logstash.yml"
+    name: "{{ docker_elastic_stack_name }}_logstash-${DEPLOY_TIMESTAMP}.yml"
     file: ./config/logstash/logstash.yml
   elasticsearch.yml:
-    name: "{{ docker_elastic_stack_name }}_elasticsearch.yml"
+    name: "{{ docker_elastic_stack_name }}_elasticsearch-${DEPLOY_TIMESTAMP}.yml"
     file: ./config/elasticsearch/elasticsearch.yml
   kibana.yml:
-    name: "{{ docker_elastic_stack_name }}_kibana.yml"
+    name: "{{ docker_elastic_stack_name }}_kibana-${DEPLOY_TIMESTAMP}.yml"
     file: ./config/kibana/kibana.yml
   heartbeat.yml:
-    name: "{{ docker_elastic_stack_name }}_heartbeat.yml"
+    name: "{{ docker_elastic_stack_name }}_heartbeat-${DEPLOY_TIMESTAMP}.yml"
     file: ./config/heartbeat/heartbeat.yml
+  elastalert.yml:
+    name: "{{ docker_elastic_stack_name }}_elastalert-${DEPLOY_TIMESTAMP}.yml"
+    file: ./config/elastalert/elastalert.yml
+  elastalert.json:
+    name: "{{ docker_elastic_stack_name }}_elastalert-${DEPLOY_TIMESTAMP}.json"
+    file: ./config/elastalert/config.json
+  elastalert-rule-error-on-server.yml:
+    name: "{{ docker_elastic_stack_name }}_elastalert-rule-error-on-server-${DEPLOY_TIMESTAMP}.yml"
+    file: ./config/elastalert/rules/error-on-server.yml
+
 
 secrets:
   logstash-rootCA.crt:
-    name: "{{ docker_elastic_stack_name }}_logstash-rootCA.crt"
+    name: "{{ docker_elastic_stack_name }}_logstash-rootCA-${DEPLOY_TIMESTAMP}.crt"
     file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_root_CA_certificate_name }}"
   logstash-certificate.crt:
-    name: "{{ docker_elastic_stack_name }}_logstash-certificate.crt"
+    name: "{{ docker_elastic_stack_name }}_logstash-certificate-${DEPLOY_TIMESTAMP}.crt"
     file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.crt"
   logstash-private-key.key:
-    name: "{{ docker_elastic_stack_name }}_logstash-private-key.key"
+    name: "{{ docker_elastic_stack_name }}_logstash-private-key-${DEPLOY_TIMESTAMP}.key"
     file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.key"
