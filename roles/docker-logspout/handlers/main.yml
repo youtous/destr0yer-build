@@ -1,40 +1,12 @@
 ---
-- name: stop logspout stack
-  docker_stack:
-    state: absent
-    name: "{{ docker_logspout_stack_name }}"
-  listen: deploy logspout
-
-- name: list logspout configs
-  shell: "docker config ls | awk '{ print $1,$2 }' | grep \".* {{ docker_logspout_stack_name }}_\" | awk '{ print $2 }'"
-  register: logspout_configs
-  listen: deploy logspout
-
-- name: remove logspout configs
-  docker_config:
-    name: "{{ item }}"
-    state: absent
-  with_items: "{{ logspout_configs.stdout_lines }}"
-  listen: deploy logspout
-
-- name: list logspout secrets
-  shell: "docker secret ls | awk '{ print $1,$2 }' | grep \".* {{ docker_logspout_stack_name }}_\" | awk '{ print $2 }'"
-  register: logspout_secrets
-  listen: deploy logspout
-
-- name: remove logspout configs
-  docker_secret:
-    name: "{{ item }}"
-    state: absent
-  with_items: "{{ logspout_secrets.stdout_lines }}"
-  listen: deploy logspout
-
 - name: deploy logspout stack
   docker_stack:
     state: present
     name: "{{ docker_logspout_stack_name }}"
     compose:
       - "{{ logspout_compose_file_dest }}"
+    environment:
+      DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
   notify: docker prune
   listen: deploy logspout
 

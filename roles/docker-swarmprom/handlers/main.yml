@@ -1,40 +1,12 @@
 ---
-- name: stop swarmprom stack
-  docker_stack:
-    state: absent
-    name: "{{ docker_swarmprom_stack_name }}"
-  listen: deploy swarmprom
-
-- name: list swarmprom configs
-  shell: "docker config ls | awk '{ print $1,$2 }' | grep \".* {{ docker_swarmprom_stack_name }}_\" | awk '{ print $2 }'"
-  register: swarmprom_configs
-  listen: deploy swarmprom
-
-- name: remove swarmprom configs
-  docker_config:
-    name: "{{ item }}"
-    state: absent
-  with_items: "{{ swarmprom_configs.stdout_lines }}"
-  listen: deploy swarmprom
-
-- name: list swarmprom secrets
-  shell: "docker secret ls | awk '{ print $1,$2 }' | grep \".* {{ docker_swarmprom_stack_name }}_\" | awk '{ print $2 }'"
-  register: swarmprom_secrets
-  listen: deploy swarmprom
-
-- name: remove swarmprom configs
-  docker_secret:
-    name: "{{ item }}"
-    state: absent
-  with_items: "{{ swarmprom_secrets.stdout_lines }}"
-  listen: deploy swarmprom
-
 - name: deploy swarmprom stack
   docker_stack:
     state: present
     name: "{{ docker_swarmprom_stack_name }}"
     compose:
       - "{{ swarmprom_compose_file_dest }}"
+  environment:
+    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
   notify: docker prune
   listen: deploy swarmprom
 

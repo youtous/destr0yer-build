@@ -2,18 +2,18 @@ version: "3.7"
 
 configs:
   dockerd_config:
-    name: "{{ docker_swarmprom_stack_name }}_dockerd_config"
+    name: "{{ docker_swarmprom_stack_name }}_dockerd_config-${DEPLOY_TIMESTAMP}"
     file: ./dockerd-exporter/Caddyfile
   node_rules:
-    name: "{{ docker_swarmprom_stack_name }}_node_rules"
+    name: "{{ docker_swarmprom_stack_name }}_node_rules-${DEPLOY_TIMESTAMP}"
     file: ./prometheus/rules/swarm_node.rules.yml
   task_rules:
-    name: "{{ docker_swarmprom_stack_name }}_task_rules"
+    name: "{{ docker_swarmprom_stack_name }}_task_rules-${DEPLOY_TIMESTAMP}"
     file: ./prometheus/rules/swarm_task.rules.yml
 
 secrets:
   alertmanager:
-    name: "{{ docker_swarmprom_stack_name }}_alertmanager"
+    name: "{{ docker_swarmprom_stack_name }}_alertmanager-${DEPLOY_TIMESTAMP}"
     file: ./alertmanager/alertmanager.yml
 
 services:
