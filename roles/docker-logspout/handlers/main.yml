@@ -5,8 +5,8 @@
     name: "{{ docker_logspout_stack_name }}"
     compose:
       - "{{ logspout_compose_file_dest }}"
-    environment:
-      DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+  environment:
+    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
   notify: docker prune
   listen: deploy logspout
 
