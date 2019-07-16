@@ -12,7 +12,8 @@ type: frequency
 # (Required)
 # Index to search, wildcard supported
 # docker containers messages
-index: syslog-*
+index: syslog-%Y.%m.%d
+use_strftime_index: true
 
 #doc_type: "golog"
 
