@@ -141,7 +141,7 @@ processors:
   - drop_event: # fix spamming from docker healthcheck systemd bug https://github.com/docker/for-linux/issues/679
       when:
         regexp:
-          message: "run-docker-runtime.*.mount: Succeeded."
+          message: "*-docker-*.mount: Succeeded."
   #- add_cloud_metadata: ~
 
 #================================ Logging =====================================
