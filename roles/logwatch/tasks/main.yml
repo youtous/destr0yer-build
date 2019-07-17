@@ -1,5 +1,8 @@
 ---
 # This role contains the default policy for logrotate
+- name: Include default vars
+  include_vars: default.yml
+
 - name: Setup Logwatch
   become: yes
   import_role:
