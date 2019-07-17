@@ -1,23 +1,33 @@
 #!make
-.PHONY= pull-secrets push-secrets pull-certs push-certs pull push help
+include .env
+.PHONY= pull-secrets push-secrets pull-certs push-certs pull push help check-env
 .DEFAULT_GOAL= help
 
 push: push-secrets push-certs ## Pull everything from Nextcloud
 pull: pull-secrets pull-certs ## Push everything from Nextcloud
 
-push-secrets: ## Save secrets on Nextcloud
-	mkdir -p ~/Nextcloud/linux/destr0yer-secrets/
-	cp secret_vars/*.yml ~/Nextcloud/linux/destr0yer-secrets/
+push-secrets: check-env ## Save secrets on Nextcloud
+	mkdir -p ${SAVE_PATH}/${CLUSTER_NAME}/secrets/
+	cp secret_vars/*.yml ${SAVE_PATH}/${CLUSTER_NAME}/secrets/
 
-pull-secrets: ## Copy secrets from Nextcloud
-	cp -a ~/Nextcloud/linux/destr0yer-secrets/*.yml secret_vars
+pull-secrets: check-env ## Copy secrets from Nextcloud
+	cp -a ${SAVE_PATH}/${CLUSTER_NAME}/secrets/*.yml secret_vars
 
-push-certs: ## Save secrets on Nextcloud
-	mkdir -p ~/Nextcloud/linux/destr0yer-certs/
-	cp -R certs/* ~/Nextcloud/linux/destr0yer-certs/
+push-certs: check-env ## Save secrets on Nextcloud
+	mkdir -p ${SAVE_PATH}/${CLUSTER_NAME}/certs/
+	cp -R certs/* ${SAVE_PATH}/${CLUSTER_NAME}/certs/
 
-pull-certs: ## Copy secrets from Nextcloud
-	cp -aR ~/Nextcloud/linux/destr0yer-certs/* certs
+pull-certs: check-env ## Copy secrets from Nextcloud
+	cp -aR ${SAVE_PATH}/${CLUSTER_NAME}/certs/* certs
+
+
+check-env: ## ensure CLUSTER_NAME is defined
+ifndef CLUSTER_NAME
+	$(error CLUSTER_NAME is undefined)
+endif
+ifndef SAVE_PATH
+	$(error SAVE_PATH is undefined)
+endif
 
 help: ## Show this help prompt.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)

@@ -31,9 +31,15 @@ Use it for Docker infrastructures.
 
 - Launch the docker recipe using: `ansible-playbook -i hosts/swarm-nodes.yml the-swarm.yml --vault-password-file ./.vault_password`
 
+### Save `secrets` and `certs`
+Using `make` and the **Makefile** you can easily save secrets and certs in a safe place. For instance a private _Nextcloud_.
+- `make push` - save secrets and certs
+- `make pull` - restore secrets and certs
+
+_Create a `.env` as `.env.sample` in order to configure save path and cluster name which must be unique._
+
 ### Hosts
 Hosts are located in `hosts/{hosts groups list}.yml`. Use separate files for separate clusters.
-
 
 ## How to start?
 ### Generate ssh keys
