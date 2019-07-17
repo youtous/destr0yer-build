@@ -4,7 +4,7 @@ version: '3.7'
 services:
 
   elasticsearch:
-    image: "blacktop/elasticsearch:{{ elastic_version }}"
+    image: "amazon/opendistro-for-elasticsearch:{{ opendistro_version }}"
     environment:
       - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m"
     configs:
@@ -61,7 +61,7 @@ services:
       retries: 5
 
   kibana:
-    image: "blacktop/kibana:{{ elastic_version }}"
+    image: "registry.gitlab.com/youtous/opendistro-kibana:{{ opendistro_version|replace('.','-') }}"
     configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
@@ -75,11 +75,6 @@ services:
         condition: any
         delay: 5s
         window: 15s
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
       labels:
         - "traefik.frontend.rule=Host:{{ kibana_domain }}"
         - traefik.enable=true
@@ -115,7 +110,7 @@ services:
 
   # process logs from everywhere
   logstash:
-    image: "elastic/logstash:{{ elastic_official_version }}"
+    image: "docker.elastic.co/logstash/logstash-oss:{{ elastic_version }}"
     configs:
       - source: logstash.conf
         target: /usr/share/logstash/pipeline/logstash.conf
@@ -185,7 +180,7 @@ services:
 
   # check if services are up
   heartbeat:
-    image: "elastic/heartbeat:{{ elastic_official_version }}"
+    image: "docker.elastic.co/beats/heartbeat-oss:{{ elastic_version }}"
     command: --strict.perms=false -e  # -e flag to log to stderr and disable syslog/file output
     configs:
       - source: heartbeat.yml

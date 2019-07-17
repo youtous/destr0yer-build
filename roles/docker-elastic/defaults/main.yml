@@ -1,14 +1,6 @@
 ---
-elastic_version: 7.2
-elastic_official_version: "{{ elastic_version }}.0"
-
-# email alerts settings
-alert_email_server: "{{ ipv4[0] }}"
-alert_email_port: "25"
-alert_email_from: "{{ relay_email }}"
-alert_email_to: "{{ monitoring_email }}"
-alert_email_user: "{{ relay_user }}"
-alert_email_password: "{{ relay_password }}"
+elastic_version: 7.0.1
+opendistro_version: 1.0.1
 
 # a list of allowed ips to access logstash thought socket
 logstash_allowed_ips: [] # /!\ set both ipv6 and ipv4
