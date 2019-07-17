@@ -21,17 +21,6 @@
   notify:
     - deploy elastic
 
-- name: Copy elastalert config files
-  template:
-    src: "templates/config/elastalert/{{ item.src }}"
-    dest: "{{ elastic_compose_file_dest_directory }}/config/elastalert/{{ item.dest }}"
-    mode: u=rw,g=,o=
-  with_items:
-    - {src: "elastalert.j2.yml", dest: "elastalert.yml"}
-    - {src: "smtp-auth.j2.yaml", dest: "smtp-auth.yaml"}
-  notify:
-    - deploy elastic
-
 - name: Ensure elastic heartbeat directory exists
   file:
     state: directory

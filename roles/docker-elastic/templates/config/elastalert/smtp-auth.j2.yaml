@@ -1,2 +1,0 @@
-user: "{{ alert_email_user }}"
-password: "{{ alert_email_password }}"
