@@ -5,12 +5,11 @@
 
 Please fork this repo for each different server configuration.
 
-## Requirements Software
-
+### Requirements
 - SSH access
 - Python
 
-## VM only
+#### VM only
  _*Commands :*_ 
 - Start machines using `vagrant up`.
 - Stop machines using `vagrant halt`.
@@ -19,7 +18,12 @@ Please fork this repo for each different server configuration.
 [vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager) plugin is used for name resolution.
 
 If logs grows due to systemd not capable to generate a MAC address, see https://github.com/systemd/systemd/issues/3374#issuecomment-452718898
-## Ansible usage
+## Ansible Playbooks
+
+### Playbooks description :
+- **destr0yers** : this play setup debian based systems with a secured base configuration. Use it as a _base_.
+- **the-swarm** : this play setup a Docker Swarm network using several nodes. It use TLS for communications between nodes (requires CA setup).
+Use it for Docker infrastructures.
 
 - First configuration a new hosts: `ansible-playbook -i hosts/destr0yers.yml  destr0yers.yml --vault-password-file ./.vault_password --tag="new-systems"`
 - Launch the recipe using: `ansible-playbook -i hosts/destr0yers.yml destr0yers.yml --vault-password-file ./.vault_password`
@@ -27,17 +31,28 @@ If logs grows due to systemd not capable to generate a MAC address, see https://
 
 - Launch the docker recipe using: `ansible-playbook -i hosts/swarm-nodes.yml the-swarm.yml --vault-password-file ./.vault_password`
 
-## Playbooks description :
-
-- **destr0yers** : this play setup debian based systems with a secured base configuration. Use it as a _base_.
-- **the-swarm** : this play setup a Docker Swarm network using several nodes. It use TLS for communications between nodes (requires CA setup).
-Use it for Docker infrastructures.
-
-## Hosts
-
+### Hosts
 Hosts are located in `hosts/{hosts groups list}.yml`. Use separate files for separate clusters.
 
-## A word about Create CA
+
+## How to start?
+### Generate ssh keys
+For each account present on the server, a couple of public and private key is required. Generate it using `ssh-keygen -q -t ed25519 -C "" -N ""`
+and save it in the secret vault.
+
+### Generate GPG keys for backup encryption
+Backups requires to be encrypted using GPG.
+In order to make it work, keys must be generated.
+
+_We follow this guide: https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled_
+1. Generate a new GPG key using: `gpg --full-gen-key` _(choose RSA and RSA, 4096bits, never expires)_
+2. Export the public key using: `gpg --output {public key name}.pub.asc --armor --export {the name you entered previously}`
+3. Export the private key using: `gpg --output {private key name}.sec.asc --armor --export-secret-key {the name you entered previously}`
+4. Save the public and the private key in the host secret vault.
+5. Define this key as encryption key for the backup in `host_vars`. **/!\\** don't forget to set the names and the ownertrust.
+6. Save the _ownertrust_, the _both keys_ and the _passphrase_ in a **safe place**. 
+
+### Create CA for swarm or elastic cluster
 
 **Script:** a dedicated scrip has been created for this task. It create a client certificate signed by a root authority (X509 standard).
 Use `./generate-X509-certificate.rb`
@@ -61,7 +76,8 @@ To sum up :
  - chacha20 is currently secured enough and resists against timing guess attacks
  - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121) 
 
-## DockerSwarm hosts
+### Examples
+#### DockerSwarm hosts
 Swarm comes with several admin applications which require domains,
 here is a list of the required domains :
 
