@@ -69,7 +69,7 @@ backup_users:
     restrict_ips: "{{ hostvars['heaven-pascal.youtous.dv']['ipv4'] + hostvars['heaven-pascal.youtous.dv']['ipv6'] }}"
     # specify host public keys
     ssh_keys:
-      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCyrGHzqWzTDhsWusHWOwulSstvx6x1ECxTbhXIUTsR root@heaven-pascal.youtous.dv"
+      - "{{ root_public_key }} root@heaven-pascal.youtous.dv"
 
 ### End of Backup storage parameters ###
 
