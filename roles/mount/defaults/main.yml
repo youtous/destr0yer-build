@@ -1,0 +1,9 @@
+---
+# devices to mount
+mount_devices: []
+#  - {path: "/backup", src: "/dev/sdb", fstype: "ext4", opts: "auto"}
+
+# devices to unmount
+unmount_devices: []
+#  - {path: "/backup"}
+...

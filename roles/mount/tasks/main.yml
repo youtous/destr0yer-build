@@ -1,0 +1,19 @@
+---
+# This role setup mounting devices using fstab
+
+- name: Mount devices and save it permanantly
+  become: yes
+  mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    fstype: "{{ item.fstype }}"
+    opts: "{{ item.opts }}"
+    state: mounted
+  with_items: "{{ mount_devices }}"
+
+- name: Unmount devices and save it permanantly
+  become: yes
+  mount:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ unmount_devices }}"

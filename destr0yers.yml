@@ -27,6 +27,7 @@
     - users # create a sudo user that will be used for configuration
     - system-configuration # configure the system (selinux, timezone...)
     - system-tools # server cli tools (vim, ccat, etc)
+    - mount # manage mount devices
     - services # define services policy (disable scaleway etc)
     - logrotate # manage log rotation
     - logwatch # monitor server using emails
