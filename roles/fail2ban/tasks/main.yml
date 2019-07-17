@@ -1,8 +1,5 @@
 ---
 # This role contains the default policy for fail2ban
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Setup fail2ban
   become: yes
   import_role:

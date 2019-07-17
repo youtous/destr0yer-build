@@ -1,8 +1,5 @@
 ---
 # This role contains golang installation
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Add golang to PATH bash
   become: yes
   template:
