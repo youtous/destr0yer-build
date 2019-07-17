@@ -60,7 +60,7 @@ update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
 
 # backup-storage parameters
 backup_users:
-  - username: heaven-roberval
+  - username: heaven-roberval # final username will be prefixed by backup_
     restrict_ips: "{{ hostvars['heaven-roberval.youtous.dv']['ipv4'] + hostvars['heaven-roberval.youtous.dv']['ipv6'] }}"
     # specify host public keys
     ssh_keys:
