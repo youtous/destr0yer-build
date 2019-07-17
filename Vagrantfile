@@ -12,6 +12,7 @@ servers=[
         :ipv4 => "192.168.100.10",
         :ipv6 => "fde4:8dba:82e1::c1",
         :box => "debian/buster64",
+        #:box_version => "10.0.0",
         :ram => 2048,
         :cpu => 2
     },
@@ -20,7 +21,8 @@ servers=[
         :ipv4 => "192.168.100.11",
         :ipv6 => "fde4:8dba:82e1::c2",
         :box => "debian/buster64",
-        :ram => 2048,
+				#:box_version => "10.0.0",
+				:ram => 2048,
         :cpu => 2
     }
 ]
@@ -38,6 +40,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			
 			# define the VM
 			node.vm.box = machine[:box]
+			#node.vm.box_version = machine[:box_version]
 
 			# configure network
 			# enable ipv6
