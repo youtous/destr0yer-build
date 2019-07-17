@@ -1,0 +1,13 @@
+monit_package_name: "monit-{{ monit_version }}-linux-{{ 'arm64' if (ansible_architecture == 'aarch64') else 'x64' }}.tar.gz"
+monit_download_uri: "https://bitbucket.org/tildeslash/monit/downloads/{{ monit_package_name }}"
+monit_download_dest_directory: "/tmp/monit"
+monit_var_directory: "/var/lib/monit"
+
+# which filesystems to monitor
+monit_default_filesystems:
+  - {mnt: "/home", usage_alert: "90%"}
+  - {mnt: "/", usage_alert: "80%"}
+  - {mnt: "/var", usage_alert: "80%"}
+  - {mnt: "/data", usage_alert: "80%"}
+
+monit_all_filesystems: "{{ monit_default_filesystems|default([]) + monit_filesystems|default([]) }}"

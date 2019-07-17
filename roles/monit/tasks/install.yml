@@ -1,8 +1,5 @@
 ---
 # Install Monit from sources
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Check Monit version is {{ monit_version }}
   shell: "monit --version | grep {{ monit_version }}"
   register: monit_present

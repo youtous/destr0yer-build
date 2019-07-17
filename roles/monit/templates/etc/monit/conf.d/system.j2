@@ -11,23 +11,10 @@ check system {{ hostname }}
 
 
 # Filesystems
-{% if "/" in mounted_devices_path %}
-check filesystem rootfs with path /
-    if space usage > 90% then alert
+{% for fs in monit_all_filesystems %}
+{% if fs.mnt in mounted_devices_path %}
+check filesystem {{ fs.mnt|replace('/','') }}fs with path {{ fs.mnt }}
+    if space usage > {{ fs.usage_alert }} then alert
 {% endif %}
-
-{% if "/var" in mounted_devices_path %}
-check filesystem varfs with path /var/
-    if space usage > 90% then alert
-{% endif %}
-
-{% if "/home" in mounted_devices_path %}
-check filesystem homefs with path /home/
-    if space usage > 90% then alert
-{% endif %}
-
-{% if "/data" in mounted_devices_path %}
-check filesystem datafs with path /data/
-    if space usage > 90% then alert
-{% endif %}
+{% endfor %}
 

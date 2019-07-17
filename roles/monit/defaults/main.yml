@@ -1,4 +1,8 @@
 ---
+# which filesystems to monitor
+monit_filesystems: []
+#  - {mnt: "/home", usage_alert: "90%"}, default are already configured
+
 # Monit installation
 monit_version: "5.26.0"
 # checksum is available at https://bitbucket.org/tildeslash/monit/downloads/
