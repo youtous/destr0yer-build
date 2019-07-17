@@ -1,5 +1,11 @@
 ---
 # This role setup mounting devices using fstab
+- name: Create mounting points if does not exist
+  become: yes
+  file:
+    path: "{{ item.path }}"
+    state: directory
+  with_items: "{{ mount_devices }}"
 
 - name: Mount devices and save it permanantly
   become: yes
