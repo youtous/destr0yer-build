@@ -16,6 +16,7 @@ specu_password: ""
 secret_relay_password: ""
 
 # generated keys for root
+# use `ssh-keygen -q -t ed25519 -C "" -N ""`
 root_public_key: ""
 root_private_key: |
   -----BEGIN OPENSSH PRIVATE KEY-----
