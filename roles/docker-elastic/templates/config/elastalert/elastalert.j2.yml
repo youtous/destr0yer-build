@@ -47,3 +47,12 @@ writeback_index: elastalert_status
 # sending the alert until this time period has elapsed
 alert_time_limit:
   days: 1
+
+# email alert configuration
+email:
+  - "{{ alert_email_to }}"
+smtp_host: "{{ alert_email_server }}"
+smtp_port: "{{ alert_email_port }}"
+smtp_ssl: false
+#smtp_auth_file: "../smtp-auth.yaml"
+from_addr: "{{ alert_email_from }}"

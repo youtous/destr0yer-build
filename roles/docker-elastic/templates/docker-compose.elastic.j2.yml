@@ -213,33 +213,36 @@ services:
 
 
   # alerting service
-  elastalert:
-    image: "registry.gitlab.com/youtous/elastalert-docker:{{ elastic_official_version|replace(".","-") }}"
-    networks:
-      - stack
-    configs:
-      - source: elastalert.yml
-        target: /opt/config/elastalert_config.yaml
-      - source: elastalert-rule-error-on-server.yml
-        target: /opt/elastalert/rules/rule-error-on-server.yaml
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: any
-        delay: 5s
-        window: 15s
-      resources:
-        limits:
-          memory: 64M
-    healthcheck:
-      test: curl --fail http://elasticsearch:9200/ || exit 1
-      interval: 30s
-      timeout: 15s
-      retries: 5
+#  elastalert:
+#    image: "registry.gitlab.com/youtous/elastalert-docker:{{ elastic_official_version|replace(".","-") }}"
+#    networks:
+#      - stack
+#    configs:
+#      - source: elastalert.yml
+#        target: /opt/config/elastalert_config.yaml
+#      - source: elastalert-rule-error-on-server.yml
+#        target: /opt/elastalert/rules/rule-error-on-server.yaml
+#    secrets:
+#      - source: smtp-auth.yaml
+#        target: /opt/elastalert/smtp-auth.yaml
+#    deploy:
+#      mode: replicated
+#      replicas: 1
+#      placement:
+#        constraints:
+#          - node.role == manager
+#      restart_policy:
+#        condition: any
+#        delay: 5s
+#        window: 15s
+#      resources:
+#        limits:
+#          memory: 64M
+#    healthcheck:
+#      test: curl --fail http://elasticsearch:9200/ || exit 1
+#      interval: 30s
+#      timeout: 15s
+#      retries: 5
 
 networks:
   stack: # encrypted if Swarm want to split services on managers
@@ -289,3 +292,6 @@ secrets:
   logstash-private-key.key:
     name: "{{ docker_elastic_stack_name }}_logstash-private-key-${DEPLOY_TIMESTAMP}.key"
     file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.key"
+  smtp-auth.yaml:
+    name: "{{ docker_elastic_stack_name }}_smtp-auth-${DEPLOY_TIMESTAMP}.yaml"
+    file: "./config/elastalert/smtp-auth.yaml"

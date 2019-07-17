@@ -33,12 +33,10 @@ timeframe:
 filter:
   - query:
       query_string:
-        query: "message: *leo*"
+        query: "leo"
 
 
 # (Required)
 # The alert is use when a match is found
 alert:
   - "email"
-email:
-  - "elastalert@youtous.dv"
