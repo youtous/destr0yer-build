@@ -2,7 +2,7 @@
 factoring_destroyers:
   hosts:
 
-# destr0yers under a commander
+# destr0yers under a commander, they are accessible from ssh only from ssh_entrypoints
 base_destr0yers:
   hosts:
     heaven-pascal.youtous.dv:
