@@ -51,14 +51,18 @@
 
 - name: Add backup script to Duply pre scripts
   become: yes
-  blockinfile:
-    dest: "{{ duply_prescript_path }}"
-    block: "{{ lookup('template', 'templates/register-backup-script.sh.j2') }}"
-    marker: "### {mark} ANSIBLE MANAGED BLOCK - call mysql docker containers backup script ###"
+  template:
+    src: "templates/register-backup-script.sh.j2"
+    dest: "{{ duply_prescript_folder }}/10-mysql-docker-containers.sh"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
 
 - name: Add cleanup script to Duply post scripts
   become: yes
-  blockinfile:
-    dest: "{{ duply_postscript_path }}"
-    block: "{{ lookup('template', 'templates/register-cleanup-backup-script.sh.j2') }}"
-    marker: "### {mark} ANSIBLE MANAGED BLOCK - cleanup mysql docker containers backups ###"
+  template:
+    src: "templates/register-cleanup-backup-script.sh.j2"
+    dest: "{{ duply_postscript_folder }}/10-mysql-backup-cleanup.sh"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 echo "Calling docker-volumes backup script..."
 /usr/bin/env ruby {{ docker_volumes_backup_script_directory }}/backup-docker-volumes.rb "{{ docker_volumes_backup_output }}"
 echo "Docker-volumes backed-up to {{ docker_volumes_backup_output }}..."

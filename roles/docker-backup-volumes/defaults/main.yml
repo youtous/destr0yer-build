@@ -6,8 +6,8 @@ docker_volumes_backup: []
 docker_volumes_backup_to_remove: []
 
 # paths of duply scripts
-duply_prescript_path: "/etc/duply/global/pre"
-duply_postscript_path: "/etc/duply/global/post"
+duply_prescript_folder: "/etc/duply/global/pre.d"
+duply_postscript_folder: "/etc/duply/global/post.d"
 
 # path where backup archives will be output
 docker_volumes_backup_output: "/home/docker-volumes-backup"

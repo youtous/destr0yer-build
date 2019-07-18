@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 echo "Cleanup docker volumes backup in {{ docker_volumes_backup_output }}..."
 find {{ docker_volumes_backup_output }}/. -type f -delete
 echo "All docker-volumes backed-up has been removed!"

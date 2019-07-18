@@ -22,6 +22,17 @@
     duply_backup_jobs: "{{ backup_jobs }}"
   no_log: true
 
+- name: Ensure pre.d and post.d directories are present
+  become: yes
+  file:
+    state: directory
+    path: "{{ duply_backup_profile_directory }}/global/{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+  with_items:
+    - "pre.d"
+    - "post.d"
 
 - name: Ensure cache backup directory is present
   become: yes
