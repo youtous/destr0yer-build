@@ -29,12 +29,12 @@
     - system-tools # server cli tools (vim, ccat, etc)
     - mount # manage mount devices
     - services # define services policy (disable scaleway etc)
+    - ssh # define OpenSSH policy
+    - ssh-user-keys # deploy ssh keys on the server
     - logrotate # manage log rotation
     - logwatch # monitor server using emails
     - monit # monitor server using Monit
     - iptables-firewall # define firewall policy
-    - ssh # define OpenSSH policy
-    - ssh-user-keys # deploy ssh keys on the server
     - fail2ban # define the fail2ban policy
     - notify-login # notify when an user connects
   vars_files:

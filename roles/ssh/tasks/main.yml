@@ -70,14 +70,21 @@
 
 - name: Copy sshd server configuration
   become: yes
-  copy:
-    src: files/sshd_config
+  template:
+    src: templates/sshd_config.j2
     dest: /etc/ssh/sshd_config
     owner: root
     group: root
     mode: u=rw,g=rw,o=r
   notify:
     - restart sshd
+
+- name: "Configure sshd port {{ sshd_port }} in /etc/services"
+  become: yes
+  lineinfile:
+    dest: "/etc/services"
+    regexp: "^ssh"
+    line: "ssh		{{ sshd_port }}/tcp				# SSH Remote Login Protocol"
 
 - name: Enable OpenSSH server
   become: yes

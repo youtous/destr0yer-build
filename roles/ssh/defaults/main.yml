@@ -1,4 +1,7 @@
 ---
+# sshd port
+sshd_port: 22
+
 algorithms_files_to_remove:
   - /etc/ssh/moduli # no DH used, this file is not useful anymore
   - /etc/ssh/ssh_host_dsa_key.pub
