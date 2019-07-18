@@ -57,7 +57,7 @@ update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
 
 
 ### Begin of Backup storage parameters ###
-
+backup_frozen_directory: "/home/frozen-backups/"
 # backup-storage parameters
 backup_users:
   - username: heaven-roberval # final username will be prefixed by backup_

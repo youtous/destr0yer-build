@@ -127,3 +127,11 @@
     group: "{{ backup_group_name }}"
     mode: u=rwx,g=,o=
   with_items: "{{ backup_users }}"
+
+- name: Configure frozen backups export
+  import_tasks: frozen.yml
+  when: backup_frozen_directory is defined
+
+- name: Disable frozen backups export
+  import_tasks: remove-frozen.yml
+  when: backup_frozen_directory is undefined

@@ -5,6 +5,15 @@ backup_root_directory: /home/backups
 backup_group_name: "backup-sftp"
 backup_group_gid: 25555
 
+# if defined, the backup_root_directory will be copied in this directory each day
+# it can helps from having deleted backups during an attack
+# backup_frozen_directory: "/home/frozen-backups/"
+
+# define when to run the snapshot of the backup folder
+backup_frozen_cron:
+  minute: "0"
+  hour: "8"
+
 backup_users: []
 #  - username: backup_hostname
 #    ssh_keys: [] # specify host public key

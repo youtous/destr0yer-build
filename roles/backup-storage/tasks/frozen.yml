@@ -1,0 +1,22 @@
+---
+# Setup a strategy of retention of the backups.
+# Each day, the backup directory will be copied in a given directory.
+
+- name: Ensure frozen backup directory present and owned by root
+  become: yes
+  file:
+    state: directory
+    path: "{{ backup_frozen_directory }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Setup frozen backup job
+  become: yes
+  cron:
+    name: "frozen-backup"
+    minute: "{{ backup_frozen_cron.minute }}"
+    hour: "{{ backup_frozen_cron.hour }}"
+    job: "rsync -avu --delete \"{{ backup_root_directory }}/\" \"{{ backup_frozen_directory }}\" > /dev/null"
+
+...
