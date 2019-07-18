@@ -1,16 +1,11 @@
 ---
 # This role contains apt settings
-- name: Find source.d files
-  find:
-    paths: "{{ apt_sources_list_directory }}"
-  register: files_sources
-
 - name: Remove unwanted sources.d
   become: yes
   file:
-    path: "{{ item.path }}"
+    path: "/etc/apt/sources.d/{{ item }}"
     state: absent
-  with_list: "{{ files_sources.files }}"
+  with_items: "{{ apt_remove_sourcesd }}"
 
 - name: Copy sources.list
   become: yes

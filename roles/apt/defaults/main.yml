@@ -1,4 +1,7 @@
 ---
+# list of files to remove from /etc/apt/sources.d/
+apt_remove_sourcesd: []
+
 apt_directory: "/etc/apt"
 apt_sources_list_directory: "{{ apt_directory }}/sources.list.d"
 apt_buster_flag_path: "{{ apt_directory }}/buster_update_flag"
