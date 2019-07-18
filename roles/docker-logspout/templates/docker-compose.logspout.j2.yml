@@ -10,8 +10,8 @@ services:
     volumes:
       - /etc/hostname:/etc/host_hostname:ro
       - /var/run/docker.sock:/var/run/docker.sock
-    extra_hosts: # use raw ip to fix DNS resolution with dev domains
 {% if logspout_output_server_address in hostvars %}
+    extra_hosts: # use raw ip to fix DNS resolution with dev domains
       - "{{ hostvars[logspout_output_server_address]['hostname'] }}:{{ hostvars[logspout_output_server_address]['ipv4'][0] }}"
 {% endif %}
     command:
