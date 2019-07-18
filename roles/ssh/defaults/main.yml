@@ -1,5 +1,5 @@
 ---
-# sshd port
+# sshd port /!\ be careful, changing this port will not handle ansible break connection
 sshd_port: 22
 
 algorithms_files_to_remove:
