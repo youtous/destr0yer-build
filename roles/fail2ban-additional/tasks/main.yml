@@ -3,10 +3,12 @@
 # see https://github.com/Oefenweb/ansible-fail2ban for naming details
 - name: Update fail2ban jail configuration with additional services
   become: yes
-  blockinfile:
-    dest: "/etc/fail2ban/jail.local"
-    block: "{{ lookup('template', 'files/additional-services.j2') }}"
-    marker: "### {mark} ANSIBLE MANAGED BLOCK - configure {{ service.name }} jail ###"
+  template:
+    src: files/additional-services.j2.conf
+    dest: "/etc/fail2ban/jail.d/{{ service.name }}.conf"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
   with_items: "{{ fail2ban_services }}"
   loop_control:
     loop_var: service
