@@ -1,1 +1,4 @@
 ---
+# default home permissions for user's home folder
+# you can override this for a specific user using home_permission:
+users_default_home_permissions: u=rwx,g=,o=
