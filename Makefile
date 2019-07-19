@@ -10,14 +10,16 @@ push-secrets: check-env ## Save secrets on Nextcloud
 	mkdir -p ${SAVE_PATH}/${CLUSTER_NAME}/secrets/
 	cp secret_vars/*.yml ${SAVE_PATH}/${CLUSTER_NAME}/secrets/
 
-pull-secrets: check-env ## Copy secrets from Nextcloud
+pull-secrets: check-env ## Cleanup local secrets then copy secrets from Nextcloud
+	find ./secret_vars -type f ! -name '*.sample.yml' ! -name '.keep' -delete
 	cp -a ${SAVE_PATH}/${CLUSTER_NAME}/secrets/*.yml secret_vars
 
 push-certs: check-env ## Save secrets on Nextcloud
 	mkdir -p ${SAVE_PATH}/${CLUSTER_NAME}/certs/
 	cp -R certs/* ${SAVE_PATH}/${CLUSTER_NAME}/certs/
 
-pull-certs: check-env ## Copy secrets from Nextcloud
+pull-certs: check-env ## Cleanup local secrets copy secrets from Nextcloud
+	find ./certs -type f ! -name '*.sample.yml' ! -name '.keep' -delete
 	cp -aR ${SAVE_PATH}/${CLUSTER_NAME}/certs/* certs
 
 
