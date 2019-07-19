@@ -24,7 +24,7 @@
     dest: "/etc/ssh/sshd_config"
     regexp: "^Subsystem"
     line: "Subsystem sftp internal-sftp"
-    validate: "/usr/sbin/sshd -T -f %s"
+    validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
   notify:
     - restart sshd
 
@@ -35,7 +35,7 @@
     block: "AllowGroups {{ backup_group_name }}"
     insertafter: "^AllowGroups"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp allow groups ssh ###"
-    validate: "/usr/sbin/sshd -T -f %s"
+    validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
   notify:
     - restart sshd
 
@@ -46,7 +46,7 @@
     block: "{{ lookup('template', 'files/sshd_restrict_ip_config.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp restrict ips access ###"
     insertbefore: "^Subsystem"
-    validate: "/usr/sbin/sshd -T -f %s"
+    validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
   notify:
     - restart sshd
 
@@ -78,6 +78,22 @@
       - name: "{{ backup_group_name }}"
         gid: "{{ backup_group_gid }}"
 
+- name: Unlock .ssh folder of backup users
+  become: yes
+  file:
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
+    attributes: -i
+  with_items: "{{ backup_users }}"
+  ignore_errors: yes # if the directory is not yet created, ignore
+
+- name: Unlock .ssh/authorized_keys of backup users
+  become: yes
+  file:
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
+    attributes: -i
+  with_items: "{{ backup_users }}"
+  ignore_errors: yes
+
 - name: Create backup accounts
   include_role:
     name: unxnn.users
@@ -97,6 +113,20 @@
   with_items: "{{ backup_users }}"
   loop_control:
     loop_var: account
+
+- name: Lock .ssh folder of backup users
+  become: yes
+  file:
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
+    attributes: i
+  with_items: "{{ backup_users }}"
+
+- name: Lock .ssh/authorized_keys of backup users
+  become: yes
+  file:
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
+    attributes: i
+  with_items: "{{ backup_users }}"
 
 - name: Fix sudoers admin group sudo with password
   become: yes
