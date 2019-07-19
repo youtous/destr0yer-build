@@ -17,15 +17,35 @@
   with_items:
     - debian
 
+- name: Unlock ~/.ssh/authorized_keys for all users
+  become: yes
+  file:
+    path: "{{ item.home | default('/home/' + item.username)  }}"
+    attributes: -i
+  with_items: "{{ all_users }}"
+  no_log: true
+  ignore_errors: yes
+
 - name: Setup users
   become: yes
   import_role:
     name: unxnn.users
   vars:
     # concatenate the common and the specific to host users list
-    users: "{{ common_users | default([]) + host_users | default([]) }}"
-    groups_to_create: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
+    users: "{{ all_users }}"
+    groups_to_create: "{{ all_groups }}"
   no_log: true
+
+# If you do not want to have authorized_keys locked, specify nolock_authorized_keys: True for the user
+- name: Lock ~/.ssh/authorized_keys for specified users
+  become: yes
+  file:
+    path: "{{ item.home | default('/home/' + item.username)  }}"
+    attributes: i
+  with_items: "{{ all_users }}"
+  when: item.nolock_authorized_keys is undefined or item.nolock_authorized_keys != True
+  no_log: true
+  ignore_errors: yes
 
 - name: Allow admin group sudo with password
   become: yes
