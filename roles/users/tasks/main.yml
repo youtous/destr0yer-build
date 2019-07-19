@@ -20,7 +20,7 @@
 - name: Unlock ~/.ssh/authorized_keys for all users
   become: yes
   file:
-    path: "{{ item.home | default('/home/' + item.username)  }}"
+    path: "{{ item.home | default('/home/' + item.username)  }}/.ssh/authorized_keys"
     attributes: -i
   with_items: "{{ all_users }}"
   no_log: true
@@ -40,7 +40,7 @@
 - name: Lock ~/.ssh/authorized_keys for specified users
   become: yes
   file:
-    path: "{{ item.home | default('/home/' + item.username)  }}"
+    path: "{{ item.home | default('/home/' + item.username)  }}/.ssh/authorized_keys"
     attributes: i
   with_items: "{{ all_users }}"
   when: item.nolock_authorized_keys is undefined or item.nolock_authorized_keys != True
