@@ -81,25 +81,3 @@
     group: root
     mode: u=rw,g=rx,o=rx
   when: host_scw_aarch64 is not failed
-
-# For the moment, SELinux is disabled
-#
-#- name: Check SELinux policy is {{ selinux_state }}
-#  shell: "/usr/sbin/getenforce | grep {{ selinux_state }}"
-#  register: selinux_policy_valid
-#  ignore_errors: True
-#
-#- name: Enable SELinux policy
-#  become: yes
-#  import_role:
-#    name: robertdebock.selinux
-#  vars:
-#    reboot_command: "{{ 'scw restart' if (host_scw_aarch64 is not failed) else 'reboot' }}"
-#  # disable SELinux on Scaleway instances because they do not support it
-#  # https://github.com/scaleway/image-centos/issues/30
-#  when: selinux_policy_valid is failed and host_scw_aarch64 is failed
-#
-#- name: Install SELinux utils
-#  become: yes
-#  apt:
-#    name: "{{ selinux_utils_packages }}"
