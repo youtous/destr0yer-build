@@ -3,6 +3,15 @@
 - name: Include default vars
   include_vars: default.yml
 
+- name: Install fail2ban backend packages
+  become: yes
+  apt:
+    name:
+      - python-systemd
+      - python3-systemd
+  notify:
+    - restart fail2ban
+
 - name: Setup fail2ban
   become: yes
   import_role:
