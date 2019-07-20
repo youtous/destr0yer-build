@@ -18,7 +18,7 @@ host_users:
 
 # smtp relay parameters
 relay_email: monitoring-heaven-pascal@youtous.me
-relay_user: monitoring-heaven-pascal@youtous.me
+relay_user: "{{ relay_email }}"
 relay_password: "{{ secret_relay_password }}"
 
 ### End of relay-smtp parameters ###
