@@ -13,7 +13,7 @@ puts "[#{Time.now}] Saving mysql docker containers to #{save_path}"
 # list containers
 # from files
 files_list = Set.new([__dir__ + '/docker-mysql-containers.txt'])
-files_list.merge(Dir.glob("backup.d/*.txt"))
+files_list.merge(Dir.glob(__dir__ + "/backup.d/*.txt"))
 puts "[#{Time.now}] Sourcing containers list from #{files_list}..."
 
 list_containers = Set.new([])

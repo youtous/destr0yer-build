@@ -12,7 +12,7 @@ puts "[#{Time.now}] Saving docker volumes to #{save_path}"
 # list containers
 # from files
 files_list = Set.new([__dir__ + '/docker-volumes.txt'])
-files_list.merge(Dir.glob("backup.d/*.txt"))
+files_list.merge(Dir.glob(__dir__ + "/backup.d/*.txt"))
 puts "[#{Time.now}] Sourcing containers list from #{files_list}..."
 
 list_containers = Set.new([])
@@ -24,7 +24,7 @@ end
 
 list_containers.each do |docker_container|
   docker_volume = docker_volume.strip
-  unless system( "docker volume inspect #{docker_volume}" )
+  unless system("docker volume inspect #{docker_volume}")
     puts "[#{Time.now}] Docker volume \"#{docker_volume}\" not found."
     next
   end
