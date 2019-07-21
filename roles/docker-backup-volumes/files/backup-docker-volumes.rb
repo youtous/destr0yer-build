@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # This script save a list of docker volumes to a path given as argument
+require 'set'
 
 if ARGV.empty?
   puts "[#{Time.now}] Error ! No output path given."
