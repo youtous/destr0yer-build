@@ -1,18 +1,11 @@
 ---
 # This role contains docker installation
-- name: Install python docker module
+- name: Install python docker modules
   become: yes
-  pip:
-    executable: pip3
-    state: latest
-    name: "docker"
-
-- name: Install others python docker dependancies
-  become: yes
-  pip:
-    executable: pip3
-    state: latest
-    name: "jsondiff"
+  apt:
+    name:
+      - python3-docker
+      - python3-jsondiff
 
 - name: Ensure docker group is present
   become: yes
