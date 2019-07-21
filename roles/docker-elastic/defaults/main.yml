@@ -4,8 +4,6 @@ opendistro_version: 1.0.1
 
 # a list of allowed ips to access logstash thought socket
 logstash_allowed_ips: [] # /!\ set both ipv6 and ipv4
-# list of revoked ips for logstash
-revoked_logstash_allowed_ips: []
 
 # http services to monitor
 elastic_heartbeat_urls: []

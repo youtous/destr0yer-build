@@ -3,14 +3,15 @@
 # Transport will be done using TLS certificates (ensure encryption && identity)
 # Logstash node will filter any non-authorized ip using UFW and internal mechanism.
 
-- name: Revoke nodes firewall - tcp/5000 (logstash)
+- name: List existing logstash tcp/5000 UFW rules
   become: yes
-  ufw:
-    rule: allow
-    port: 5000
-    src: "{{ item }}"
-    delete: yes
-  with_items: "{{ revoked_logstash_allowed_ips }}"
+  shell: "ufw status numbered | grep ' 5000 ' | awk -F\"[][]\" '{print $2}' | tr --delete [:blank:] | sort -rn"
+  register: ufw_logstash_5000_rules
+
+- name: UFW delete existing logstash rules - tcp/5000
+  become: yes
+  shell: "yes y | ufw delete {{ item }}"
+  with_items: "{{ ufw_logstash_5000_rules.stdout_lines }}"
 
 - name: Allow nodes firewall - tcp/5000 (logstash)
   become: yes
@@ -20,14 +21,15 @@
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
-- name: Revoke nodes firewall - tcp/5044 (logstash)
+- name: List existing logstash tcp/5044 UFW rules
   become: yes
-  ufw:
-    rule: allow
-    port: 5044
-    src: "{{ item }}"
-    delete: yes
-  with_items: "{{ revoked_logstash_allowed_ips }}"
+  shell: "ufw status numbered | grep ' 5044 ' | awk -F\"[][]\" '{print $2}' | tr --delete [:blank:] | sort -rn"
+  register: ufw_logstash_5044_rules
+
+- name: UFW delete existing logstash rules - tcp/5044
+  become: yes
+  shell: "yes y | ufw delete {{ item }}"
+  with_items: "{{ ufw_logstash_5044_rules.stdout_lines }}"
 
 - name: Allow nodes firewall - tcp/5044 (logstash)
   become: yes
