@@ -41,7 +41,7 @@ postgre_users: []
 #   ip_mask
 #   auth_method (required)
 #   auth_options (optional)
-postgre_hba_entries:
+postgre_hba_entries: # todo : https://github.com/geerlingguy/ansible-role-postgresql/issues/57 automate add user hba
   - { type: local, database: all, user: postgres, auth_method: peer }
   - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
   - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
