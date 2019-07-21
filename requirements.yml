@@ -57,6 +57,11 @@
   src: https://github.com/michaelrigart/ansible-role-interfaces.git
   version: cd3bbd715c29276f642e0841e09eeb67d3a07e5a
 
+# PostgreSQL
+- name: geerlingguy.postgresql
+  src: https://github.com/geerlingguy/ansible-role-postgresql.git
+  version: e61751f344dbd1fd05dc82311d88b1f2bc71d21f
+
 # Docker
 - name: geerlingguy.docker
   src: https://github.com/geerlingguy/ansible-role-docker.git

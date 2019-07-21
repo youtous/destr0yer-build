@@ -95,6 +95,17 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["backup-strategy"]
 
+- name: Configure database servers
+  hosts: database_servers
+  roles:
+    - postgresql
+    - monit-postgresql
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["database-servers"]
+
 - name: Configure servers with dynamic ip
   hosts: dynamic_ip
   roles:
