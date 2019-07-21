@@ -16,7 +16,7 @@
     path: "{{ docker_mysql_backup_script_directory }}/backup.d"
     owner: root
     group: docker
-    mode: u=rwx,g=xrw,o=
+    mode: u=rwx,g=rwx,o=
 
 - name: Ensure backup directory is present
   become: yes

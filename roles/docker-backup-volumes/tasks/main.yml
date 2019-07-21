@@ -7,7 +7,16 @@
     path: "{{ docker_volumes_backup_script_directory }}"
     owner: root
     group: root
-    mode: u=rwx,g=,o=
+    mode: u=rwx,g=x,o=x
+
+- name: Ensure backup additional list directory is present (writable for docker users)
+  become: yes
+  file:
+    state: directory
+    path: "{{ docker_volumes_backup_script_directory }}/backup.d"
+    owner: root
+    group: docker
+    mode: u=rwx,g=rwx,o=
 
 - name: Ensure backup directory is present
   become: yes
