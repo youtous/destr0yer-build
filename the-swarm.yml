@@ -59,6 +59,17 @@
       meta: refresh_inventory
   tags: ["docker-swarm-init-cleanup"]
 
+- name: Setup docker backup tools
+  hosts: all
+  roles:
+    - docker-backup-mysql
+    - docker-backup-volumes
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-backup-tools"]
+
 - name: Setup traefik reverse-proxy with consul
   hosts: primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
   roles:
