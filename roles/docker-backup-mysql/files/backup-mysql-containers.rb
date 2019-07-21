@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # This script save a list of mysql docker container to a path given as argument (uses mysqldump)
+require 'set'
 
 if ARGV.empty?
   puts "[#{Time.now}] Error ! No output path given."
@@ -9,8 +10,21 @@ save_path = ARGV[0]
 
 puts "[#{Time.now}] Saving mysql docker containers to #{save_path}"
 
-File.readlines(__dir__ + '/docker-mysql-containers.txt').each do |docker_container|
-  docker_container = docker_container.strip
+# list containers
+# from files
+files_list = Set.new([__dir__ + '/docker-mysql-containers.txt'])
+files_list.merge(Dir.glob("backup.d/*.txt"))
+puts "[#{Time.now}] Sourcing containers list from #{files_list}..."
+
+list_containers = Set.new([])
+files_list.each do |path|
+  File.readlines(path).each do |container_name|
+    list_containers.add(container_name.strip)
+  end
+end
+
+
+list_containers.each do |docker_container|
   container_id = `docker ps -aq --filter name=#{docker_container}`.strip
 
   if container_id.empty?
