@@ -1,4 +1,7 @@
 ---
+# ips allowed to access the database server
+postgre_allowed_ips: []
+
 # Databases to ensure exist.
 postgre_databases: []
 # - name: exampledb # required; the rest are optional

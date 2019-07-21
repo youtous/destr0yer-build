@@ -10,6 +10,31 @@
     postgresql_databases: "{{ postgre_databases }}"
     postgresql_hba_entries: "{{ postgre_hba_entries }}"
 
+- name: Setup host.allow for postgresql
+  become: yes
+  blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - postgresql allowed ip whitelist ###"
+
+- name: List existing postgresql UFW rules
+  become: yes
+  shell: "ufw status numbered | grep ' 5432 ' | awk -F\"[][]\" '{print $2}' | tr --delete [:blank:] | sort -rn"
+  register: ufw_postgresql_rules
+
+- name: UFW delete existing postgresql rules - tcp,udp/5432
+  become: yes
+  shell: "yes y | ufw delete {{ item }}"
+  with_items: "{{ ufw_postgresql_rules.stdout_lines }}"
+
+- name: UFW Allow postgresql clients - tcp,udp/5432
+  become: yes
+  ufw:
+    rule: allow
+    port: "5432"
+    src: "{{ item }}"
+  with_items: "{{ postgre_allowed_ips }}"
+
 - name: Configure logrotate for postgresql
   import_role:
     name: logrotate

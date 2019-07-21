@@ -3,9 +3,7 @@
 # a specific authoritative server
 - name: Generate list of allowed ssh entrypoints
   become: yes
-  template:
-      src: files/hosts.allow.j2
-      dest: /etc/hosts.allow
-      owner: root
-      group: root
-      mode: u=rw,g=r,o=r
+  blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - ssh entrypoint ip whitelist ###"

@@ -1,0 +1,5 @@
+database_clients_ips: "{{ groups['database_clients'] | map('extract', hostvars, ['ipv4']) | first | default([]) +
+                            groups['database_clients'] | map('extract', hostvars, ['ipv6']) | first | default([]) }}"
+
+# define database_clients allowed to access database servers
+postgre_allowed_ips: "{{ database_clients_ips }}"

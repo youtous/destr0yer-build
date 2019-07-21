@@ -1,0 +1,11 @@
+{% for host_allowed in postgre_allowed_ips %}
+postgresql : {{ host_allowed }} : allow
+{% endfor %}
+
+# allow localhost interfaces
+postgresql : localhost : allow
+postgresql : 127.0.0.1 : allow
+postgresql : ip6-localhost : allow
+postgresql : ::1 : allow
+
+postgresql : ALL : deny
