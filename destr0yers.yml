@@ -100,6 +100,7 @@
   roles:
     - postgresql
     - monit-postgresql
+    - backup-postgresql
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
