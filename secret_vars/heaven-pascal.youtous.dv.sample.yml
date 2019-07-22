@@ -40,6 +40,15 @@ secret_backup_gpg_private_key: |
 
 secret_backup_gpg_key_passphrase: ''
 
+# mariadb ssl
+mariadb_server_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+mariadb_server_key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  -----END RSA PRIVATE KEY-----
+
 # logstash TLS
 logstash_node_certificate: |
   -----BEGIN CERTIFICATE-----

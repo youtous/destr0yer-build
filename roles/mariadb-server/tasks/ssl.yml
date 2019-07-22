@@ -1,0 +1,46 @@
+---
+# Setup simple SSL for mariadb
+# As described on https://mariadb.com/kb/en/library/nodejs-connection-options/#one-way-ssl-authentication
+# we one ONE-WAY authentication, only clients will verify server's certificate using a common root CA
+# It's the duty of the client to verify the server identity using the CA.certificate
+
+- name: Install required packages
+  become: yes
+  apt:
+    name:
+      - openssl
+
+- name: Copy mariadb root CA
+  become: yes
+  copy:
+    content: "{{ mariadb_ca_certificate }}"
+    dest: "/etc/mysql/ca.pem"
+    owner: mysql
+    group: mysql
+    mode: u=rw,g=r,o=r
+  notify:
+    - restart mariadb
+
+- name: Copy mariadb server certificate
+  become: yes
+  copy:
+    content: "{{ mariadb_server_certificate }}"
+    dest: "/etc/mysql/server-cert.pem"
+    owner: mysql
+    group: mysql
+    mode: u=rw,g=r,o=r
+  notify:
+    - restart mariadb
+
+- name: Copy mariadb server private key
+  become: yes
+  copy:
+    content: "{{ mariadb_server_key }}"
+    dest: "/etc/mysql/server-key.pem"
+    owner: mysql
+    group: mysql
+    mode: u=rw,g=,o=
+  no_log: true
+  notify:
+    - restart mariadb
+...

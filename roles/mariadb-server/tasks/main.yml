@@ -13,7 +13,8 @@
     overwrite_global_mycnf: true
     # A list of files that should override the default global my.cnf. Each item in the array requires a "src"
     # parameter which is a path to a file. An optional "force" parameter can force the file to be updated each time ansible runs.
-    mysql_config_include_files: []
+    mysql_config_include_files:
+      - {src: templates/50-ssl.j2.cnf, force: true}
     mysql_databases: "{{ mariadb_databases }}"
     mysql_users: "{{ mariadb_users }}"
     mysql_packages:
@@ -22,9 +23,10 @@
       - python-mysqldb
     mysql_port: "3306"
     mysql_bind_address: '0.0.0.0'
-    mysql_datadir: /var/lib/mysql
+    mysql_datadir: "{{ mariadb_datadir }}"
     mysql_log_error: syslog # using journalctl
     mysql_syslog_tag: mariadb
+    mysql_config_include_dir: "{{ mariadb_config_include_dir }}"
     mysql_supports_innodb_large_prefix: false # https://github.com/geerlingguy/ansible-role-mysql/issues/272
     # tweaking mariadb resources
     # mysql_key_buffer_size: "256M"
@@ -40,7 +42,17 @@
     group: root
   notify:
     - systemd daemon reload
-    - mariadb-server restart
+    - restart mariadb
+
+- name: Configure SSL on mariadb
+  import_tasks: ssl.yml
+  when: mariadb_ssl_enabled == True
+
+- name: Disable SSL on mariadb
+  copy:
+    content: "# disabled in Ansible"
+    dest: "{{ mariadb_config_include_dir }}/50-ssl.j2.cnf"
+  when: mariadb_ssl_enabled == False
 
 - name: Setup host.allow for mariadb
   become: yes

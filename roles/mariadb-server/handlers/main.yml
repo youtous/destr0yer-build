@@ -1,5 +1,5 @@
 ---
-- name: mariadb-server restart
+- name: restart mariadb
   become: yes
   systemd:
     state: restarted

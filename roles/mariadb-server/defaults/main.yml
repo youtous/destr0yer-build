@@ -19,5 +19,34 @@ mariadb_databases: []
 #    priv (defaults to *.*:USAGE)
 #    append_privs (defaults to no)
 #    state (defaults to present)
+#
+# Special note about requiring SSL for some users (outside of the server)
+#    append_privs: yes
+#    priv: '*.*:REQUIRESSL'
+# (https://docs.ansible.com/ansible/latest/modules/mysql_user_module.html)
 mariadb_users: []
+
+# where to store mariadb data
+mariadb_datadir: "/var/lib/mysql"
+
+# enable ssl
+mariadb_ssl_enabled: true
+
+# additional files directory
+mariadb_config_include_dir: "/etc/mysql/my.extra.d"
+
+# provide a certificate and it key signed by a ca
+# using ssl
+mariadb_ca_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+mariadb_server_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+# THIS KEY MUST BE SECRET
+mariadb_server_key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  -----END RSA PRIVATE KEY-----
 ...
