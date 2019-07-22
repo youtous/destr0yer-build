@@ -42,8 +42,8 @@
     logrotate_applications:
       - name: postgresql
         definitions:
-          - logs: # log per version, PostgreSQL11
-              - "/var/log/postgresql/postgresql-11-main.log"
+          - logs:
+              - "/var/log/postgresql/*.log"
             options:
               - monthly
               - rotate 12
