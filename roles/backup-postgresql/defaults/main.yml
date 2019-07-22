@@ -1,7 +1,7 @@
 ---
 # paths of duply scripts
-duply_prescripts_folder: "/etc/duply/global/pre.d"
-duply_postscripts_folder: "/etc/duply/global/post.d"
+duply_prescript_folder: "/etc/duply/global/pre.d"
+duply_postscript_folder: "/etc/duply/global/post.d"
 
 # path where backup sql dump will be output
 postgresql_backup_output: "/home/postgresql-backup"

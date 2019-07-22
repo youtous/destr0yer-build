@@ -6,8 +6,8 @@
   file:
     state: directory
     path: "{{ postgresql_backup_output }}"
-    owner: root
-    group: root
+    owner: postgres
+    group: postgres
     mode: u=rwx,g=,o=
 
 - name: Add backup script to Duply pre scripts
