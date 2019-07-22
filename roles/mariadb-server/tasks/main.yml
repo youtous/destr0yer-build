@@ -24,11 +24,23 @@
     mysql_bind_address: '0.0.0.0'
     mysql_datadir: /var/lib/mysql
     mysql_log_error: syslog # using journalctl
+    mysql_syslog_tag: mariadb
     mysql_supports_innodb_large_prefix: false # https://github.com/geerlingguy/ansible-role-mysql/issues/272
     # tweaking mariadb resources
     # mysql_key_buffer_size: "256M"
     # mysql_max_allowed_packet: "64M"
     # mysql_table_open_cache: "256"
+
+- name: Configure systemd.service for maridb (logging)
+  become: yes
+  copy:
+    src: files/systemd/mysqld.service.d
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - systemd daemon reload
+    - mariadb-server restart
 
 - name: Setup host.allow for mariadb
   become: yes
