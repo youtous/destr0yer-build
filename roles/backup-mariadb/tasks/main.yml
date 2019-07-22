@@ -6,8 +6,8 @@
   file:
     state: directory
     path: "{{ mariadb_backup_output }}"
-    owner: mysql
-    group: mysql
+    owner: root
+    group: root
     mode: u=rwx,g=,o=
 
 - name: Add backup script to Duply pre scripts
