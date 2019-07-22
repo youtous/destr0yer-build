@@ -62,6 +62,11 @@
   src: https://github.com/geerlingguy/ansible-role-postgresql.git
   version: e61751f344dbd1fd05dc82311d88b1f2bc71d21f
 
+# Mariadb
+- name: geerlingguy.mysql
+  src: https://github.com/geerlingguy/ansible-role-mysql.git
+  version: 6897d7be27fa6ca9f0451e3c5b7d1b1d81ce2b8e
+
 # Docker
 - name: geerlingguy.docker
   src: https://github.com/geerlingguy/ansible-role-docker.git

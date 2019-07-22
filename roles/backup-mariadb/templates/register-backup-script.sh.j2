@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+echo "Calling mariadb backup script..."
+
+# from https://stackoverflow.com/posts/26096339/revisions
+
+USER="root"
+OUTPUTDIR="{{ mariadb_backup_output }}"
+
+DATE=`date +%Y%m%d`
+
+# cleanup
+rm "$OUTPUTDIR/*sql" > /dev/null 2>&1
+
+databases=`mysql -u $USER -e "SHOW DATABASES;" | tr -d "| " | grep -v Database`
+
+for db in $databases; do
+    if [[ "$db" != "information_schema" ]] && [[ "$db" != "performance_schema" ]] && [[ "$db" != "mysql" ]] && [[ "$db" != _* ]] ; then
+        echo "Dumping database: $db"
+        mysqldump -u $USER --databases $db > $OUTPUTDIR/$DATE.$db.sql
+    fi
+done
+
+echo "Mariadb databases backed-up to ${OUTPUTDIR}..."

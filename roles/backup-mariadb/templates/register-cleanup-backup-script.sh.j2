@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+echo "Cleanup mariadb backup in {{ mariadb_backup_output }}..."
+find {{ mariadb_backup_output }}/. -type f -delete
+echo "Mariadb databases backup has been removed!"

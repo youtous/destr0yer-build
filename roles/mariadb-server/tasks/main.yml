@@ -1,0 +1,74 @@
+---
+# This role installs Mariadb-server on the system. It allows connections from database_clients hosts (group).
+
+- name: Setup mariadb-server
+  become: yes
+  import_role:
+    name: geerlingguy.mysql
+  vars:
+    mysql_root_home: /root
+    mysql_root_username: root
+    mysql_root_password: "{{ mariadb_root_password }}"
+    mysql_enabled_on_startup: true
+    overwrite_global_mycnf: true
+    # A list of files that should override the default global my.cnf. Each item in the array requires a "src"
+    # parameter which is a path to a file. An optional "force" parameter can force the file to be updated each time ansible runs.
+    mysql_config_include_files: []
+    mysql_databases: "{{ mariadb_databases }}"
+    mysql_users: "{{ mariadb_users }}"
+    mysql_packages:
+      - mariadb-client
+      - mariadb-server
+      - python-mysqldb
+    mysql_port: "3306"
+    mysql_bind_address: '0.0.0.0'
+    mysql_datadir: /var/lib/mysql
+    # tweaking mariadb resources
+    # mysql_key_buffer_size: "256M"
+    # mysql_max_allowed_packet: "64M"
+    # mysql_table_open_cache: "256"
+
+- name: Setup host.allow for mariadb
+  become: yes
+  blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - mariadb allowed ip whitelist ###"
+
+- name: List existing mariadb UFW rules
+  become: yes
+  shell: "ufw status numbered | grep ' 3306 ' | awk -F\"[][]\" '{print $2}' | tr --delete [:blank:] | sort -rn"
+  register: ufw_mariadb_rules
+
+- name: UFW delete existing mariadb rules - tcp,udp/3306
+  become: yes
+  shell: "yes y | ufw delete {{ item }}"
+  with_items: "{{ ufw_mariadb_rules.stdout_lines }}"
+
+- name: UFW Allow mariadb clients - tcp,udp/3306
+  become: yes
+  ufw:
+    rule: allow
+    port: "3306"
+    src: "{{ item }}"
+  with_items: "{{ mariadb_allowed_ips }}"
+
+- name: Configure logrotate for mariadb
+  import_role:
+    name: logrotate
+  vars:
+    logrotate_applications:
+      - name: mariadb
+        definitions:
+          - logs:
+              - "/var/log/mysql/*.log"
+            options:
+              - monthly
+              - rotate 12
+              - size 10M
+              - compress
+              - delaycompress
+              - missingok
+              - notifempty
+              - create 0640 mysql adm
+...

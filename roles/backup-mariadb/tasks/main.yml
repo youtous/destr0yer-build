@@ -1,0 +1,29 @@
+---
+# This role setup a script called by duply before backup. The script will save all databases present in the mariadb
+
+- name: Ensure backup directory is present
+  become: yes
+  file:
+    state: directory
+    path: "{{ mariadb_backup_output }}"
+    owner: mysql
+    group: mysql
+    mode: u=rwx,g=,o=
+
+- name: Add backup script to Duply pre scripts
+  become: yes
+  template:
+    src: "templates/register-backup-script.sh.j2"
+    dest: "{{ duply_prescript_folder }}/10-mariadb-all-databases.sh"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Add cleanup script to Duply post scripts
+  become: yes
+  template:
+    src: "templates/register-cleanup-backup-script.sh.j2"
+    dest: "{{ duply_postscript_folder }}/10-mariadb-all-databases.sh"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=

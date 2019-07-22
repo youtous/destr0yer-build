@@ -6,4 +6,4 @@ local_docker_ips:
   - '172.16.0.0/12'
 
 # define database_clients allowed to access database servers
-postgre_allowed_ips: "{{ database_clients_ips + local_docker_ips }}"
+mariadb_allowed_ips: "{{ database_clients_ips + local_docker_ips }}"

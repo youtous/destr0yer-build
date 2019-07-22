@@ -98,9 +98,9 @@
 - name: Configure database servers
   hosts: database_servers
   roles:
-    - postgresql
-    - monit-postgresql
-    - backup-postgresql
+    - mariadb-server
+    - monit-mariadb
+    - backup-mariadb
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

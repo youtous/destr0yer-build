@@ -1,0 +1,11 @@
+{% for host_allowed in mariadb_allowed_ips %}
+mysql : {{ host_allowed }} : allow
+{% endfor %}
+
+# allow localhost interfaces
+mysql : localhost : allow
+mysql : 127.0.0.1 : allow
+mysql : ip6-localhost : allow
+mysql : ::1 : allow
+
+mysql : ALL : deny
