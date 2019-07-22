@@ -23,8 +23,7 @@ files_list.each do |path|
   end
 end
 
-list_containers.each do |docker_container|
-  docker_volume = docker_volume.strip
+list_containers.each do |docker_volume|
   unless system("docker volume inspect #{docker_volume}")
     puts "[#{Time.now}] Docker volume \"#{docker_volume}\" not found."
     next
