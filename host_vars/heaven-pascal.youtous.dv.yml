@@ -44,7 +44,6 @@ mariadb_users:
     # Example privileges string format
     # mydb.*:INSERT,UPDATE/anotherdb.*:SELECT/yetanotherdb.*:ALL
     priv: 'youtous.*:ALL/*.*:REQUIRESSL' # requires an SSL connection, not useful in local but useful for externals connections
-    append_privs: yes # comment priv and append_privs if
     state: present # default value
   - name: arb1t3r
     host: localhost
