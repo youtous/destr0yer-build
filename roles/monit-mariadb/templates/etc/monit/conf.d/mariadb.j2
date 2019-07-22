@@ -1,5 +1,5 @@
 
-check process mariadb-server with pidfile /var/run/mariadb/mariadb.pid
+check process mariadb-server with pidfile /var/run/mysqld/mysqld.pid
   group postgres
   start program = "/usr/bin/systemctl start mariadb"
   stop  program = "/usr/bin/systemctl stop mariadb"

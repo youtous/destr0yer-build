@@ -23,6 +23,8 @@
     mysql_port: "3306"
     mysql_bind_address: '0.0.0.0'
     mysql_datadir: /var/lib/mysql
+    mysql_log_error: syslog # using journalctl
+    mysql_supports_innodb_large_prefix: false # https://github.com/geerlingguy/ansible-role-mysql/issues/272
     # tweaking mariadb resources
     # mysql_key_buffer_size: "256M"
     # mysql_max_allowed_packet: "64M"

@@ -64,8 +64,8 @@
 
 # Mariadb
 - name: geerlingguy.mysql
-  src: https://github.com/geerlingguy/ansible-role-mysql.git
-  version: 6897d7be27fa6ca9f0451e3c5b7d1b1d81ce2b8e
+  src: https://github.com/youtous/ansible-role-mysql.git
+  version: 1c1bd8e47f252a25f9b9b5686bb1571df267ebe1
 
 # Docker
 - name: geerlingguy.docker
