@@ -105,7 +105,17 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["database-servers"]
+  tags: ["database-servers", "database"]
+
+- name: Configure database clients
+  hosts: database_clients
+  roles:
+    - mariadb-client
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["database-clients", "database"]
 
 - name: Configure servers with dynamic ip
   hosts: dynamic_ip

@@ -1,0 +1,7 @@
+[mysql]
+# enable ssl communication with servers
+ssl-ca = /etc/mysql/ca.pem
+# use --ssl-verify-server-cert=true when connecting to external mariadb servers
+# ssl-verify-server-cert = on <= will cause ansible and localhost connections to fail, it will also break things like
+# backups
+
