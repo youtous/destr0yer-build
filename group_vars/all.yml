@@ -107,12 +107,12 @@ docker_compose_version: "1.24.0"
 
 # ips of the nodes of the swarm
 nodes_ips: "{{
-  groups['workers'] | map('extract', hostvars, ['ipv4']) | first | default([]) +
-  groups['workers'] | map('extract', hostvars, ['ipv6']) | first | default([]) +
-  groups['managers'] | map('extract', hostvars, ['ipv4']) | first | default([])  +
-  groups['managers'] | map('extract', hostvars, ['ipv6']) | first | default([]) +
-  groups['primary_manager'] | map('extract', hostvars, ['ipv4']) | first | default([])  +
-  groups['primary_manager'] | map('extract', hostvars, ['ipv6']) | first | default([])
+  groups['workers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
+  groups['workers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique | default([]) +
+  groups['managers'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
+  groups['managers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([]) +
+  groups['primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
+  groups['primary_manager'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])
 }}"
 
 # first manager ipv4
