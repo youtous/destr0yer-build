@@ -1,5 +1,5 @@
-database_clients_ips: "{{ groups['database_clients'] | map('extract', hostvars, ['ipv4']) | first | default([]) +
-                            groups['database_clients'] | map('extract', hostvars, ['ipv6']) | first | default([]) }}"
+database_clients_ips: "{{ groups['database_clients'] | map('extract', hostvars, ['ipv4']) |  list | flatten | unique | default([]) +
+                            groups['database_clients'] | map('extract', hostvars, ['ipv6']) | list | flatten | unique | default([]) }}"
 
 # local docker ips
 local_docker_ips:

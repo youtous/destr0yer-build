@@ -46,7 +46,7 @@ mariadb_users:
     priv: 'youtous.*:ALL/*.*:REQUIRESSL' # requires an SSL connection, not useful in local but useful for externals connections
     state: present # default value
   - name: arb1t3r
-    host: localhost
+    host: "%" # allows connection from any host (filtered later by UFW)
     password: "poney"
     priv: 'arb1t3r.*:ALL'
 
