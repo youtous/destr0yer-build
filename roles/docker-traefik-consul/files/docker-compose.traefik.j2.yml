@@ -39,7 +39,7 @@ services:
         - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ consul_ui_domain }}" # todo, check behavior with real domain
+        - "traefik.frontend.headers.SSLHost={{ consul_ui_domain }}"
         - traefik.frontend.headers.STSSeconds=315360000
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
@@ -107,7 +107,7 @@ services:
         - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ traefik_ui_domain }}" # todo, check behavior with real domain
+        - "traefik.frontend.headers.SSLHost={{ traefik_ui_domain }}"
         - traefik.frontend.headers.STSSeconds=315360000
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
