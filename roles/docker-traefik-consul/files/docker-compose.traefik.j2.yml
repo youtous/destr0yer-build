@@ -122,7 +122,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     # see https://docs.traefik.io/configuration/backends/docker/ for details
     # see https://docs.traefik.io/configuration/entrypoints/#cli for CLI syntax
-    # todo: configure entrypoints as secure as possible (TLS) https://docs.traefik.io/configuration/entrypoints/ => MUST BE DONE IN PRODUCTION WITH WWWW. domains
     command: >
       --docker
       --docker.swarmmode
