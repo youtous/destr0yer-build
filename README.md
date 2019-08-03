@@ -8,6 +8,7 @@ Please fork this repo for each different server configuration.
 ### Requirements
 - SSH access
 - Python
+- python-jmespath
 
 #### VM only
  _*Commands :*_ 
