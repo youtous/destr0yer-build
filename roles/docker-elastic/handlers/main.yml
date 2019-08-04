@@ -2,6 +2,7 @@
 - name: deploy elastic
   docker_stack:
     state: present
+    prune: yes
     name: "{{ docker_elastic_stack_name }}"
     compose:
       - "{{ elastic_compose_file_dest }}"

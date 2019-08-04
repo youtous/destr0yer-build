@@ -2,6 +2,7 @@
 - name: deploy logspout stack
   docker_stack:
     state: present
+    prune: yes
     name: "{{ docker_logspout_stack_name }}"
     compose:
       - "{{ logspout_compose_file_dest }}"
