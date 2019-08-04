@@ -136,6 +136,7 @@ services:
       --acme.email="{{ lets_encrypt_email }}"
       --acme.storage="traefik/acme/account"
       --acme.entryPoint=https
+      --acme.KeyType=EC384
       --acme.httpChallenge.entryPoint=http
       --acme.onhostrule=true
       --acme.acmelogging=true
