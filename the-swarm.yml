@@ -15,7 +15,7 @@
   hosts: all
   roles:
     - docker-swarm-tls
-    - docker-ipv6
+    # - docker-ipv6 <= for the moment, ipv6 is not enabled
     - docker-log
   vars_files:
     - secret_vars/all.yml
