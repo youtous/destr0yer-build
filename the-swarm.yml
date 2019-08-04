@@ -15,6 +15,7 @@
   hosts: all
   roles:
     - docker-swarm-tls
+    - docker-ipv6
     - docker-log
   vars_files:
     - secret_vars/all.yml

@@ -1,0 +1,12 @@
+---
+# This role configure docker to use or not ipv6 (https://docs.docker.com/config/daemon/ipv6/)
+
+- name: Setup ipv6 for docker
+  become: yes
+  blockinfile:
+    marker: ""
+    dest: "/etc/docker/daemon.json"
+    block: "{{ lookup('template', 'files/daemon.json.j2') }}"
+    insertbefore: '"debug": false,'
+  notify:
+    - restart docker
