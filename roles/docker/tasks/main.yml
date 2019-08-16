@@ -6,6 +6,7 @@
     name:
       - python3-docker
       - python3-jsondiff
+      - python3-yaml
 
 - name: Ensure docker group is present
   become: yes
