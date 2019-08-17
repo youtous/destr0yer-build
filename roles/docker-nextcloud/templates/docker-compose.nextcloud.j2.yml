@@ -1,0 +1,95 @@
+version: "3.7"
+
+configs:
+  nginx.conf:
+    name: "nextcloud_nginx-${DEPLOY_TIMESTAMP}.conf"
+    file: "./nginx.conf"
+
+services:
+  nextcloud:
+    image: nextcloud:fpm-alpine
+    volumes:
+      - nextcloud-data:/var/www/html
+    environment:
+      # Database
+      - "MYSQL_DATABASE=${MYSQL_DATABASE}"
+      - "MYSQL_USER=${MYSQL_USER}"
+      - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
+      - "MYSQL_HOST=${MYSQL_HOST}"
+      # Nextcloud
+      - "NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER}"
+      - "NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}"
+      # Mailing
+      - "SMTP_HOST=${SMTP_HOST}"
+      - "SMTP_SECURE=${SMTP_SECURE}"
+      - "SMTP_PORT=${SMTP_PORT}"
+      - "SMTP_AUTHTYPE=${SMTP_AUTHTYPE}"
+      - "SMTP_NAME=${SMTP_NAME}"
+      - "SMTP_PASSWORD=${SMTP_PASSWORD}"
+      - "MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}"
+      - "MAIL_DOMAIN=${MAIL_DOMAIN}"
+    networks:
+      - nextcloud-network
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.nextcloud.nextcloud-data == true
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+
+  nginx:
+    image: nginx
+    volumes:
+      - nextcloud-data:/var/www/html:ro
+    networks:
+      - nextcloud-network
+      - {{ traefik_network }}
+    configs:
+      - source: nginx.conf
+        target: /etc/nginx/nginx.conf
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.nextcloud.nextcloud-data == true
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+      labels:
+        - "traefik.frontend.rule=Host:{{ nextcloud_domain }}"
+        - traefik.enable=true
+        - traefik.port=80
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ nextcloud_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+
+networks:
+  nextcloud-network:
+    driver: overlay
+    attachable: true
+    driver_opts:
+      encrypted: ""
+  {{ traefik_network }}:
+    external: true
+
+volumes:
+  nextcloud-data:
+    driver: local

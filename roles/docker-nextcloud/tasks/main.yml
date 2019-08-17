@@ -1,0 +1,38 @@
+---
+# This role setup a Nextcloud in a docker swarm cluster
+# see https://github.com/nextcloud/docker for more details
+
+- name: Ensure nextcloud directory exists
+  file:
+    state: directory
+    path: "{{ nextcloud_compose_file_dest_directory }}"
+
+- name: Tag current node as nextcloud origin
+  docker_node:
+    hostname: "{{ hostname }}"
+    labels:
+      nextcloud.nextcloud-data: "true"
+
+- name: Copy Nextcloud stack
+  template:
+    src: templates/docker-compose.nextcloud.j2.yml
+    dest: "{{ nextcloud_compose_file_dest }}"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy nextcloud
+
+- name: Copy Nextcloud stack nginx conf
+  template:
+    src: templates/nginx.conf
+    dest: "{{ nextcloud_compose_file_dest_directory }}/nginx.conf"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy nextcloud
+
+- name: Add Nextcloud volume to backup list
+  import_role:
+    name: docker-backup-volumes
+  vars:
+    docker_volumes_backup:
+      - nextcloud_nextcloud-data
+...

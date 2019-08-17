@@ -1,0 +1,13 @@
+---
+# This play a docker swarm network.
+
+- name: Install Nextcloud
+  hosts: nextcloud
+  roles:
+    - docker-nextcloud
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["nextcloud"]
+...
