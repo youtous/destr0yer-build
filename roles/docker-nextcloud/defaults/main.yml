@@ -19,7 +19,7 @@ nextcloud_smtp_port: "587"
 nextcloud_smtp_authtype: "LOGIN"
 nextcloud_smtp_username: ""
 nextcloud_smtp_password: ""
-nextcloud_smtp_from: "nextcloud@localhost"
+nextcloud_smtp_from: "nextcloud"
 nextcloud_smtp_domain_from: "{{ nextcloud_domain }}"
 
 # traefik public-tag
