@@ -1,0 +1,14 @@
+---
+# This role setup a docker service helping with cron tasks https://github.com/crazy-max/swarm-cronjob
+- name: Ensure swarm_cronjob directory exists
+  file:
+    state: directory
+    path: "{{ swarm_cronjob_compose_file_dest_directory }}"
+
+- name: Copy swarm_cronjob stack
+  template:
+    src: templates/docker-compose.swarmcronjob.j2.yml
+    dest: "{{ swarm_cronjob_compose_file_dest }}"
+    mode: u=rw,g=,o=
+  notify:
+    - deploy swarm_cronjob

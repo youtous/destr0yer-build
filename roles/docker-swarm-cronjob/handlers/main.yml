@@ -1,0 +1,20 @@
+---
+- name: deploy swarm_cronjob
+  docker_stack:
+    state: present
+    prune: yes
+    name: swarm_cronjob
+    compose:
+      - "{{ swarm_cronjob_compose_file_dest }}"
+  environment:
+    TIMEZONE: "{{ swarm_cronjob_timezone }}"
+    LOG_LEVEL: "{{ swarm_cronjob_log_level }}"
+  notify: docker prune
+
+- name: docker prune
+  docker_prune:
+    containers: yes
+    images: yes
+    networks: yes
+    builder_cache: yes
+...

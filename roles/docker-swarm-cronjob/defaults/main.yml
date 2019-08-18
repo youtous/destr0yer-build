@@ -1,0 +1,6 @@
+---
+# Timezone for logs
+swarm_cronjob_timezone: "{{ timezone }}"
+
+swarm_cronjob_log_level: "info"
+...
