@@ -49,7 +49,7 @@ services:
           - node.labels.nextcloud.nextcloud-data == true
       labels:
         - "swarm.cronjob.enable=true"
-        - "swarm.cronjob.schedule=*/5 * * * *"
+        - "swarm.cronjob.schedule=0 */5 * * *"
         - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
     command: su -l www-data -s /bin/sh -c 'php -f /var/www/html/cron.php'
 
