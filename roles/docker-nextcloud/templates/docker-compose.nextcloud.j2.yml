@@ -6,7 +6,7 @@ configs:
     file: "./nginx.conf"
 
 services:
-  nextcloud:
+  nextcloud: &nextcloud
     image: nextcloud:fpm-alpine
     volumes:
       - nextcloud-data:/var/www/html
@@ -39,6 +39,19 @@ services:
         condition: any
         delay: 5s
         window: 15s
+
+  nextcloud-cron-worker:
+    <<: *nextcloud
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.nextcloud.nextcloud-data == true
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=*/5 * * * *"
+        - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
+    command: su -l www-data -s /bin/sh -c 'php -f /var/www/html/cron.php'
 
   nginx:
     image: nginx
