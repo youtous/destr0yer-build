@@ -7,7 +7,7 @@
 
 - name: Copy swarm_cronjob stack
   template:
-    src: templates/docker-compose.swarmcronjob.j2.yml
+    src: templates/docker-compose.swarm_cronjob.j2.yml
     dest: "{{ swarm_cronjob_compose_file_dest }}"
     mode: u=rw,g=,o=
   notify:
