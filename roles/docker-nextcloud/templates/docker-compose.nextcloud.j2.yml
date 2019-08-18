@@ -43,10 +43,10 @@ services:
   nextcloud-cron-worker:
     <<: *nextcloud
     deploy:
-      placement:
-        constraints:
-          - node.role == manager
-          - node.labels.nextcloud.nextcloud-data == true
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: none
       labels:
         - "swarm.cronjob.enable=true"
         - "swarm.cronjob.schedule=0 */5 * * *"
