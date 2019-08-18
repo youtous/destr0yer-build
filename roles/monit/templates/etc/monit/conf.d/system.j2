@@ -1,13 +1,13 @@
 
 # System load checking
 check system {{ hostname }}
-    if loadavg (5min) > 3 for 4 cycles then alert
-    if loadavg (15min) > 1 for 4 cycles then alert
-    if memory usage > 80% for 4 cycles then alert
-    if swap usage > 20% for 4 cycles then alert
-    if cpu usage (user) > 80% for 4 cycles then alert
-    if cpu usage (system) > 20% for 4 cycles then alert
-    if cpu usage (wait) > 20% for 4 cycles then alert
+    if loadavg (5min) > {{ ansible_processor_cores * 1.5 }} for 5 cycles then alert
+    if loadavg (15min) > {{ ansible_processor_cores }} for 5 cycles then alert
+    if memory usage > 80% for 5 cycles then alert
+    if swap usage > 20% for 5 cycles then alert
+    if cpu usage (user) > 80% for 5 cycles then alert
+    if cpu usage (system) > 20% for 5 cycles then alert
+    if cpu usage (wait) > 20% for 5 cycles then alert
 
 
 # Filesystems
