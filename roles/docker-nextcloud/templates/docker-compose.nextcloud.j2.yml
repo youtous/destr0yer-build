@@ -80,6 +80,10 @@ services:
         - traefik.frontend.headers.STSSeconds=315360000
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
+        # Nextcloud CalDAV
+        - traefik.frontend.redirect.permanent=true
+        - traefik.frontend.redirect.regex=https://(.*)/.well-known/(card|cal)dav
+        - traefik.frontend.redirect.replacement=https://$$1/remote.php/dav/
 
 networks:
   nextcloud-network:
