@@ -72,7 +72,7 @@ services:
         - traefik.webservice.frontend.entryPoints=https
         # security labels
         - traefik.frontend.headers.browserXSSFilter=true
-        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.customFrameOptionsValue=sameorigin # allow same origin for iframes
         - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
