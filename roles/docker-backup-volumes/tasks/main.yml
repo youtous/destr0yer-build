@@ -42,6 +42,14 @@
     group: root
     mode: u=rwx,g=,o=
 
+- name: Ensure docker volumes backup list exists
+  become: yes
+  file:
+    path: "{{ docker_volumes_backup_script_directory }}/{{ docker_volumes_list_file }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
 - name: Add docker volumes to backup list
   become: yes
   lineinfile:

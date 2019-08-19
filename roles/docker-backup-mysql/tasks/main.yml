@@ -42,6 +42,15 @@
     group: root
     mode: u=rwx,g=,o=
 
+
+- name: Ensure docker mysql backup list exists
+  become: yes
+  file:
+    path: "{{ docker_mysql_backup_script_directory }}/{{ docker_mysql_containers_list_file }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
 - name: Add mysql docker containers to backup list
   become: yes
   lineinfile:
