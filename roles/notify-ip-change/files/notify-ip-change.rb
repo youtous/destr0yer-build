@@ -43,9 +43,12 @@ if File.file?(IPS_FILE)
     hostname = `hostname`
     subject = "[#{hostname}] IP change detected"
     content = "IPv4: #{ips["ipv4"]} \nIPv6: #{ips["ipv6"]}"
-    `mail -s "#{subject}" #{to}<<EOM
+    mail_command = "mail -s \"#{subject}\" #{to}<<EOM
   #{content}
-EOM`
+EOM"
+    puts "[#{Time.now}] Executing command: #{mail_command}"
+    `#{mail_command}`
+
     # save ips
     File.open(IPS_FILE, "w") do |f|
       f.write(ips.to_json)
