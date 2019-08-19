@@ -52,11 +52,4 @@
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
   notify: docker prune
-
-- name: Add Nextcloud volume to backup list
-  import_role:
-    name: docker-backup-volumes
-  vars:
-    docker_volumes_backup:
-      - nextcloud_nextcloud-data
 ...

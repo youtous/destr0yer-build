@@ -54,8 +54,12 @@ global_backup_gpg_key_passphrase: ""
 # set a passphrase for the private key (used for signing and decryption) if it defers from global_backup_gpg_key_passphrase
 global_backup_gpg_private_key_passphrase: "{{ global_backup_gpg_key_passphrase }}"
 
-# what do we want to backup ?
-global_backup_source_directory: "/home"
+# root of the backup
+global_backup_source_directory: "/"
+# what to keep ?
+global_backup_excludes:
+  - "+ /home"
+  - "- **" # only keep home folder
 
 # where to store the backup ? (http://duplicity.nongnu.org/duplicity.1.html#sect7)
 # if you use SFTP, we use pexpect backend in order to work with local agent and support KEX algorithms
@@ -116,6 +120,7 @@ global_backup_profiles:
 
     pre: "{{ global_backup_pre_script }}"
     post: "{{ global_backup_post_script }}"
+    excludes: "{{ global_backup_excludes }}"
 
 # list of backup profiles
 backup_profiles: "{{ backup_profiles_additional|default({}) | combine(global_backup_profiles|default({})) }}"
