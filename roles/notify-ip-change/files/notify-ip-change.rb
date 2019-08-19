@@ -14,13 +14,13 @@ puts "[#{Time.now}] Checking ips of current host"
 # get IPv4
 command_public_ipv4 = "dig -4 TXT +short whoami.cloudflare.com @ns1.cloudflare.com -4"
 puts "[#{Time.now}] Executing command: #{command_public_ipv4}"
-public_ipv4 = `#{command_public_ipv4}`.to_s.strip!.gsub!('"', "")
+public_ipv4 = `#{command_public_ipv4}`.to_s.strip.gsub('"', "")
 puts "[#{Time.now}] Current IPv4: #{public_ipv4}"
 
 # get IPPv6
 command_public_ipv6 = "ip -6 addr | grep inet6 | grep -Poi '(?<=inet6\s).*(?=\sscope global)'"
 puts "[#{Time.now}] Executing command: #{command_public_ipv6}"
-public_ipv6 = `#{command_public_ipv6}`.to_s.strip!.gsub!('"', "")
+public_ipv6 = `#{command_public_ipv6}`.to_s.strip.gsub('"', "")
 puts "[#{Time.now}] Current IPv6: #{public_ipv6}"
 
 # struct to save
