@@ -1,0 +1,4 @@
+---
+notify_change_ip_directory: /etc/notify-ip-change
+notify_change_ip_log_file: /var/log/notify-ip-change.log
+...

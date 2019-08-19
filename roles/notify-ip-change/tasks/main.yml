@@ -1,0 +1,54 @@
+---
+# This role contains a a notifier of ip changes
+- name: Install required packages
+  become: yes
+  apt:
+    name:
+      - cron
+      - ruby
+      - ruby-json
+
+- name: Creates changed-ip directory
+  become: yes
+  file:
+    path: "{{ notify_change_ip_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=
+
+- name: Copy changed-ip script
+  become: yes
+  template:
+    src: files/notify-ip-change.rb
+    dest: "{{ notify_change_ip_directory }}/notify-ip-change.rb"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Cron changed-ip every 5mins
+  become: yes
+  cron:
+    name: "check and notify ip changes"
+    minute: "*/5"
+    job: "{{ notify_change_ip_directory }}/notify-ip-change.rb {{ notify_change_ip_email }}"
+
+- name: Configure logrotate for changed-ip
+  become: yes
+  import_role:
+    name: logrotate
+  vars:
+    logrotate_applications:
+      - name: changed-ip
+        definitions:
+          - logs:
+              - "{{ notify_change_ip_log_file }}"
+            options:
+              - monthly
+              - rotate 12
+              - size 10M
+              - compress
+              - delaycompress
+              - missingok
+              - notifempty
+              - create 0640 root root

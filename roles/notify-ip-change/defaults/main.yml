@@ -1,0 +1,4 @@
+---
+# email to notify on change
+notify_change_ip_email: "{{ monitoring_email }}"
+...
