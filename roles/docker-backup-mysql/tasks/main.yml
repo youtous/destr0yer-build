@@ -50,6 +50,7 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
+    state: touch
 
 - name: Add mysql docker containers to backup list
   become: yes
