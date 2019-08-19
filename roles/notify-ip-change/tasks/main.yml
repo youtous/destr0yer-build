@@ -31,7 +31,7 @@
   cron:
     name: "check and notify ip changes"
     minute: "*/5"
-    job: "{{ notify_change_ip_directory }}/notify-ip-change.rb {{ notify_change_ip_email }}"
+    job: "{{ notify_change_ip_directory }}/notify-ip-change.rb {{ notify_change_ip_email }} > {{ notify_change_ip_log_file }}"
 
 - name: Configure logrotate for changed-ip
   become: yes
