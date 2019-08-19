@@ -37,7 +37,7 @@ list_containers.each do |docker_volume|
     `docker pause #{id}`
   end
 
-  command = "docker run -v #{docker_volume}:/volume --rm loomchild/volume-backup backup - > #{save_path}/#{docker_volume}.taz.bz2"
+  command = "docker run -v #{docker_volume}:/volume --log-driver none --rm loomchild/volume-backup backup -c none - > #{save_path}/#{docker_volume}.tar"
   puts "[#{Time.now}] Executing backup... \n#{command}"
   output = `#{command}`
   puts "[#{Time.now}] #{output}"
