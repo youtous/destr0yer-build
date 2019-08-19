@@ -40,11 +40,13 @@ if File.file?(IPS_FILE)
 
     # notify change by email
     to = email_alert
-    hostname = `hostname`
+    hostname = `hostname`.strip
     subject = "[#{hostname}] IP change detected"
     content = "IPv4: #{ips["ipv4"]}\nIPv6: #{ips["ipv6"]}"
-    mail_command = "mail -s \"#{subject}\" #{to}<<EOF#{content}EOF"
-    
+    mail_command = "mail -s \"#{subject}\" #{to}<<EOF
+#{content}
+EOF"
+
     puts "[#{Time.now}] Executing command: #{mail_command}"
     `#{mail_command}`
 
