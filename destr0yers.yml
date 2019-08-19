@@ -120,7 +120,8 @@
 - name: Configure servers with dynamic ip
   hosts: dynamic_ip
   roles:
-    - update-dynamic-ip
+    # - update-dynamic-ip
+    - notify-ip-change
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
