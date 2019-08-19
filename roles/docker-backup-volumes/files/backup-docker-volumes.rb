@@ -3,8 +3,7 @@
 require 'set'
 
 if ARGV.empty?
-  puts "[#{Time.now}] Error ! No output path given."
-  exit
+  abort "Error ! No output path given."
 end
 save_path = ARGV[0]
 
