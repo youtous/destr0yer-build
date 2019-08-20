@@ -1,0 +1,35 @@
+---
+# This role setup a Mailserver in a docker swarm cluster
+# see https://github.com/tomav/docker-mailserver for more details
+
+- name: Ensure mailserver directory exists
+  file:
+    state: directory
+    path: "{{ mailserver_compose_file_dest_directory }}"
+
+- name: Tag current node as mailserver origin
+  docker_node:
+    hostname: "{{ hostname }}"
+    labels:
+      mailserver.mailserver-data: "true"
+
+- name: Copy mailserver stack
+  template:
+    src: templates/docker-compose.mailserver.j2.yml
+    dest: "{{ mailserver_compose_file_dest }}"
+    mode: u=rw,g=,o=
+
+- name: Deploy mailserver
+  docker_stack:
+    state: present
+    prune: yes
+    name: mailserver
+    compose:
+      - "{{ mailserver_compose_file_dest }}"
+  environment:
+    POSTFIX_MESSAGE_SIZE_LIMIT: "{{ mailserver_message_size_limit_mb * 1000000|int }}"
+    OVERRIDE_HOSTNAME: "{{ mailserver_hostname }}"
+    # deploy timestamp
+    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+  notify: docker prune
+...

@@ -1,0 +1,60 @@
+version: "3.7"
+
+
+services:
+
+  mail:
+    image: tvial/docker-mailserver:latest
+    hostname: mail
+    domainname: domain.com
+    container_name: mail
+    ports:
+      - "25:25"
+      - "143:143"
+      - "587:587"
+      - "993:993"
+    volumes:
+      - mailserver-data:/var/mail
+      - mailserver-state:/var/mail-state
+      - ./config/:/tmp/docker-mailserver/
+    environment:
+      - ENABLE_SPAMASSASSIN=1
+      - ENABLE_CLAMAV=1
+      - ENABLE_FAIL2BAN=1
+      - ENABLE_POSTGREY=1
+      # todo : enable ssl
+      - SSL_TYPE=letsencrypt
+      - TLS_LEVEL=modern
+      - SPOOF_PROTECTION=1 # do not allow forged address
+      - "POSTFIX_MESSAGE_SIZE_LIMIT=$POSTFIX_MESSAGE_SIZE_LIMIT"
+      # todo : check sieve
+      - "OVERRIDE_HOSTNAME=$OVERRIDE_HOSTNAME"
+      - ONE_DIR=1
+      - DMS_DEBUG=0
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+  networks:
+    - mailserver-network
+  deploy:
+    placement:
+      constraints:
+        - node.role == manager
+        - node.labels.mailserver.mailserver-data == true
+    restart_policy:
+      condition: any
+      delay: 5s
+      window: 15s
+
+networks:
+  mailserver-network:
+    driver: overlay
+    attachable: true
+    driver_opts:
+      encrypted: ""
+
+volumes:
+  mailserver-data:
+    driver: local
+  mailserver-state:
+    driver: local

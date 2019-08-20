@@ -1,0 +1,4 @@
+---
+mailserver_message_size_limit_mb: 12
+mailserver_hostname: "{{ hostname }}"
+...
