@@ -17,6 +17,8 @@
   tags: ["new-systems"]
 
 # This play describe tasks for an existing destr0yer
+# /!\ Do not run this role alone, it will reset some files, for instance
+# backup accounts will be reset in sshd_config... Consider to run the entire playbook
 - name: Configure destr0yers systems
   hosts: [base_destr0yers, commander_destr0yers]
   remote_user: "{{ arbiter_username }}"
