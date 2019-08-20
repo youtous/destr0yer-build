@@ -5,7 +5,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 2376
+    port: "2376"
     src: "{{ item }}"
     delete: yes
   with_items: "{{ revoked_nodes_ips }}"
@@ -14,7 +14,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 2377
+    port: "2377"
     src: "{{ item }}"
     delete: yes
   with_items: "{{ revoked_nodes_ips }}"
@@ -23,7 +23,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 7946
+    port: "7946"
     src: "{{ item }}"
     delete: yes
   with_items: "{{ revoked_nodes_ips }}"
@@ -32,7 +32,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 4789
+    port: "4789"
     src: "{{ item }}"
     delete: yes
   with_items: "{{ revoked_nodes_ips }}"
@@ -41,7 +41,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 2376
+    port: "2376"
     src: "{{ item }}"
   with_items: "{{ nodes_ips }}"
 
@@ -49,7 +49,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 2377
+    port: "2377"
     src: "{{ item }}"
   with_items: "{{ nodes_ips }}"
 
@@ -57,7 +57,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 7946
+    port: "7946"
     src: "{{ item }}"
   with_items: "{{ nodes_ips }}"
 
@@ -65,7 +65,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 4789
+    port: "4789"
     src: "{{ item }}"
   with_items: "{{ nodes_ips }}"
 ...

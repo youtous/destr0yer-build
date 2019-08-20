@@ -17,7 +17,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 5000
+    port: "5000"
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
@@ -35,7 +35,7 @@
   become: yes
   ufw:
     rule: allow
-    port: 5044
+    port: "5044"
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
