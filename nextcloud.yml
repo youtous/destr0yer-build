@@ -1,5 +1,5 @@
 ---
-# This play a docker swarm network.
+# This plays a docker nextcloud instance.
 
 - name: Install Nextcloud
   hosts: nextcloud
