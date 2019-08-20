@@ -83,16 +83,28 @@ services:
         - traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
         - traefik.webservice.frontend.entryPoints=https
-        # security labels
-        - traefik.frontend.headers.browserXSSFilter=true
-        - traefik.frontend.headers.customFrameOptionsValue=sameorigin # allow same origin for iframes
-        - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
         - "traefik.frontend.headers.SSLHost={{ nextcloud_domain }}"
         - traefik.frontend.headers.STSSeconds=315360000
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.customFrameOptionsValue=sameorigin # allow same origin for iframes
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # rate limits
+        - traefik.frontend.rateLimit.extractorFunc=client.ip
+        - traefik.frontend.rateLimit.rateSet.rate3s.period=3s
+        - "traefik.frontend.rateLimit.rateSet.rate3s.average={{ nextcloud_max_requests_3s_per_client|int }}"
+        - "traefik.frontend.rateLimit.rateSet.rate3s.burst={{ nextcloud_max_requests_3s_per_client * 2|int }}"
+        # max connections limits
+        - "traefik.backend.maxconn.amount={{ nextcloud_max_connections|int }}"
+        - traefik.backend.maxconn.extractorFunc=request.host
+        # requests size limits
+        - "traefik.backend.buffering.maxRequestBodyBytes={{ nextcloud_max_request_size_megabytes * 1000000|int }}" # maximum request size allowed
+        - traefik.backend.buffering.memRequestBodyBytes=2097152 # after this limit, request will be buffered on disk instead of RAM
+        - traefik.backend.buffering.retryExpression=IsNetworkError() && Attempts() <= 2
         # Nextcloud CalDAV
         - traefik.frontend.redirect.permanent=true
         - traefik.frontend.redirect.regex=https://(.*)/.well-known/(card|cal)dav

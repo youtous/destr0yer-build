@@ -22,6 +22,11 @@ nextcloud_smtp_password: ""
 nextcloud_smtp_from: "nextcloud"
 nextcloud_smtp_domain_from: "{{ nextcloud_domain }}"
 
+# security configuration
+nextcloud_max_connections: 1000 # maximum of simultaneous requests
+nextcloud_max_requests_3s_per_client: 8 # maximum of requests per client in 3s
+nextcloud_max_request_size_megabytes: 2048 # maximum size of request in MB
+
 # Configure other Nextcloud parameters using :
 # docker exec -it {docker_id} sh -c 'echo "<?php $CONFIG=[]..." > config/config.php'
 # this limitation is due to env params
