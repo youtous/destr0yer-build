@@ -17,7 +17,6 @@
   tags: ["new-systems"]
 
 # This play describe tasks for an existing destr0yer
-# /!\ Nature of the roles in this play will OVERWRITE any existing configuration such as sshd. Do not run this role alone
 - name: Configure destr0yers systems
   hosts: [base_destr0yers, commander_destr0yers]
   remote_user: "{{ arbiter_username }}"
