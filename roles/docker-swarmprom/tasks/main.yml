@@ -17,8 +17,6 @@
     src: files/dockerd-exporter/Caddyfile.j2
     dest: "{{ swarmprom_compose_file_dest_directory }}/dockerd-exporter/Caddyfile"
     mode: u=rw,g=,o=
-  notify:
-    - deploy swarmprom
 
 - name: Ensure prometheus rules directory exists
   file:
@@ -33,8 +31,6 @@
   with_items:
     - swarm_node.rules.yml
     - swarm_task.rules.yml
-  notify:
-    - deploy swarmprom
 
 - name: Ensure alertmanager directory exists
   file:
@@ -46,14 +42,21 @@
     src: templates/alertmanager/alertmanager.j2.yml
     dest: "{{ swarmprom_compose_file_dest_directory }}/alertmanager/alertmanager.yml"
     mode: u=rw,g=,o=
-  notify:
-    - deploy swarmprom
 
 - name: Copy Swarmprom stack
   template:
     src: files/docker-compose.swarmprom.j2.yml
     dest: "{{ swarmprom_compose_file_dest }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy swarmprom
+
+- name: Deploy swarmprom stack
+  docker_stack:
+    state: present
+    prune: yes
+    name: "{{ docker_swarmprom_stack_name }}"
+    compose:
+      - "{{ swarmprom_compose_file_dest }}"
+  environment:
+    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+  notify: docker prune
 ...

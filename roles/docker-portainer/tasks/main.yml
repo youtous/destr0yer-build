@@ -18,6 +18,13 @@
     src: files/docker-compose.portainer.j2.yml
     dest: "{{ portainer_compose_file_dest }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy portainer
+
+- name: Deploy portainer
+  docker_stack:
+    state: present
+    prune: yes
+    name: portainer
+    compose:
+      - "{{ portainer_compose_file_dest }}"
+  notify: docker prune
 ...

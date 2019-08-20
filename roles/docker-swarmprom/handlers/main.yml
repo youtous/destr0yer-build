@@ -1,16 +1,4 @@
 ---
-- name: deploy swarmprom stack
-  docker_stack:
-    state: present
-    prune: yes
-    name: "{{ docker_swarmprom_stack_name }}"
-    compose:
-      - "{{ swarmprom_compose_file_dest }}"
-  environment:
-    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
-  notify: docker prune
-  listen: deploy swarmprom
-
 - name: docker prune
   docker_prune:
     containers: yes

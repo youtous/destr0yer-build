@@ -10,5 +10,15 @@
     src: templates/docker-compose.swarm_cronjob.j2.yml
     dest: "{{ swarm_cronjob_compose_file_dest }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy swarm_cronjob
+
+- name: Deploy swarm_cronjob
+  docker_stack:
+    state: present
+    prune: yes
+    name: swarm_cronjob
+    compose:
+      - "{{ swarm_cronjob_compose_file_dest }}"
+  environment:
+    TIMEZONE: "{{ swarm_cronjob_timezone }}"
+    LOG_LEVEL: "{{ swarm_cronjob_log_level }}"
+  notify: docker prune

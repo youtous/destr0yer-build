@@ -61,16 +61,12 @@
     content: "{{ logstash_CA_certificate }}"
     dest: "{{ logstash_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy elastic
 
 - name: Copy logstash node certificate
   copy:
     content: "{{ logstash_node_certificate }}"
     dest: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.crt"
     mode: u=rw,g=,o=
-  notify:
-    - deploy elastic
 
 - name: Copy logstash node private key
   copy:
@@ -78,6 +74,4 @@
     dest: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.key"
     mode: u=rw,g=,o=
   no_log: true
-  notify:
-    - deploy elastic
 ...

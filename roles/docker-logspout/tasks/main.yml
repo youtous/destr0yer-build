@@ -11,8 +11,17 @@
     src: templates/docker-compose.logspout.j2.yml
     dest: "{{ logspout_compose_file_dest }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy logspout
 
 - name: Configure TLS logstash/logspout certificates
   import_tasks: certificates.yml
+
+- name: Deploy logspout stack
+  docker_stack:
+    state: present
+    prune: yes
+    name: "{{ docker_logspout_stack_name }}"
+    compose:
+      - "{{ logspout_compose_file_dest }}"
+  environment:
+    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+  notify: docker prune

@@ -1,15 +1,4 @@
 ---
-- name: deploy elastic
-  docker_stack:
-    state: present
-    prune: yes
-    name: "{{ docker_elastic_stack_name }}"
-    compose:
-      - "{{ elastic_compose_file_dest }}"
-  environment:
-    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
-  notify: docker prune
-
 - name: docker prune
   docker_prune:
     containers: yes

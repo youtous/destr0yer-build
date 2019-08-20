@@ -1,13 +1,4 @@
 ---
-- name: deploy traefik
-  docker_stack:
-    state: present
-    prune: yes
-    name: traefik-consul
-    compose:
-      - "{{ traefik_compose_file_dest }}"
-  notify: docker prune
-
 - name: docker prune
   docker_prune:
     containers: yes

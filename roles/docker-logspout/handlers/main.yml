@@ -1,16 +1,4 @@
 ---
-- name: deploy logspout stack
-  docker_stack:
-    state: present
-    prune: yes
-    name: "{{ docker_logspout_stack_name }}"
-    compose:
-      - "{{ logspout_compose_file_dest }}"
-  environment:
-    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
-  notify: docker prune
-  listen: deploy logspout
-
 - name: docker prune
   docker_prune:
     containers: yes

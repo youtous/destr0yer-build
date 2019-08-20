@@ -17,8 +17,16 @@
     src: files/docker-compose.traefik.j2.yml
     dest: "{{ traefik_compose_file_dest }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy traefik
+
+# always redeploy permits to have always up to date
+- name: Deploy traefik
+  docker_stack:
+    state: present
+    prune: yes
+    name: traefik-consul
+    compose:
+      - "{{ traefik_compose_file_dest }}"
+  notify: docker prune
 
 - name: Fail2ban for traefik
   import_tasks: fail2ban.yml

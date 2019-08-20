@@ -18,31 +18,34 @@
     src: "files/config"
     dest: "{{ elastic_compose_file_dest_directory }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy elastic
 
 - name: Ensure elastic heartbeat directory exists
   file:
     state: directory
     path: "{{ elastic_compose_file_dest_directory }}/config/heartbeat"
-  notify:
-    - deploy elastic
 
 - name: Copy elastic heartbeat config
   template:
     src: "templates/config/heartbeat/heartbeat.j2.yml"
     dest: "{{ elastic_compose_file_dest_directory }}/config/heartbeat/heartbeat.yml"
     mode: u=rw,g=,o=
-  notify:
-    - deploy elastic
 
 - name: Copy elastic stack
   template:
     src: templates/docker-compose.elastic.j2.yml
     dest: "{{ elastic_compose_file_dest }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy elastic
 
 - name: Configure additional parameters for logstash with docker
   import_tasks: docker-logstash.yml
+
+- name: Deploy elastic
+  docker_stack:
+    state: present
+    prune: yes
+    name: "{{ docker_elastic_stack_name }}"
+    compose:
+      - "{{ elastic_compose_file_dest }}"
+  environment:
+    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+  notify: docker prune

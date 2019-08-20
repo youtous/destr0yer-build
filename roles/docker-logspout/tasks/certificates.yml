@@ -13,16 +13,12 @@
     content: "{{ logstash_CA_certificate }}"
     dest: "{{ logspout_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
     mode: u=rw,g=,o=
-  notify:
-    - deploy logspout
 
 - name: Copy logspout node certificate
   copy:
     content: "{{ logspout_node_certificate }}"
     dest: "{{ logspout_certificates_directory }}/{{ logspout_node_certificate_name }}.crt"
     mode: u=rw,g=,o=
-  notify:
-    - deploy logspout
 
 - name: Copy logspout node private key
   copy:
@@ -30,6 +26,4 @@
     dest: "{{ logspout_certificates_directory }}/{{ logspout_node_certificate_name }}.key"
     mode: u=rw,g=,o=
   no_log: true
-  notify:
-    - deploy logspout
 ...
