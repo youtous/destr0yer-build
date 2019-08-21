@@ -113,7 +113,6 @@ services:
 networks:
   nextcloud-network:
     driver: overlay
-    attachable: true
     driver_opts:
       encrypted: ""
   {{ traefik_network }}:
