@@ -2,6 +2,17 @@
 # This role setup a Mailserver in a docker swarm cluster
 # see https://github.com/tomav/docker-mailserver for more details
 
+- name: "Ensure {{ item }} is disabled"
+  become: yes
+  service:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  ignore_errors: True
+  with_items:
+    - postfix
+    - exim4
+
 - name: Ensure mailserver directory exists
   file:
     state: directory
@@ -41,6 +52,7 @@
   environment:
     POSTFIX_MESSAGE_SIZE_LIMIT: "{{ mailserver_message_size_limit_mb * 1000000|int }}"
     DMS_DEBUG: "{{ mailserver_debug|int }}"
+    PERMIT_DOCKER: "{{ mailserver_allow_networks }}"
     OVERRIDE_HOSTNAME: "{{ mailserver_hostname }}"
     SSL_TYPE: "{{ mailserver_ssl_type }}"
     POSTMASTER_ADDRESS: "{{ mailserver_postmaster_address }}"

@@ -11,6 +11,9 @@ mailserver_ssl_type: letsencrypt
 # activate debug mode
 mailserver_debug: false
 
+# allow localhost (empty), host, network (docker network) or connected-networks (all docker networks) to send emails (mynetworks)
+mailserver_allow_networks: host
+
 # mail of the server admin
 mailserver_postmaster_address: "postmaster@{{ mailserver_domain }}"
 ...

@@ -27,6 +27,7 @@ services:
     environment:
       - ONE_DIR=1
       - "DMS_DEBUG=$DMS_DEBUG"
+      - "PERMIT_DOCKER=$PERMIT_DOCKER"
       # services enabled
       - ENABLE_SPAMASSASSIN=1
       - ENABLE_CLAMAV=1
