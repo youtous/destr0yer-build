@@ -101,6 +101,11 @@ update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
 ### End of dynamic updating parameters ###
 
 
+### Begin of mailserver parameters ###
+mailserver_ssl_type: self-signed
+mailserver_debug: yes
+### End of mailserver parameters ###
+
 ### Begin of Backup storage parameters ###
 backup_frozen_directory: "/home/frozen-backups/"
 # backup-storage parameters

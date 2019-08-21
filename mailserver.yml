@@ -1,7 +1,7 @@
 ---
 # This plays a docker mailserver instance.
 # https://github.com/tomav/docker-mailserver
--
+
 - name: Install Mailserver
   hosts: mailserver
   roles:

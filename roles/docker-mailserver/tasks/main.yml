@@ -19,6 +19,18 @@
     dest: "{{ mailserver_compose_file_dest }}"
     mode: u=rw,g=,o=
 
+- name: Ensure mailserver config directory exists
+  file:
+    state: directory
+    path: "{{ mailserver_compose_file_dest_directory }}/config"
+
+- name: Copy mailserver config
+  template:
+    src: "templates/config/{{ item.src }}"
+    dest: "{{ mailserver_compose_file_dest_directory }}/config/{{ item.dest }}"
+    mode: u=rw,g=,o=
+  with_items: [] # todo : add configs
+
 - name: Deploy mailserver
   docker_stack:
     state: present
@@ -28,7 +40,10 @@
       - "{{ mailserver_compose_file_dest }}"
   environment:
     POSTFIX_MESSAGE_SIZE_LIMIT: "{{ mailserver_message_size_limit_mb * 1000000|int }}"
+    DMS_DEBUG: "{{ mailserver_debug|int }}"
     OVERRIDE_HOSTNAME: "{{ mailserver_hostname }}"
+    SSL_TYPE: "{{ mailserver_ssl_type }}"
+    POSTMASTER_ADDRESS: "{{ mailserver_postmaster_address }}"
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
   notify: docker prune

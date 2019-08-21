@@ -1,0 +1,4 @@
+# Mailserver hosts
+mailserver:
+  hosts:
+    heaven-pascal.youtous.dv:

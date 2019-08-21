@@ -1,4 +1,16 @@
 ---
 mailserver_message_size_limit_mb: 12
+# main domain of the server
+mailserver_domain: "{{ hostname }}"
+# hostname of the mailserver host
 mailserver_hostname: "{{ hostname }}"
+
+# manual, letsencrypt, custom, self-signed
+mailserver_ssl_type: letsencrypt
+
+# activate debug mode
+mailserver_debug: false
+
+# mail of the server admin
+mailserver_postmaster_address: "postmaster@{{ mailserver_domain }}"
 ...

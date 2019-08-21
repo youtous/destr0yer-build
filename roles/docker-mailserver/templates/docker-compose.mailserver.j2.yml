@@ -5,51 +5,62 @@ services:
 
   mail:
     image: tvial/docker-mailserver:latest
-    hostname: mail
-    domainname: domain.com
-    container_name: mail
+    hostname: "{{ mailserver_hostname }}"
+    domainname: "{{ mailserver_domain }}"
     ports:
-      - "25:25"
-      - "143:143"
-      - "587:587"
-      - "993:993"
+      - target: 25
+        published: 25
+        mode: host
+      - target: 143
+        published: 143
+        mode: host
+      - target: 587
+        published: 587
+        mode: host
+      - target: 993
+        published: 993
+        mode: host
     volumes:
       - mailserver-data:/var/mail
       - mailserver-state:/var/mail-state
       - ./config/:/tmp/docker-mailserver/
     environment:
+      - ONE_DIR=1
+      - "DMS_DEBUG=$DMS_DEBUG"
+      # services enabled
       - ENABLE_SPAMASSASSIN=1
       - ENABLE_CLAMAV=1
       - ENABLE_FAIL2BAN=1
       - ENABLE_POSTGREY=1
-      # todo : enable ssl
-      - SSL_TYPE=letsencrypt
-      - TLS_LEVEL=modern
       - SPOOF_PROTECTION=1 # do not allow forged address
+      - REPORT_RECIPIENT=1 # send report of the mailserver to postmaster
+      - REPORT_INTERVAL=weekly
+      - "POSTMASTER_ADDRESS=$POSTMASTER_ADDRESS"
       - "POSTFIX_MESSAGE_SIZE_LIMIT=$POSTFIX_MESSAGE_SIZE_LIMIT"
       # todo : check sieve
-      - "OVERRIDE_HOSTNAME=$OVERRIDE_HOSTNAME"
-      - ONE_DIR=1
-      - DMS_DEBUG=0
+      # todo : enable ssl
+      - "SSL_TYPE=$SSL_TYPE"
+      - TLS_LEVEL=modern
+      # SASL Auth
+      - ENABLE_SASLAUTHD=1
     cap_add:
       - NET_ADMIN
       - SYS_PTRACE
-  networks:
-    - mailserver-network
-  deploy:
-    placement:
-      constraints:
-        - node.role == manager
-        - node.labels.mailserver.mailserver-data == true
-    restart_policy:
-      condition: any
-      delay: 5s
-      window: 15s
+    networks:
+      - mailserver
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.mailserver.mailserver-data == true
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
 
 networks:
-  mailserver-network:
+  mailserver:
     driver: overlay
-    attachable: true
     driver_opts:
       encrypted: ""
 
