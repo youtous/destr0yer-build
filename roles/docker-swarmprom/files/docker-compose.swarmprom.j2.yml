@@ -30,10 +30,6 @@ services:
         target: /etc/caddy/Caddyfile
     deploy:
       mode: global
-      restart_policy:
-        condition: any
-        delay: 5s
-        window: 10s
       resources:
         limits:
           memory: 128M
@@ -54,10 +50,6 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     deploy:
       mode: global
-      restart_policy:
-        condition: any
-        delay: 5s
-        window: 15s
       resources:
         limits:
           memory: 128M
@@ -91,10 +83,6 @@ services:
       placement:
         constraints:
           - node.role == manager
-      restart_policy:
-        condition: any
-        delay: 5s
-        window: 15s
       resources:
         limits:
           memory: 128M
@@ -147,10 +135,6 @@ services:
       placement:
         constraints:
           - node.role == manager
-      restart_policy:
-        condition: any
-        delay: 5s
-        window: 15s
       resources:
         limits:
           memory: 128M
@@ -193,10 +177,6 @@ services:
 #    deploy:
 #      mode: replicated
 #      replicas: 1
-#      restart_policy:
-#       condition: any
-#       delay: 5s
-#       window: 15s
 #      labels:
 #        - "traefik.frontend.rule=Host:{{ unsee_domain }}"
 #        - traefik.enable=true
@@ -246,10 +226,6 @@ services:
       - '--no-collector.ipvs'
     deploy:
       mode: global
-      restart_policy:
-        condition: any
-        delay: 5s
-        window: 15s
       resources:
         limits:
           memory: 128M
@@ -276,10 +252,6 @@ services:
       placement:
         constraints:
           - node.role == manager
-      restart_policy:
-        condition: any
-        delay: 5s
-        window: 15s
       resources:
         limits:
           memory: 256M
