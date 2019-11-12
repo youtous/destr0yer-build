@@ -7,7 +7,7 @@ configs:
 
 services:
   nextcloud: &nextcloud
-    image: nextcloud:fpm-alpine
+    image: "nextcloud:{{ nextcloud_version }}-fpm-alpine"
     volumes:
       - nextcloud-data:/var/www/html
     environment:
