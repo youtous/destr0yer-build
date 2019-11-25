@@ -15,12 +15,18 @@ puts "[#{Time.now}] Checking ips of current host"
 command_public_ipv4 = "dig -4 TXT +short whoami.cloudflare.com @ns1.cloudflare.com -4"
 puts "[#{Time.now}] Executing command: #{command_public_ipv4}"
 public_ipv4 = `#{command_public_ipv4}`.to_s.strip.gsub('"', "")
+if public_ipv4.empty?
+  puts "[#{Time.now}] Could not determine IPv4"
+end
 puts "[#{Time.now}] Current IPv4: #{public_ipv4}"
 
 # get IPPv6
 command_public_ipv6 = "ip -6 addr | grep inet6 | grep -Poi '(?<=inet6\s).*(?=\sscope global)'"
 puts "[#{Time.now}] Executing command: #{command_public_ipv6}"
 public_ipv6 = `#{command_public_ipv6}`.to_s.strip.gsub('"', "")
+if public_ipv6.empty?
+  puts "[#{Time.now}] Could not determine IPv6"
+end
 puts "[#{Time.now}] Current IPv6: #{public_ipv6}"
 
 # struct to save
@@ -33,9 +39,13 @@ if File.file?(IPS_FILE)
   content = File.open(IPS_FILE)
   old_ips = JSON.load(content)
 
+  # check not failed update ips
+  failed_get_ipv4 = !old_ips["ipv4"].empty? && ips["ipv4"].empty?
+  failed_get_ipv6 = !old_ips["ipv6"].empty? && ips["ipv6"].empty?
+
   # check any change
-  if old_ips["ipv4"] != ips["ipv4"] ||
-      old_ips["ipv6"] != ips["ipv6"]
+  if (old_ips["ipv4"] != ips["ipv4"] && !failed_get_ipv4) ||
+      (old_ips["ipv6"] != ips["ipv6"] && !failed_get_ipv6)
     puts "[#{Time.now}] Ip changed detected. Sending email alert."
 
     # notify change by email
