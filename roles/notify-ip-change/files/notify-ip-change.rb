@@ -17,6 +17,7 @@ puts "[#{Time.now}] Executing command: #{command_public_ipv4}"
 public_ipv4 = `#{command_public_ipv4}`.to_s.strip.gsub('"', "")
 if not $?.success?
   puts "[#{Time.now}] Could not determine IPv4"
+  public_ipv4 = ""
 end
 puts "[#{Time.now}] Current IPv4: #{public_ipv4}"
 
@@ -26,6 +27,7 @@ puts "[#{Time.now}] Executing command: #{command_public_ipv6}"
 public_ipv6 = `#{command_public_ipv6}`.to_s.strip.gsub('"', "")
 if not $?.success?
   puts "[#{Time.now}] Could not determine IPv6"
+  public_ipv6 = ""
 end
 puts "[#{Time.now}] Current IPv6: #{public_ipv6}"
 
