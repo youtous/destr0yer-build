@@ -16,7 +16,7 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["new-systems"]
 
-- name: Updatre destr0yer systems
+- name: Update destr0yer systems
   hosts: [base_destr0yers, commander_destr0yers]
   remote_user: "{{ arbiter_username }}"
   roles:
