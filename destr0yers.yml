@@ -16,6 +16,17 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["new-systems"]
 
+- name: Updatre destr0yer systems
+  hosts: [base_destr0yers, commander_destr0yers]
+  remote_user: "{{ arbiter_username }}"
+  roles:
+    - apt # update the system
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["configure-systems", "update-systems"]
+
 # This play describe tasks for an existing destr0yer
 # /!\ Do not run this role alone, it will reset some files, for instance
 # backup accounts will be reset in sshd_config... Consider to run the entire playbook
@@ -23,7 +34,6 @@
   hosts: [base_destr0yers, commander_destr0yers]
   remote_user: "{{ arbiter_username }}"
   roles:
-    - apt # update the system
     - system-packages # system packages (htop, curl etc)
     - users # create a sudo user that will be used for configuration
     - system-configuration # configure the system (selinux, timezone...)
