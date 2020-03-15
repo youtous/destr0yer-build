@@ -11,6 +11,17 @@ primary_manager_elastic:
   hosts:
     heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
 
+# redirect logs from docker to elastic cluster
+primary_manager_logging_elastic:
+  hosts:
+    heaven-pascal.youtous.dv:
+
+# redirect machine logs to elastic cluster
+all_logging_elastic:
+  hosts:
+    heaven-pascal.youtous.dv:
+    heaven-roberval.youtous.dv:
+
 # Other manager nodes
 managers:
 

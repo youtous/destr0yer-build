@@ -113,7 +113,7 @@
   tags: ["docker-swarm-elastic"]
 
 - name: Setup docker-swarm logging tools
-  hosts: primary_manager
+  hosts: primary_manager_logging_elastic
   roles:
     - docker-logspout # output docker logs to elastic cluster
   vars_files:
@@ -123,7 +123,7 @@
   tags: ["docker-swarm-elastic-collectors"]
 
 - name: Setup elastic for each node logging tools
-  hosts: all
+  hosts: all_logging_elastic
   roles:
     - elastic-journalbeat # output system logs from journalctl to elastic cluster
   vars_files:
