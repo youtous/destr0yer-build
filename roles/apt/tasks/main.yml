@@ -16,6 +16,12 @@
     group: root
     mode: u=rw,g=r,o=r
 
+- name: Install unattended-upgrades package to flag updates requiring reboot
+  become: yes
+  apt:
+    name: unattended-upgrades
+    update_cache: yes
+
 - name: Checking if Buster update channel Done
   stat:
     path: "{{ apt_buster_flag_path }}"
@@ -32,3 +38,27 @@
     upgrade: yes
     update_cache: yes
     cache_valid_time: 86400 #One day
+
+- name: Check if a reboot is needed on all servers
+  become: yes
+  register: reboot_required_file
+  stat:
+    path: /var/run/reboot-required
+    get_md5: no
+
+- name: Reboot the if kernel updated
+  become: yes
+  reboot:
+    msg: "Reboot initiated by Ansible for kernel updates"
+    connect_timeout: 5
+    reboot_timeout: 300
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: uptime
+  when: reboot_required_file.stat.exists
+
+- name: Clean unwanted olderstuff apt
+  become: yes
+  apt:
+    autoremove: yes
+    purge: yes
