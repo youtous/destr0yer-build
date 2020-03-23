@@ -43,7 +43,7 @@ global_backup_destination: "pexpect+sftp://backup_heaven-roberval@{{ hostvars['h
 # change the cron-job minute
 global_backup_jobs:
   - name: duply-backup-global
-    job: /usr/bin/duply global backup
+    job: /usr/bin/duply global backup_verify_purge --force
     minute: "15"
     hour: "6"
     day: "*"
