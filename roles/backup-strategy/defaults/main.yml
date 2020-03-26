@@ -65,6 +65,9 @@ global_backup_excludes:
 # if you use SFTP, we use pexpect backend in order to work with local agent and support KEX algorithms
 global_backup_destination: ""
 
+# tmp dir used for restoration or test. Capacity must fit with backup size
+global_backup_temp_directory: /var/tmp
+
 # duration how long to keep backups
 global_backup_retention: "1W"
 
@@ -86,7 +89,7 @@ global_backup_cache_directory: "{{ backup_cache_directory }}"
 # /!\ it advisable to change it per host in order to have smooth bandwidth usage
 global_backup_jobs:
   - name: duply-backup-global
-    job: /usr/bin/duply global backup
+    job: /usr/bin/duply global backup_verify_purge --force
     minute: "5"
     hour: "6"
     day: "*"
@@ -111,6 +114,9 @@ global_backup_profiles:
 
       target: "{{ global_backup_destination }}"
       source: "{{ global_backup_source_directory }}"
+
+      # tmp dir used for restoration or test, it grows as the backup grows
+      temp_dir: "{{ global_backup_temp_directory }}"
 
       max_age: "{{ global_backup_retention }}"
       max_fullbkp_age: "{{ global_backup_full_backup_period }}"
