@@ -122,6 +122,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     # see https://docs.traefik.io/configuration/backends/docker/ for details
     # see https://docs.traefik.io/configuration/entrypoints/#cli for CLI syntax
+    environment:
+      - GODEBUG=tls13=1
     command: >
       --docker
       --docker.swarmmode
