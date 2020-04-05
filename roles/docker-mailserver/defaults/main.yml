@@ -1,5 +1,4 @@
 ---
-mailserver_message_size_limit_mb: 12
 # main domain of the server
 mailserver_domain: "{{ hostname }}"
 # hostname of the mailserver host
@@ -7,13 +6,50 @@ mailserver_hostname: "{{ hostname }}"
 
 # manual, letsencrypt, custom, self-signed
 mailserver_ssl_type: letsencrypt
+mailserver_tls_level: modern # drop old tls ciphers
 
 # activate debug mode
 mailserver_debug: false
 
-# allow localhost (empty), host, network (docker network) or connected-networks (all docker networks) to send emails (mynetworks)
-mailserver_allow_networks: host
+# use only stmp
+mailserver_only_smtp: false
 
-# mail of the server admin
+# allow localhost (empty), host, network (docker network) or connected-networks (all docker networks) to send emails (mynetworks)
+mailserver_allowed_networks: host
+
+# Postfix
 mailserver_postmaster_address: "postmaster@{{ mailserver_domain }}"
+mailserver_default_mailbox_limit_mb: 500
+mailserver_message_size_limit_mb: 12
+mailserver_postscreen_action: enforce
+
+# Reporting
+mailserver_reporting_interval: "weekly"
+mailserver_reporting_recipient: "{{ mailserver_postmaster_address }}"
+
+# Postgrey
+mailserver_enable_postgrey: true
+# greylist for N seconds
+mailserver_postgrey_delay: 300
+# delete entries older than N days since the last time that they have been seen
+mailserver_postgrey_max_age: 35
+# whitelist host after N successful deliveries (N=0 to disable whitelisting)
+mailserver_postgrey_auto_whitelist: 5
+
+# SpamAssassin
+mailserver_enable_spamassassin: true
+
+# Fail2ban
+mailserver_enable_fail2ban: true
+
+# ManageSieve, used by clients, for instance on RainLoop, port is not exposed
+mailserver_enable_managesieve: true
+
+# Fetchmail
+mailserver_enable_fetchmail: false
+mailserver_fetchmail_poll_interval: 300
+
+# ClamAV
+mailserver_enable_clamav: false
+mailserver_virus_delete_delay: "7 days"
 ...

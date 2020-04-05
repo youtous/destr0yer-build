@@ -50,12 +50,40 @@
     compose:
       - "{{ mailserver_compose_file_dest }}"
   environment:
-    POSTFIX_MESSAGE_SIZE_LIMIT: "{{ mailserver_message_size_limit_mb * 1000000|int }}"
-    DMS_DEBUG: "{{ mailserver_debug|int }}"
-    PERMIT_DOCKER: "{{ mailserver_allow_networks }}"
+    DMS_DEBUG: "{{ mailserver_debug|default(false)|int }}"
+    PERMIT_DOCKER: "{{ mailserver_allowed_networks }}"
+    SMTP_ONLY: "{{ mailserver_only_smtp|default(false)|int }}"
+
     OVERRIDE_HOSTNAME: "{{ mailserver_hostname }}"
-    SSL_TYPE: "{{ mailserver_ssl_type }}"
+
+    PFLOGSUMM_RECIPIENT: "{{ mailserver_reporting_recipient }}"
+    LOGROTATE_INTERVAL: "{{ mailserver_reporting_interval }}"
+
+    ENABLE_CLAMAV: "{{ mailserver_enable_clamav|default(false) }}"
+    VIRUSMAILS_DELETE_DELAY: "{{ mailserver_virus_delete_delay }}"
+
     POSTMASTER_ADDRESS: "{{ mailserver_postmaster_address }}"
+    POSTFIX_MAILBOX_SIZE_LIMIT: "{{ mailserver_default_mailbox_limit_mb * 1000000|int }}"
+    POSTFIX_MESSAGE_SIZE_LIMIT: "{{ mailserver_message_size_limit_mb * 1000000|int }}"
+    POSTSCREEN_ACTION: "{{ mailserver_postscreen_action }}"
+
+    ENABLE_POSTGREY: "{{ mailserver_enable_postgrey|default(true)|int }}"
+    POSTGREY_DELAY: "{{ mailserver_postgrey_delay|default(300) }}"
+    POSTGREY_MAX_AGE: "{{ mailserver_postgrey_max_age|default(35) }}"
+    POSTGREY_AUTO_WHITELIST_CLIENTS: "{{ mailserver_postgrey_auto_whitelist|default(5) }}"
+
+    ENABLE_SPAMASSASSIN: "{{ mailserver_enable_spamassassin|default(true) }}"
+
+    ENABLE_FETCHMAIL: "{{ mailserver_enable_fetchmail|default(false) }}"
+    FETCHMAIL_POLL: "{{ mailserver_fetchmail_poll_interval|default(300) }}"
+
+    SSL_TYPE: "{{ mailserver_ssl_type }}"
+    TLS_LEVEL: "{{ mailserver_tls_level }}"
+
+    ENABLE_MANAGESIEVE: "{{ mailserver_enable_managesieve|default(true) }}"
+
+    ENABLE_FAIL2BAN: "{{ mailserver_enable_fail2ban|default(true) }}"
+
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
   notify: docker prune

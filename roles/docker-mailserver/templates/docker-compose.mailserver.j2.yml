@@ -3,6 +3,8 @@ version: "3.7"
 
 services:
 
+  # todo : rainloop on same stack
+
   mail:
     image: tvial/docker-mailserver:latest
     hostname: "{{ mailserver_hostname }}"
@@ -23,27 +25,66 @@ services:
     volumes:
       - mailserver-data:/var/mail
       - mailserver-state:/var/mail-state
-      - ./config/:/tmp/docker-mailserver/
+      - ./config/:/tmp/docker-mailserver/ # todo : use config directive instead
     environment:
+      # General conf
+      - ENABLE_POP3=0 # Pop3 is disabled
       - ONE_DIR=1
       - "DMS_DEBUG=$DMS_DEBUG"
-      - "PERMIT_DOCKER=$PERMIT_DOCKER"
-      # services enabled
-      - ENABLE_SPAMASSASSIN=1
-      - ENABLE_CLAMAV=1
-      - ENABLE_FAIL2BAN=1
-      - ENABLE_POSTGREY=1
+      - "PERMIT_DOCKER=$PERMIT_DOCKER" # see # https://github.com/tomav/docker-mailserver/issues/1405#issuecomment-590106498
+      - "SMTP_ONLY=$SMTP_ONLY" # only enable sending messages (using postfix)
       - SPOOF_PROTECTION=1 # do not allow forged address
-      - REPORT_RECIPIENT=1 # send report of the mailserver to postmaster
-      - REPORT_INTERVAL=weekly
+      # Email summary
+      - PFLOGSUMM_TRIGGER=logrotate # Enables regular pflogsumm mail reports when logs are rotated
+      - "PFLOGSUMM_RECIPIENT=$PFLOGSUMM_RECIPIENT" # Recipient address for pflogsumm reports.
+      - "LOGROTATE_INTERVAL=$LOGROTATE_INTERVAL"
+      # ClamAV conf
+      - "ENABLE_CLAMAV=$ENABLE_CLAMAV"
+      - "VIRUSMAILS_DELETE_DELAY=$VIRUSMAILS_DELETE_DELAY"
+      # Postfix
       - "POSTMASTER_ADDRESS=$POSTMASTER_ADDRESS"
-      - "POSTFIX_MESSAGE_SIZE_LIMIT=$POSTFIX_MESSAGE_SIZE_LIMIT"
-      # todo : check sieve
-      # todo : enable ssl
+      - "POSTFIX_MAILBOX_SIZE_LIMIT=$POSTFIX_MAILBOX_SIZE_LIMIT" # Set the mailbox size limit for all users. If set to zero, the size will be unlimited (default).
+      - "POSTFIX_MESSAGE_SIZE_LIMIT=$POSTFIX_MESSAGE_SIZE_LIMIT" # Set the message size limit for all users. If set to zero, the size will be unlimited (not recommended!), empty = 10Mb
+      - POSTFIX_INET_PROTOCOLS=ipv4 # Only use ipv4 for accepting connections because of docker http://www.postfix.org/postconf.5.html#inet_protocols
+      - "POSTSCREEN_ACTION=$POSTSCREEN_ACTION"
+      # Dovecot
+      - "DOVECOT_TLS=" # yes => LDAP over TLS enabled for Dovecot
+      - DOVECOT_MAILBOX_FORMAT=maildir
+      # Postgrey
+      - "ENABLE_POSTGREY=$ENABLE_POSTGREY" # prevent spam using temp rejection of message
+      - "POSTGREY_DELAY=$POSTGREY_DELAY"
+      - "POSTGREY_MAX_AGE=$POSTGREY_MAX_AGE"
+      - POSTGREY_TEXT=Delayed by postgrey
+      - "POSTGREY_AUTO_WHITELIST_CLIENTS=$POSTGREY_AUTO_WHITELIST_CLIENTS"
+      # SpamAssasin
+      - "ENABLE_SPAMASSASSIN=$ENABLE_SPAMASSASSIN"
+      - SA_TAG=2.0
+      - SA_TAG2=6.31
+      - SA_KILL=6.31
+      - SA_SPAM_SUBJECT=***SPAM*****
+      # Fetchmail
+      - "ENABLE_FETCHMAIL=$ENABLE_FETCHMAIL"
+      - "FETCHMAIL_POLL=$FETCHMAIL_POLL"
+      # SSL
       - "SSL_TYPE=$SSL_TYPE"
-      - TLS_LEVEL=modern
+      - "TLS_LEVEL=$TLS_LEVEL"
+      # ManageSieve for automatic filtering on server side on port 4190
+      - "ENABLE_MANAGESIEVE=$ENABLE_MANAGESIEVE"
+      # SRS
+      - ENABLE_SRS=0 # automatic forwarding is disabled
+      - SRS_SENDER_CLASSES=envelope_sender
+      - SRS_EXCLUDE_DOMAINS=
+      - SRS_SECRET=
+      # When using server as a relay, if not let empty
+      - DEFAULT_RELAY_HOST=
+      - RELAY_HOST=
+      - RELAY_PORT=25
+      - RELAY_USER=
+      - RELAY_PASSWORD=
+      # Fail2ban
+      - "ENABLE_FAIL2BAN=$ENABLE_FAIL2BAN"
       # SASL Auth
-      - ENABLE_SASLAUTHD=1
+      - ENABLE_SASLAUTHD=0
     cap_add:
       - NET_ADMIN
       - SYS_PTRACE
