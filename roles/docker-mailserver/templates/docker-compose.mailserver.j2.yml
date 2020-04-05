@@ -1,9 +1,71 @@
 version: "3.7"
 
+configs: # config are immutable :/
+  logstash.conf:
+    name: "{{ docker_elastic_stack_name }}_logstash-${DEPLOY_TIMESTAMP}.conf"
+    file: ./config/logstash/pipeline/logstash.conf
+
+secrets:
+  logstash-private-key.key:
+    name: "{{ docker_elastic_stack_name }}_logstash-private-key-${DEPLOY_TIMESTAMP}.key"
+    file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.key"
 
 services:
 
-  # todo : rainloop on same stack
+{% if rainloop_enabled %}
+  rainloop:
+    image: registry.gitlab.com/youtous/rainloop:latest
+    volumes:
+      - rainloop-data:/rainloop/data
+    networks:
+      - mailserver
+      - {{ traefik_network }}
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.mailserver.rainloop-data == true
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+      labels:
+        - "traefik.frontend.rule=Host:{{ rainloop_domain }}"
+        - traefik.enable=true
+        - traefik.port=8888
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ rainloop_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true # deny iframes
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # rate limits
+        - traefik.frontend.rateLimit.extractorFunc=client.ip
+        - traefik.frontend.rateLimit.rateSet.rate3s.period=3s
+        - "traefik.frontend.rateLimit.rateSet.rate3s.average={{ rainloop_max_requests_3s_per_client|int }}"
+        - "traefik.frontend.rateLimit.rateSet.rate3s.burst={{ rainloop_max_requests_3s_per_client * 2|int }}"
+        # max connections limits
+        - "traefik.backend.maxconn.amount={{ rainloop_max_connections|int }}"
+        - traefik.backend.maxconn.extractorFunc=request.host
+        # requests size limits: currently disabled due to a bug with 302 requests; todo fix it
+        # - "traefik.backend.buffering.maxRequestBodyBytes={{ rainloop_max_request_size_megabytes * 1000000|int }}" # maximum request size allowed
+        # - traefik.backend.buffering.memRequestBodyBytes=2097152 # after this limit, request will be buffered on disk instead of RAM
+        # - traefik.backend.buffering.retryExpression=IsNetworkError() && Attempts() <= 2
+        # todo ; restrict admin
+        # todo : fail2ban on fails
+
+{% endif %}
 
   mail:
     image: tvial/docker-mailserver:latest
@@ -25,7 +87,6 @@ services:
     volumes:
       - mailserver-data:/var/mail
       - mailserver-state:/var/mail-state
-      - ./config/:/tmp/docker-mailserver/ # todo : use config directive instead
     environment:
       # General conf
       - ENABLE_POP3=0 # Pop3 is disabled
@@ -105,9 +166,21 @@ networks:
     driver: overlay
     driver_opts:
       encrypted: ""
+{% if rainloop_enabled %}
+  rainloop-network:
+    driver: overlay
+    driver_opts:
+      encrypted: ""
+  {{ traefik_network }}:
+    external: true
+{% endif %}
 
 volumes:
   mailserver-data:
     driver: local
   mailserver-state:
     driver: local
+{% if rainloop_enabled %}
+  rainloop-data:
+    driver: local
+{% endif %}

@@ -24,6 +24,13 @@
     labels:
       mailserver.mailserver-data: "true"
 
+- name: Tag current node as rainloop origin
+  docker_node:
+    hostname: "{{ hostname }}"
+    labels:
+      mailserver.rainloop-data: "true"
+  when: "{{ rainloop_enabled }}"
+
 - name: Copy mailserver stack
   template:
     src: templates/docker-compose.mailserver.j2.yml

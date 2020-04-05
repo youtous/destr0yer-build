@@ -8,6 +8,22 @@ mailserver_hostname: "{{ hostname }}"
 mailserver_ssl_type: letsencrypt
 mailserver_tls_level: modern # drop old tls ciphers
 
+# Rainloop
+rainloop_enabled: true
+rainloop_domain: "mail.{{ hostname }}"
+
+# traefik public-tag
+traefik_public_tag: "traefik-public"
+# name of the traefik network
+traefik_network: "traefik-public"
+rainloop_max_connections: 100 # maximum of simultaneous requests
+rainloop_max_requests_3s_per_client: 100 # maximum of requests per client in 3s
+rainloop_max_request_size_megabytes: 128 # maximum size of request in MB
+
+rainloop_mysql_database: rainloop
+rainloop_mysql_user: rainloop
+rainloop_mysql_password:
+
 # activate debug mode
 mailserver_debug: false
 
