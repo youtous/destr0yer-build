@@ -1,14 +1,5 @@
 version: "3.7"
-
-configs: # config are immutable :/
-  logstash.conf:
-    name: "{{ docker_elastic_stack_name }}_logstash-${DEPLOY_TIMESTAMP}.conf"
-    file: ./config/logstash/pipeline/logstash.conf
-
-secrets:
-  logstash-private-key.key:
-    name: "{{ docker_elastic_stack_name }}_logstash-private-key-${DEPLOY_TIMESTAMP}.key"
-    file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.key"
+# todo configs and secrets
 
 services:
 

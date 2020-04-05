@@ -29,7 +29,7 @@
     hostname: "{{ hostname }}"
     labels:
       mailserver.rainloop-data: "true"
-  when: "{{ rainloop_enabled }}"
+  when: rainloop_enabled
 
 - name: Copy mailserver stack
   template:
@@ -66,7 +66,7 @@
     PFLOGSUMM_RECIPIENT: "{{ mailserver_reporting_recipient }}"
     LOGROTATE_INTERVAL: "{{ mailserver_reporting_interval }}"
 
-    ENABLE_CLAMAV: "{{ mailserver_enable_clamav|default(false) }}"
+    ENABLE_CLAMAV: "{{ mailserver_enable_clamav|default(false)|int }}"
     VIRUSMAILS_DELETE_DELAY: "{{ mailserver_virus_delete_delay }}"
 
     POSTMASTER_ADDRESS: "{{ mailserver_postmaster_address }}"
@@ -79,17 +79,17 @@
     POSTGREY_MAX_AGE: "{{ mailserver_postgrey_max_age|default(35) }}"
     POSTGREY_AUTO_WHITELIST_CLIENTS: "{{ mailserver_postgrey_auto_whitelist|default(5) }}"
 
-    ENABLE_SPAMASSASSIN: "{{ mailserver_enable_spamassassin|default(true) }}"
+    ENABLE_SPAMASSASSIN: "{{ mailserver_enable_spamassassin|default(true)|int }}"
 
-    ENABLE_FETCHMAIL: "{{ mailserver_enable_fetchmail|default(false) }}"
+    ENABLE_FETCHMAIL: "{{ mailserver_enable_fetchmail|default(false)|int }}"
     FETCHMAIL_POLL: "{{ mailserver_fetchmail_poll_interval|default(300) }}"
 
     SSL_TYPE: "{{ mailserver_ssl_type }}"
     TLS_LEVEL: "{{ mailserver_tls_level }}"
 
-    ENABLE_MANAGESIEVE: "{{ mailserver_enable_managesieve|default(true) }}"
+    ENABLE_MANAGESIEVE: "{{ mailserver_enable_managesieve|default(true)|int }}"
 
-    ENABLE_FAIL2BAN: "{{ mailserver_enable_fail2ban|default(true) }}"
+    ENABLE_FAIL2BAN: "{{ mailserver_enable_fail2ban|default(true)|int }}"
 
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
