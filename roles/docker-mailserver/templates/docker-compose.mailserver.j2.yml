@@ -5,7 +5,7 @@ services:
 
 {% if rainloop_enabled %}
   rainloop:
-    image: registry.gitlab.com/youtous/rainloop:latest
+    image: youtous/rainloop:latest
     volumes:
       - rainloop-data:/rainloop/data
     networks:
