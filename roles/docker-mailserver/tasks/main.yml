@@ -2,7 +2,7 @@
 # This role setup a Mailserver in a docker swarm cluster
 # see https://github.com/tomav/docker-mailserver for more details
 
-- name: "Ensure {{ item }} is disabled"
+- name: "Ensure mail services are disabled"
   become: yes
   service:
     name: "{{ item }}"

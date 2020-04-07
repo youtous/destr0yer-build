@@ -21,16 +21,24 @@ services:
         delay: 5s
         window: 15s
       labels:
-        - "traefik.frontend.rule=Host:{{ rainloop_domain }}"
         - traefik.enable=true
         - traefik.port=8888
         - "traefik.tags={{ traefik_public_tag }}"
         - "traefik.docker.network={{ traefik_network }}"
+
+        # In this configuration, we use 3 segments labels :
+        #   - traefik.redirectorservice.frontend : redirect http to https
+        #   - traefik.webservice.frontend : it's the default frontend, used for webmail
+        #   - traefik.admin.frontend : restrict admin panel for internal usage only
+
         # Traefik service that listens to HTTP
         - traefik.redirectorservice.frontend.entryPoints=http
         - traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
         - traefik.webservice.frontend.entryPoints=https
+
+        # Main Traefik service configuration (common for webservice and admin)
+        - "traefik.frontend.rule=Host:{{ rainloop_domain }}"
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
         - "traefik.frontend.headers.SSLHost={{ rainloop_domain }}"
@@ -53,7 +61,13 @@ services:
         # - "traefik.backend.buffering.maxRequestBodyBytes={{ rainloop_max_request_size_megabytes * 1000000|int }}" # maximum request size allowed
         # - traefik.backend.buffering.memRequestBodyBytes=2097152 # after this limit, request will be buffered on disk instead of RAM
         # - traefik.backend.buffering.retryExpression=IsNetworkError() && Attempts() <= 2
-        # todo ; restrict admin
+
+        # Traefik service in charge of admin mailclien
+        # Restrict admin with internal Auth     because '$' is evaluated, remember to escape it
+        - "traefik.admin.frontend.rule=Host:{{ rainloop_domain }};Query: admin="
+        - traefik.admin.frontend.entryPoints=https
+        - "traefik.admin.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.admin.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
         # todo : fail2ban on fails
 
 {% endif %}
