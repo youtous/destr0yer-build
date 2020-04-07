@@ -254,7 +254,7 @@ services:
           - node.role == manager
       resources:
         limits:
-          memory: 256M
+          memory: 1024M
         reservations:
           memory: 128M
       labels:
