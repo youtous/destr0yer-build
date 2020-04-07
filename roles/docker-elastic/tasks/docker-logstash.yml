@@ -46,32 +46,18 @@
     src: "172.16.0.0/12"
     port: "{{ item }}"
   with_items:
-    - 5000
-    - 5044
+    - "5000"
+    - "5044"
 
 # Setup TLS using x509 certificates
-- name: Setup logstash certificates folder
-  file:
-    path: "{{ logstash_certificates_directory }}"
-    state: directory
-    mode: u=rwx,g=,o=
-
-- name: Copy logstash RootCA certificate
-  copy:
-    content: "{{ logstash_CA_certificate }}"
-    dest: "{{ logstash_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
-    mode: u=rw,g=,o=
-
-- name: Copy logstash node certificate
-  copy:
-    content: "{{ logstash_node_certificate }}"
-    dest: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.crt"
-    mode: u=rw,g=,o=
-
-- name: Copy logstash node private key
-  copy:
-    content: "{{ logstash_node_private_key }}"
-    dest: "{{ logstash_certificates_directory }}/{{ logstash_node_certificate_name }}.key"
-    mode: u=rw,g=,o=
+- name: Register logstash secrets
+  docker_secret:
+    name: "{{ item.name }}"
+    data: "{{ item.data }}"
+    state: present
+  with_items:
+    - {name: "{{ docker_elastic_stack_name }}_logstash-rootCA-{{ elastic_deploy_timestamp }}.crt", data: "{{ logstash_CA_certificate }}"}
+    - {name: "{{ docker_elastic_stack_name }}_logstash-certificate-{{ elastic_deploy_timestamp }}.crt", data: "{{ logstash_node_certificate }}"}
+    - {name: "{{ docker_elastic_stack_name }}_logstash-private-key-{{ elastic_deploy_timestamp }}.key", data: "{{ logstash_node_private_key }}"}
   no_log: true
 ...

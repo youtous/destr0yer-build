@@ -240,10 +240,10 @@ configs: # config are immutable :/
 secrets:
   logstash-rootCA.crt:
     name: "{{ docker_elastic_stack_name }}_logstash-rootCA-${DEPLOY_TIMESTAMP}.crt"
-    file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_root_CA_certificate_name }}"
+    external: true
   logstash-certificate.crt:
     name: "{{ docker_elastic_stack_name }}_logstash-certificate-${DEPLOY_TIMESTAMP}.crt"
-    file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.crt"
+    external: true
   logstash-private-key.key:
     name: "{{ docker_elastic_stack_name }}_logstash-private-key-${DEPLOY_TIMESTAMP}.key"
-    file: "./{{ logstash_certificates_relative_directory }}/{{ logstash_node_certificate_name }}.key"
+    external: true
