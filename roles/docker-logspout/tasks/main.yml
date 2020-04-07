@@ -6,6 +6,10 @@
     state: directory
     path: "{{ logspout_compose_file_dest_directory }}"
 
+- name: Register deployment timestamp
+  set_fact:
+    logspout_deploy_timestamp: "{{ ansible_date_time.epoch }}"
+
 - name: Copy logspout stack
   template:
     src: templates/docker-compose.logspout.j2.yml
@@ -23,5 +27,5 @@
     compose:
       - "{{ logspout_compose_file_dest }}"
   environment:
-    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+    DEPLOY_TIMESTAMP: "{{ logspout_deploy_timestamp }}"
   notify: docker prune
