@@ -39,6 +39,18 @@ mailserver_default_mailbox_limit_mb: 500
 mailserver_message_size_limit_mb: 12
 mailserver_postscreen_action: enforce
 
+# domains configuration
+mailserver_domains:
+  # Generate DKIM using : https://dkimcore.org/specification.html
+  # openssl genrsa -out mail.heaven-pascal.youtous.me.priv 2048
+  # openssl rsa -in mail.heaven-pascal.youtous.me.priv -pubout >mail.heaven-pascal.youtous.me.pub
+  - domain: mail.heaven-pascal.youtous.me
+    dkim_private: |
+    dkim_public: |
+    accounts:
+      - email:
+        password:
+
 # Reporting
 mailserver_reporting_interval: "weekly"
 mailserver_reporting_recipient: "{{ mailserver_postmaster_address }}"

@@ -18,6 +18,10 @@
     state: directory
     path: "{{ mailserver_compose_file_dest_directory }}"
 
+- name: Register deployment timestamp
+  shell: "echo {{ ansible_date_time.epoch }}"
+  register: deploy_timestamp
+
 - name: Tag current node as mailserver origin
   docker_node:
     hostname: "{{ hostname }}"
@@ -48,6 +52,9 @@
     dest: "{{ mailserver_compose_file_dest_directory }}/config/{{ item.dest }}"
     mode: u=rw,g=,o=
   with_items: [] # todo : add configs
+
+- name: Create mailserver secrets
+  shell: echo "wip"
 
 - name: Deploy mailserver
   docker_stack:
@@ -92,6 +99,6 @@
     ENABLE_FAIL2BAN: "{{ mailserver_enable_fail2ban|default(true)|int }}"
 
     # deploy timestamp
-    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+    DEPLOY_TIMESTAMP: "{{ deploy_timestamp }}"
   notify: docker prune
 ...

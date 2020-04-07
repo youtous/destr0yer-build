@@ -1,76 +1,16 @@
 version: "3.7"
 # todo configs and secrets
 
+secrets:
+# generate secrets associated to each domain
+{% for mailserver in mailserver_domains %}
+  dkim_private_{{ mailserver.domain }}:
+    name: "dkim_private_{{ mailserver.domain }}-${DEPLOY_TIMESTAMP}"
+    external: true
+{% endfor %}
+# target: "/tmp/docker-mailserver/opendkim//mail.private"
+
 services:
-
-{% if rainloop_enabled %}
-  rainloop:
-    image: youtous/rainloop:latest
-    volumes:
-      - rainloop-data:/rainloop/data
-    networks:
-      - mailserver
-      - {{ traefik_network }}
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-          - node.labels.mailserver.rainloop-data == true
-      restart_policy:
-        condition: any
-        delay: 5s
-        window: 15s
-      labels:
-        - traefik.enable=true
-        - traefik.port=8888
-        - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.docker.network={{ traefik_network }}"
-
-        # In this configuration, we use 3 segments labels :
-        #   - traefik.redirectorservice.frontend : redirect http to https
-        #   - traefik.webservice.frontend : it's the default frontend, used for webmail
-        #   - traefik.admin.frontend : restrict admin panel for internal usage only
-
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
-
-        # Main Traefik service configuration (common for webservice and admin)
-        - "traefik.frontend.rule=Host:{{ rainloop_domain }}"
-        # HSTS
-        - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ rainloop_domain }}"
-        - traefik.frontend.headers.STSSeconds=315360000
-        - traefik.frontend.headers.STSIncludeSubdomains=true
-        - traefik.frontend.headers.STSPreload=true
-        # security labels
-        - traefik.frontend.headers.browserXSSFilter=true
-        - traefik.frontend.headers.frameDeny=true # deny iframes
-        - traefik.frontend.headers.contentTypeNosniff=true
-        # rate limits
-        - traefik.frontend.rateLimit.extractorFunc=client.ip
-        - traefik.frontend.rateLimit.rateSet.rate3s.period=3s
-        - "traefik.frontend.rateLimit.rateSet.rate3s.average={{ rainloop_max_requests_3s_per_client|int }}"
-        - "traefik.frontend.rateLimit.rateSet.rate3s.burst={{ rainloop_max_requests_3s_per_client * 2|int }}"
-        # max connections limits
-        - "traefik.backend.maxconn.amount={{ rainloop_max_connections|int }}"
-        - traefik.backend.maxconn.extractorFunc=request.host
-        # requests size limits: currently disabled due to a bug with 302 requests; todo fix it
-        # - "traefik.backend.buffering.maxRequestBodyBytes={{ rainloop_max_request_size_megabytes * 1000000|int }}" # maximum request size allowed
-        # - traefik.backend.buffering.memRequestBodyBytes=2097152 # after this limit, request will be buffered on disk instead of RAM
-        # - traefik.backend.buffering.retryExpression=IsNetworkError() && Attempts() <= 2
-
-        # Traefik service in charge of admin mailclien
-        # Restrict admin with internal Auth     because '$' is evaluated, remember to escape it
-        - "traefik.admin.frontend.rule=Host:{{ rainloop_domain }};Query: admin="
-        - traefik.admin.frontend.entryPoints=https
-        - "traefik.admin.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
-        - "traefik.admin.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
-        # todo : fail2ban on fails
-
-{% endif %}
 
   mail:
     image: tvial/docker-mailserver:latest
@@ -165,6 +105,75 @@ services:
         condition: any
         delay: 5s
         window: 15s
+
+{% if rainloop_enabled %}
+  rainloop:
+    image: youtous/rainloop:latest
+    volumes:
+      - rainloop-data:/rainloop/data
+    networks:
+      - mailserver
+      - {{ traefik_network }}
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.mailserver.rainloop-data == true
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+      labels:
+        - traefik.enable=true
+        - traefik.port=8888
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+
+        # In this configuration, we use 3 segments labels :
+        #   - traefik.redirectorservice.frontend : redirect http to https
+        #   - traefik.webservice.frontend : it's the default frontend, used for webmail
+        #   - traefik.admin.frontend : restrict admin panel for internal usage only
+
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+
+        # Main Traefik service configuration (common for webservice and admin)
+        - "traefik.frontend.rule=Host:{{ rainloop_domain }}"
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ rainloop_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true # deny iframes
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # rate limits
+        - traefik.frontend.rateLimit.extractorFunc=client.ip
+        - traefik.frontend.rateLimit.rateSet.rate3s.period=3s
+        - "traefik.frontend.rateLimit.rateSet.rate3s.average={{ rainloop_max_requests_3s_per_client|int }}"
+        - "traefik.frontend.rateLimit.rateSet.rate3s.burst={{ rainloop_max_requests_3s_per_client * 2|int }}"
+        # max connections limits
+        - "traefik.backend.maxconn.amount={{ rainloop_max_connections|int }}"
+        - traefik.backend.maxconn.extractorFunc=request.host
+        # requests size limits: currently disabled due to a bug with 302 requests; todo fix it
+        # - "traefik.backend.buffering.maxRequestBodyBytes={{ rainloop_max_request_size_megabytes * 1000000|int }}" # maximum request size allowed
+        # - traefik.backend.buffering.memRequestBodyBytes=2097152 # after this limit, request will be buffered on disk instead of RAM
+        # - traefik.backend.buffering.retryExpression=IsNetworkError() && Attempts() <= 2
+
+        # Traefik service in charge of admin mailclien
+        # Restrict admin with internal Auth     because '$' is evaluated, remember to escape it
+        - "traefik.admin.frontend.rule=Host:{{ rainloop_domain }};Query: admin="
+        - traefik.admin.frontend.entryPoints=https
+        - "traefik.admin.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.admin.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+        # todo : fail2ban on fails
+{% endif %}
+
 
 networks:
   mailserver:
