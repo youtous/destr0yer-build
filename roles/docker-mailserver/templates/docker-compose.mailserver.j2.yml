@@ -5,7 +5,10 @@ secrets:
 # generate secrets associated to each domain
 {% for mailserver in mailserver_domains %}
   dkim_private_{{ mailserver.domain }}:
-    name: "dkim_private_{{ mailserver.domain }}-${DEPLOY_TIMESTAMP}"
+    name: "{{ docker_mailserver_stack_name }}_dkim_private_{{ mailserver.domain }}-${DEPLOY_TIMESTAMP}"
+    external: true
+  dkim_public_{{ mailserver.domain }}:
+    name: "{{ docker_mailserver_stack_name }}_dkim_public_{{ mailserver.domain }}-${DEPLOY_TIMESTAMP}"
     external: true
 {% endfor %}
 # target: "/tmp/docker-mailserver/opendkim//mail.private"

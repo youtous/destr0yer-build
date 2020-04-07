@@ -19,8 +19,8 @@
     path: "{{ mailserver_compose_file_dest_directory }}"
 
 - name: Register deployment timestamp
-  shell: "echo {{ ansible_date_time.epoch }}"
-  register: deploy_timestamp
+  set_fact:
+    mailserver_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
 - name: Tag current node as mailserver origin
   docker_node:
@@ -53,14 +53,21 @@
     mode: u=rw,g=,o=
   with_items: [] # todo : add configs
 
-- name: Create mailserver secrets
-  shell: echo "wip"
+- name: Register mailserver secrets
+  docker_secret:
+    name: "{{ item.name }}"
+    data: "{{ item.data }}"
+    state: present
+  with_items: # todo : figure out how to deal with this double loop
+    - {name: "{{ docker_mailserver_stack_name }}_dkim_private_{{ mailserver.domain }}-{{ mailserver_deploy_timestamp }}", data: "{{ logstash_CA_certificate }}"}
+    - {name: "{{ docker_mailserver_stack_name }}_dkim_public_{{ mailserver.domain }}-{{ mailserver_deploy_timestamp }}", data: "{{ logstash_CA_certificate }}"}
+  no_log: true
 
 - name: Deploy mailserver
   docker_stack:
     state: present
     prune: yes
-    name: mailserver
+    name: "{{ docker_mailserver_stack_name }}"
     compose:
       - "{{ mailserver_compose_file_dest }}"
   environment:
@@ -99,6 +106,6 @@
     ENABLE_FAIL2BAN: "{{ mailserver_enable_fail2ban|default(true)|int }}"
 
     # deploy timestamp
-    DEPLOY_TIMESTAMP: "{{ deploy_timestamp }}"
+    DEPLOY_TIMESTAMP: "{{ mailserver_deploy_timestamp }}"
   notify: docker prune
 ...
