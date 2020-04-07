@@ -14,7 +14,7 @@ configs:
 secrets:
   alertmanager:
     name: "{{ docker_swarmprom_stack_name }}_alertmanager-${DEPLOY_TIMESTAMP}"
-    file: ./alertmanager/alertmanager.yml
+    external: true
 
 services:
 

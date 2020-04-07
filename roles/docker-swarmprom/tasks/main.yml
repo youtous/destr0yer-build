@@ -7,6 +7,10 @@
     state: directory
     path: "{{ swarmprom_compose_file_dest_directory }}"
 
+- name: Register deployment timestamp
+  set_fact:
+    swarmprom_deploy_timestamp: "{{ ansible_date_time.epoch }}"
+
 - name: Ensure dockerd-exporter directory exists
   file:
     state: directory
@@ -37,11 +41,12 @@
     state: directory
     path: "{{ swarmprom_compose_file_dest_directory }}/alertmanager"
 
-- name: Copy Swarmprom AlertManager configuration file
-  template:
-    src: templates/alertmanager/alertmanager.j2.yml
-    dest: "{{ swarmprom_compose_file_dest_directory }}/alertmanager/alertmanager.yml"
-    mode: u=rw,g=,o=
+- name: Register Swarmprom AlertManager configuration as a secret
+  docker_secret:
+    name: "{{ docker_swarmprom_stack_name }}_alertmanager-{{ swarmprom_deploy_timestamp }}"
+    data: "{{ lookup('template', 'templates/alertmanager/alertmanager.j2.yml') }}"
+    state: present
+  no_log: true
 
 - name: Copy Swarmprom stack
   template:
@@ -57,6 +62,6 @@
     compose:
       - "{{ swarmprom_compose_file_dest }}"
   environment:
-    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+    DEPLOY_TIMESTAMP: "{{ swarmprom_deploy_timestamp }}"
   notify: docker prune
 ...
