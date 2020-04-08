@@ -12,9 +12,9 @@
   version: e9989fa6a65053ae7c7364be20f652ad7c189e0f
 
 # user management
-- name: unxnn.users
-  src: https://github.com/unxnn/ansible-users.git
-  version: b88eb9bf2af46b0ad9623ccb6344b91fc3dadeed
+- name: youtous.users
+  src: https://github.com/youtous/ansible-users.git
+  version: e2c47b83d5518d46174a05613f1f98a320145f02
 
 # Resolv.conf
 - name: ahuffman.resolv

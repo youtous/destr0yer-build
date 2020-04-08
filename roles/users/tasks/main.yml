@@ -1,5 +1,5 @@
 ---
-# see https://github.com/unxnn/ansible-users
+# see https://github.com/youtous/ansible-users
 
 - name: Add password to root user
   become: yes
@@ -31,7 +31,7 @@
 - name: Setup users
   become: yes
   import_role:
-    name: unxnn.users
+    name: youtous.users
   vars:
     # concatenate the common and the specific to host users list
     users: "{{ all_users }}"
