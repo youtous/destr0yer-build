@@ -12,8 +12,7 @@
   with_items: "{{ revoked_nodes_ids }}"
 
 - name: Inspect swarm to get tokens
-  docker_swarm:
-    state: inspect
+  docker_swarm_info:
   register: swarm_info
 
 - name: Register swarm_info in swarm_first_manager host

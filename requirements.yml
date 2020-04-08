@@ -70,5 +70,5 @@
 # Docker
 - name: geerlingguy.docker
   src: https://github.com/geerlingguy/ansible-role-docker.git
-  version: 5afc0f8ab487e31047c3c1f7013f66025aeb1cdd
+  version: c94e327a74a16a85f23d73be386c161a9cfe81d4
 
