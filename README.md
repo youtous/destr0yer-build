@@ -108,6 +108,9 @@ here is a list of the required domains :
 192.168.100.10  logstash.heaven-pascal.youtous.dv
 ```
 
+### Other commands
+- `bcrypt-passwd.sh` : helps to create a bcrypt password; requires `htpasswd` to be installed.
+
 ## Ansible 3rd Roles
 
 Install requirements using

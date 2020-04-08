@@ -1,7 +1,39 @@
 version: "3.7"
 # todo configs and secrets
 
+configs:
+  whitelist_clients.local:
+    name: "{{ docker_mailserver_stack_name }}_whitelist_clients-${DEPLOY_TIMESTAMP}"
+    file: "./config/whitelist_clients.local"
+  postfix-regexp.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-regexp-${DEPLOY_TIMESTAMP}"
+    file: "./config/postfix-regexp.cf"
+  postfix-virtual.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-virtual-${DEPLOY_TIMESTAMP}"
+    file: "./config/postfix-virtual.cf"
+  postfix-relaymap.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-relaymap-${DEPLOY_TIMESTAMP}"
+    file: "./config/postfix-relaymap.cf"
+  postfix-send-access.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-send-access-${DEPLOY_TIMESTAMP}"
+    file: "./config/postfix-send-access.cf"
+  postfix-receive-access.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-receive-access-${DEPLOY_TIMESTAMP}"
+    file: "./config/postfix-receive-access.cf"
+  opendkim-KeyTable:
+    name: "{{ docker_mailserver_stack_name }}_opendkim-KeyTable-${DEPLOY_TIMESTAMP}"
+    file: "./config/opendkim/KeyTable"
+  opendkim-SigningTable:
+    name: "{{ docker_mailserver_stack_name }}_opendkim-SigningTable-${DEPLOY_TIMESTAMP}"
+    file: "./config/opendkim/SigningTable"
+
 secrets:
+  postfix-accounts.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-accounts-${DEPLOY_TIMESTAMP}"
+    external: true
+  postfix-sasl-password.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-sasl-password-${DEPLOY_TIMESTAMP}"
+    external: true
 # generate secrets associated to each domain
 {% for mailserver in mailserver_domains %}
   dkim_private_{{ mailserver.domain }}:
@@ -34,14 +66,34 @@ services:
     volumes:
       - mailserver-data:/var/mail
       - mailserver-state:/var/mail-state
+    configs:
+      - source: opendkim-KeyTable
+        target: "/tmp/docker-mailserver/opendkim/opendkim-KeyTable"
+      - source: opendkim-SigningTable
+        target: "/tmp/docker-mailserver/opendkim/opendkim-SigningTable"
+      - source: whitelist_clients.local
+        target: "/tmp/docker-mailserver/whitelist_clients.local"
+      - source: postfix-regexp.cf
+        target: "/tmp/docker-mailserver/postfix-regexp.cf"
+      - source: postfix-virtual.cf
+        target: "/tmp/docker-mailserver/postfix-virtual.cf"
+      - source: postfix-relaymap.cf
+        target: "/tmp/docker-mailserver/postfix-relaymap.cf"
+      - source: postfix-send-access.cf
+        target: "/tmp/docker-mailserver/postfix-send-access.cf"
+      - source: postfix-receive-access.cf
+        target: "/tmp/docker-mailserver/postfix-receive-access.cf"
     secrets:
+      - source: postfix-accounts.cf
+        target: "/tmp/docker-mailserver/postfix-accounts.cf"
+      - source: postfix-sasl-password.cf
+        target: "/tmp/docker-mailserver/postfix-sasl-password.cf"
 {% for mailserver in mailserver_domains %}
       - source: dkim_private_{{ mailserver.domain }}
         target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.private"
       - source: dkim_public_{{ mailserver.domain }}
         target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.txt"
 {% endfor %}
-      # todo : generate keytable and signingtable as config
     environment:
       # General conf
       - ENABLE_POP3=0 # Pop3 is disabled

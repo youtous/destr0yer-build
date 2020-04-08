@@ -59,22 +59,18 @@
       dest: opendkim/KeyTable
     - src: opendkim/SigningTable.j2
       dest: opendkim/SigningTable
-    - src: postfix-accounts.cf.j2
-      dest: postfix-accounts.cf
     - src: postfix-receive-access.cf.j2
       dest: postfix-receive-access.cf
     - src: postfix-send-access.cf.j2
       dest: postfix-send-access.cf
     - src: postfix-relaymap.cf.j2
       dest: postfix-relaymap.cf
-    - src: postfix-sasl-password.cf.j2
-      dest: postfix-sasl-password.cf
     - src: postfix-virtual.cf.j2
       dest: postfix-virtual.cf
     - src: postfix-regexp.cf.j2
       dest: postfix-regexp.cf
     - src: whitelist_clients.local.j2
-      dest: whitelist_clients.local.cf
+      dest: whitelist_clients.local
 
 - name: Register mailserver secrets
   import_tasks: secrets.yml

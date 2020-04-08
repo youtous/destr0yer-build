@@ -1,2 +1,9 @@
 # Managed by Ansible
-# todo : aliases https://github.com/tomav/docker-mailserver/wiki/Configure-Aliases
+# aliases https://github.com/tomav/docker-mailserver/wiki/Configure-Aliases
+{% for mailserver in mailserver_domains %}
+# aliases for {{ mailserver.domain }}
+{% for alias in mailserver.aliases %}
+{{ alias.alias }} {{ alias.to }}
+{% endfor %}
+
+{% endfor %}

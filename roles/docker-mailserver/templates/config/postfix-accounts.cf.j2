@@ -1,2 +1,10 @@
 # Managed by Ansible
-# todo : add user https://github.com/tomav/docker-mailserver/wiki/Configure-Accounts
+# https://github.com/tomav/docker-mailserver/wiki/Configure-Accounts
+
+{% for mailserver in mailserver_domains %}
+# accounts of {{ mailserver.domain }}
+{% for account in mailserver.accounts %}
+{{ account.username }}@{{ mailserver.domain }}|{BLF-CRYPT}{{ account.bcrypt_password }}
+{% endfor %}
+
+{% endfor %}

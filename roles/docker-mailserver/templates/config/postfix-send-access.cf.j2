@@ -1,4 +1,6 @@
 # Managed by Ansible
 
 # this file is used to restrict access of sending emails
-# todo : configure it
+{% for user in mailserver_send_restricted %}
+{{ user }}       REJECT
+{% endfor %}

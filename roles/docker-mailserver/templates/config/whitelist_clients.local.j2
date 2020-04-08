@@ -1,1 +1,4 @@
 #  whitelist_clients.local: Whitelisted domains, not considered by postgrey. Enter one host or domain per line.
+{% for client in mailserver_whitelist_clients %}
+{{ client }}
+{% endfor %}

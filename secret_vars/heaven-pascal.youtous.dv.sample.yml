@@ -17,6 +17,8 @@ secret_relay_password: ""
 
 # mailserver
 mailserver_heaven_pascal_accounts:
+  - username: test-mailer
+    bcrypt_password: "" # generate one using `bcrypt-passwd.sh`
 mailserver_heaven_pascal_dkim_private: | # see "Generate DKIM"
 mailserver_heaven_pascal_dkim_public: |
 
