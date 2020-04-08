@@ -11,7 +11,6 @@ secrets:
     name: "{{ docker_mailserver_stack_name }}_dkim_public_{{ mailserver.domain }}-${DEPLOY_TIMESTAMP}"
     external: true
 {% endfor %}
-# target: "/tmp/docker-mailserver/opendkim//mail.private"
 
 services:
 
@@ -35,6 +34,14 @@ services:
     volumes:
       - mailserver-data:/var/mail
       - mailserver-state:/var/mail-state
+    secrets:
+{% for mailserver in mailserver_domains %}
+      - source: dkim_private_{{ mailserver.domain }}
+        target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.private"
+      - source: dkim_public_{{ mailserver.domain }}
+        target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.public"
+{% endfor %}
+      # todo : generate keytable and signingtable as config
     environment:
       # General conf
       - ENABLE_POP3=0 # Pop3 is disabled

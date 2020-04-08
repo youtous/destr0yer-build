@@ -104,6 +104,15 @@ update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
 ### Begin of mailserver parameters ###
 mailserver_ssl_type: self-signed
 mailserver_debug: yes
+# domains configuration
+mailserver_domains:
+  # Generate DKIM using : https://dkimcore.org/specification.html
+  # openssl genrsa -out mail.heaven-pascal.youtous.me.priv 2048
+  # openssl rsa -in mail.heaven-pascal.youtous.me.priv -pubout >mail.heaven-pascal.youtous.me.pub
+  - domain: mail.heaven-pascal.youtous.me
+    dkim_private: "{{ mailserver_heaven_pascal_dkim_private }}"
+    dkim_public: "{{ mailserver_heaven_pascal_dkim_public }}"
+    accounts: "{{ mailserver_heaven_pascal_accounts }}"
 ### End of mailserver parameters ###
 
 ### Begin of Backup storage parameters ###

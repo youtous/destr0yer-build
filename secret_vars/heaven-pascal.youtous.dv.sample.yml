@@ -15,6 +15,11 @@ specu_password: ""
 # smtp relay
 secret_relay_password: ""
 
+# mailserver
+mailserver_heaven_pascal_accounts:
+mailserver_heaven_pascal_dkim_private: | # see "Generate DKIM"
+mailserver_heaven_pascal_dkim_public: |
+
 # generated keys for root
 # use `ssh-keygen -q -t ed25519 -C "" -N ""`
 root_public_key: ""
