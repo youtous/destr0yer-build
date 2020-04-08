@@ -71,6 +71,10 @@
       dest: postfix-sasl-password.cf
     - src: postfix-virtual.cf.j2
       dest: postfix-virtual.cf
+    - src: postfix-regexp.cf.j2
+      dest: postfix-regexp.cf
+    - src: whitelist_clients.local.j2
+      dest: whitelist_clients.local.cf
 
 - name: Register mailserver secrets
   import_tasks: secrets.yml
