@@ -1,0 +1,3 @@
+{% for mailserver in mailserver_domains %}
+mail._domainkey.{{ mailserver.domain }} {{ mailserver.domain }}:mail:/etc/opendkim/keys/{{ mailserver.domain }}/mail.private
+{% endfor %}

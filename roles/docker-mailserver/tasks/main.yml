@@ -44,14 +44,33 @@
 - name: Ensure mailserver config directory exists
   file:
     state: directory
-    path: "{{ mailserver_compose_file_dest_directory }}/config"
+    path: "{{ mailserver_compose_file_dest_directory }}/{{ item }}"
+  with_items:
+    - config
+    - config/opendkim
 
 - name: Copy mailserver config
   template:
     src: "templates/config/{{ item.src }}"
     dest: "{{ mailserver_compose_file_dest_directory }}/config/{{ item.dest }}"
     mode: u=rw,g=,o=
-  with_items: [] # todo : add configs
+  with_items:
+    - src: opendkim/KeyTable.j2
+      dest: opendkim/KeyTable
+    - src: opendkim/SigningTable.j2
+      dest: opendkim/SigningTable
+    - src: postfix-accounts.cf.j2
+      dest: postfix-accounts.cf
+    - src: postfix-receive-access.cf.j2
+      dest: postfix-receive-access.cf
+    - src: postfix-send-access.cf.j2
+      dest: postfix-send-access.cf
+    - src: postfix-relaymap.cf.j2
+      dest: postfix-relaymap.cf
+    - src: postfix-sasl-password.cf.j2
+      dest: postfix-sasl-password.cf
+    - src: postfix-virtual.cf.j2
+      dest: postfix-virtual.cf
 
 - name: Register mailserver secrets
   import_tasks: secrets.yml

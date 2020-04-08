@@ -39,7 +39,7 @@ services:
       - source: dkim_private_{{ mailserver.domain }}
         target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.private"
       - source: dkim_public_{{ mailserver.domain }}
-        target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.public"
+        target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.txt"
 {% endfor %}
       # todo : generate keytable and signingtable as config
     environment:
