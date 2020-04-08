@@ -54,14 +54,7 @@
   with_items: [] # todo : add configs
 
 - name: Register mailserver secrets
-  docker_secret:
-    name: "{{ item.name }}"
-    data: "{{ item.data }}"
-    state: present
-  with_items: # todo : figure out how to deal with this double loop
-    - {name: "{{ docker_mailserver_stack_name }}_dkim_private_{{ mailserver.domain }}-{{ mailserver_deploy_timestamp }}", data: "{{ logstash_CA_certificate }}"}
-    - {name: "{{ docker_mailserver_stack_name }}_dkim_public_{{ mailserver.domain }}-{{ mailserver_deploy_timestamp }}", data: "{{ logstash_CA_certificate }}"}
-  no_log: true
+  import_tasks: secrets.yml
 
 - name: Deploy mailserver
   docker_stack:

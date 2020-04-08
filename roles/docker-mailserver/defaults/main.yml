@@ -46,7 +46,9 @@ mailserver_domains:
   # openssl rsa -in mail.heaven-pascal.youtous.me.priv -pubout >mail.heaven-pascal.youtous.me.pub
   - domain: mail.heaven-pascal.youtous.me
     dkim_private: |
+      super test
     dkim_public: |
+      super test
     accounts:
       - email:
         password:
