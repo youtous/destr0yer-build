@@ -1,5 +1,4 @@
 version: "3.7"
-# todo configs and secrets
 
 configs:
   whitelist_clients.local:
@@ -176,6 +175,10 @@ services:
     networks:
       - mailserver
       - {{ traefik_network }}
+    logging:
+      options:
+        # this tag is used by fail2ban using `journalctl CONTAINER_TAG=mailserver-rainloop`
+        tag: "mailserver-rainloop"
     deploy:
       placement:
         constraints:

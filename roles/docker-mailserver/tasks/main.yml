@@ -35,6 +35,10 @@
       mailserver.rainloop-data: "true"
   when: rainloop_enabled
 
+- name: Fail2ban for mailserver (rainloop, mailserver)
+  import_tasks: fail2ban.yml
+  when: mailserver_enable_host_fail2ban
+
 - name: Copy mailserver stack
   template:
     src: templates/docker-compose.mailserver.j2.yml

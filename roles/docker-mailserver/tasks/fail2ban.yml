@@ -1,0 +1,27 @@
+---
+# fail2ban for mailserver
+# resource : https://github.com/crazy-max/docker-fail2ban/
+- name: Add rainloop filters to fail2ban
+  become: yes
+  copy:
+    src: files/fail2ban/filter.d/{{ item }}
+    dest: /etc/fail2ban/filter.d/{{ item }}
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - rainloop.conf
+  notify:
+    - restart fail2ban
+  when: rainloop_enabled
+
+- name: Activate rainloop jails using fail2ban
+  include_role:
+    name: fail2ban-additional
+  vars:
+    fail2ban_services:
+      - name: rainloop
+        port: http,https
+        backend: systemd
+  when: rainloop_enabled
+...
