@@ -236,7 +236,63 @@ services:
         - traefik.admin.frontend.entryPoints=https
         - "traefik.admin.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.admin.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
-        # todo : fail2ban on fails
+{% endif %}
+
+{% if mailserver_enable_autodiscover %}
+{% for mailserver in mailserver_domains %}
+  autodiscover-example-com:
+    image: monogramm/autodiscover-email-settings:latest
+    environment:
+      - "COMPANY_NAME={{ mailserver.domain }}"
+      - "SUPPORT_URL=https://autodiscover.{{ mailserver.domain }}"
+      - "DOMAIN={{ mailserver.domain }}"
+      - "IMAP_HOST=imap.{{ mailserver.domain }}"
+      - IMAP_PORT=993
+      - IMAP_SOCKET=SSL
+      - "SMTP_HOST=smtp.{{ mailserver.domain }}"
+      - SMTP_PORT=587
+      - SMTP_SOCKET=STARTTLS
+    networks:
+      - {{ traefik_network }}
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 15s
+      labels:
+        - traefik.enable=true
+        - traefik.port=8000
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+
+        # Main Traefik service configuration
+        - "traefik.frontend.rule=Host:autodiscover.{{ mailserver.domain }},autoconfig.{{ mailserver.domain }}"
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost=autodiscover.{{ mailserver.domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true # deny iframes
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # rate limits
+        - traefik.frontend.rateLimit.extractorFunc=client.ip
+        - traefik.frontend.rateLimit.rateSet.rate3s.period=3s
+        - "traefik.frontend.rateLimit.rateSet.rate3s.average={{ mailserver_autodiscover_max_requests_3s_per_client|int }}"
+        - "traefik.frontend.rateLimit.rateSet.rate3s.burst={{ mailserver_autodiscover_max_requests_3s_per_client * 2|int }}"
+        # max connections limits
+        - "traefik.backend.maxconn.amount={{ mailserver_autodiscover_max_connections|int }}"
+        - traefik.backend.maxconn.extractorFunc=request.host
+{% endfor %}
 {% endif %}
 
 

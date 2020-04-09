@@ -81,6 +81,12 @@ mailserver_postgrey_auto_whitelist: 5
 # SpamAssassin
 mailserver_enable_spamassassin: true
 
+# Enable autoconfig service
+mailserver_enable_autodiscover: true
+mailserver_autodiscover_max_connections: 100 # maximum of simultaneous requests
+mailserver_autodiscover_max_requests_3s_per_client: 20 # maximum of requests per client in 3s
+mailserver_autodiscover_max_request_size_megabytes: 4 # maximum size of request in MB
+
 # Fail2ban
 mailserver_enable_fail2ban: true
 # Fail2ban on docker host

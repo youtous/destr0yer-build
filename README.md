@@ -106,6 +106,15 @@ here is a list of the required domains :
 192.168.100.10  kibana.heaven-pascal.youtous.dv
 192.168.100.10  elasticsearch.heaven-pascal.youtous.dv
 192.168.100.10  logstash.heaven-pascal.youtous.dv
+
+# nextcloud
+192.168.100.10  cloud.heaven-pascal.youtous.dv
+
+# mailserver
+192.168.100.10 mail.heaven-pascal.youtous.dv
+192.168.100.10 autodiscover.heaven-pascal.youtous.dv
+192.168.100.10 autoconfig.heaven-pascal.youtous.dv
+
 ```
 
 ### Other commands
