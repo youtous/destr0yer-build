@@ -47,6 +47,7 @@ mailserver_send_restricted: [] # emails banned to be used as destination
 mailserver_receive_restricted: [] # emails banned to send email to this server
 
 # domains configuration
+# see DNS to setup https://hub.docker.com/r/monogramm/autodiscover-email-settings
 mailserver_domains:
   # Generate DKIM using : https://dkimcore.org/specification.html
   # openssl genrsa -out mail.heaven-pascal.youtous.me.priv 2048
