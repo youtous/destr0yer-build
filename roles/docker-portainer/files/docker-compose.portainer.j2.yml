@@ -15,9 +15,10 @@ services:
           - node.role == manager
           - node.labels.portainer.portainer-data == true
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
-        window: 15s
+        window: 45s
+        max_attemps: 3
       labels:
         - "traefik.frontend.rule=Host:{{ portainer_domain }}"
         - traefik.enable=true
@@ -65,9 +66,10 @@ services:
         constraints:
           - node.platform.os == linux
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
-        window: 15s
+        window: 30s
+        max_attemps: 3
       resources:
         limits:
           cpus: '0.10'

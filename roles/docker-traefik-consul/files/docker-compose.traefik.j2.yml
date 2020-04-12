@@ -19,9 +19,10 @@ services:
         preferences:
           - spread: node.id
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
-        window: 15s
+        window: 120s
+        max_attemps: 3
       labels:
         - "traefik.frontend.rule=Host:{{ consul_ui_domain }}"
         - traefik.enable=true
@@ -64,9 +65,10 @@ services:
         preferences:
           - spread: node.id
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
-        window: 15s
+        window: 120s
+        max_attemps: 3
   traefik:
     image: "traefik:v{{ traefik_version }}"
     ports:
@@ -87,9 +89,10 @@ services:
         preferences:
           - spread: node.id
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
-        window: 15s
+        window: 30s
+        max_attemps: 3
       labels:
         - "traefik.frontend.rule=Host:{{ traefik_ui_domain }}"
         - traefik.enable=true

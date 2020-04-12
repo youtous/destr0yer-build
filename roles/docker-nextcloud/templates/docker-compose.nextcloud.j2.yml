@@ -36,9 +36,10 @@ services:
           - node.role == manager
           - node.labels.nextcloud.nextcloud-data == true
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
-        window: 15s
+        window: 60s
+        max_attemps: 3
 
   nextcloud-cron-worker:
     <<: *nextcloud
@@ -69,9 +70,10 @@ services:
           - node.role == manager
           - node.labels.nextcloud.nextcloud-data == true
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
-        window: 15s
+        window: 30s
+        max_attemps: 3
       labels:
         - "traefik.frontend.rule=Host:{{ nextcloud_domain }}"
         - traefik.enable=true

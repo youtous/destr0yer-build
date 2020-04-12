@@ -17,9 +17,10 @@ services:
         constraints:
           - node.role == manager
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
         window: 30s
+        max_attempts: 3
       resources:
         limits:
           memory: "{{ elasticsearch_memory }}M"
@@ -72,9 +73,10 @@ services:
         constraints:
           - node.role == manager
       restart_policy:
-        condition: any
-        delay: 5s
-        window: 15s
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+        window: 120s
       labels:
         - "traefik.frontend.rule=Host:{{ kibana_domain }}"
         - traefik.enable=true
@@ -139,9 +141,10 @@ services:
         constraints:
           - node.role == manager
       restart_policy:
-        condition: any
+        condition: on
         delay: 5s
         window: 30s
+        max_attemps: 3
       resources:
         limits:
           memory: "{{ logstash_memory }}M"
@@ -192,9 +195,10 @@ services:
         constraints:
           - node.role == manager
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
-        window: 15s
+        window: 30s
+        max_attemps: 3
       resources:
         limits:
           memory: 64M
