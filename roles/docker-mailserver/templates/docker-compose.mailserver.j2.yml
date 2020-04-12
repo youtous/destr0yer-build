@@ -279,7 +279,7 @@ services:
 
 {% if mailserver_enable_autodiscover %}
 {% for mailserver in mailserver_domains %}
-  autodiscover-mail-{{ mailserver.domain }}:
+  autodiscover-email-settings:
     image: monogramm/autodiscover-email-settings:latest
     environment:
       - "COMPANY_NAME={{ mailserver.domain }}"
