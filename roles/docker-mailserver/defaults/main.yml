@@ -1,12 +1,21 @@
 ---
-# main domain of the server
-mailserver_domain: "{{ hostname }}"
-# hostname of the mailserver host
+# hostname of the mailserver host, eg: mail
 mailserver_hostname: "{{ hostname }}"
+# main domain of the server, eg: localhost.com
+mailserver_domain: "{{ hostname }}"
+
+# enable traefik to handle certificates creation, if true, ssl_type,ssl_cert_path,ssl_key_path will be overwritten
+mailserver_ssl_use_traefik: true
+# https://github.com/youtous/docker-mailserver-traefik#usage
+mailserver_ssl_traefik_source: consul
+mailserver_ssl_traefik_kv_endpoints: "consul-leader:8500"
+
+mailserver_tls_level: modern # drop old tls ciphers
 
 # manual, letsencrypt, custom, self-signed
-mailserver_ssl_type: letsencrypt
-mailserver_tls_level: modern # drop old tls ciphers
+mailserver_ssl_type:
+mailserver_ssl_cert_path:
+mailserver_ssl_key_path:
 
 # Rainloop
 rainloop_enabled: true
