@@ -45,7 +45,7 @@ secrets:
 
 services:
 
-  mail:
+  mailserver:
     image: tvial/docker-mailserver:latest
     hostname: "{{ mailserver_hostname }}"
     domainname: "{{ mailserver_domain }}"
@@ -97,6 +97,7 @@ services:
       # General conf
       - ENABLE_POP3=0 # Pop3 is disabled
       - ONE_DIR=1
+      - "OVERRIDE_HOSTNAME={{ mailserver_fqdn }}"
       - "DMS_DEBUG=$DMS_DEBUG"
       - "PERMIT_DOCKER=$PERMIT_DOCKER" # see # https://github.com/tomav/docker-mailserver/issues/1405#issuecomment-590106498
       - "SMTP_ONLY=$SMTP_ONLY" # only enable sending messages (using postfix)
@@ -187,7 +188,7 @@ services:
         max_attempts: 3
 
 {% if mailserver_ssl_use_traefik %}
-  mailserver-traefik:
+  certs-traefik:
     image: youtous/mailserver-traefik:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
