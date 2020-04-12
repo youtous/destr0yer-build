@@ -22,7 +22,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 120s
-        max_attemps: 3
+        max_attempts: 3
       labels:
         - "traefik.frontend.rule=Host:{{ consul_ui_domain }}"
         - traefik.enable=true
@@ -68,7 +68,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 120s
-        max_attemps: 3
+        max_attempts: 3
   traefik:
     image: "traefik:v{{ traefik_version }}"
     ports:
@@ -92,7 +92,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attemps: 3
+        max_attempts: 3
       labels:
         - "traefik.frontend.rule=Host:{{ traefik_ui_domain }}"
         - traefik.enable=true

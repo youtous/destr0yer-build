@@ -144,7 +144,7 @@ services:
         condition: on
         delay: 5s
         window: 30s
-        max_attemps: 3
+        max_attempts: 3
       resources:
         limits:
           memory: "{{ logstash_memory }}M"
@@ -198,7 +198,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attemps: 3
+        max_attempts: 3
       resources:
         limits:
           memory: 64M

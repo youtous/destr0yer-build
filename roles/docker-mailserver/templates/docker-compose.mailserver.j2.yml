@@ -184,7 +184,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 120s
-        max_attemps: 3
+        max_attempts: 3
 
 {% if mailserver_ssl_use_traefik %}
   mailserver-traefik:
@@ -202,7 +202,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attemps: 3
+        max_attempts: 3
 {% endif %}
 
 {% if rainloop_enabled %}
@@ -226,7 +226,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attemps: 3
+        max_attempts: 3
       labels:
         - traefik.enable=true
         - traefik.port=8888
@@ -299,7 +299,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attemps: 3
+        max_attempts: 3
       labels:
         - traefik.enable=true
         - traefik.port=8000

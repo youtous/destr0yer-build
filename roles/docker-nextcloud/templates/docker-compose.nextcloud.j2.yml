@@ -39,7 +39,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 60s
-        max_attemps: 3
+        max_attempts: 3
 
   nextcloud-cron-worker:
     <<: *nextcloud
@@ -73,7 +73,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attemps: 3
+        max_attempts: 3
       labels:
         - "traefik.frontend.rule=Host:{{ nextcloud_domain }}"
         - traefik.enable=true
