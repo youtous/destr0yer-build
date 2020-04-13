@@ -204,6 +204,8 @@ services:
         delay: 5s
         window: 30s
         max_attempts: 3
+    networks:
+      - internal
 {% endif %}
 
 {% if rainloop_enabled %}
@@ -338,6 +340,8 @@ services:
 
 
 networks:
+  internal:
+    internal: true
   mailserver:
     driver: overlay
     driver_opts:
