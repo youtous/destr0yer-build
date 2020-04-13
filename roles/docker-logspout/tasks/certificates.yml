@@ -8,8 +8,8 @@
     data: "{{ item.data }}"
     state: present
   with_items:
-    - {name: "{{ docker_logspout_stack_name }}_logstash-rootCA-{{ logspout_deploy_timestamp }}.crt", data: "{{ logstash_CA_certificate }}"}
-    - {name: "{{ docker_logspout_stack_name }}_logspout-certificate-{{ logspout_deploy_timestamp }}.crt", data: "{{ logspout_node_certificate }}"}
-    - {name: "{{ docker_logspout_stack_name }}_logspout-private-key-{{ logspout_deploy_timestamp }}.key", data: "{{ logspout_node_private_key }}"}
+    - {name: "{{ docker_logspout_stack_name }}_logstash-rootCA-{{ logspout_deploy_timestamp }}", data: "{{ logstash_CA_certificate }}"}
+    - {name: "{{ docker_logspout_stack_name }}_logspout-certificate-{{ logspout_deploy_timestamp }}", data: "{{ logspout_node_certificate }}"}
+    - {name: "{{ docker_logspout_stack_name }}_logspout-private-key-{{ logspout_deploy_timestamp }}", data: "{{ logspout_node_private_key }}"}
   no_log: true
 ...

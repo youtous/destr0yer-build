@@ -141,7 +141,7 @@ services:
         constraints:
           - node.role == manager
       restart_policy:
-        condition: on
+        condition: on-failure
         delay: 5s
         window: 30s
         max_attempts: 3
@@ -226,28 +226,28 @@ volumes:
 # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
 configs: # config are immutable :/
   logstash.conf:
-    name: "{{ docker_elastic_stack_name }}_logstash-${DEPLOY_TIMESTAMP}.conf"
+    name: "{{ docker_elastic_stack_name }}_logstash.conf-${DEPLOY_TIMESTAMP}"
     file: ./config/logstash/pipeline/logstash.conf
   logstash.yml:
-    name: "{{ docker_elastic_stack_name }}_logstash-${DEPLOY_TIMESTAMP}.yml"
+    name: "{{ docker_elastic_stack_name }}_logstash.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/logstash/logstash.yml
   elasticsearch.yml:
-    name: "{{ docker_elastic_stack_name }}_elasticsearch-${DEPLOY_TIMESTAMP}.yml"
+    name: "{{ docker_elastic_stack_name }}_elasticsearch.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/elasticsearch/elasticsearch.yml
   kibana.yml:
-    name: "{{ docker_elastic_stack_name }}_kibana-${DEPLOY_TIMESTAMP}.yml"
+    name: "{{ docker_elastic_stack_name }}_kibana.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/kibana/kibana.yml
   heartbeat.yml:
-    name: "{{ docker_elastic_stack_name }}_heartbeat-${DEPLOY_TIMESTAMP}.yml"
+    name: "{{ docker_elastic_stack_name }}_heartbeat.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/heartbeat/heartbeat.yml
 
 secrets:
   logstash-rootCA.crt:
-    name: "{{ docker_elastic_stack_name }}_logstash-rootCA-${DEPLOY_TIMESTAMP}.crt"
+    name: "{{ docker_elastic_stack_name }}_logstash-rootCA.crt-${DEPLOY_TIMESTAMP}"
     external: true
   logstash-certificate.crt:
-    name: "{{ docker_elastic_stack_name }}_logstash-certificate-${DEPLOY_TIMESTAMP}.crt"
+    name: "{{ docker_elastic_stack_name }}_logstash-certificate.crt-${DEPLOY_TIMESTAMP}"
     external: true
   logstash-private-key.key:
-    name: "{{ docker_elastic_stack_name }}_logstash-private-key-${DEPLOY_TIMESTAMP}.key"
+    name: "{{ docker_elastic_stack_name }}_logstash-private-key.key-${DEPLOY_TIMESTAMP}"
     external: true
