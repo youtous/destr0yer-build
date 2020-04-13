@@ -1,0 +1,2 @@
+[submodule "roles/docker-configs-secrets-cleaner"]
+	url = git@gitlab.com:youtous/ansible-docker-configs-secrets-cleaner.git
