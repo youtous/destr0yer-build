@@ -128,8 +128,6 @@
 
     ENABLE_MANAGESIEVE: "{{ mailserver_enable_managesieve|default(true)|int }}"
 
-    ENABLE_FAIL2BAN: "{{ mailserver_enable_fail2ban|default(true)|int }}"
-
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ mailserver_deploy_timestamp }}"
   notify: docker prune

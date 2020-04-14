@@ -108,7 +108,6 @@ update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
 mailserver_domain: youtous.dv
 mailserver_hostname: mailing-heaven-pascal
 mailserver_debug: yes
-mailserver_enable_fail2ban: false # todo : change this
 # domains configuration
 mailserver_domains:
   # Generate DKIM using : https://dkimcore.org/specification.html

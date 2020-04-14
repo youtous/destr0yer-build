@@ -47,8 +47,6 @@ services:
 
   mailserver:
     image: tvial/docker-mailserver:latest
-    hostname: "{{ mailserver_hostname }}"
-    domainname: "{{ mailserver_domain }}"
     ports:
       - target: 25
         published: 25
@@ -97,7 +95,7 @@ services:
       # General conf
       - ENABLE_POP3=0 # Pop3 is disabled
       - ONE_DIR=1
-      - "OVERRIDE_HOSTNAME={{ mailserver_fqdn }}"
+      - "OVERRIDE_HOSTNAME={{ mailserver_fqdn }}" # docker swarm does not allow to override hostname using docker-compose.yml
       - "DMS_DEBUG=$DMS_DEBUG"
       - "PERMIT_DOCKER=$PERMIT_DOCKER" # see # https://github.com/tomav/docker-mailserver/issues/1405#issuecomment-590106498
       - "SMTP_ONLY=$SMTP_ONLY" # only enable sending messages (using postfix)
@@ -151,13 +149,10 @@ services:
       - RELAY_PORT=25
       - RELAY_USER=
       - RELAY_PASSWORD=
-      # Fail2ban
-      - "ENABLE_FAIL2BAN=$ENABLE_FAIL2BAN"
+      # Fail2ban is not supported in swarm mode due to lack of cap_add: https://github.com/moby/moby/issues/25885
+      - "ENABLE_FAIL2BAN=0"
       # SASL Auth
       - ENABLE_SASLAUTHD=0
-    cap_add:
-      - NET_ADMIN
-      - SYS_PTRACE
     networks:
       - mailserver
     deploy:
