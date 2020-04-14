@@ -32,6 +32,9 @@ traefik_replicas: 0
 # number of consul replicas => see Consul documentation
 consul_replicas: 0
 
+# consul external network enabled for mailserver, disable if no mailserver
+consul_external_network_enabled: true
+
 ### End of docker Traefik parameters ###
 
 ### Begin of database parameters ###

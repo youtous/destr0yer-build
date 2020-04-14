@@ -6,9 +6,12 @@ mailserver_domain: "{{ hostname }}"
 
 # enable traefik to handle certificates creation, if true, ssl_type,ssl_cert_path,ssl_key_path will be overwritten
 mailserver_ssl_use_traefik: true
+# by default, use consul and assume consul external network is created
 # https://github.com/youtous/docker-mailserver-traefik#usage
 mailserver_ssl_traefik_source: consul
 mailserver_ssl_traefik_kv_endpoints: "consul-leader:8500"
+mailserver_kv_external_network: "consul-public" # same as traefik-consul, set empty to disable
+
 
 mailserver_tls_level: modern # drop old tls ciphers
 

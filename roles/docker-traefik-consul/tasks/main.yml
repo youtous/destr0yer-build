@@ -7,6 +7,14 @@
     driver_options:
       encrypted: ""
 
+- name: Create consul external network with encryption
+  docker_network:
+    name: "{{ consul_external_network }}"
+    driver: overlay
+    driver_options:
+      encrypted: ""
+  when: consul_external_network_enabled
+
 - name: Ensure traefik directory exists
   file:
     state: directory

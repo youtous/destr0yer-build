@@ -11,7 +11,10 @@ services:
       - 'CONSUL_LOCAL_CONFIG={"leave_on_terminate": true}'
     networks:
       - default
-      - {{ traefik_network }}
+{% if consul_external_network_enabled %}
+      - "{{ consul_external_network }}"
+{% endif %}
+      - "{{ traefik_network }}"
     deploy:
       placement:
         constraints:
@@ -59,6 +62,9 @@ services:
     networks:
       - default
       - "{{ traefik_network }}"
+{% if consul_external_network_enabled %}
+      - "{{ consul_external_network }}"
+{% endif %}
     deploy:
       replicas: {{ consul_replicas }}
       placement:
@@ -159,3 +165,7 @@ volumes:
 networks:
   {{ traefik_network }}:
     external: true
+{% if consul_external_network_enabled %}
+  {{ consul_external_network }}:
+    external: true
+{% endif %}

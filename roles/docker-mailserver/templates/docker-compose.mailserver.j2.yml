@@ -206,6 +206,9 @@ services:
         max_attempts: 3
     networks:
       - internal
+{% if mailserver_kv_external_network|length %}
+      - "{{ mailserver_kv_external_network }}"
+{% endif %}
 {% endif %}
 
 {% if rainloop_enabled %}
@@ -346,11 +349,11 @@ networks:
     driver: overlay
     driver_opts:
       encrypted: ""
-{% if rainloop_enabled %}
-  rainloop-network:
-    driver: overlay
-    driver_opts:
-      encrypted: ""
+{% if mailserver_ssl_use_traefik and mailserver_kv_external_network|length %}
+  {{ mailserver_kv_external_network }}:
+    external: true
+{% endif %}
+{% if rainloop_enabled or mailserver_enable_autodiscover %}
   {{ traefik_network }}:
     external: true
 {% endif %}
