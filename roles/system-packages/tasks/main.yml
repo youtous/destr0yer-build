@@ -4,3 +4,10 @@
   become: yes
   apt:
     name: "{{ system_packages }}"
+
+- name: Enable default services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items: "{{ system_services_enabled_by_default }}"

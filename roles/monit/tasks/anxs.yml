@@ -19,6 +19,12 @@
   notify:
     - reload monit
 
+- name: Enable cron
+  service:
+    name: cron
+    state: started
+    enabled: yes
+
 - name: Create configs
   template:
     src: "etc/monit/conf.d/{{ item.type | default('base') }}.conf.j2"
