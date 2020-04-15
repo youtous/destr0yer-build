@@ -1,10 +1,16 @@
 ---
 # This role contains dynamic ip updating setup
-- name: Install cron package
+- name: Install cron
   become: yes
   apt:
     name:
       - cron
+
+- name: Enable cron
+  service:
+    name: cron
+    state: started
+    enabled: yes
 
 - name: Creates update-ip directory
   become: yes

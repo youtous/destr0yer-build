@@ -37,6 +37,9 @@ dynamic_ip:
   #hosts:
   #  heaven-pascal.youtous.dv:
 
+# hosts with specific interfaces configuration
+interfaces:
+
 # hosts used as backup server
 backup_storage:
   hosts:

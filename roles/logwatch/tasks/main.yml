@@ -3,10 +3,21 @@
 - name: Include default vars
   include_vars: default.yml
 
+- name: Install cron
+  apt:
+    pkg: cron
+    state: present
+
+- name: Enable cron
+  service:
+    name: cron
+    state: started
+    enabled: yes
+
 - name: Setup Logwatch
   become: yes
   import_role:
-    name: anxs.logwatch
+    name: youtous.logwatch
   vars:
     logwatch_email: "{{ logwatch_email }}"
     logwatch_detail: "{{ logwatch_detail }}"

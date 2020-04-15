@@ -29,3 +29,7 @@ system_packages:
   - apparmor # security (MAC) :)
   - ccze # colorization
   - grc # colorization
+
+# services to enable by default
+system_services_enabled_by_default:
+  - cron

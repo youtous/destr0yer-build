@@ -1,6 +1,16 @@
 ---
 # Setup a strategy of retention of the backups.
 # Each day, the backup directory will be copied in a given directory.
+- name: Install cron
+  apt:
+    pkg: cron
+    state: present
+
+- name: Enable cron
+  service:
+    name: cron
+    state: started
+    enabled: yes
 
 - name: Ensure frozen backup directory present and owned by root
   become: yes
