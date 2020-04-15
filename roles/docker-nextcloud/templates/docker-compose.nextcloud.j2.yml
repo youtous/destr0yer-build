@@ -28,8 +28,10 @@ services:
       - "SMTP_PASSWORD=${SMTP_PASSWORD}"
       - "MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}"
       - "MAIL_DOMAIN=${MAIL_DOMAIN}"
+      # reverse proxy related, todo : consider using additional config : https://github.com/nextcloud/docker/pull/819#issuecomment-605646505
+      - "NEXTCLOUD_OVERWRITEPROTOCOL=https"
       - "NEXTCLOUD_TRUSTED_DOMAINS={{ nextcloud_domain }}" # TODO : cleanup the mess when https://github.com/nextcloud/docker/pull/1048 is merged
-      - "NEXTCLOUD_TRUSTED_PROXIES=172.28.0.0/16" # trust subnetwork proxy
+      - "NEXTCLOUD_TRUSTED_PROXIES='172.28.0.0/16 '" # trust subnetwork proxy
     networks:
       nextcloud-network-fixed:
     deploy:
