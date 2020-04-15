@@ -24,7 +24,7 @@
 # Email notification on login
 - name: grzegorznowak.ansible_ssh_login_notifications
   src: https://github.com/spottmedia/ansible-ssh-login-notifications.git
-  version: 917a89466630c95a4d5807422b656c9402734121
+  version: 9ba28df6612c7cabf43483206c3234a326720513
 
 # Logrotate
 - name: arillso.logrotate
