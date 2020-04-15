@@ -31,16 +31,10 @@
   src: https://github.com/arillso/ansible.logrotate.git
   version: 0aced5bf8e938b8eee2d902bd3c9262c764c2e54
 
-# Logwatch and his dependencies
-- name: anxs.cron
-  src: https://github.com/ANXS/cron.git
-  version: abe140c1d31cb58d38c242bc1af7b878a88d6e07
-- name: anxs.perl
-  src: https://github.com/ANXS/perl.git
-  version: 6d545fa6af0dc4779f1ac4d024f238b8d4923224
-- name: anxs.logwatch
-  src: https://github.com/ANXS/logwatch.git
-  version: 8a816416c78905ffdf83cdfb66611dd3c1e89f55
+# Logwatch
+- name: youtous.logwatch
+  src: https://github.com/youtous/ansible-logwatch.git
+  version: 09973157886f0568b8051b20c276fe9d50b13fed
 
 # Fail2ban
 - name: oefenweb.fail2ban
