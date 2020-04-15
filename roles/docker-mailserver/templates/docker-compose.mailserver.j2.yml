@@ -212,7 +212,7 @@ services:
     volumes:
       - rainloop-data:/rainloop/data
     networks:
-      - mailserver
+      - mailserver # todo : check if really required
       - {{ traefik_network }}
     logging:
       options:
