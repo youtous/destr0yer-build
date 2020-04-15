@@ -35,7 +35,7 @@
 - name: Update and upgrade apt packages
   become: yes
   apt:
-    upgrade: yes
+    upgrade: "yes"
     update_cache: yes
     cache_valid_time: 86400 #One day
 
