@@ -1,2 +1,2 @@
 ---
-ufw_logging: off
+ufw_logging: "off"
