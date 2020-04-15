@@ -32,6 +32,9 @@ nextcloud_max_request_size_megabytes: 2048 # maximum size of request in MB
 # docker exec -it {docker_id} sh -c 'echo "<?php $CONFIG=[]..." > config/config.php'
 # this limitation is due to env params
 
+
+nextcloud_stack_name: nextcloud
+
 # traefik public-tag
 traefik_public_tag: "traefik-public"
 

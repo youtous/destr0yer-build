@@ -13,6 +13,10 @@
     labels:
       nextcloud.nextcloud-data: "true"
 
+- name: Register deployment timestamp
+  set_fact:
+    nextcloud_deploy_timestamp: "{{ ansible_date_time.epoch }}"
+
 - name: Copy Nextcloud stack
   template:
     src: templates/docker-compose.nextcloud.j2.yml
@@ -29,7 +33,7 @@
   docker_stack:
     state: present
     prune: yes
-    name: nextcloud
+    name: "{{ nextcloud_stack_name }}"
     compose:
       - "{{ nextcloud_compose_file_dest }}"
   environment:
@@ -50,6 +54,6 @@
     MAIL_FROM_ADDRESS: "{{ nextcloud_smtp_from }}"
     MAIL_DOMAIN: "{{ nextcloud_smtp_domain_from }}"
     # deploy timestamp
-    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+    DEPLOY_TIMESTAMP: "{{ nextcloud_deploy_timestamp }}"
   notify: docker prune
 ...

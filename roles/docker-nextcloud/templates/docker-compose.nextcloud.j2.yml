@@ -2,7 +2,7 @@ version: "3.7"
 
 configs:
   nginx.conf:
-    name: "nextcloud_nginx-${DEPLOY_TIMESTAMP}.conf"
+    name: "{{ nextcloud_stack_name }}_nginx.conf-${DEPLOY_TIMESTAMP}"
     file: "./nginx.conf"
 
 services:
