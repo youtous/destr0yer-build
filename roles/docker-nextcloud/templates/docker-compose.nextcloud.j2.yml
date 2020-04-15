@@ -28,8 +28,10 @@ services:
       - "SMTP_PASSWORD=${SMTP_PASSWORD}"
       - "MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}"
       - "MAIL_DOMAIN=${MAIL_DOMAIN}"
+      - "NEXTCLOUD_TRUSTED_DOMAINS={{ nextcloud_domain }}" # TODO : cleanup the mess when https://github.com/nextcloud/docker/pull/1048 is merged
+      - "NEXTCLOUD_TRUSTED_PROXIES=172.28.0.0/16" # trust subnetwork proxy
     networks:
-      - nextcloud-network
+      nextcloud-network-fixed:
     deploy:
       placement:
         constraints:
@@ -59,8 +61,8 @@ services:
     volumes:
       - nextcloud-data:/var/www/html:ro
     networks:
-      - nextcloud-network
-      - {{ traefik_network }}
+      nextcloud-network-fixed:
+      {{ traefik_network }}:
     configs:
       - source: nginx.conf
         target: /etc/nginx/nginx.conf
@@ -76,6 +78,7 @@ services:
         max_attempts: 3
       labels:
         - "traefik.frontend.rule=Host:{{ nextcloud_domain }}"
+        - traefik.frontend.passHostHeader=true
         - traefik.enable=true
         - traefik.port=80
         - "traefik.tags={{ traefik_public_tag }}"
@@ -113,10 +116,13 @@ services:
         - traefik.frontend.redirect.replacement=https://$$1/remote.php/dav/
 
 networks:
-  nextcloud-network:
+  nextcloud-network-fixed:
     driver: overlay
     driver_opts:
       encrypted: ""
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
   {{ traefik_network }}:
     external: true
 

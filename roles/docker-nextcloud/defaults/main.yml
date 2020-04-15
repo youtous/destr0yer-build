@@ -32,6 +32,14 @@ nextcloud_max_request_size_megabytes: 2048 # maximum size of request in MB
 # docker exec -it {docker_id} sh -c 'echo "<?php $CONFIG=[]..." > config/config.php'
 # this limitation is due to env params
 
+# If installation fails : /!\ /!\ TEMPS FIX UNTIL PR IS MERGED, should not be required when https://github.com/nextcloud/docker/pull/1048 is merged
+# todo : cleanup
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ maintenance:install'
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ config:system:set trusted_proxies --value="172.28.0.0/16"'
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ config:system:set overwriteprotocol --value="https"'
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ config:system:set trusted_domains --value="cloud.heaven-pascal.youtous.dv"'
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ config:system:set trusted_domains 1 --value=*'
+
 
 nextcloud_stack_name: nextcloud
 
