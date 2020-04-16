@@ -35,8 +35,8 @@
     dest: "{{ nextcloud_compose_file_dest_directory }}/{{ item.dest }}"
     mode: u=rw,g=,o=
   with_items:
-    - src: reverse-proxy.config.php
-      dest: reverse-proxy.config.php
+    - src: url-cli.config.php
+      dest: url-cli.config.php
     - src: logs.config.php
       dest: logs.config.php
 

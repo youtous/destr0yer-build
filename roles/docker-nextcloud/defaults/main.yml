@@ -28,16 +28,10 @@ nextcloud_max_connections: 1000 # maximum of simultaneous requests
 nextcloud_max_requests_3s_per_client: 100 # maximum of requests per client in 3s
 nextcloud_max_request_size_megabytes: 2048 # maximum size of request in MB
 
-# Configure other Nextcloud parameters using :
-# docker exec -it {docker_id} sh -c 'echo "<?php $CONFIG=[]..." > config/config.php'
-# this limitation is due to env params
-
-# If installation fails : /!\ /!\ TEMPS FIX UNTIL PR IS MERGED, should not be required when https://github.com/nextcloud/docker/pull/1048 is merged
-# todo : cleanup
 # Your domain is reachable at https://cloud.domain.com via reverse proxy (192.168.10.2)
-  #
-  #    Add 192.168.10.2 to trusted_proxies
-  #    Set overwriteprotcol to https
+#    Any configuration can be done using a php file (logs for example)
+#    Add 192.168.10.2 to trusted_proxies
+#    Set overwriteprotcol to https
 #    Set overwritehost to cloud.domain.com
 #    Set overwrite.url.cli to https://cloud.domain.com
 # docker exec -it -u www-data nextcloud_nextcloud sh -c './occ maintenance:install'
