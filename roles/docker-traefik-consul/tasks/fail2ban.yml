@@ -11,6 +11,7 @@
     mode: u=rw,g=r,o=r
   with_items:
     - traefik-auth.conf
+    - botsearch-common-docker.conf
     - traefik-botsearch.conf
   notify:
     - restart fail2ban
