@@ -29,6 +29,15 @@
     dest: "{{ nextcloud_compose_file_dest_directory }}/nginx.conf"
     mode: u=rw,g=,o=
 
+- name: Copy Nextcloud php additional config
+  template:
+    src: "templates/{{ item.src }}"
+    dest: "{{ nextcloud_compose_file_dest_directory }}/{{ item.dest }}"
+    mode: u=rw,g=,o=
+  with_items:
+    - src: reverse-proxy.config.php
+      dest: reverse-proxy.config.php
+
 - name: Deploy Nextcloud
   docker_stack:
     state: present
