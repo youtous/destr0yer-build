@@ -1,3 +1,11 @@
 ---
 # services to append, see https://github.com/Oefenweb/ansible-fail2ban for further details
 fail2ban_services: []
+#  - name: postfix-docker
+#    port: smtp,submission,465
+#    mode: aggressive
+#    backend: systemd
+
+# services to remove
+fail2ban_services_to_remove: []
+#  - name: postfix-docker
