@@ -155,6 +155,10 @@ services:
       - ENABLE_SASLAUTHD=0
     networks:
       - mailserver
+    logging:
+      options:
+        # this tag is used by fail2ban using `journalctl CONTAINER_TAG=mailserver-server`
+        tag: "mailserver-server"
     deploy:
       placement:
         constraints:
