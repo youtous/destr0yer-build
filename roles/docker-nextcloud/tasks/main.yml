@@ -37,6 +37,8 @@
   with_items:
     - src: reverse-proxy.config.php
       dest: reverse-proxy.config.php
+    - src: logs.config.php
+      dest: logs.config.php
 
 - name: Deploy Nextcloud
   docker_stack:

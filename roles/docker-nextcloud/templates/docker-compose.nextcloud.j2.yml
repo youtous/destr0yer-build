@@ -7,6 +7,9 @@ configs:
   reverse-proxy.config.php:
     name: "{{ nextcloud_stack_name }}_reverse-proxy.config.php-${DEPLOY_TIMESTAMP}"
     file: "./reverse-proxy.config.php"
+  logs.config.php:
+    name: "{{ nextcloud_stack_name }}_logs.config.php-${DEPLOY_TIMESTAMP}"
+    file: "./logs.config.php"
 
 services:
   nextcloud: &nextcloud
@@ -23,6 +26,8 @@ services:
     configs:
       - source: reverse-proxy.config.php
         target: /tmp/config/reverse-proxy.config.php
+      - source: logs.config.php
+        target: /tmp/config/logs.config.php
     environment:
       # Database
       - "MYSQL_DATABASE=${MYSQL_DATABASE}"
