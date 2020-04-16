@@ -8,3 +8,8 @@ docker_mailserver_stack_name: mailserver
 mailserver_ssl_traefik_version: 1
 
 mailserver_fqdn: "{{ mailserver_hostname }}.{{ mailserver_domain }}"
+
+
+# internal mailserver which is whitelisted against bans (rainloop)
+mailserver_internal_network_whitelisted: "172.30.1.0/24"
+mailserver_internal_network_server_ip: "172.30.1.2"

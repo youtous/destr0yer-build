@@ -154,7 +154,8 @@ services:
       # SASL Auth
       - ENABLE_SASLAUTHD=0
     networks:
-      - mailserver
+      mailserver-fixed:
+        ipv4_address: "{{ mailserver_internal_network_server_ip }}"
     logging:
       options:
         # this tag is used by fail2ban using `journalctl CONTAINER_TAG=mailserver-server`
@@ -216,7 +217,7 @@ services:
     volumes:
       - rainloop-data:/rainloop/data
     networks:
-      - mailserver # todo : check if really required
+      - mailserver-fixed
       - {{ traefik_network }}
     logging:
       options:
@@ -344,10 +345,13 @@ services:
 networks:
   internal:
     internal: true
-  mailserver:
+  mailserver-fixed:
     driver: overlay
     driver_opts:
       encrypted: ""
+    ipam:
+      config:
+        - subnet: "{{ mailserver_internal_network_whitelisted }}"
 {% if mailserver_ssl_use_traefik and mailserver_kv_external_network|length %}
   {{ mailserver_kv_external_network }}:
     external: true
