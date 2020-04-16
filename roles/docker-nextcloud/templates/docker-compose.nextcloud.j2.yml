@@ -4,12 +4,12 @@ configs:
   nginx.conf:
     name: "{{ nextcloud_stack_name }}_nginx.conf-${DEPLOY_TIMESTAMP}"
     file: "./nginx.conf"
-  reverse-proxy.config.php:
-    name: "{{ nextcloud_stack_name }}_reverse-proxy.config.php-${DEPLOY_TIMESTAMP}"
-    file: "./reverse-proxy.config.php"
   logs.config.php:
     name: "{{ nextcloud_stack_name }}_logs.config.php-${DEPLOY_TIMESTAMP}"
     file: "./logs.config.php"
+  url-cli.config.php:
+    name: "{{ nextcloud_stack_name }}_url-cli.config.php-${DEPLOY_TIMESTAMP}"
+    file: "./url-cli.config.php"
 
 services:
   nextcloud: &nextcloud
@@ -25,10 +25,10 @@ services:
       php-fpm
       '
     configs:
-      - source: reverse-proxy.config.php
-        target: /tmp/config/reverse-proxy.config.php
       - source: logs.config.php
         target: /tmp/config/logs.config.php
+      - source: url-cli.config.php
+        target: /tmp/config/url-cli.config.php
     logging:
       options:
         # this tag is used by fail2ban using `journalctl CONTAINER_TAG=nextcloud`
@@ -53,10 +53,9 @@ services:
       - "MAIL_DOMAIN=${MAIL_DOMAIN}"
       - "NEXTCLOUD_UPDATE=1" # we use a custom command, required for always try to update / install
       - "NEXTCLOUD_TRUSTED_DOMAINS={{ nextcloud_domain }}" # add the domain to trusted domains during installation
-      # reverse proxy related, todo : consider using additional config : https://github.com/nextcloud/docker/pull/819#issuecomment-605646505
-      - "NEXTCLOUD_OVERWRITEHOST={{ nextcloud_domain }}"
-      - "NEXTCLOUD_OVERWRITEPROTOCOL=https"
-      - "NEXTCLOUD_TRUSTED_PROXIES=172.28.0.0/16 10.0.0.0/8" # MUST BE COPIED IN reverse proxy for the moment : trust subnetwork proxy (respectively nginx and traefik)
+      - "OVERWRITEHOST={{ nextcloud_domain }}"
+      - "OVERWRITEPROTOCOL=https"
+      - "TRUSTED_PROXIES=172.28.0.0/16 10.0.0.0/8" # trust subnetwork proxy (respectively nginx and traefik)
     networks:
       nextcloud-network-fixed:
     deploy:
