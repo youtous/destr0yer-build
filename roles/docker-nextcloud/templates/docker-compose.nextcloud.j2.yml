@@ -16,9 +16,10 @@ services:
     image: "nextcloud:{{ nextcloud_version }}-fpm-alpine"
     volumes:
       - nextcloud-data:/var/www/html
-    # copy eventual additional configs
+    # allow www-data to write logs and copy eventual additional configs
     command: >
       sh -c '
+      chmod o+w /dev/stdout &&
       cp /tmp/config/*.php config/ || true &&
       chown www-data:www-data -R config &&
       php-fpm
