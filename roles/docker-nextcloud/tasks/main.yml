@@ -13,6 +13,10 @@
     labels:
       nextcloud.nextcloud-data: "true"
 
+- name: Register deployment timestamp
+  set_fact:
+    nextcloud_deploy_timestamp: "{{ ansible_date_time.epoch }}"
+
 - name: Copy Nextcloud stack
   template:
     src: templates/docker-compose.nextcloud.j2.yml
@@ -25,11 +29,22 @@
     dest: "{{ nextcloud_compose_file_dest_directory }}/nginx.conf"
     mode: u=rw,g=,o=
 
+- name: Copy Nextcloud php additional config
+  template:
+    src: "templates/{{ item.src }}"
+    dest: "{{ nextcloud_compose_file_dest_directory }}/{{ item.dest }}"
+    mode: u=rw,g=,o=
+  with_items:
+    - src: reverse-proxy.config.php
+      dest: reverse-proxy.config.php
+    - src: logs.config.php
+      dest: logs.config.php
+
 - name: Deploy Nextcloud
   docker_stack:
     state: present
     prune: yes
-    name: nextcloud
+    name: "{{ nextcloud_stack_name }}"
     compose:
       - "{{ nextcloud_compose_file_dest }}"
   environment:
@@ -50,6 +65,10 @@
     MAIL_FROM_ADDRESS: "{{ nextcloud_smtp_from }}"
     MAIL_DOMAIN: "{{ nextcloud_smtp_domain_from }}"
     # deploy timestamp
-    DEPLOY_TIMESTAMP: "{{ ansible_date_time.epoch }}"
+    DEPLOY_TIMESTAMP: "{{ nextcloud_deploy_timestamp }}"
   notify: docker prune
+
+
+- name: Fail2ban for nextcloud
+  import_tasks: fail2ban.yml
 ...

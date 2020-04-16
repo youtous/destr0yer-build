@@ -1,8 +1,17 @@
 ---
+- name: Import docker configs secrets handler
+  include: docker-config-secrets.yml
+
 - name: docker prune
   docker_prune:
     containers: yes
     images: yes
     networks: yes
     builder_cache: yes
+
+- name: restart fail2ban
+  become: yes
+  systemd:
+    name: fail2ban
+    state: restarted
 ...

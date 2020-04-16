@@ -2,14 +2,36 @@ version: "3.7"
 
 configs:
   nginx.conf:
-    name: "nextcloud_nginx-${DEPLOY_TIMESTAMP}.conf"
+    name: "{{ nextcloud_stack_name }}_nginx.conf-${DEPLOY_TIMESTAMP}"
     file: "./nginx.conf"
+  reverse-proxy.config.php:
+    name: "{{ nextcloud_stack_name }}_reverse-proxy.config.php-${DEPLOY_TIMESTAMP}"
+    file: "./reverse-proxy.config.php"
+  logs.config.php:
+    name: "{{ nextcloud_stack_name }}_logs.config.php-${DEPLOY_TIMESTAMP}"
+    file: "./logs.config.php"
 
 services:
   nextcloud: &nextcloud
     image: "nextcloud:{{ nextcloud_version }}-fpm-alpine"
     volumes:
       - nextcloud-data:/var/www/html
+    # copy eventual additional configs
+    command: >
+      sh -c '
+      cp /tmp/config/*.php config/ || true &&
+      chown www-data:www-data -R config &&
+      php-fpm
+      '
+    configs:
+      - source: reverse-proxy.config.php
+        target: /tmp/config/reverse-proxy.config.php
+      - source: logs.config.php
+        target: /tmp/config/logs.config.php
+    logging:
+      options:
+        # this tag is used by fail2ban using `journalctl CONTAINER_TAG=nextcloud`
+        tag: "nextcloud"
     environment:
       # Database
       - "MYSQL_DATABASE=${MYSQL_DATABASE}"
@@ -28,8 +50,13 @@ services:
       - "SMTP_PASSWORD=${SMTP_PASSWORD}"
       - "MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}"
       - "MAIL_DOMAIN=${MAIL_DOMAIN}"
+      - "NEXTCLOUD_UPDATE=1" # we use a custom command, required for always try to update / install
+      # reverse proxy related, todo : consider using additional config : https://github.com/nextcloud/docker/pull/819#issuecomment-605646505
+      - "NEXTCLOUD_OVERWRITEHOST={{ nextcloud_domain }}"
+      - "NEXTCLOUD_OVERWRITEPROTOCOL=https"
+      - "NEXTCLOUD_TRUSTED_PROXIES=172.28.0.0/16 10.0.0.0/8" # MUST BE COPIED IN reverse proxy for the moment : trust subnetwork proxy (respectively nginx and traefik)
     networks:
-      - nextcloud-network
+      nextcloud-network-fixed:
     deploy:
       placement:
         constraints:
@@ -59,8 +86,8 @@ services:
     volumes:
       - nextcloud-data:/var/www/html:ro
     networks:
-      - nextcloud-network
-      - {{ traefik_network }}
+      nextcloud-network-fixed:
+      {{ traefik_network }}:
     configs:
       - source: nginx.conf
         target: /etc/nginx/nginx.conf
@@ -76,6 +103,7 @@ services:
         max_attempts: 3
       labels:
         - "traefik.frontend.rule=Host:{{ nextcloud_domain }}"
+        - traefik.frontend.passHostHeader=true
         - traefik.enable=true
         - traefik.port=80
         - "traefik.tags={{ traefik_public_tag }}"
@@ -113,10 +141,13 @@ services:
         - traefik.frontend.redirect.replacement=https://$$1/remote.php/dav/
 
 networks:
-  nextcloud-network:
+  nextcloud-network-fixed:
     driver: overlay
     driver_opts:
       encrypted: ""
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
   {{ traefik_network }}:
     external: true
 

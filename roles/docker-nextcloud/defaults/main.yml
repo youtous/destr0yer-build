@@ -32,6 +32,23 @@ nextcloud_max_request_size_megabytes: 2048 # maximum size of request in MB
 # docker exec -it {docker_id} sh -c 'echo "<?php $CONFIG=[]..." > config/config.php'
 # this limitation is due to env params
 
+# If installation fails : /!\ /!\ TEMPS FIX UNTIL PR IS MERGED, should not be required when https://github.com/nextcloud/docker/pull/1048 is merged
+# todo : cleanup
+# Your domain is reachable at https://cloud.domain.com via reverse proxy (192.168.10.2)
+  #
+  #    Add 192.168.10.2 to trusted_proxies
+  #    Set overwriteprotcol to https
+#    Set overwritehost to cloud.domain.com
+#    Set overwrite.url.cli to https://cloud.domain.com
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ maintenance:install'
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ config:system:set trusted_proxies --value="172.28.0.0/16"'
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ config:system:set overwriteprotocol --value="https"'
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ config:system:set trusted_domains --value="cloud.heaven-pascal.youtous.dv"'
+# docker exec -it -u www-data nextcloud_nextcloud sh -c './occ config:system:set trusted_domains 1 --value=*'
+
+
+nextcloud_stack_name: nextcloud
+
 # traefik public-tag
 traefik_public_tag: "traefik-public"
 
