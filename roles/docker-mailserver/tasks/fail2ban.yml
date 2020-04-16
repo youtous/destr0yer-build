@@ -31,24 +31,29 @@
         port: smtp,pop3,pop3s,imap,imaps,submission,465,sieve
         mode: aggressive
         backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
 
       - name: pam-generic-docker
         port: '%(banaction_allports)s'
         backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
 
       - name: postfix-docker
         port: smtp,submission,465
         mode: aggressive
         backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
 
       - name: postfix-sasl-docker # special fix from docker-mailserver
         port: smtp,submission,465
         mode: aggressive
         backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
 
       - name: sieve-docker
         port: smtp,465,submission,sieve
         backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
 
 - name: Add rainloop filters to fail2ban
   become: yes
