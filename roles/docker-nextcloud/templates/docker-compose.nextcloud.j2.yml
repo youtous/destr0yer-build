@@ -51,6 +51,7 @@ services:
       - "MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}"
       - "MAIL_DOMAIN=${MAIL_DOMAIN}"
       - "NEXTCLOUD_UPDATE=1" # we use a custom command, required for always try to update / install
+      - "NEXTCLOUD_TRUSTED_DOMAINS={{ nextcloud_domain }}" # add the domain to trusted domains during installation
       # reverse proxy related, todo : consider using additional config : https://github.com/nextcloud/docker/pull/819#issuecomment-605646505
       - "NEXTCLOUD_OVERWRITEHOST={{ nextcloud_domain }}"
       - "NEXTCLOUD_OVERWRITEPROTOCOL=https"
