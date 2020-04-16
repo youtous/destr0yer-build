@@ -28,6 +28,10 @@ services:
         target: /tmp/config/reverse-proxy.config.php
       - source: logs.config.php
         target: /tmp/config/logs.config.php
+    logging:
+      options:
+        # this tag is used by fail2ban using `journalctl CONTAINER_TAG=nextcloud`
+        tag: "nextcloud"
     environment:
       # Database
       - "MYSQL_DATABASE=${MYSQL_DATABASE}"

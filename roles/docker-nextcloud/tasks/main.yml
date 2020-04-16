@@ -67,4 +67,8 @@
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ nextcloud_deploy_timestamp }}"
   notify: docker prune
+
+
+- name: Fail2ban for nextcloud
+  import_tasks: fail2ban.yml
 ...

@@ -8,4 +8,10 @@
     images: yes
     networks: yes
     builder_cache: yes
+
+- name: restart fail2ban
+  become: yes
+  systemd:
+    name: fail2ban
+    state: restarted
 ...

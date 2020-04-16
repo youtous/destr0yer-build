@@ -1,0 +1,27 @@
+---
+# fail2ban for nextcloud
+# resource : https://gist.github.com/GAS85/957e0b1a4f30120225a7be09b173eb24
+# test command : sudo fail2ban-regex systemd-journal  /etc/fail2ban/filter.d/nextcloud.conf --print-all-matched -v
+
+- name: Add nextcloud filters to fail2ban
+  become: yes
+  copy:
+    src: files/fail2ban/filter.d/{{ item }}
+    dest: /etc/fail2ban/filter.d/{{ item }}
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - nextcloud.conf
+  notify:
+    - restart fail2ban
+
+- name: Activate nextcloud jails using fail2ban
+  include_role:
+    name: fail2ban-additional
+  vars:
+    fail2ban_services:
+      - name: nextcloud
+        port: http,https
+        backend: systemd
+...
