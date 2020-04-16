@@ -1,6 +1,54 @@
 ---
 # fail2ban for mailserver
-# resource : https://github.com/crazy-max/docker-fail2ban/
+# test commands :
+# - sudo fail2ban-regex systemd-journal  /etc/fail2ban/filter.d/postfix.conf  -v --print-all-matched
+
+- name: Add mailserver filters to fail2ban
+  become: yes
+  copy:
+    src: files/fail2ban/filter.d/{{ item }}.conf
+    dest: /etc/fail2ban/filter.d/{{ item }}-mailserver-docker.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - common
+    - dovecot
+    - pam-generic
+    - postfix
+    - postfix-sasl
+    - sieve
+  notify:
+    - restart fail2ban
+
+- name: Activate mailserver jails using fail2ban
+  include_role:
+    name: fail2ban-additional
+  vars:
+    fail2ban_services:
+      - name: dovecot-mailserver-docker
+        port: smtp,pop3,pop3s,imap,imaps,submission,465,sieve
+        mode: aggressive
+        backend: systemd
+
+      - name: pam-generic-mailserver-docker
+        port: '%(banaction_allports)s'
+        backend: systemd
+
+      - name: postfix-mailserver-docker
+        port: smtp,submission,465
+        mode: aggressive
+        backend: systemd
+
+      - name: postfix-sasl-mailserver-docker # special fix from docker-mailserver
+        port: smtp,submission,465
+        mode: aggressive
+        backend: systemd
+
+      - name: sieve-mailserver-docker
+        port: smtp,465,submission,sieve
+        backend: systemd
+
 - name: Add rainloop filters to fail2ban
   become: yes
   copy:
