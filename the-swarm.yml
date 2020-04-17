@@ -81,6 +81,18 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-traefik"]
 
+- name: Setup traefik additionals on all
+  hosts: all
+  tasks:
+    - include_role:
+        name: docker-traefik-consul
+        tasks_from: fail2ban
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-traefik"]
+
 - name: Setup swarm_cronjon
   hosts: primary_manager
   roles:
