@@ -45,10 +45,10 @@ mariadb_users:
     # mydb.*:INSERT,UPDATE/anotherdb.*:SELECT/yetanotherdb.*:ALL
     priv: 'youtous.*:ALL/*.*:REQUIRESSL' # requires an SSL connection, not useful in local but useful for externals connections
     state: present # default value
-  - name: arb1t3r
+  - name: dev-arb1t3r
     host: "%" # allows connection from any host (filtered later by UFW)
     password: "poney"
-    priv: 'arb1t3r.*:ALL'
+    priv: 'dev-arb1t3r.*:ALL'
   - name: nextcloud
     host: "%" # allows connection from any host (filtered later by UFW)
     password: "nextcloud"
@@ -57,7 +57,7 @@ mariadb_users:
 # list of databases
 mariadb_databases:
   - name: youtous
-  - name: arb1t3r
+  - name: dev-arb1t3r
   - name: nextcloud
 
 ### End of database parameters ###

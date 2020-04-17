@@ -28,8 +28,8 @@ common_users:
   - username: "{{ arbiter_username }}"
     name: System's Arbiter
     groups: ['admin', 'sshusers', 'docker']
-    uid: 1005
-    home: /home/arbiter
+    uid: 1006
+    home: /home/dev-arbiter
     profile:
     ssh_key: "{{ arbiter_ssh_keys }}"
     password: "{{ arbiter_password }}"
