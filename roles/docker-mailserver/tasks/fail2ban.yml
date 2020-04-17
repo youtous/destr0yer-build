@@ -1,6 +1,60 @@
 ---
 # fail2ban for mailserver
-# resource : https://github.com/crazy-max/docker-fail2ban/
+# test commands :
+# sudo fail2ban-regex systemd-journal  /etc/fail2ban/filter.d/postfix-docker.conf  -v --print-all-matched
+# sudo fail2ban-regex systemd-journal  /etc/fail2ban/filter.d/dovecot-docker.conf   -v --print-all-matched
+
+- name: Add mailserver filters to fail2ban
+  become: yes
+  copy:
+    src: files/fail2ban/filter.d/{{ item }}.conf
+    dest: /etc/fail2ban/filter.d/{{ item }}-docker.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - common-mailserver
+    - dovecot
+    - pam-generic
+    - postfix
+    - postfix-sasl
+    - sieve
+  notify:
+    - restart fail2ban
+
+- name: Activate mailserver jails using fail2ban
+  include_role:
+    name: fail2ban-additional
+  vars:
+    fail2ban_services:
+      - name: dovecot-docker
+        port: smtp,pop3,pop3s,imap,imaps,submission,465,sieve
+        mode: aggressive
+        backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+
+      - name: pam-generic-docker
+        port: '%(banaction_allports)s'
+        backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+
+      - name: postfix-docker
+        port: smtp,submission,465
+        mode: aggressive
+        backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+
+      - name: postfix-sasl-docker # special fix from docker-mailserver
+        port: smtp,submission,465
+        mode: aggressive
+        backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+
+      - name: sieve-docker
+        port: smtp,465,submission,sieve
+        backend: systemd
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+
 - name: Add rainloop filters to fail2ban
   become: yes
   copy:

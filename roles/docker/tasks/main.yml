@@ -34,6 +34,10 @@
   import_role:
     name: docker-healthcheck-systemd
 
+- name: Add fail2ban docker filters
+  import_role:
+    name: fail2ban-docker
+
 - name: Monit docker
   import_role:
     name: monit-docker

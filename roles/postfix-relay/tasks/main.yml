@@ -1,5 +1,14 @@
 ---
 # This role contains postfix settings for relay usage
+- name: Uninstall other mailserver packages
+  become: yes
+  apt:
+    pkg:
+      - exim4
+      - sendmail
+    state: absent
+    autoremove: yes
+
 - name: Install postfix package
   become: yes
   apt:
@@ -54,6 +63,17 @@
   notify:
     - restart postfix
 
+
+- name: Change inet smtp port
+  become: yes
+  lineinfile:
+    path: /etc/postfix/master.cf
+    regex: '^\w+.*smtpd$'
+    line: "{{ postfix_smtp_port }}      inet  n       -       y       -       -       smtpd"
+  when: postfix_smtp_port != "smtp"
+  notify:
+    - restart postfix
+
 - name: Secure SASL password file
   become: yes
   file:
@@ -65,14 +85,6 @@
   service:
     name: postfix
     enabled: yes
-
-- name: Ensure exim4 is disabled
-  become: yes
-  service:
-    name: exim4
-    enabled: no
-    state: stopped
-  ignore_errors: True
 
 - name: Monit postfix
   import_role:

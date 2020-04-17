@@ -23,3 +23,6 @@ postmaster_email: "monitoring@youtous.me"
 
 # relay address and port used to deliver emails
 relayhost: "[localhost]:587"
+
+# you can change the default smtp port in order not to interfer with other mailserver
+postfix_smtp_port: "smtp"

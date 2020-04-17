@@ -1,7 +1,26 @@
 ---
+- name: Checking maximum length of jails
+  fail:
+    msg: Maximum length for fail2ban jail name is 20.
+  when: service.name|length > 20
+  with_items: "{{ fail2ban_services }}"
+  loop_control:
+    loop_var: service
+
+- name: Removing listed fail2ban jails
+  become: yes
+  file:
+    path: "/etc/fail2ban/jail.d/{{ service.name }}.conf"
+    state: absent
+  with_items: "{{ fail2ban_services_to_remove }}"
+  loop_control:
+    loop_var: service
+  notify:
+    - restart fail2ban
+    -
 # This role permits to append additional services to the fail2ban jail
 # see https://github.com/Oefenweb/ansible-fail2ban for naming details
-- name: Update fail2ban jail configuration with additional services
+- name: Updating fail2ban jail configuration with additional services
   become: yes
   template:
     src: files/additional-services.j2.conf

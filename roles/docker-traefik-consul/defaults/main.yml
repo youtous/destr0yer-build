@@ -5,6 +5,10 @@ traefik_version: "1.7"
 # name of the traefik network
 traefik_network: "traefik-public"
 
+# name of the consul network
+consul_external_network_enabled: false
+consul_external_network: "consul-public"
+
 # domain used by traefik UI
 traefik_ui_domain: "traefik.{{ hostname }}"
 

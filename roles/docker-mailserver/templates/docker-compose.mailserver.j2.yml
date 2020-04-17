@@ -47,8 +47,6 @@ services:
 
   mailserver:
     image: tvial/docker-mailserver:latest
-    hostname: "{{ mailserver_hostname }}"
-    domainname: "{{ mailserver_domain }}"
     ports:
       - target: 25
         published: 25
@@ -97,7 +95,7 @@ services:
       # General conf
       - ENABLE_POP3=0 # Pop3 is disabled
       - ONE_DIR=1
-      - "OVERRIDE_HOSTNAME={{ mailserver_fqdn }}"
+      - "OVERRIDE_HOSTNAME={{ mailserver_fqdn }}" # docker swarm does not allow to override hostname using docker-compose.yml
       - "DMS_DEBUG=$DMS_DEBUG"
       - "PERMIT_DOCKER=$PERMIT_DOCKER" # see # https://github.com/tomav/docker-mailserver/issues/1405#issuecomment-590106498
       - "SMTP_ONLY=$SMTP_ONLY" # only enable sending messages (using postfix)
@@ -151,15 +149,17 @@ services:
       - RELAY_PORT=25
       - RELAY_USER=
       - RELAY_PASSWORD=
-      # Fail2ban
-      - "ENABLE_FAIL2BAN=$ENABLE_FAIL2BAN"
+      # Fail2ban is not supported in swarm mode due to lack of cap_add: https://github.com/moby/moby/issues/25885
+      - "ENABLE_FAIL2BAN=0"
       # SASL Auth
       - ENABLE_SASLAUTHD=0
-    cap_add:
-      - NET_ADMIN
-      - SYS_PTRACE
     networks:
-      - mailserver
+      mailserver-fixed:
+        ipv4_address: "{{ mailserver_internal_network_server_ip }}"
+    logging:
+      options:
+        # this tag is used by fail2ban using `journalctl CONTAINER_TAG=mailserver-server`
+        tag: "mailserver-server"
     deploy:
       placement:
         constraints:
@@ -206,6 +206,9 @@ services:
         max_attempts: 3
     networks:
       - internal
+{% if mailserver_kv_external_network|length %}
+      - "{{ mailserver_kv_external_network }}"
+{% endif %}
 {% endif %}
 
 {% if rainloop_enabled %}
@@ -214,7 +217,7 @@ services:
     volumes:
       - rainloop-data:/rainloop/data
     networks:
-      - mailserver
+      - mailserver-fixed
       - {{ traefik_network }}
     logging:
       options:
@@ -288,10 +291,10 @@ services:
       - "COMPANY_NAME={{ mailserver.domain }}"
       - "SUPPORT_URL=https://autodiscover.{{ mailserver.domain }}"
       - "DOMAIN={{ mailserver.domain }}"
-      - "IMAP_HOST={{ mailserver_fqdn }}"
+      - "IMAP_HOST=imap.{{ mailserver_fqdn }}"
       - IMAP_PORT=993
       - IMAP_SOCKET=SSL
-      - "SMTP_HOST={{ mailserver_fqdn }}"
+      - "SMTP_HOST=smtp.{{ mailserver_fqdn }}"
       - SMTP_PORT=587
       - SMTP_SOCKET=STARTTLS
     networks:
@@ -342,15 +345,18 @@ services:
 networks:
   internal:
     internal: true
-  mailserver:
+  mailserver-fixed:
     driver: overlay
     driver_opts:
       encrypted: ""
-{% if rainloop_enabled %}
-  rainloop-network:
-    driver: overlay
-    driver_opts:
-      encrypted: ""
+    ipam:
+      config:
+        - subnet: "{{ mailserver_internal_network_whitelisted }}"
+{% if mailserver_ssl_use_traefik and mailserver_kv_external_network|length %}
+  {{ mailserver_kv_external_network }}:
+    external: true
+{% endif %}
+{% if rainloop_enabled or mailserver_enable_autodiscover %}
   {{ traefik_network }}:
     external: true
 {% endif %}
