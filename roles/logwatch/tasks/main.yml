@@ -14,6 +14,15 @@
     state: started
     enabled: yes
 
+- name: Override kernel.conf service | Remove networking operation
+  become: yes
+  copy:
+    src: files/services/kernel.conf
+    dest: /etc/logwatch/conf/services/kernel.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
 - name: Setup Logwatch
   become: yes
   import_role:
