@@ -10,8 +10,8 @@
 
 - name: Monit | Copy the sshd monit service files
   template:
-    src: "etc/monit/conf.d/{{item}}.j2"
-    dest: "/etc/monit/conf.d/{{item}}"
+    src: "etc/monit/conf.d/{{ item }}.j2"
+    dest: "/etc/monit/conf.d/{{ item }}"
   with_items:
     - sshd
     - cron
@@ -39,14 +39,14 @@
     - reload monit
 
 - name: Monit | Determine queued messages
-  command: "ls -1 {{monit_eventqueue_directory}}/"
+  command: "ls -1 {{ monit_eventqueue_directory }}/"
   register: monit_queued_messages
   when: not monit_email_enable or not monit_eventqueue_enable
   changed_when: False
 
 - name: Monit | Remove queued messages
   file:
-    path: "{{monit_eventqueue_directory}}/{{item}}"
+    path: "{{ monit_eventqueue_directory }}/{{ item }}"
     state: absent
   when: not monit_email_enable or not monit_eventqueue_enable
   with_items: "{{ monit_queued_messages.stdout_lines | default([]) }}"
