@@ -29,6 +29,13 @@
   import_role:
     name: motd
 
+- name: Register server environment in /etc/server_environment (dev,prod,test)
+  become: yes
+  copy:
+    content: "{{ server_environment }}"
+    dest: /etc/server_environment
+    mode: u=rw,g=r,o=r
+
 - name: Set fish as the root shell
   become: yes
   user:

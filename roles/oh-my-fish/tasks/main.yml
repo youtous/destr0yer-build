@@ -52,6 +52,18 @@
     force: yes
     state: link
 
+- name: Copy theme overriding modifications
+  become: yes
+  copy:
+    src: "files/themes/{{ omf_theme }}/override-{{ item }}"
+    dest: "{{ omf_theme_directory}}/{{ item }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  ignore_errors: true
+  with_items:
+    - fish_prompt.fish
+
 - name: Install OMF plugins
   become: yes
   git:
