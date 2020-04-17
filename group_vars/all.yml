@@ -7,6 +7,9 @@ users_default_shell: "/usr/bin/fish"
 # Time configuration
 timezone: "Europe/Paris"
 
+# Environment : dev,test,prod
+server_environment: "dev"
+
 # Network configuration
 domain_name: youtous.me
 domain_search: []
@@ -28,8 +31,8 @@ common_users:
   - username: "{{ arbiter_username }}"
     name: System's Arbiter
     groups: ['admin', 'sshusers', 'docker']
-    uid: 1005
-    home: /home/arbiter
+    uid: 1006
+    home: /home/dev-arbiter
     profile:
     ssh_key: "{{ arbiter_ssh_keys }}"
     password: "{{ arbiter_password }}"

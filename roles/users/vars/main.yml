@@ -1,4 +1,5 @@
 ---
 all_users: "{{ common_users | default([]) + host_users | default([]) }}"
 all_groups: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
+all_users_to_delete: "{{ common_users_to_delete | default([]) + host_users_to_delete | default([]) }}"
 ...

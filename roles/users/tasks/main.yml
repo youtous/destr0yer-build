@@ -36,6 +36,7 @@
     # concatenate the common and the specific to host users list
     users: "{{ all_users }}"
     groups_to_create: "{{ all_groups }}"
+    users_deleted: "{{ all_users_to_delete }}"
   no_log: true
 
 - name: Set permissions on home folder
