@@ -26,6 +26,9 @@
     dest: "{{ traefik_compose_file_dest }}"
     mode: u=rw,g=,o=
 
+- name: Fail2ban for traefik
+  import_tasks: fail2ban.yml
+
 # always redeploy permits to have always up to date
 - name: Deploy traefik
   docker_stack:
@@ -35,6 +38,3 @@
     compose:
       - "{{ traefik_compose_file_dest }}"
   notify: docker prune
-
-- name: Fail2ban for traefik
-  import_tasks: fail2ban.yml

@@ -40,6 +40,9 @@
     - src: logs.config.php
       dest: logs.config.php
 
+- name: Fail2ban for nextcloud
+  import_tasks: fail2ban.yml
+
 - name: Deploy Nextcloud
   docker_stack:
     state: present
@@ -67,8 +70,4 @@
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ nextcloud_deploy_timestamp }}"
   notify: docker prune
-
-
-- name: Fail2ban for nextcloud
-  import_tasks: fail2ban.yml
 ...

@@ -24,10 +24,6 @@
       mailserver.rainloop-data: "true"
   when: rainloop_enabled
 
-- name: Fail2ban for mailserver (rainloop, mailserver)
-  import_tasks: fail2ban.yml
-  when: mailserver_enable_host_fail2ban
-
 - name: Copy mailserver stack
   template:
     src: templates/docker-compose.mailserver.j2.yml
@@ -67,6 +63,9 @@
 
 - name: Register mailserver secrets
   import_tasks: secrets.yml
+
+- name: Fail2ban for docker-mailserver
+  import_tasks: fail2ban.yml
 
 - name: Deploy mailserver
   docker_stack:
@@ -120,7 +119,4 @@
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ mailserver_deploy_timestamp }}"
   notify: docker prune
-
-- name: Fail2ban for docker-mailserver
-  import_tasks: fail2ban.yml
 ...
