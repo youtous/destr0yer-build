@@ -43,7 +43,6 @@
     - ssh # define OpenSSH policy
     - ssh-user-keys # deploy ssh keys on the server
     - logrotate # manage log rotation
-    - logwatch # monitor server using emails
     - monit # monitor server using Monit
     - iptables-firewall # define firewall policy
     - fail2ban # define the fail2ban policy
@@ -53,6 +52,17 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["configure-systems"]
+
+- name: Configure destr0yers systems | logwatch
+  hosts: [base_destr0yers, commander_destr0yers]
+  remote_user: "{{ arbiter_username }}"
+  roles:
+    - logwatch # monitor server using emails
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["logwatch",  "configure-systems"]
 
 - name: Configure systems with specifics interfaces
   hosts: interfaces
