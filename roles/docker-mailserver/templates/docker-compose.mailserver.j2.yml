@@ -188,20 +188,16 @@ services:
         - "traefik.enable=true"
         - "traefik.port=443" # dummy port, not used
         - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.frontend.rule=Host:{{ mailserver_fqdn }}" # traefik ACME will handle creation of certificates for this domain
 
-        # Traefik service that listens to HTTP
-        - "traefik.redirectorservice.frontend.entryPoints=http"
-        - "traefik.redirectorservice.frontend.redirect.entryPoint=https"
-        # Traefik service that listens to HTTPS
-        - "traefik.webservice.frontend.entryPoints=https"
-        - "traefik.webservice.frontend.redirect.regex=.*"
+        - "traefik.frontend.rule=Host:{{ mailserver_fqdn }}" # traefik ACME will handle creation of certificates for this domain
+        - "traefik.frontend.entryPoints=https"
+        - "traefik.frontend.redirect.regex=.*"
 
 {% if rainloop_enabled %}
-        - "traefik.webservice.frontend.redirect.replacement=https://{{ rainloop_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
+        - "traefik.frontend.redirect.replacement=https://{{ rainloop_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
 {% else %}
         # render 404 could be a possibility, todo : with traefik v2
-        - "traefik.webservice.frontend.redirect.replacement=https://{{ mailserver_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
+        - "traefik.frontend.redirect.replacement=https://{{ mailserver_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
 {% endif %}
 {% endif %}
 
