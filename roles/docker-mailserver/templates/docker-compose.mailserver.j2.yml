@@ -52,7 +52,7 @@ services:
     image: tvial/docker-mailserver:latest
     command: >
       sh -c '
-      mkdir - p /var/mail-state/lib-shared/ &&
+      mkdir -p /var/mail-state/lib-shared/ &&
       cp /tmp/read-only/docker-mailserver/dhparams.pem /var/mail-state/lib-shared/dhparams.pem &&
       cp -R /tmp/read-only/* /tmp/ &&
       supervisord -c /etc/supervisor/supervisord.conf
@@ -177,27 +177,27 @@ services:
         constraints:
           - node.role == manager
           - node.labels.mailserver.mailserver-data == true
-      labels:
-{% if mailserver_ssl_use_traefik %}
-        - "mailserver-traefik.renew.domain={{ mailserver_fqdn }}" # enable auto certificate renewal
-
-        - traefik.enable=true
-        - "traefik.docker.network={{ traefik_network }}"
-        - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.frontend.rule=Host:{{ mailserver_fqdn }}" # traefik ACME will handle creation of certificates for this domain
-{% if rainloop_enabled %}
-        - "traefik.frontend.redirect.replacement=https://{{ rainloop_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
-        - "traefik.frontend.redirect.regex=.*"
-{% else %}
-        # render 404 could be a possibility, todo : with traefik v2
-{% endif %}
-
-{% endif %}
       restart_policy:
         condition: on-failure
         delay: 5s
         window: 120s
         max_attempts: 3
+      labels:
+        - "mailserver-traefik.renew.domain={{ mailserver_fqdn }}" # enable auto certificate renewal
+{% if mailserver_ssl_use_traefik %}
+        - "traefik.enable=true"
+        - "traefik.port=443"
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.frontend.entryPoints=https"
+        - "traefik.frontend.rule=Host:{{ mailserver_fqdn }}" # traefik ACME will handle creation of certificates for this domain
+        - "traefik.frontend.redirect.regex=.*"
+{% if rainloop_enabled %}
+        - "traefik.frontend.redirect.replacement=https://{{ rainloop_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
+{% else %}
+        # render 404 could be a possibility, todo : with traefik v2
+        - "traefik.frontend.redirect.replacement=https://{{ mailserver_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
+{% endif %}
+{% endif %}
 
 {% if mailserver_ssl_use_traefik %}
   certs-traefik:
@@ -217,9 +217,8 @@ services:
         window: 30s
         max_attempts: 3
     networks:
-      - internal
 {% if mailserver_kv_external_network|length %}
-      - "{{ mailserver_kv_external_network }}"
+      - {{ mailserver_kv_external_network }}
 {% endif %}
 {% endif %}
 
@@ -303,10 +302,10 @@ services:
       - "COMPANY_NAME={{ mailserver.domain }}"
       - "SUPPORT_URL=https://autodiscover.{{ mailserver.domain }}"
       - "DOMAIN={{ mailserver.domain }}"
-      - "IMAP_HOST=imap.{{ mailserver_fqdn }}"
+      - "IMAP_HOST=imap.{{ mailserver_domain }}"
       - IMAP_PORT=993
       - IMAP_SOCKET=SSL
-      - "SMTP_HOST=smtp.{{ mailserver_fqdn }}"
+      - "SMTP_HOST=smtp.{{ mailserver_domain }}"
       - SMTP_PORT=587
       - SMTP_SOCKET=STARTTLS
     networks:
