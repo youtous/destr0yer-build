@@ -191,7 +191,7 @@ services:
 
         - "traefik.frontend.rule=Host:{{ mailserver_fqdn }}" # traefik ACME will handle creation of certificates for this domain
         - "traefik.frontend.entryPoints=https"
-        - "traefik.frontend.redirect.regex=.*"
+        - "traefik.frontend.redirect.regex=.*" # always redirect
 
 {% if rainloop_enabled %}
         - "traefik.frontend.redirect.replacement=https://{{ rainloop_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
