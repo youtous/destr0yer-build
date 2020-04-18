@@ -79,7 +79,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-swarm-traefik"]
+  tags: ["traefik", "traefik-stack"]
 
 - name: Setup traefik additionals on all
   hosts: all
@@ -91,7 +91,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-swarm-traefik"]
+  tags: ["traefik", "traefik-f2b"]
 
 - name: Setup swarm_cronjon
   hosts: primary_manager
@@ -101,18 +101,27 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-swarm-cronjob"]
+  tags: ["cronjob"]
 
-- name: Setup docker-swarm monitoring tools
+- name: Setup docker-swarm portainer
   hosts: primary_manager
   roles:
     - docker-portainer # web manager of the cluster
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["portainer"]
+
+- name: Setup docker-swarm swarmprom
+  hosts: primary_manager
+  roles:
     - docker-swarmprom # monitoring and metrics tools
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-swarm-monitoring"]
+  tags: ["swarmprom"]
 
 - name: Setup docker elastic cluster
   hosts: primary_manager_elastic
@@ -122,9 +131,9 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-swarm-elastic"]
+  tags: ["elastic"]
 
-- name: Setup docker-swarm logging tools
+- name: Setup docker-swarm docker logging tools
   hosts: primary_manager_logging_elastic
   roles:
     - docker-logspout # output docker logs to elastic cluster
@@ -132,7 +141,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-swarm-elastic-collectors"]
+  tags: ["elastic-docker-logs-collector"]
 
 - name: Setup elastic for each node logging tools
   hosts: all_logging_elastic
@@ -142,5 +151,5 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["elastic-logging-collectors"]
+  tags: ["elastic-node-logs-collectors"]
 ...
