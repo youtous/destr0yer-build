@@ -47,6 +47,8 @@ services:
 
   mailserver:
     image: tvial/docker-mailserver:latest
+    command: >
+      sh -c 'cp -R /tmp/read-only/* /tmp/ && supervisord -c /etc/supervisor/supervisord.conf'
     ports:
       - target: 25
         published: 25
@@ -65,31 +67,31 @@ services:
       - mailserver-state:/var/mail-state
     configs:
       - source: opendkim-KeyTable
-        target: "/tmp/docker-mailserver/opendkim/opendkim-KeyTable"
+        target: "/tmp/read-only/docker-mailserver/opendkim/opendkim-KeyTable"
       - source: opendkim-SigningTable
-        target: "/tmp/docker-mailserver/opendkim/opendkim-SigningTable"
+        target: "/tmp/read-only/docker-mailserver/opendkim/opendkim-SigningTable"
       - source: whitelist_clients.local
-        target: "/tmp/docker-mailserver/whitelist_clients.local"
+        target: "/tmp/read-only/docker-mailserver/whitelist_clients.local"
       - source: postfix-regexp.cf
-        target: "/tmp/docker-mailserver/postfix-regexp.cf"
+        target: "/tmp/read-only/docker-mailserver/postfix-regexp.cf"
       - source: postfix-virtual.cf
-        target: "/tmp/docker-mailserver/postfix-virtual.cf"
+        target: "/tmp/read-only/docker-mailserver/postfix-virtual.cf"
       - source: postfix-relaymap.cf
-        target: "/tmp/docker-mailserver/postfix-relaymap.cf"
+        target: "/tmp/read-only/docker-mailserver/postfix-relaymap.cf"
       - source: postfix-send-access.cf
-        target: "/tmp/docker-mailserver/postfix-send-access.cf"
+        target: "/tmp/read-only/docker-mailserver/postfix-send-access.cf"
       - source: postfix-receive-access.cf
-        target: "/tmp/docker-mailserver/postfix-receive-access.cf"
+        target: "/tmp/read-only/docker-mailserver/postfix-receive-access.cf"
     secrets:
       - source: postfix-accounts.cf
-        target: "/tmp/docker-mailserver/postfix-accounts.cf"
+        target: "/tmp/read-only/docker-mailserver/postfix-accounts.cf"
       - source: postfix-sasl-password.cf
-        target: "/tmp/docker-mailserver/postfix-sasl-password.cf"
+        target: "/tmp/read-only/docker-mailserver/postfix-sasl-password.cf"
 {% for mailserver in mailserver_domains %}
       - source: dkim_private_{{ mailserver.domain }}
-        target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.private"
+        target: "/tmp/read-only/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.private"
       - source: dkim_public_{{ mailserver.domain }}
-        target: "/tmp/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.txt"
+        target: "/tmp/read-only/docker-mailserver/opendkim/keys/{{ mailserver.domain }}/mail.txt"
 {% endfor %}
     environment:
       # General conf
