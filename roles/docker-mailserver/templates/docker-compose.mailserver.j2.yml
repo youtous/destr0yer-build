@@ -33,6 +33,9 @@ secrets:
   postfix-sasl-password.cf:
     name: "{{ docker_mailserver_stack_name }}_postfix-sasl-password-${DEPLOY_TIMESTAMP}"
     external: true
+  dhparams.pem:
+    name: "{{ docker_mailserver_stack_name }}_dhparams.pem-${DEPLOY_TIMESTAMP}"
+    external: true
 # generate secrets associated to each domain
 {% for mailserver in mailserver_domains %}
   dkim_private_{{ mailserver.domain }}:
@@ -85,6 +88,8 @@ services:
     secrets:
       - source: postfix-accounts.cf
         target: "/tmp/read-only/docker-mailserver/postfix-accounts.cf"
+      - source: dhparams.pem
+        target: "/tmp/read-only/docker-mailserver/dhparams.pem"
       - source: postfix-sasl-password.cf
         target: "/tmp/read-only/docker-mailserver/postfix-sasl-password.cf"
 {% for mailserver in mailserver_domains %}

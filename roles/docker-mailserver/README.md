@@ -4,14 +4,15 @@
 
 1. Add the *mailserver* host in `hosts/mailserver.yml` 
 2. Remember to activate `consul_external_network_enabled` in `group_vars/{{ primary_manager }}.yml` in order to retrieve certificates from consul.
-3. Define `mailserver_hostname` and `mailserver_domain` in the previous file (see below example)
-4. Create a mariadb account and db for `rainloop` then define : `rainloop_mysql_database`, `rainloop_mysql_user` and `rainloop_mysql_password` 
-5. Register the maildomain and associated account, see `mailserver_domains` in `defaults/main.yml`
-6. Register domains in DNS (see below) : dkim, spf and check DMARC section
-7. Run ansible playbook (in order) *database creation*, *traefik update* then *mailserver*.
-8. Test DKIM, SPF and other mailserver conf, then you can activate DMARC ; check it with https://en.internet.nl/
+3. Generate dhparams and register `mailserver_dhparam` using `openssl dhparam -out certs/dhparams.pem 4096`
+4. Define `mailserver_hostname` and `mailserver_domain` in the previous file (see below example)
+5. Create a mariadb account and db for `rainloop` then define : `rainloop_mysql_database`, `rainloop_mysql_user` and `rainloop_mysql_password` 
+6. Register the maildomain and associated account, see `mailserver_domains` in `defaults/main.yml`
+7. Register domains in DNS (see below) : dkim, spf and check DMARC section
+8. Run ansible playbook (in order) *database creation*, *traefik update* then *mailserver*.
+9. Test DKIM, SPF and other mailserver conf, then you can activate DMARC ; check it with https://en.internet.nl/
 
-// todo : set recommanded mailserver_allowed_networks
+// todo : dmarc more detail, set recommanded mailserver_allowed_networks, ipv6 policy
 
 ## DNS Entries
 
@@ -114,5 +115,3 @@ _dmarc.svur.org.  IN   TXT v=DMARC1; p=reject; sp=none; fo=1; rua=mailto:dmarc_a
 #  A DMARC policy is inherited by all subdomains "unless subdomain policy is explicitly described using the sp tag"
 _dmarc.svur.org.  IN   TXT   "v=DMARC1; p=reject; aspf=s; adkim=s;"
 ```
-
-todo : dmarc more detailed policy, ipv6
