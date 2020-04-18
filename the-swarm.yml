@@ -114,7 +114,7 @@
   tags: ["portainer"]
 
 - name: Setup docker-swarm swarmprom
-  hosts: primary_manager
+  hosts: primary_manager_swarmprom
   roles:
     - docker-swarmprom # monitoring and metrics tools
   vars_files:

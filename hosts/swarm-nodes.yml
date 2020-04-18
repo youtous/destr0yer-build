@@ -6,7 +6,12 @@ primary_manager:
   hosts:
     heaven-pascal.youtous.dv:
 
-# uncomment to setup an elastic cluster
+# Primary manager to setup an swarmprom on the cluster
+primary_manager_swarmprom:
+  hosts:
+    heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
+
+# Primary manager to setup an elastic cluster
 primary_manager_elastic:
   hosts:
     heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
