@@ -12,7 +12,7 @@
 8. Run ansible playbook (in order) *database creation*, *traefik update* then *mailserver*.
 9. Test DKIM, SPF and other mailserver conf, then you can activate DMARC ; check it with https://en.internet.nl/
 
-// todo : dmarc more detail, set recommanded mailserver_allowed_networks, ipv6 policy
+// todo : dmarc more detail, set recommended mailserver_allowed_networks, ipv6 policy
 
 ## DNS Entries
 
