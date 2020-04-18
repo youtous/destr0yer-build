@@ -51,7 +51,12 @@ services:
   mailserver:
     image: tvial/docker-mailserver:latest
     command: >
-      sh -c 'cp -R /tmp/read-only/* /tmp/ && supervisord -c /etc/supervisor/supervisord.conf'
+      sh -c '
+      mkdir - p /var/mail-state/lib-shared/ &&
+      cp /tmp/read-only/docker-mailserver/dhparams.pem /var/mail-state/lib-shared/dhparams.pem &&
+      cp -R /tmp/read-only/* /tmp/ &&
+      supervisord -c /etc/supervisor/supervisord.conf
+      '
     ports:
       - target: 25
         published: 25
@@ -70,9 +75,9 @@ services:
       - mailserver-state:/var/mail-state
     configs:
       - source: opendkim-KeyTable
-        target: "/tmp/read-only/docker-mailserver/opendkim/opendkim-KeyTable"
+        target: "/tmp/read-only/docker-mailserver/opendkim/KeyTable"
       - source: opendkim-SigningTable
-        target: "/tmp/read-only/docker-mailserver/opendkim/opendkim-SigningTable"
+        target: "/tmp/read-only/docker-mailserver/opendkim/SigningTable"
       - source: whitelist_clients.local
         target: "/tmp/read-only/docker-mailserver/whitelist_clients.local"
       - source: postfix-regexp.cf

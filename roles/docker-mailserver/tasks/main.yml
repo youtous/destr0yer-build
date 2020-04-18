@@ -104,9 +104,9 @@
 
 
     # ssl must be overwritten when using traefik
-    SSL_TYPE: "{% if mailserver_ssl_use_traefik %} manual {% else %} {{  mailserver_ssl_type }} {% endif %}"
-    SSL_CERT_PATH: "{% if mailserver_ssl_use_traefik %} /etc/postfix/ssl/cert {% else %} {{  mailserver_ssl_cert_path }} {% endif %}"
-    SSL_KEY_PATH: "{% if mailserver_ssl_use_traefik %} /etc/postfix/ssl/key {% else %} {{  mailserver_ssl_key_path }} {% endif %}"
+    SSL_TYPE: "{% if mailserver_ssl_use_traefik %}manual{% else %}{{  mailserver_ssl_type }}{% endif %}"
+    SSL_CERT_PATH: "{% if mailserver_ssl_use_traefik %}/etc/postfix/ssl/cert{% else %}{{  mailserver_ssl_cert_path }}{% endif %}"
+    SSL_KEY_PATH: "{% if mailserver_ssl_use_traefik %}/etc/postfix/ssl/key{% else %}{{  mailserver_ssl_key_path }}{% endif %}"
 
     SSL_TRAEFIK_VERSION: "{{ mailserver_ssl_traefik_version }}"
     SSL_TRAEFIK_SOURCE: "{{ mailserver_ssl_traefik_source }}"
