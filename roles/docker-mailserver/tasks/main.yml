@@ -2,17 +2,6 @@
 # This role setup a Mailserver in a docker swarm cluster
 # see https://github.com/tomav/docker-mailserver for more details
 
-- name: "Ensure mail services are disabled"
-  become: yes
-  service:
-    name: "{{ item }}"
-    enabled: no
-    state: stopped
-  ignore_errors: True
-  with_items:
-    - postfix
-    - exim4
-
 - name: Ensure mailserver directory exists
   file:
     state: directory
