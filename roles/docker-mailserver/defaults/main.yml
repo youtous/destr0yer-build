@@ -14,6 +14,9 @@ mailserver_kv_external_network: "consul-public" # same as traefik-consul, set em
 
 
 mailserver_tls_level: modern # drop old tls ciphers
+# please generate dh params manually using
+# openssl dhparam -out certs/dhparams.pem 4096
+mailserver_dhparams:
 
 # manual, letsencrypt, custom, self-signed
 mailserver_ssl_type:
