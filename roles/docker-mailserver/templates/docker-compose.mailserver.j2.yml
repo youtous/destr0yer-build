@@ -166,8 +166,7 @@ services:
       # SASL Auth
       - ENABLE_SASLAUTHD=0
     networks:
-      mailserver-fixed:
-        ipv4_address: "{{ mailserver_internal_network_server_ip }}"
+      - mailserver-fixed
     logging:
       options:
         # this tag is used by fail2ban using `journalctl CONTAINER_TAG=mailserver-server`
