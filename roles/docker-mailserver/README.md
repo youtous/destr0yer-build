@@ -13,7 +13,7 @@
 8. Run ansible playbook (in order) *database creation*, *traefik update* then *mailserver*.
 9. Test DKIM, SPF and other mailserver conf, then you can activate DMARC ; check it with https://en.internet.nl/
 
-// todo : dmarc more detail, set recommended mailserver_allowed_networks, ipv6 policy
+// todo : set recommended mailserver_allowed_networks, ipv6 policy
 
 ## DNS Entries
 
@@ -80,15 +80,17 @@ testing.svur.org. IN TXT "v=spf1 mx ~all"
 ```
 
 ### DKIM
+(better) https://github.com/internetstandards/toolbox-wiki
 https://github.com/tomav/docker-mailserver/wiki/Configure-DKIM
 
 Use generated DKIM public key (mailserver_heaven_pascal_dkim_public)
 
 ```text
 ; OpenDKIM
-mail._domainkey.testing.svur.org.	IN	TXT	( "v=DKIM1; k=rsa; "
-	  "p=AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN" )  ; ----- DKIM key mail for domain.tld
+mail._domainkey.testing.svur.org.	IN	TXT	"v=DKIM1; k=rsa; "
+	  "p=AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN/AZERTYUIOPQSDFGHJKLMWXCVBN" 
 
+_adsp._domainkey.testing.svur.org. IN TXT "dkim=all"
 ```
 
 ```text
@@ -98,17 +100,21 @@ p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArRlf7iVBAlgA5gL1QpD525s5IIwrg3hSTt
 ```
 ### DMARC
 https://serverfault.com/posts/851254/revisions
-
+https://github.com/internetstandards/toolbox-wiki/blob/master/DMARC-how-to.md
 
 Because DMARC is herited from the parent domain, in case of subdomains: 
 You can add sp=none to the parent domain's DMARC reject policy so that none of your sub domains inherit the reject policy until you are ready to implement. 
-```text
-_dmarc.svur.org.  IN   TXT v=DMARC1; p=reject; sp=none; fo=1; rua=mailto:dmarc_agg@auth.returnpath.net; ruf=mailto:dmarc_afrf@auth.returnpath.net
-```
+
 
 **/!\ THEN ONLY WHEN DKIM AND SPF ARE TESTED AND PASS TESTS**
  
 ```text
-#  A DMARC policy is inherited by all subdomains "unless subdomain policy is explicitly described using the sp tag"
-_dmarc.svur.org.  IN   TXT   "v=DMARC1; p=reject; aspf=s; adkim=s;"
+v=DMARC1; p=quarantine; rf=afrf; sp=reject; fo=1; rua=mailto:postmaster+dmarcreports@svur.org;  ruf=mailto:postmaster+dmarcfails@svur.org; adkim=s; aspf=s; pct=100
 ```
+
+### Tests
+
+- https://en.internet.nl/
+- https://www.mail-tester.com
+- https://www.hardenize.com/
+- https://www.immuniweb.com/ssl/
