@@ -1,3 +1,3 @@
 {% for mailserver in mailserver_domains %}
-@{{ mailserver.domain }} mail._domainkey.{{ mailserver.domain }}
+*@{{ mailserver.domain }} mail._domainkey.{{ mailserver.domain }}
 {% endfor %}
