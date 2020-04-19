@@ -25,6 +25,15 @@ configs:
   opendkim-SigningTable:
     name: "{{ docker_mailserver_stack_name }}_opendkim-SigningTable-${DEPLOY_TIMESTAMP}"
     file: "./config/opendkim/SigningTable"
+  dovecot.cf:
+    name: "{{ docker_mailserver_stack_name }}_dovecot-${DEPLOY_TIMESTAMP}"
+    file: "./config/dovecot.cf"
+  postfix-main.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-main-${DEPLOY_TIMESTAMP}"
+    file: "./config/postfix-main.cf"
+  postfix-master.cf:
+    name: "{{ docker_mailserver_stack_name }}_postfix-master-${DEPLOY_TIMESTAMP}"
+    file: "./config/postfix-master.cf"
 
 secrets:
   postfix-accounts.cf:
@@ -90,6 +99,12 @@ services:
         target: "/tmp/read-only/docker-mailserver/postfix-send-access.cf"
       - source: postfix-receive-access.cf
         target: "/tmp/read-only/docker-mailserver/postfix-receive-access.cf"
+      - source: dovecot.cf
+        target: "/tmp/read-only/docker-mailserver/dovecot.cf"
+      - source: postfix-main.cf
+        target: "/tmp/read-only/docker-mailserver/postfix-main.cf"
+      - source: postfix-master.cf
+        target: "/tmp/read-only/docker-mailserver/postfix-master.cf"
     secrets:
       - source: postfix-accounts.cf
         target: "/tmp/read-only/docker-mailserver/postfix-accounts.cf"
