@@ -303,10 +303,10 @@ services:
       - "COMPANY_NAME={{ mailserver.domain }}"
       - "SUPPORT_URL=https://autodiscover.{{ mailserver.domain }}"
       - "DOMAIN={{ mailserver.domain }}"
-      - "IMAP_HOST=imap.{{ mailserver_domain }}"
+      - "IMAP_HOST={{ mailserver_fqdn }}"
       - IMAP_PORT=993
       - IMAP_SOCKET=SSL
-      - "SMTP_HOST=smtp.{{ mailserver_domain }}"
+      - "SMTP_HOST={{ mailserver_fqdn }}"
       - SMTP_PORT=587
       - SMTP_SOCKET=STARTTLS
     networks:
