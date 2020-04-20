@@ -149,6 +149,8 @@ mx_entries:
 
 ### Tests
 
+For sending emails, use `swaks`, in a debian container.
+
 free:
 - https://github.com/drwetter/testssl.sh.
 - https://en.internet.nl/
