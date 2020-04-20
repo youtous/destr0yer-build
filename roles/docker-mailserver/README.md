@@ -100,6 +100,7 @@ _adsp._domainkey.testing.svur.org. IN TXT "dkim=all"
 v=DKIM1; k=rsa; 
 p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArRlf7iVBAlgA5gL1QpD525s5IIwrg3hSTtuC9exziZAV3tNSi4QnuZoIPsAepyJikSBElkRwLxoG5a1XBzrg0p7K2bE0DHNXBPccV/Xg2/PDXLHicnMvItNOCn3TXI0cYLZh7bGeHL4pDggxgQIFmgx4RF1fxhHA+Sh+Cz34mXsGWZoAWPBb3xZnB7+PJNQ8ZIFs622DNWVk00EGY9ZnbPn5fiEU8IFRHsCAuKALgvkyxlqpAQ+NNEgAfFaBYZrbJDPLgBILvP++m+FqITZiJVcQ7ayl1CL8+sMv69uAsxfjNRRj26UE+nxPU9DOUWAn72M+r42J+QPird+DXKRFZQIDAQAB
 ```
+
 ### DMARC
 https://serverfault.com/posts/851254/revisions
 https://github.com/internetstandards/toolbox-wiki/blob/master/DMARC-how-to.md
@@ -115,7 +116,28 @@ v=DMARC1; p=quarantine; rf=afrf; sp=reject; fo=1; rua=mailto:postmaster+dmarcrep
 ```
 
 ### MTA ?
-https://www.hardenize.com/blog/mta-sts
+https://www.digitalocean.com/community/tutorials/how-to-configure-mta-sts-and-tls-reporting-for-your-domain-using-apache-on-ubuntu-18-04
+
+Add the following DNS records:
+```text
+_mta-sts.testing.svur.org. IN TXT "v=STSv1; id=date +%s" # <---- set it to "date +%s" => increment the id at every change (use the date)
+_smtp._tls.testing.svur.org. IN TXT "v=TLSRPTv1; rua=mailto:postmaster+tls-reports@testing.svur.org"
+```
+
+MTA requires to list mx domains. Use `mta_sts` for mta configuration.
+Start with the following parameters:
+
+```yaml
+max_age: 86401
+mode: testing 
+```
+
+Wait a month upon configuration has been validated (read reports), then edit the `mta_sts`:
+**/!\\** Don't forget to increment `_mta-sts.testing.svur.org.` with the new date using `date +%s`.
+```yaml
+max_age: 604800 # one week
+mode: enforce 
+```
 
 ### Tests
 
