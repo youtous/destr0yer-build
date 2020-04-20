@@ -1,0 +1,6 @@
+version: {{ domain.mta_sts.version|default(mailserver_default_mta_sts_version) }}
+mode: {{ domain.mta_sts.mode }}
+{% for mx_domain in domain.mta_sts.mx_entries %}
+mx: {{ mx_domain }}
+{% endfor %}
+max_age: {{ domain.mta_sts.max_age }}

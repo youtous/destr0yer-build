@@ -81,7 +81,15 @@ mailserver_domains:
   #  accounts:
   #    - username:
   #      bcrypt_password: "" # use bcrypt-passwd.sh script to generate password
-
+  #  mta_sts: # ref 
+  #    version: # define mts-sts policy version (only one, don't define and use default value)
+  #    # policy lifetime positive integer up to 31557600.
+  #    # recommended is 604800
+  #    # testing value is 86401
+  #    max_age:
+  #    mode: # choose between testing, enforce (prod) and none, use enforce after tests
+  #    mx_entries:
+  #      - mailserver.heaven-pascal.youtous.me # each mx entry must be listed here
 
 # Reporting
 mailserver_reporting_interval: "weekly"

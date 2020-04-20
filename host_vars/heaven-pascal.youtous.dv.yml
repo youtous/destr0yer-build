@@ -123,6 +123,15 @@ mailserver_domains:
     aliases_regexp:
       - regexp: /^test[0-9][0-9]*@heaven-pascal.youtous.me/
         to: monitoring@heaven-pascal.youtous.me
+#    mta_sts:
+#      version: # define mts-sts policy version (only one, don't define and use default value)
+#      # policy lifetime positive integer up to 31557600.
+#      # recommended is 604800
+#      # testing value is 86401
+#      max_age:
+#      mode: # choose between testing, enforce (prod) and none, use enforce after tests
+#      mx_entries:
+#        - mx1.domain.com # each mx entry must be listed here
 ### End of mailserver parameters ###
 
 ### Begin of Backup storage parameters ###

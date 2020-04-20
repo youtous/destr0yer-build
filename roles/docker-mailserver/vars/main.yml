@@ -15,3 +15,14 @@ mailserver_internal_network_whitelisted: "172.30.1.0/24"
 
 
 mailserver_internal_fail2ban_ignoreips: "['127.0.0.1/8', '::1'] + {{ fail2ban_trusted_ips }} + ['{{ mailserver_internal_network_whitelisted }}']"
+
+# MTA-STS default policy
+mailserver_default_mta_version: "STSv1"
+# enforce, testing or none to disable
+mailserver_default_mta_mode: "testing"
+# policy lifetime positive integer up to 31557600.
+# recommended is 604800
+# testing value is 86401
+mailserver_default_mta_max_age: 86401
+# traefik params against dos
+mailserver_mta_max_requests_3s_per_client: 15
