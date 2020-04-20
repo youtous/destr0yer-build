@@ -15,6 +15,9 @@
 
 // todo : set recommended mailserver_allowed_networks, ipv6 policy
 
+_A complete reference to keep this guide updated: https://mecsa.jrc.ec.europa.eu/en/postfix_<br/>
+_In case of doubt about a paramater, use https://ssl-config.mozilla.org/._
+_Reference for testing https://github.com/drwetter/testssl.sh._
 ## DNS Entries
 
 ```text
@@ -112,9 +115,17 @@ You can add sp=none to the parent domain's DMARC reject policy so that none of y
 v=DMARC1; p=quarantine; rf=afrf; sp=reject; fo=1; rua=mailto:postmaster+dmarcreports@svur.org;  ruf=mailto:postmaster+dmarcfails@svur.org; adkim=s; aspf=s; pct=100
 ```
 
+### MTA ?
+https://www.hardenize.com/blog/mta-sts
+
 ### Tests
 
+free:
+- https://github.com/drwetter/testssl.sh.
 - https://en.internet.nl/
 - https://www.mail-tester.com
+- https://mecsa.jrc.ec.europa.eu
+
+commercials:
 - https://www.hardenize.com/
 - https://www.immuniweb.com/ssl/
