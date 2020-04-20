@@ -107,8 +107,9 @@ https://github.com/internetstandards/toolbox-wiki/blob/master/DMARC-how-to.md
 Because DMARC is herited from the parent domain, in case of subdomains: 
 You can add sp=none to the parent domain's DMARC reject policy so that none of your sub domains inherit the reject policy until you are ready to implement. 
 
+Nevertheless, it's a good choice to define a dmarc policy for each domain or subdomain.
 
-**/!\ THEN ONLY WHEN DKIM AND SPF ARE TESTED AND PASS TESTS**
+**/!\ THEN ACTIVATE DMARC ONLY WHEN DKIM AND SPF ARE TESTED AND PASS TESTS**
  
 ```text
 v=DMARC1; p=quarantine; rf=afrf; sp=reject; fo=1; rua=mailto:postmaster+dmarcreports@svur.org;  ruf=mailto:postmaster+dmarcfails@svur.org; adkim=s; aspf=s; pct=100
