@@ -130,7 +130,7 @@ mailserver_domains:
       max_age: 86401
       mode: testing # choose between testing, enforce (prod) and none, use enforce after tests
       mx_entries:
-        - mailserver.heaven-pascal.youtous.dv # each mx entry must be listed here
+        - heaven-pascal.youtous.dv # each mx entry must be listed here
 ### End of mailserver parameters ###
 
 ### Begin of Backup storage parameters ###

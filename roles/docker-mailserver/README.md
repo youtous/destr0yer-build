@@ -54,7 +54,6 @@ autoconfig.testing.svur.org.		1	IN	CNAME	krug.svur.org.
 autodiscover.testing.svur.org.		1	IN	CNAME	krug.svur.org.
 mailserver.testing.svur.org.		1	IN	CNAME	krug.svur.org.
 
-
 ;; MX Records
 testing.svur.org.			1	IN	MX	10 mailserver.testing.svur.org.
 
@@ -120,6 +119,8 @@ https://www.digitalocean.com/community/tutorials/how-to-configure-mta-sts-and-tl
 
 Add the following DNS records:
 ```text
+mta-sts.testing.svur.org.		1	IN	CNAME	testing.svur.org.
+
 _mta-sts.testing.svur.org. IN TXT "v=STSv1; id=date +%s" # <---- set it to "date +%s" => increment the id at every change (use the date)
 _smtp._tls.testing.svur.org. IN TXT "v=TLSRPTv1; rua=mailto:postmaster+tls-reports@testing.svur.org"
 ```
@@ -130,6 +131,8 @@ Start with the following parameters:
 ```yaml
 max_age: 86401
 mode: testing 
+mx_entries:
+    - testing.svur.org # list each MX DNS entry
 ```
 
 Wait a month upon configuration has been validated (read reports), then edit the `mta_sts`:
@@ -137,6 +140,8 @@ Wait a month upon configuration has been validated (read reports), then edit the
 ```yaml
 max_age: 604800 # one week
 mode: enforce 
+mx_entries:
+    - testing.svur.org # list each MX DNS entry
 ```
 
 ### Tests

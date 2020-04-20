@@ -89,7 +89,7 @@ mailserver_domains:
   #    max_age:
   #    mode: # choose between testing, enforce (prod) and none, use enforce after tests
   #    mx_entries:
-  #      - mailserver.heaven-pascal.youtous.me # each mx entry must be listed here
+  #      - heaven-pascal.youtous.me # each mx entry must be listed here
 
 # Reporting
 mailserver_reporting_interval: "weekly"
