@@ -251,19 +251,7 @@ services:
         - traefik.port=80
         - "traefik.tags={{ traefik_public_tag }}"
         - "traefik.docker.network={{ traefik_network }}"
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
-{% for mailserver in mailserver_domains %}
-{% if mailserver.mta_sts is defined %}
-        # Main Traefik service configuration (common for webservice and admin)
-        - "traefik.{{ mailserver.domain|replace('.','-') }}.frontend.rule=Host:mta-sts.{{ mailserver.domain }}"
-        # HSTS
-        - "traefik.{{ mailserver.domain|replace('.','-') }}.headers.SSLHost=mta-sts.{{ mailserver.domain }}"
-{% endif %}
-{% endfor %}
+        - "traefik.frontend.entryPoints=https"
         - "traefik.frontend.headers.SSLRedirect=true"
         - "traefik.frontend.headers.STSSeconds=315360000"
         - "traefik.frontend.headers.STSIncludeSubdomains=true"
@@ -277,6 +265,14 @@ services:
         - "traefik.frontend.rateLimit.rateSet.rate3s.period=3s"
         - "traefik.frontend.rateLimit.rateSet.rate3s.average={{ mailserver_mta_sts_max_requests_3s_per_client|int }}"
         - "traefik.frontend.rateLimit.rateSet.rate3s.burst={{ mailserver_mta_sts_max_requests_3s_per_client * 2|int }}"
+{% for mailserver in mailserver_domains %}
+{% if mailserver.mta_sts is defined %}
+        # Main Traefik service configuration (common for webservice and admin)
+        - "traefik.{{ mailserver.domain|replace('.','-') }}.frontend.rule=Host:mta-sts.{{ mailserver.domain }}"
+        # HSTS
+        - "traefik.{{ mailserver.domain|replace('.','-') }}.frontend.headers.SSLHost=mta-sts.{{ mailserver.domain }}"
+{% endif %}
+{% endfor %}
         # requests size limits: currently disabled due to a bug with 302 requests; todo fix it
         # - "traefik.backend.buffering.maxRequestBodyBytes={{ rainloop_max_request_size_megabytes * 1000000|int }}" # maximum request size allowed
         # - traefik.backend.buffering.memRequestBodyBytes=2097152 # after this limit, request will be buffered on disk instead of RAM
