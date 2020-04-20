@@ -34,6 +34,9 @@ configs:
   postfix-master.cf:
     name: "{{ docker_mailserver_stack_name }}_postfix-master-${DEPLOY_TIMESTAMP}"
     file: "./config/postfix-master.cf"
+  ffdhe4096.pem:
+    name: "{{ docker_mailserver_stack_name }}_ffdhe4096.pem-${DEPLOY_TIMESTAMP}"
+    file: "./files/ffdhe4096.pem"
 
 secrets:
   postfix-accounts.cf:
@@ -41,9 +44,6 @@ secrets:
     external: true
   postfix-sasl-password.cf:
     name: "{{ docker_mailserver_stack_name }}_postfix-sasl-password-${DEPLOY_TIMESTAMP}"
-    external: true
-  dhparams.pem:
-    name: "{{ docker_mailserver_stack_name }}_dhparams.pem-${DEPLOY_TIMESTAMP}"
     external: true
 # generate secrets associated to each domain
 {% for mailserver in mailserver_domains %}
@@ -57,12 +57,13 @@ secrets:
 
 services:
 
+  # override default dhparams with ffdhe4096; when times will come PLEASE DISABLE DHE algorithms
   mailserver:
     image: tvial/docker-mailserver:latest
     command: >
       sh -c '
       mkdir -p /var/mail-state/lib-shared/ &&
-      cp /tmp/read-only/docker-mailserver/dhparams.pem /var/mail-state/lib-shared/dhparams.pem &&
+      cp /tmp/read-only/docker-mailserver/ffdhe4096.pem /var/mail-state/lib-shared/dhparams.pem &&
       cp -R /tmp/read-only/* /tmp/ &&
       supervisord -c /etc/supervisor/supervisord.conf
       '
@@ -105,11 +106,11 @@ services:
         target: "/tmp/read-only/docker-mailserver/postfix-main.cf"
       - source: postfix-master.cf
         target: "/tmp/read-only/docker-mailserver/postfix-master.cf"
+      - source: ffdhe4096.pem
+        target: "/tmp/read-only/docker-mailserver/ffdhe4096.pem"
     secrets:
       - source: postfix-accounts.cf
         target: "/tmp/read-only/docker-mailserver/postfix-accounts.cf"
-      - source: dhparams.pem
-        target: "/tmp/read-only/docker-mailserver/dhparams.pem"
       - source: postfix-sasl-password.cf
         target: "/tmp/read-only/docker-mailserver/postfix-sasl-password.cf"
 {% for mailserver in mailserver_domains %}

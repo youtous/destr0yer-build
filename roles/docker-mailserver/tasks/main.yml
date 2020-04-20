@@ -37,6 +37,7 @@
   with_items:
     - config
     - config/opendkim
+    - files
 
 - name: Copy mailserver config
   template:
@@ -66,6 +67,15 @@
       dest: postfix-main.cf
     - src: postfix-master.cf.j2
       dest: postfix-master.cf
+
+- name: Copy mailserver files
+  copy:
+    src: "files/{{ item.src }}"
+    dest: "{{ mailserver_compose_file_dest_directory }}/files/{{ item.dest }}"
+    mode: u=rw,g=,o=
+  with_items:
+    - src: ffdhe4096.pem
+      dest: ffdhe4096.pem
 
 - name: Register mailserver secrets
   import_tasks: secrets.yml
