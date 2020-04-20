@@ -135,7 +135,7 @@ mx_entries:
     - testing.svur.org # list each MX DNS entry
 ```
 
-Then test with https://aykevl.nl/apps/mta-sts/.
+Then test with https://www.mailhardener.com/tools/mta-sts-validator.
 
 Wait a month upon configuration has been validated (read reports), then edit the `mta_sts`:
 **/!\\** Don't forget to increment `_mta-sts.testing.svur.org.` with the new date using `date +%s`.
