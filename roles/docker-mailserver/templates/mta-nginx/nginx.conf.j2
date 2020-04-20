@@ -1,1 +1,49 @@
-# todo : only wellknown, redirect other access
+worker_processes auto;
+pid /tmp/nginx.pid;
+
+events {
+    worker_connections 1024;
+    use epoll;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    access_log off;
+    error_log /dev/stderr error;
+
+    tcp_nopush on;
+    tcp_nodelay on;
+    server_tokens off;
+
+
+
+    # deny untrusted
+    server {
+        listen      80;
+        server_name "";
+        return      444;
+    }
+
+
+{% for mailserver in mailserver_domains %}
+    {% if mailserver.mta_sts is defined %}
+
+    server {
+        listen      80;
+        server_name     mta-sts.{{ mailserver.domain }};
+
+        location / {
+            return 403 "MTA-STS Only";
+        }
+
+        location /.well-known/mta-sts.txt {
+            alias /var/www/mta-sts.{{ mailserver.domain }}/.well-known/mta-sts.txt;
+        }
+    }
+
+    {% endif %}
+{% endfor %}
+
+}

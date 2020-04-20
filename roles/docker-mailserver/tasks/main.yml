@@ -29,6 +29,7 @@
     src: templates/docker-compose.mailserver.j2.yml
     dest: "{{ mailserver_compose_file_dest }}"
     mode: u=rw,g=,o=
+  no_log: true
 
 - name: Ensure mailserver config directory exists
   file:
@@ -67,6 +68,7 @@
       dest: postfix-main.cf
     - src: postfix-master.cf.j2
       dest: postfix-master.cf
+  no_log: true
 
 - name: Copy mailserver files
   copy:
@@ -138,4 +140,5 @@
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ mailserver_deploy_timestamp }}"
   notify: docker prune
+  no_log: true
 ...

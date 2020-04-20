@@ -1,4 +1,11 @@
 ---
+- name: Ensure MTA-STS directory exists
+  file:
+    state: directory
+    path: "{{ mailserver_compose_file_dest_directory }}/{{ item }}"
+  with_items:
+    - mta-nginx
+
 - name: Generate MTA-STS policies
   template:
     src: "templates/mta-nginx/mta-sts.txt.j2"
@@ -8,10 +15,12 @@
   loop_control:
     loop_var: domain
   when: domain.mta_sts is defined
+  no_log: true
 
 - name: Generate nginx MTA-STS configuration
   template:
     src: "templates/mta-nginx/nginx.conf.j2"
     dest: "{{ mailserver_compose_file_dest_directory }}/mta-nginx/nginx.conf"
     mode: u=rw,g=,o=
+  no_log: true
 ...
