@@ -135,7 +135,7 @@ Start with the following parameters:
 max_age: 86401
 mode: testing 
 mx_entries:
-    - testing.svur.org # list each MX DNS entry
+    - mailserver.testing.svur.org # list each MX DNS entry
 ```
 
 Then test with https://www.mailhardener.com/tools/mta-sts-validator.
@@ -146,7 +146,7 @@ Wait a month upon configuration has been validated (read reports), then edit the
 max_age: 604800 # one week
 mode: enforce 
 mx_entries:
-    - testing.svur.org # list each MX DNS entry
+    - mailserver.testing.svur.org # list each MX DNS entry
 ```
 
 ### Rainloop
@@ -163,10 +163,12 @@ Disable certificate verification (it runs inside the stack only).
 For sending emails, use `swaks`, in a debian container.
 
 free:
-- https://github.com/drwetter/testssl.sh.
+- https://github.com/drwetter/testssl.sh
 - https://en.internet.nl/
 - https://www.mail-tester.com
 - https://mecsa.jrc.ec.europa.eu
+- https://www.mailhardener.com/tools/mta-sts-validator
+- https://aykevl.nl/apps/mta-sts/
 
 commercials:
 - https://www.hardenize.com/
