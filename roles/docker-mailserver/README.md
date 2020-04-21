@@ -120,7 +120,7 @@ https://www.digitalocean.com/community/tutorials/how-to-configure-mta-sts-and-tl
 
 Add the following DNS records:
 ```text
-mta-sts.testing.svur.org.		1	IN	CNAME	testing.svur.org.
+mta-sts.testing.svur.org.		1	IN	CNAME	mailserver.testing.svur.org.
 
 _mta-sts.testing.svur.org. IN TXT "v=STSv1; id=date +%s" # <---- set it to "date +%s" => increment the id at every change (use the date)
 _smtp._tls.testing.svur.org. IN TXT "v=TLSRPTv1; rua=mailto:postmaster+tls-reports@testing.svur.org"
