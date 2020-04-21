@@ -309,6 +309,15 @@ services:
     networks:
       - mailserver-fixed
       - {{ traefik_network }}
+{% if rainloop_on_mysql_host or rainloop_on_mailserver_host %}
+    extra_hosts:
+{% if rainloop_on_mysql_host %}
+      - "mysql_server:{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+{% endif %}
+{% if rainloop_on_mailserver_host %}
+      - "{{ mailserver_fqdn }}:{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+{% endif %}
+{% endif %}
     logging:
       options:
         # this tag is used by fail2ban using `journalctl CONTAINER_TAG=mailserver-rainloop`
