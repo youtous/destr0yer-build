@@ -11,7 +11,7 @@
 7. Eventually, redefine `rainloop_domain`
 8. Run ansible playbook (in order) *database creation*, *traefik update* then *mailserver*.
 9. Test DKIM, SPF and other mailserver conf, then you can activate DMARC ; check it with https://en.internet.nl/
-10. _(rainloop enabled)_ go to https://rainloop/?admin and configure the db and the mailserver (mysql (`mysql_server` for hostname), sieve, smtp, imap)
+10. _(rainloop enabled)_ see Rainloop section
 
 // todo ipv6 policy
 
@@ -148,6 +148,15 @@ mode: enforce
 mx_entries:
     - testing.svur.org # list each MX DNS entry
 ```
+
+### Rainloop
+Go to https://rainloop/?admin and configure the db and the mailserver :
+
+ - mysql : `mysql_server` for hostname, and the db-user/db-name of you choice.
+ - sieve, smtp : `mailserver` STARTLS:587
+ - iamp : `mailserver` SSL/TLS:993
+ 
+Disable certificate verification (it runs inside the stack only).
 
 ### Tests
 
