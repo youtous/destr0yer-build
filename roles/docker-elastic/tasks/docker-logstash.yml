@@ -5,7 +5,8 @@
 
 - name: List existing logstash tcp/5000 UFW rules
   become: yes
-  shell: "ufw status numbered | grep ' 5000 ' | awk -F\"[][]\" '{print $2}' | tr --delete [:blank:] | sort -rn"
+  shell: >
+    ufw status numbered | grep -zoP '\[.*\]\s5000(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
   register: ufw_logstash_5000_rules
 
 - name: UFW delete existing logstash rules - tcp/5000
@@ -23,7 +24,8 @@
 
 - name: List existing logstash tcp/5044 UFW rules
   become: yes
-  shell: "ufw status numbered | grep ' 5044 ' | awk -F\"[][]\" '{print $2}' | tr --delete [:blank:] | sort -rn"
+  shell: >
+    ufw status numbered | grep -zoP '\[.*\]\s5044(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
   register: ufw_logstash_5044_rules
 
 - name: UFW delete existing logstash rules - tcp/5044
