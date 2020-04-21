@@ -114,7 +114,7 @@ Nevertheless, it's a good choice to define a dmarc policy for each domain or sub
 **/!\ THEN ACTIVATE DMARC ONLY WHEN DKIM AND SPF ARE TESTED AND PASS TESTS**
  
 ```text
-v=DMARC1; p=quarantine; rf=afrf; sp=reject; fo=1; rua=mailto:postmaster+dmarcreports@svur.org;  ruf=mailto:postmaster+dmarcfails@svur.org; adkim=s; aspf=s; pct=100
+_dmarc.testing.svur.org. IN TXT v=DMARC1; p=quarantine; rf=afrf; sp=reject; fo=1; rua=mailto:postmaster+dmarcreports@svur.org;  ruf=mailto:postmaster+dmarcfails@svur.org; adkim=s; aspf=s; pct=100
 ```
 
 ### MTA ?
