@@ -3,6 +3,6 @@ ssl = on
 
 # certificates
 ssl-ca = /etc/mysql/ca.pem
-ssl-cert = /etc/mysql/server-cert.pem
+ssl-cert = /etc/mysql/server-cert.pem # todo : investigate https://stackoverflow.com/questions/59036777/mysql-ssl-is-required-but-the-server-doesnt-support-it
 ssl-key = /etc/mysql/server-key.pem
 
