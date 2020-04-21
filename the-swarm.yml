@@ -154,5 +154,5 @@
   tags: ["elastic-node-logs-collectors"]
 
 - name: Include mailserver deployment for regenerating firewall rules
-  import_playbook: mailserver.yaml
+  import_playbook: mailserver.yml
 ...
