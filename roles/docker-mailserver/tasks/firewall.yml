@@ -1,0 +1,47 @@
+---
+# Even if the mailserver is accessible from external, some routing rules
+# might be required in order to access the mailserver from containers running on the same host.
+# This task ensure listed networks will have an access to the mailserver on defined ports.
+
+# port 587
+
+- name: List existing docker-mailserver:587 UFW rules
+  become: yes
+  shell: "ufw status numbered | grep ' 587 ' | awk -F\"[][]\" '{print $2}' | tr --delete [:blank:] | sort -rn"
+  register: ufw_docker_mailserver_587_rules
+
+- name: UFW delete existing docker-mailserver:587 rules - tcp,udp/587
+  become: yes
+  shell: "yes y | ufw delete {{ item }}"
+  with_items: "{{ ufw_docker_mailserver_587_rules.stdout_lines }}"
+
+- name: UFW Allow docker-mailserver:587 networks - tcp/587
+  become: yes
+  ufw:
+    rule: allow
+    port: "587"
+    proto: "tcp"
+    src: "{{ item }}"
+  with_items: "{{ mailserver_allowed_ips.port_587 }}"
+  
+# port 993
+
+- name: List existing docker-mailserver:993 UFW rules
+  become: yes
+  shell: "ufw status numbered | grep ' 993 ' | awk -F\"[][]\" '{print $2}' | tr --delete [:blank:] | sort -rn"
+  register: ufw_docker_mailserver_993_rules
+
+- name: UFW delete existing docker-mailserver:993 rules - tcp,udp/993
+  become: yes
+  shell: "yes y | ufw delete {{ item }}"
+  with_items: "{{ ufw_docker_mailserver_993_rules.stdout_lines }}"
+
+- name: UFW Allow docker-mailserver:993 networks - tcp/993
+  become: yes
+  ufw:
+    rule: allow
+    port: "993"
+    proto: "tcp"
+    src: "{{ item }}"
+  with_items: "{{ mailserver_allowed_ips.port_993 }}"
+...

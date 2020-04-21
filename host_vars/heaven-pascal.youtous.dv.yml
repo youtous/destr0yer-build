@@ -105,6 +105,10 @@ update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
 
 
 ### Begin of mailserver parameters ###
+mailserver_allowed_ips:
+  port_587:
+      - "172.16.0.0/12" # allow docker containers to access smtps
+  port_993: []
 mailserver_domain: youtous.dv
 mailserver_hostname: mailing-heaven-pascal
 mailserver_debug: yes

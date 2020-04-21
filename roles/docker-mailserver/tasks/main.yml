@@ -85,6 +85,9 @@
 - name: Register MTA-STS policies
   import_tasks: mta-sts.yml
 
+- name: Register firewall policy
+  import_tasks: firewall.yml
+
 - name: Fail2ban for docker-mailserver
   import_tasks: fail2ban.yml
 

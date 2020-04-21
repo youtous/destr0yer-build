@@ -50,8 +50,14 @@ mailserver_debug: false
 # use only stmp
 mailserver_only_smtp: false
 
+mailserver_allowed_ips:
+  port_587: [] # list of ip/networks allowed to access port 587, whitelisting docker0 network (172.16.0.0/12) allows
+            # containers on running on the same host as docker-mailserver to access the mailserver
+  port_993: []
+
 # allow localhost (empty), host, network (docker network) or connected-networks (all docker networks) to send emails (mynetworks)
 # /!\ allowed networks will be able to send mail without password
+# don't be confuse with mailserver_allowed_ips !
 mailserver_allowed_networks: ""
 
 # Postfix

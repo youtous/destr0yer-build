@@ -152,4 +152,7 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["elastic-node-logs-collectors"]
+
+- name: Include mailserver deployment for regenerating firewall rules
+  import_playbook: mailserver.yaml
 ...

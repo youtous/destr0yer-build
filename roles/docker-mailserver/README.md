@@ -2,7 +2,7 @@
 
 ## How to?
 
-1. Add the *mailserver* host in `hosts/mailserver.yml` 
+1. Add the *mailserver* host in `hosts/mailserver.yml` and add the docker network in `mailserver_allowed_ips` if you want access smtps server from others host containers.
 2. Remember to activate `consul_external_network_enabled` in `group_vars/{{ primary_manager }}.yml` in order to retrieve certificates from consul.
 3. Define `mailserver_hostname` and `mailserver_domain` in the previous file (see below example)
 4. Create a mariadb account and db for `rainloop` then define : `rainloop_mysql_database`, `rainloop_mysql_user` and `rainloop_mysql_password` 
@@ -161,6 +161,7 @@ Disable certificate verification (it runs inside the stack only).
 ### Tests
 
 For sending emails, use `swaks`, in a debian container.
+For instance: `swaks -f noreply@svur.org -t contact@svur.org --server mailserver.svur.org:587 -tls -a LOGIN`
 
 free:
 - https://github.com/drwetter/testssl.sh
