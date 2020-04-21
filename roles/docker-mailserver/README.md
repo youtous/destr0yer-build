@@ -12,11 +12,12 @@
 8. Run ansible playbook (in order) *database creation*, *traefik update* then *mailserver*.
 9. Test DKIM, SPF and other mailserver conf, then you can activate DMARC ; check it with https://en.internet.nl/
 
-// todo : set recommended mailserver_allowed_networks, ipv6 policy
+// todo ipv6 policy
 
 _A complete reference to keep this guide updated: https://mecsa.jrc.ec.europa.eu/en/postfix_<br/>
-_In case of doubt about a paramater, use https://ssl-config.mozilla.org/._
-_Reference for testing https://github.com/drwetter/testssl.sh._
+_In case of doubt about a paramater, use https://ssl-config.mozilla.org/._<br/>
+_Reference for testing https://github.com/drwetter/testssl.sh._<br/>
+_**mailserver_allowed_networks** should be left empty, otherwise an open relay could be enabled with others containers_<br/>
 ## DNS Entries
 
 ```text
