@@ -14,12 +14,6 @@ mailserver_kv_external_network: "consul-public" # same as traefik-consul, set em
 
 mailserver_tls_level: modern # drop old tls ciphers
 
-# This parameter WILL NOT be necessary when dovecot will be updated to 2.3.3 https://wiki2.dovecot.org/Upgrading/2.3#dhparams
-# When time will be, please disable.
-# please generate dh params manually using
-# openssl dhparam -out certs/dhparams.pem 4096
-mailserver_dhparams:
-
 # manual, letsencrypt, custom, self-signed
 mailserver_ssl_type:
 mailserver_ssl_cert_path:
@@ -138,5 +132,5 @@ mailserver_fetchmail_poll_interval: 300
 
 # ClamAV
 mailserver_enable_clamav: false
-mailserver_virus_delete_delay: "7 days"
+mailserver_virus_delete_delay: "7" # days
 ...
