@@ -1,5 +1,9 @@
 # Destr0yer playbooks
 
+## Daily usage recommendations
+
+ -  **When one of the host ip is changed**, playbook should be completely re-run.
+
 ## Installation
 *Tested on Debian 10 Buster only.*
 

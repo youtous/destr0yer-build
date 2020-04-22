@@ -1,6 +1,6 @@
 # This file describes specific host vars
 hostname: heaven-pascal.youtous.dv
-ipv4:
+ipv4: # /!\ When one of the host ip is changed, playbook should be completely re-run
   - 192.168.100.10
 ipv6:
   - fde4:8dba:82e1::c1
