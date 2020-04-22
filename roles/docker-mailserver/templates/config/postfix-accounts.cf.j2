@@ -4,7 +4,7 @@
 {% for mailserver in mailserver_domains %}
 # accounts of {{ mailserver.domain }}
 {% for account in mailserver.accounts %}
-{{ account.username }}@{{ mailserver.domain }}|{BLF-CRYPT}{{ account.bcrypt_password }}
+{{ account.username }}@{{ mailserver.domain }}|{BLF-CRYPT}{{ account.bcrypt_password }}:5000:5000::/var/mail/{{ mailserver.domain }}/{{ account.username }}::userdb_quota_rule=*:bytes=10M
 {% endfor %}
 
 {% endfor %}

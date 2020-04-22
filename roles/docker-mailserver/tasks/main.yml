@@ -68,6 +68,8 @@
       dest: postfix-main.cf
     - src: postfix-master.cf.j2
       dest: postfix-master.cf
+    - src: dovecot-quota.j2.conf
+      dest: dovecot-quota.conf
   no_log: true
 
 - name: Copy mailserver files

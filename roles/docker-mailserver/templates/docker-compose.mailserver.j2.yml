@@ -34,6 +34,9 @@ configs:
   postfix-master.cf:
     name: "{{ docker_mailserver_stack_name }}_postfix-master-${DEPLOY_TIMESTAMP}"
     file: "./config/postfix-master.cf"
+  dovecot-quota.conf:
+    name: "{{ docker_mailserver_stack_name }}_dovecot-quota-${DEPLOY_TIMESTAMP}"
+    file: "./config/dovecot-quota.conf"
   ffdhe4096.pem:
     name: "{{ docker_mailserver_stack_name }}_ffdhe4096.pem-${DEPLOY_TIMESTAMP}"
     file: "./files/ffdhe4096.pem"
@@ -112,6 +115,8 @@ services:
         target: "/tmp/read-only/docker-mailserver/postfix-receive-access.cf"
       - source: dovecot.cf
         target: "/tmp/read-only/docker-mailserver/dovecot.cf"
+      - source: dovecot-quota.conf
+        target: "/etc/dovecot/conf.d/10-dovecot-quota.conf"
       - source: postfix-main.cf
         target: "/tmp/read-only/docker-mailserver/postfix-main.cf"
       - source: postfix-master.cf
