@@ -4,9 +4,10 @@
 {% for mailserver in mailserver_domains %}
 # accounts of {{ mailserver.domain }}
 {% for account in mailserver.accounts %}
-{{ account.username }}@{{ mailserver.domain }}|{BLF-CRYPT}{{ account.bcrypt_password }}
+{% if account.quota_mb is defined %}
+{{ account.username }}@{{ mailserver.domain }}:{{ account.quota_mb }}M
+{% endif %}
 {% endfor %}
 
 {% endfor %}
 
-# IMPORTANT, KEEP A NEW LINE AT THE END OF THIS FILE.
