@@ -8,7 +8,7 @@
 4. Create a mariadb account and db for `rainloop` then define : `rainloop_mysql_database`, `rainloop_mysql_user` and `rainloop_mysql_password` 
 5. Register the maildomain and associated account, see `mailserver_domains` in `defaults/main.yml`
 6. Register domains in DNS (see below) : dkim, spf and check DMARC section
-7. Eventually, redefine `rainloop_domain`
+7. Eventually, redefine `rainloop_domain` and `mailserver_default_mailbox_limit_mb`
 8. Run ansible playbook (in order) *database creation*, *traefik update* then *mailserver*.
 9. Test DKIM, SPF and other mailserver conf, then you can activate DMARC ; check it with https://en.internet.nl/
 10. _(rainloop enabled)_ see Rainloop section
