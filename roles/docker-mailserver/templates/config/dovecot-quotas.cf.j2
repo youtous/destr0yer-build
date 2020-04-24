@@ -1,0 +1,13 @@
+# Managed by Ansible
+# https://github.com/tomav/docker-mailserver/wiki/Configure-Accounts
+
+{% for mailserver in mailserver_domains %}
+# accounts of {{ mailserver.domain }}
+{% for account in mailserver.accounts %}
+{% if account.quota_mb is defined %}
+{{ account.username }}@{{ mailserver.domain }}:{{ account.quota_mb }}M
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+
