@@ -12,6 +12,7 @@
 8. Run ansible playbook (in order) *database creation*, *traefik update* then *mailserver*.
 9. Test DKIM, SPF and other mailserver conf, then you can activate DMARC ; check it with https://en.internet.nl/
 10. _(rainloop enabled)_ see Rainloop section
+11. Wait a week for checking then set `DMARC` and `MTA-STS` policies to enforce
 
 // todo ipv6 policy
 
@@ -115,6 +116,12 @@ Nevertheless, it's a good choice to define a dmarc policy for each domain or sub
  
 ```text
 _dmarc.testing.svur.org. IN TXT v=DMARC1; p=quarantine; rf=afrf; sp=reject; fo=1; rua=mailto:postmaster+dmarcreports@svur.org;  ruf=mailto:postmaster+dmarcfails@svur.org; adkim=s; aspf=s; pct=100
+```
+
+**After a week of testing, policy can be enforced:**
+ 
+```text
+_dmarc.testing.svur.org. IN TXT v=DMARC1; p=reject; rf=afrf; sp=reject; fo=1; rua=mailto:postmaster+dmarcreports@svur.org;  ruf=mailto:postmaster+dmarcfails@svur.org; adkim=s; aspf=s; pct=100
 ```
 
 ### MTA ?
