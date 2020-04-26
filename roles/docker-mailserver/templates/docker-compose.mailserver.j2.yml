@@ -40,6 +40,9 @@ configs:
   ffdhe4096.pem:
     name: "{{ docker_mailserver_stack_name }}_ffdhe4096.pem-${DEPLOY_TIMESTAMP}"
     file: "./files/ffdhe4096.pem"
+  cron-sa-learn:
+    name: "{{ docker_mailserver_stack_name }}_cron-sa-learn-${DEPLOY_TIMESTAMP}"
+    file: "./config/cron/sa-learn"
 {% for mailserver in mailserver_domains %}
 {% if mailserver.mta_sts is defined %}
   mta_sts_file_{{ mailserver.domain }}.txt:
@@ -123,6 +126,8 @@ services:
         target: "/tmp/read-only/docker-mailserver/postfix-master.cf"
       - source: ffdhe4096.pem
         target: "/tmp/read-only/docker-mailserver/ffdhe4096.pem"
+      - source: cron-sa-learn
+        target: "/etc/cron.d/sa-learn"
     secrets:
       - source: postfix-accounts.cf
         target: "/tmp/read-only/docker-mailserver/postfix-accounts.cf"

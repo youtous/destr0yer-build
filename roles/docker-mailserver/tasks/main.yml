@@ -38,6 +38,7 @@
   with_items:
     - config
     - config/opendkim
+    - config/cron
     - files
 
 - name: Copy mailserver config
@@ -70,6 +71,8 @@
       dest: postfix-master.cf
     - src: dovecot-quotas.cf.j2
       dest: dovecot-quotas.cf
+    - src: cron/sa-learn.j2
+      dest: cron/sa-learn
   no_log: true
 
 - name: Copy mailserver files
