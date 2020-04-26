@@ -22,6 +22,7 @@ mailserver_ssl_key_path:
 # Rainloop
 rainloop_enabled: true
 rainloop_domain: "mail.{{ mailserver_domain }}"
+rainloop_f2b_max_retries: 8
 
 # traefik public-tag
 traefik_public_tag: "traefik-public"

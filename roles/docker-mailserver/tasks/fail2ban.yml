@@ -76,6 +76,7 @@
     fail2ban_services:
       - name: rainloop
         port: http,https
+        maxretry: "{{ rainloop_f2b_max_retries|default(6) }}"
         backend: systemd
   when: rainloop_enabled
 ...
