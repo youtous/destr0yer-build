@@ -12,9 +12,9 @@ docker_restart_handler_state: restarted
 docker_group_name: docker
 docker_group_gid: 1099
 
-# docker_install_compose: true
-docker_compose_version: "1.24.1"
-# docker_compose_path: /usr/local/bin/docker-compose
+docker_install_compose: true
+docker_compose_version: "1.25.4"
+docker_compose_path: /usr/local/bin/docker-compose
 
 # docker_apt_release_channel: stable
 # docker_apt_arch: amd64
