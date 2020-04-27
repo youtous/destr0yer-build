@@ -1,0 +1,4 @@
+---
+- name: Restart DNSCrypt-proxy
+  listen: restart DNSCrypt-proxy
+...

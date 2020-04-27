@@ -1,0 +1,27 @@
+---
+# check if present
+
+- name: Ensure DNSCrypt-proxy configuration directory exists
+
+- name: Configure DNSCrypt-proxy
+
+- name: Disable NetworkManager auto-update /etc/resolv.con
+
+- name: Configure /etc/resolv.conf
+
+- name: Ensure configuration directory exists
+
+- name: Check if DNSCrypt-proxy is present
+  become: yes
+
+- name: Check if update is available
+  when: dnscrypt-proxy-present
+
+- name: Install DNSCrypt-proxy
+  import_tasks: install.yml
+  when: # not present or update available
+
+# restart in handler
+
+- name: Enable DNSCrypt-proxy
+...

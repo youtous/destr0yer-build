@@ -1,0 +1,24 @@
+---
+- name: Install building requirements
+
+- name: Create buid directory
+
+- name: Ensure any existing DNSCrypt-proxy vestige is removed
+
+- name: Download latest DNSCrypt-proxy for local installation
+  when: dnscrypt_proxy_version == "latest"
+
+- name: Download specific version of DNSCrypt-proxy for local installation
+  when: dnscrypt_proxy_version != "latest"
+
+- name: Verify downloaded files
+
+- name: Extract downloaded files
+
+- name: Copy DNSCrypt-proxy in system binaries
+  notify: restart dnscrypt-proxy
+  # make permissions exec
+
+- name: Cleanup build directory
+
+...

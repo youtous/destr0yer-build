@@ -1,0 +1,8 @@
+---
+dnscrypt_configuration_path: "/etc/dnscrypt-proxy"
+dnscrypt_binary_path: "/usr/bin/dnscrypt-proxy"
+
+dnscrypt_proxy_repo: "https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
+dnscrypt_proxy_binaries_signature: "RWTk1xXqcTODeYttYMCMLo0YJHaFEHn7a3akqHlb/7QvIQXHVPxKbjB5"
+
+...
