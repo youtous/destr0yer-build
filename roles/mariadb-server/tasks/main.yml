@@ -69,7 +69,7 @@
 
 - name: UFW delete existing mariadb rules - tcp,udp/3306
   become: yes
-  shell: "yes y | ufw delete {{ item }}"
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_mariadb_rules.stdout_lines }}"
 
 - name: UFW Allow mariadb clients - tcp,udp/3306

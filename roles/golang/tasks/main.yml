@@ -22,7 +22,7 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Check go version is {{ go_version }}
-  shell: "go version | grep {{ go_version }}"
+  shell: "go version | grep {{ go_version|quote }}"
   register: golang_present
   ignore_errors: True
   environment:

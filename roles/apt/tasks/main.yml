@@ -29,7 +29,7 @@
 
 - name: Update to Buster stable channel
   become: yes
-  shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path }}"
+  shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}"
   when: buster_channel_flag.stat.exists == False
 
 - name: Update and upgrade apt packages

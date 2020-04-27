@@ -32,7 +32,7 @@
 
 - name: UFW delete existing postgresql rules - tcp,udp/5432
   become: yes
-  shell: "yes y | ufw delete {{ item }}"
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_postgresql_rules.stdout_lines }}"
 
 - name: UFW Allow postgresql clients - tcp,udp/5432
