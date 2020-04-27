@@ -1,21 +1,63 @@
 ---
-# check if present
-
-- name: Ensure DNSCrypt-proxy configuration directory exists
-
-- name: Configure DNSCrypt-proxy
-
-- name: Disable NetworkManager auto-update /etc/resolv.con
-
-- name: Configure /etc/resolv.conf
-
-- name: Ensure configuration directory exists
+# This role install DNSCrypt-proxy from upstream
 
 - name: Check if DNSCrypt-proxy is present
+  command: "ls {{ dnscrypt_binary_path }}"
+  register: dnscrypt_proxy_present
+  ignore_errors: True
+
+- name: Ensure DNSCrypt-proxy configuration directories exist
   become: yes
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=x
+  with_items:
+    - "{{ dnscrypt_configuration_path }}"
+    - "{{ dnscrypt_configuration_path }}/db"
+
+- name: Configure DNSCrypt-proxy
+  become: yes
+  template:
+    src: "templates/config/{{ item.src }}"
+    dest: "{{ dnscrypt_configuration_path }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - src: db/minisign.pub
+      dest: db/minisign.pub
+    - src: db/public-resolvers.md
+      dest: db/public-resolvers.md
+    - src: db/public-resolvers.md.minisig
+      dest: db/public-resolvers.md.minisig
+    - src: db/relays.md
+      dest: db/relays.md
+    - src: db/relays.md.minisig
+      dest: db/relays.md.minisig
+    - src: blacklist.txt.j2
+      dest: blacklist.txt
+    - src: cloaking-rules.txt.j2
+      dest: cloaking-rules.txt
+    - src: forwarding-rules.txt.j2
+      dest: forwarding-rules.txt
+    - src: ip-blacklist.txt.j2
+      dest: ip-blacklist.txt
+    - src: whitelist.txt.j2
+      dest: whitelist.txt
+    - src: dnscrypt-proxy.toml.j2
+      dest: dnscrypt-proxy.txt
+
+- name: Disable NetworkManager auto-update /etc/resolv.conf
+# todo : create the file if does not exists
+- name: Configure /etc/resolv.conf
+# todo : don't interfer with classical dns params
+# todo : install with systemd
 
 - name: Check if update is available
-  when: dnscrypt-proxy-present
+  when: dnscrypt_proxy_present
 
 - name: Install DNSCrypt-proxy
   import_tasks: install.yml
