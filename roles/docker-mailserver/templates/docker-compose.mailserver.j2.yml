@@ -75,7 +75,7 @@ services:
 
   # override default dhparams with ffdhe4096; when times will come PLEASE DISABLE DHE algorithms
   mailserver:
-    image: youtous/fork-wip-docker-mailserver:dev
+    image: tvial/docker-mailserver:latest
     command: >
       sh -c '
       mkdir -p /var/mail-state/lib-shared/ &&
