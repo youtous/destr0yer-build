@@ -1,4 +1,9 @@
 ---
+# inherited from global options
+# domain_name => see resolv.conf man
+# domain_search
+# resolv_conf_options
+
 # specify a version if needed, e.g. :  2.0.42
 dnscrypt_proxy_version: "latest"
 

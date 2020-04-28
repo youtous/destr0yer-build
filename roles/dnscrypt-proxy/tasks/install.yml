@@ -17,11 +17,11 @@
   tempfile:
     state: directory
     suffix: build
-    register: tmp_dir_build
+  register: tmp_dir_build
 
 - name: Retrieve latest DNSCrypt-proxy from repo
   shell: >
-    curl -sL {{ dnscrypt_proxy_repo|quote }} | grep "tag_name" | head -1 | cut -d \" -f 4
+    curl -sL {{ dnscrypt_proxy_repo|quote }} | grep dnscrypt-proxy-{{ dnscrypt_proxy_platform|quote }}_{{ dnscrypt_proxy_cpu_platform|quote }}- | grep browser_download_url | head -1 | cut -d \" -f 4
   register: dnscrypt_remote_download
   when: dnscrypt_proxy_version == "latest"
 

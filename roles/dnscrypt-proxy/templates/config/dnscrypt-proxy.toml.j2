@@ -142,7 +142,7 @@ keepalive = 30
 
 ## log file for the application
 
-# log_file = 'dnscrypt-proxy.log'
+# log_file = '/var/log/dnscrypt-proxy/dnscrypt-proxy.log'
 
 
 ## Use the system logger (syslog on Unix, Event Log on Windows)
@@ -400,7 +400,7 @@ cache_neg_max_ttl = 600
   ## Path to the query log file (absolute, or relative to the same directory as the config file)
   ## On non-Windows systems, can be /dev/stdout to log to the standard output (also set log_files_max_size to 0)
 
-  # file = 'query.log'
+  # file = '/var/log/dnscrypt-proxy/query.log'
 
 
   ## Query log format (currently supported: tsv and ltsv)
@@ -426,7 +426,7 @@ cache_neg_max_ttl = 600
 
   ## Path to the query log file (absolute, or relative to the same directory as the config file)
 
-  # file = 'nx.log'
+  # file = '/var/log/dnscrypt-proxy/nx.log'
 
 
   ## Query log format (currently supported: tsv and ltsv)
@@ -461,7 +461,7 @@ cache_neg_max_ttl = 600
 
   ## Optional path to a file logging blocked queries
 
-  # log_file = 'blocked.log'
+  # log_file = '/var/log/dnscrypt-proxy/blocked.log'
 
 
   ## Optional log format: tsv or ltsv (default: tsv)
@@ -489,7 +489,7 @@ cache_neg_max_ttl = 600
 
   ## Optional path to a file logging blocked queries
 
-  # log_file = 'ip-blocked.log'
+  # log_file = '/var/log/dnscrypt-proxy/ip-blocked.log'
 
 
   ## Optional log format: tsv or ltsv (default: tsv)
@@ -517,7 +517,7 @@ cache_neg_max_ttl = 600
 
   ## Optional path to a file logging whitelisted queries
 
-  # log_file = 'whitelisted.log'
+  # log_file = '/var/log/dnscrypt-proxy/whitelisted.log'
 
 
   ## Optional log format: tsv or ltsv (default: tsv)

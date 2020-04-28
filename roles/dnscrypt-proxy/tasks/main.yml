@@ -1,5 +1,15 @@
 ---
 # This role install DNSCrypt-proxy from upstream
+- name: Ensure any local other DNS local service is stopped and disabled
+  become: yes
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  ignore_errors: true
+  with_items:
+    - systemd-resolved
+    - bind9
 
 - name: Check if DNSCrypt-proxy is present
   command: "ls {{ dnscrypt_binary_path }}"
@@ -49,21 +59,57 @@
       dest: whitelist.txt
     - src: dnscrypt-proxy.toml.j2
       dest: dnscrypt-proxy.txt
+  notify: restart DNSCrypt-proxy
 
-- name: Disable NetworkManager auto-update /etc/resolv.conf
-# todo : create the file if does not exists
-- name: Configure /etc/resolv.conf
-# todo : don't interfer with classical dns params
-# todo : install with systemd
+- name: Get current DNSCrypt-proxy version
+  shell: >
+    {{ dnscrypt_binary_path|quote }} -version
+  when: dnscrypt_proxy_present is not failed
+  register: dnscrypt_proxy_current_version
 
-- name: Check if update is available
-  when: dnscrypt_proxy_present
+- name: Get remote latest DNSCrypt-proxy version
+  shell: >
+    curl -sL "{{ dnscrypt_proxy_repo| quote }}" | grep "tag_name" | head -1 | cut -d \" -f 4
+  register: dnscrypt_proxy_remote_version
+  when: dnscrypt_proxy_version == "latest"
+  args:
+    warn: false
+
+- name: Get specific DNSCrypt-proxy version
+  shell: >
+    echo "{{ dnscrypt_proxy_remote_version|quote }}"
+  register: dnscrypt_proxy_remote_version
+  when: dnscrypt_proxy_version != "latest"
 
 - name: Install DNSCrypt-proxy
   import_tasks: install.yml
-  when: # not present or update available
+  # install when not present or local version and remote version are different
+  when: dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout)
+  notify: restart DNSCrypt-proxy
 
-# restart in handler
+- name: Configure NetworkManager for DNSCrypt-proxy
+  import_tasks: network-manager.yml
+
+- name: Copy DNSCrypt-proxy systemd service configuration
+  become: yes
+  template:
+    src: "templates/systemd/{{ item.src }}"
+    dest: "/lib/systemd/system/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - src: dnscrypt-proxy.j2.socket
+      dest: dnscrypt-proxy.socket
+    - src: dnscrypt-proxy.j2.service
+      dest: dnscrypt-proxy.service
+  notify: restart DNSCrypt-proxy
 
 - name: Enable DNSCrypt-proxy
+  become: yes
+  systemd:
+    name: dnscrypt-proxy
+    enabled: yes
+    state: started
+    masked: no
 ...

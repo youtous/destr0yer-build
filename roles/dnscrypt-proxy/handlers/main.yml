@@ -1,4 +1,28 @@
 ---
-- name: Restart DNSCrypt-proxy
-  listen: restart DNSCrypt-proxy
+- name: restart DNSCrypt-proxy
+  become: yes
+  systemd:
+    name: dnscrypt-proxy
+    state: restarted
+
+- name: restart NetworkManager
+  become: yes
+  systemd:
+    name: networking
+    state: restarted
+  notify: restart postfix
+
+- name: Populate service facts
+  service_facts:
+  listen: restart postfix
+
+# postfix needs to be restarted in order to enable copy of the /etc/resolv.conf in chrooted environment
+# https://serverfault.com/questions/661621/why-do-i-have-to-manually-copy-etc-services-and-etc-resolv-conf-into-var-spoo
+- name: restart postfix if it exists
+  become: yes
+  systemd:
+    name: postfix
+    state: restarted
+  listen: restart postfix
+  when: "{{ 'postfix.service' in ansible_facts.services }}"
 ...

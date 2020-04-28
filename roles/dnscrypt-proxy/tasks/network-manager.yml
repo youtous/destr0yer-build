@@ -1,0 +1,57 @@
+---
+- name: Check if /etc/NetworkManager/NetworkManager.conf exists
+  command: "ls /etc/NetworkManager/NetworkManager.conf"
+  register: network_manager_conf_present
+  ignore_errors: True
+
+- name: Create /etc/NetworkManager/NetworkManager.conf
+  become: yes
+  copy:
+    src: "files/NetworkManager.conf"
+    dest: "/etc/NetworkManager/NetworkManager.conf"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  when: network_manager_conf_present is failed
+  notify: restart NetworkManager
+
+- name: Disable NetworkManager auto-update /etc/resolv.conf
+  become: yes
+  lineinfile:
+    path: /etc/NetworkManager/NetworkManager.conf
+    regexp: '^dns='
+    insertafter: '^[main]'
+    line: 'dns=none'
+  when: network_manager_conf_present is not failed
+  notify: restart NetworkManager
+
+- name: Unlock /etc/resolv.conf
+  become: yes
+  file:
+    path: /etc/resolv.conf
+    attributes: -i
+  # if the Filesystem does not handle ioctl we are maybe on a vm
+  ignore_errors: yes
+
+- name: Configure /etc/resolv.conf for DNSCrypt-proxy
+  become: yes
+  template:
+    src: "templates/resolv.conf.j2"
+    dest: "/etc/resolv.conf"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify: restart NetworkManager
+
+# some server providers tries to overwrite resolv.conf...
+- name: Ensure resolv.conf is not overwritable
+  become: yes
+  file:
+    path: /etc/resolv.conf
+    owner: root
+    group: root
+    attributes: i
+    mode: u=rw,g=r,o=r
+  # if the Filesystem does not handle ioctl we are maybe on a vm
+  ignore_errors: yes
+...

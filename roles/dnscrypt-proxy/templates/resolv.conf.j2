@@ -1,0 +1,11 @@
+# Ansible managed - DNSCrypt-proxy setup
+
+{% if domain_name is defined and domain_name != "" %}
+domain {{ domain_name }}
+{% endif %}
+{% if domain_search is defined %}
+search {% for domain in domain_search %}{{ domain }} {% endfor %}
+{% endif %}
+nameserver 127.0.0.1
+nameserver ::1
+options edns0 single-request-reopen {% if resolv_conf_options is defined %}{% for option in resolv_conf_options %}{{ option }} {% endfor %}{% endif %}
