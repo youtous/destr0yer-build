@@ -70,6 +70,7 @@
   hosts: [base_destr0yers, commander_destr0yers]
   roles:
     - dnscrypt-proxy # DNS with TLS
+    - monit-dnscrypt-proxy
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
