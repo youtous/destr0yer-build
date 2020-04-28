@@ -1,10 +1,7 @@
 ---
 - name: Install building requirements
-  become: yes
-  apt:
-    state: present
-    name:
-      - golang-github-jedisct1-go-minisign-dev
+  import_role:
+    name: minisign
 
 - name: Ensure any existing DNSCrypt-proxy vestige is removed
   become: yes
@@ -24,6 +21,8 @@
     curl -sL {{ dnscrypt_proxy_repo|quote }} | grep dnscrypt-proxy-{{ dnscrypt_proxy_platform|quote }}_{{ dnscrypt_proxy_cpu_platform|quote }}- | grep browser_download_url | head -1 | cut -d \" -f 4
   register: dnscrypt_remote_download
   when: dnscrypt_proxy_version == "latest"
+  args:
+    warn: false
 
 - name: Download latest DNSCrypt-proxy for local installation
   get_url:
@@ -53,6 +52,7 @@
   unarchive:
     src: "{{ tmp_dir_build.path }}/dnscrypt-proxy.tar.gz"
     dest: "{{ tmp_dir_build.path }}"
+    remote_src: yes
 
 - name: Copy DNSCrypt-proxy in system binaries
   become: yes
