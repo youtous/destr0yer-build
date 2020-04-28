@@ -4,6 +4,9 @@
   systemd:
     name: dnscrypt-proxy
     state: restarted
+  listen:
+    - restart dnscrypt-proxy
+    - restart DNSCrypt-proxy
 
 - name: restart NetworkManager
   become: yes
@@ -24,5 +27,5 @@
     name: postfix
     state: restarted
   listen: restart postfix
-  when: "{{ 'postfix.service' in ansible_facts.services }}"
+  when: '"postfix.service" in ansible_facts.services'
 ...

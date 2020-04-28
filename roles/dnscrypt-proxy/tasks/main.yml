@@ -12,7 +12,8 @@
     - bind9
 
 - name: Check if DNSCrypt-proxy is present
-  command: "ls {{ dnscrypt_binary_path }}"
+  command: "{{ dnscrypt_binary_path }} -version"
+  changed_when: false
   register: dnscrypt_proxy_present
   ignore_errors: True
 
@@ -58,33 +59,36 @@
     - src: whitelist.txt.j2
       dest: whitelist.txt
     - src: dnscrypt-proxy.toml.j2
-      dest: dnscrypt-proxy.txt
+      dest: dnscrypt-proxy.toml
   notify: restart DNSCrypt-proxy
 
 - name: Get current DNSCrypt-proxy version
-  shell: >
-    {{ dnscrypt_binary_path|quote }} -version
+  command: "{{ dnscrypt_binary_path }} -version"
   when: dnscrypt_proxy_present is not failed
+  changed_when: false
   register: dnscrypt_proxy_current_version
 
 - name: Get remote latest DNSCrypt-proxy version
   shell: >
-    curl -sL "{{ dnscrypt_proxy_repo| quote }}" | grep "tag_name" | head -1 | cut -d \" -f 4
+    set -o pipefail &&
+    curl -sL "{{ dnscrypt_proxy_repo|quote }}" | grep "tag_name" | head -1 | cut -d \" -f 4
   register: dnscrypt_proxy_remote_version
   when: dnscrypt_proxy_version == "latest"
   args:
+    executable: /bin/bash
     warn: false
+  changed_when: false
 
-- name: Get specific DNSCrypt-proxy version
-  shell: >
-    echo "{{ dnscrypt_proxy_remote_version|quote }}"
-  register: dnscrypt_proxy_remote_version
-  when: dnscrypt_proxy_version != "latest"
-
-- name: Install DNSCrypt-proxy
+- name: Install DNSCrypt-proxy latest
   import_tasks: install.yml
   # install when not present or local version and remote version are different
-  when: dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout)
+  when: dnscrypt_proxy_version == "latest" and (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout))
+  notify: restart DNSCrypt-proxy
+
+- name: Install DNSCrypt-proxy specific
+  import_tasks: install.yml
+  # install when not present or local version and remote version are different
+  when: dnscrypt_proxy_version != "latest" and (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version))
   notify: restart DNSCrypt-proxy
 
 - name: Configure NetworkManager for DNSCrypt-proxy

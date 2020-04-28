@@ -2,7 +2,8 @@
 - name: Check if /etc/NetworkManager/NetworkManager.conf exists
   command: "ls /etc/NetworkManager/NetworkManager.conf"
   register: network_manager_conf_present
-  ignore_errors: True
+  changed_when: false
+  ignore_errors: true
 
 - name: Create /etc/NetworkManager/NetworkManager.conf
   become: yes
@@ -32,6 +33,7 @@
     attributes: -i
   # if the Filesystem does not handle ioctl we are maybe on a vm
   ignore_errors: yes
+  changed_when: false
 
 - name: Configure /etc/resolv.conf for DNSCrypt-proxy
   become: yes
@@ -54,4 +56,5 @@
     mode: u=rw,g=r,o=r
   # if the Filesystem does not handle ioctl we are maybe on a vm
   ignore_errors: yes
+  changed_when: false
 ...
