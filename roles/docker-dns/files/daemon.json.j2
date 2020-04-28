@@ -1,0 +1,5 @@
+{% if docker_host_dns %}
+"dns": ["{{  docker_host_ip_register.stdout }}"],
+{% else %}
+"dns": [{{ docker_dns| map('quote') | join(', ') }}],
+{% endif %}

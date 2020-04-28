@@ -103,6 +103,9 @@ trusted_backend_ips: "{{ ssh_entrypoints }}"
 # list of auth users for the backend user:bcrypt(pass):
 backend_users: "{{ backend_users|default([]) }}"
 
+# docker dns
+dnscrypt_proxy_listen_addresses: ['127.0.0.1:53', '[::1]:53', '172.17.0.1:53']
+
 # version of docker-compose to install
 docker_compose_version: "1.24.0"
 

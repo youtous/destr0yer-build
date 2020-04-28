@@ -12,10 +12,11 @@
   tags: ["docker-setup"]
 
 - name: Setup docker swarm mode on all systems
-  hosts: all
+  hosts: all # Due to daemon.json format, DO NOT run roles of this task individually
   roles:
     - docker-swarm-tls
     # - docker-ipv6 <= for the moment, ipv6 is not enabled
+    - docker-dns # use host dns or specific dns
     - docker-log
   vars_files:
     - secret_vars/all.yml
