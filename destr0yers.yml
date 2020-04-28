@@ -36,6 +36,8 @@
   roles:
     - system-packages # system packages (htop, curl etc)
     - users # create a sudo user that will be used for configuration
+    - host # configure system host files
+    - resolv # configure system DNS resolution
     - system-configuration # configure the system (selinux, timezone...)
     - system-tools # server cli tools (vim, ccat, etc)
     - mount # manage mount devices
