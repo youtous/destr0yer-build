@@ -37,7 +37,7 @@
     - system-packages # system packages (htop, curl etc)
     - users # create a sudo user that will be used for configuration
     - host # configure system host files
-    - resolv # configure system DNS resolution
+    - dnscrypt-proxy # configure system DNS resolution
     - system-configuration # configure the system (selinux, timezone...)
     - system-tools # server cli tools (vim, ccat, etc)
     - mount # manage mount devices
@@ -74,7 +74,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["dnscrypt-proxy"] # todo : configure systems includes this
+  tags: ["dnscrypt-proxy"]
 
 - name: Configure systems with specifics interfaces
   hosts: interfaces
