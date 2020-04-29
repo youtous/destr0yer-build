@@ -41,11 +41,21 @@
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
-- name: Allow from docker containers networks to this host - tcp/5000,5044 (logstash)
+- name: Allow from docker0 containers networks to this host - tcp/5000,5044 (logstash)
   become: yes
   ufw:
     rule: allow
-    src: "172.16.0.0/12"
+    src: "172.17.0.0/16"
+    port: "{{ item }}"
+  with_items:
+    - "5000"
+    - "5044"
+
+- name: Allow from docker_gwbridge containers networks to this host - tcp/5000,5044 (logstash)
+  become: yes
+  ufw:
+    rule: allow
+    src: "172.18.0.0/16"
     port: "{{ item }}"
   with_items:
     - "5000"
