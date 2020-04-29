@@ -30,6 +30,7 @@
 - name: Test ccat presence
   command: /usr/local/bin/ccat /dev/null
   register: ccat_present
+  changed_when: false
   ignore_errors: True
 
 - name: Requires golang

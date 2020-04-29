@@ -3,6 +3,7 @@
 - name: Check if OMF is installed
   command: "ls {{ omf_installation_directory }}"
   register: omf_present
+  changed_when: false
   ignore_errors: True
 
 - name: "Clone OMF from {{ omf_repo }}"
@@ -23,6 +24,7 @@
 
 - name: Check if OMF theme "{{ omf_theme }}" is installed
   command: "ls {{ omf_installation_directory }}/themes/{{omf_theme}}"
+  changed_when: false
   register: omf_theme_present
   ignore_errors: True
 

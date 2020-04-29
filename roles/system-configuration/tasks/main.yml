@@ -62,6 +62,7 @@
 
 - name: Check if host is a Scaleway aarch
   shell: "scw-metadata | grep aarch"
+  changed_when: false
   register: host_scw_aarch64
   ignore_errors: True
 

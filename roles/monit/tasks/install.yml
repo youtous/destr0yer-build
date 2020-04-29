@@ -2,6 +2,7 @@
 # Install Monit from sources
 - name: Check Monit version is {{ monit_version }}
   shell: "monit --version | grep {{ monit_version|quote }}"
+  changed_when: false
   register: monit_present
   ignore_errors: True
 
