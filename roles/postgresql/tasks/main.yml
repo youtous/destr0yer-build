@@ -33,11 +33,7 @@
 
 - name: UFW delete existing postgresql rules - tcp,udp/5432
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_postgresql_rules.stdout_lines }}"
 
 - name: UFW Allow postgresql clients - tcp,udp/5432

@@ -12,11 +12,7 @@
 
 - name: UFW delete existing docker-swarm rules - tcp,udp/2376
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_2376_rules.stdout_lines }}"
 
 ## Revoke all 2377
@@ -29,11 +25,7 @@
 
 - name: UFW delete existing docker-swarm rules - tcp,udp/2377
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_2377_rules.stdout_lines }}"
 
 ## Revoke all 7946
@@ -46,11 +38,7 @@
 
 - name: UFW delete existing docker-swarm rules - tcp/7946
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_7946_rules.stdout_lines }}"
 
 ## Revoke all 4789
@@ -63,11 +51,7 @@
 
 - name: UFW delete existing docker-swarm rules - tcp/4789
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_4789_rules.stdout_lines }}"
 
 ## End of revocation

@@ -12,11 +12,7 @@
 
 - name: UFW delete existing logstash rules - tcp/5000
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_logstash_5000_rules.stdout_lines }}"
 
 - name: Allow nodes firewall - tcp/5000 (logstash)
@@ -36,11 +32,7 @@
 
 - name: UFW delete existing logstash rules - tcp/5044
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_logstash_5044_rules.stdout_lines }}"
 
 - name: Allow nodes firewall - tcp/5044 (logstash)

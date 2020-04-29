@@ -20,11 +20,7 @@
 
 - name: Remove UFW docker0/53
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker0_dns_rules.stdout_lines }}"
   when: not docker_host_dns
 
@@ -49,11 +45,7 @@
 
 - name: Remove UFW docker_gwbridge/53
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_gwbridge_dns_rules.stdout_lines }}"
   when: not docker_host_dns
 ...

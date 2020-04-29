@@ -14,11 +14,7 @@
 
 - name: UFW delete existing docker-mailserver:587 rules - tcp,udp/587
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_mailserver_587_rules.stdout_lines }}"
 
 - name: UFW Allow docker-mailserver:587 networks - tcp/587
@@ -41,11 +37,7 @@
 
 - name: UFW delete existing docker-mailserver:993 rules - tcp,udp/993
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_mailserver_993_rules.stdout_lines }}"
 
 - name: UFW Allow docker-mailserver:993 networks - tcp/993

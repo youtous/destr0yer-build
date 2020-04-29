@@ -70,11 +70,7 @@
 
 - name: UFW delete existing mariadb rules - tcp,udp/3306
   become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_mariadb_rules.stdout_lines }}"
 
 - name: UFW Allow mariadb clients - tcp,udp/3306
