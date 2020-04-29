@@ -1,0 +1,7 @@
+---
+# use host docker0 ip as dns, it requires to have a dns server on the host
+docker_host_dns: true
+
+# use custom dns for docker, used only when docker_host_dns: false
+docker_dns: "{{ nameservers|default([]) }}"
+...

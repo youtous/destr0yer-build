@@ -13,11 +13,9 @@ server_environment: "dev"
 # Network configuration
 domain_name: youtous.me
 domain_search: []
-nameservers:
-  - 1.1.1.1
-  - 1.0.0.1
-  - 2606:4700:4700::1111
-  - 2606:4700:4700::1001
+nameservers: # use DNSCrypt-proxy
+  - '127.0.0.1'
+  - '::1'
 
 # Email that will receive all notifications, useful for monitoring
 monitoring_email: "monitoring@youtous.me"
@@ -57,6 +55,9 @@ fail2ban_trusted_ips:
 ssh_entrypoints:
   - "163.172.154.21"
   - "192.168.100.1"
+
+# allow docker networks (and eventually other networks such as vpn) to query the local dns server
+dns_allowed_hosts: "{{ local_docker_ips }}"
 
 # mariadb root CA certificate
 mariadb_ca_certificate: |
@@ -105,8 +106,10 @@ trusted_backend_ips: "{{ ssh_entrypoints }}"
 # list of auth users for the backend user:bcrypt(pass):
 backend_users: "{{ backend_users|default([]) }}"
 
-# version of docker-compose to install
-docker_compose_version: "1.24.0"
+# local docker networks
+local_docker_ips:
+  - '172.17.0.0/16' # docker0
+  - '172.18.0.0/16' # docker_gwbridge
 
 # ips of the nodes of the swarm
 nodes_ips: "{{

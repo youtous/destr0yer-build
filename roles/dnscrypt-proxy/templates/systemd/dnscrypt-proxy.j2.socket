@@ -1,0 +1,17 @@
+# the socket service is not used, we prefer .service
+[Unit]
+Description=DNSCrypt-proxy socket
+Documentation=https://github.com/jedisct1/dnscrypt-proxy/wiki
+Before=nss-lookup.target
+Wants=nss-lookup.target network-online.target
+
+[Socket]
+{% for listen_address in dnscrypt_proxy_listen_addresses %}
+ListenStream={{ listen_address }}
+ListenDatagram={{ listen_address }}
+{% endfor %}
+NoDelay=true
+DeferAcceptSec=1
+
+[Install]
+WantedBy=sockets.target

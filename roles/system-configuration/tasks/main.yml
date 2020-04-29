@@ -12,10 +12,6 @@
   timezone:
     name: "{{ timezone }}"
 
-- name: Set host configuration
-  import_role:
-    name: host
-
 - name: Ensure system folder permissions are correct
   become: yes
   file:

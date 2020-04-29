@@ -1,0 +1,120 @@
+---
+# This role install DNSCrypt-proxy from upstream
+- name: Ensure any local other DNS local service is stopped and disabled
+  become: yes
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  ignore_errors: true
+  with_items:
+    - systemd-resolved
+    - bind9
+
+- name: Check if DNSCrypt-proxy is present
+  command: "{{ dnscrypt_binary_path }} -version"
+  changed_when: false
+  register: dnscrypt_proxy_present
+  ignore_errors: True
+
+- name: Ensure DNSCrypt-proxy configuration directories exist
+  become: yes
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=x
+  with_items:
+    - "{{ dnscrypt_configuration_path }}"
+    - "{{ dnscrypt_configuration_path }}/db"
+
+- name: Configure DNSCrypt-proxy
+  become: yes
+  template:
+    src: "templates/config/{{ item.src }}"
+    dest: "{{ dnscrypt_configuration_path }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - src: db/minisign.pub
+      dest: db/minisign.pub
+    - src: db/public-resolvers.md
+      dest: db/public-resolvers.md
+    - src: db/public-resolvers.md.minisig
+      dest: db/public-resolvers.md.minisig
+    - src: db/relays.md
+      dest: db/relays.md
+    - src: db/relays.md.minisig
+      dest: db/relays.md.minisig
+    - src: blacklist.txt.j2
+      dest: blacklist.txt
+    - src: cloaking-rules.txt.j2
+      dest: cloaking-rules.txt
+    - src: forwarding-rules.txt.j2
+      dest: forwarding-rules.txt
+    - src: ip-blacklist.txt.j2
+      dest: ip-blacklist.txt
+    - src: whitelist.txt.j2
+      dest: whitelist.txt
+    - src: dnscrypt-proxy.toml.j2
+      dest: dnscrypt-proxy.toml
+  notify: restart DNSCrypt-proxy
+
+- name: Get current DNSCrypt-proxy version
+  command: "{{ dnscrypt_binary_path }} -version"
+  when: dnscrypt_proxy_present is not failed
+  changed_when: false
+  register: dnscrypt_proxy_current_version
+
+- name: Get remote latest DNSCrypt-proxy version
+  shell: >
+    set -o pipefail &&
+    curl -sL "{{ dnscrypt_proxy_repo|quote }}" | grep "tag_name" | head -1 | cut -d \" -f 4
+  register: dnscrypt_proxy_remote_version
+  when: dnscrypt_proxy_version == "latest"
+  args:
+    executable: /bin/bash
+    warn: false
+  changed_when: false
+
+- name: Install DNSCrypt-proxy latest
+  import_tasks: install.yml
+  # install when not present or local version and remote version are different
+  when: dnscrypt_proxy_version == "latest" and (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout))
+  notify: restart DNSCrypt-proxy
+
+- name: Install DNSCrypt-proxy specific
+  import_tasks: install.yml
+  # install when not present or local version and remote version are different
+  when: dnscrypt_proxy_version != "latest" and (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version))
+  notify: restart DNSCrypt-proxy
+
+- name: Configure NetworkManager for DNSCrypt-proxy
+  import_tasks: network-manager.yml
+
+- name: Copy DNSCrypt-proxy systemd service configuration
+  become: yes
+  template:
+    src: "templates/systemd/{{ item.src }}"
+    dest: "/lib/systemd/system/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - src: dnscrypt-proxy.j2.service
+      dest: dnscrypt-proxy.service
+  notify: restart DNSCrypt-proxy
+
+- name: Install DNSCrypt-proxy firewall rules
+  import_tasks: firewall.yml
+
+- name: Enable DNSCrypt-proxy
+  become: yes
+  systemd:
+    name: dnscrypt-proxy
+    enabled: yes
+    state: started
+    masked: no
+...

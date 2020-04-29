@@ -11,7 +11,7 @@
 
 - name: UFW delete existing logstash rules - tcp/5000
   become: yes
-  shell: "yes y | ufw delete {{ item }}"
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_logstash_5000_rules.stdout_lines }}"
 
 - name: Allow nodes firewall - tcp/5000 (logstash)
@@ -30,7 +30,7 @@
 
 - name: UFW delete existing logstash rules - tcp/5044
   become: yes
-  shell: "yes y | ufw delete {{ item }}"
+  shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_logstash_5044_rules.stdout_lines }}"
 
 - name: Allow nodes firewall - tcp/5044 (logstash)
@@ -41,11 +41,21 @@
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
-- name: Allow from docker containers networks to this host - tcp/5000,5044 (logstash)
+- name: Allow from docker0 containers networks to this host - tcp/5000,5044 (logstash)
   become: yes
   ufw:
     rule: allow
-    src: "172.16.0.0/12"
+    src: "172.17.0.0/16"
+    port: "{{ item }}"
+  with_items:
+    - "5000"
+    - "5044"
+
+- name: Allow from docker_gwbridge containers networks to this host - tcp/5000,5044 (logstash)
+  become: yes
+  ufw:
+    rule: allow
+    src: "172.18.0.0/16"
     port: "{{ item }}"
   with_items:
     - "5000"

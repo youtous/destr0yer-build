@@ -1,0 +1,5 @@
+{% if docker_host_dns %}
+"dns": [{% if docker_host_docker_gwbridge_ip_register is not failed %}"{{ docker_host_docker_gwbridge_ip_register.stdout }}" ,{% endif %}{% if docker_host_docker0_ip_register is not failed %}"{{  docker_host_docker0_ip_register.stdout }}" ,{% endif %}"127.0.0.1"],
+{% else %}
+"dns": [{{ docker_dns| map('quote') | join(', ') }}],
+{% endif %}

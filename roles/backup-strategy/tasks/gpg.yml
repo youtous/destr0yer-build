@@ -13,7 +13,7 @@
   become: yes
   become_user: root
   shell: >
-    echo '{{ item.key }}' | gpg --import && touch {{ duply_backup_lock_directory }}/{{ item.name }}
+    echo '{{ item.key|quote }}' | gpg --import && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   with_items: "{{ backup_gpg_public_keys }}"
@@ -22,7 +22,7 @@
   become: yes
   become_user: root
   shell: >
-    echo '{{ item.value }}' | gpg --import-ownertrust && touch {{ duply_backup_lock_directory }}/{{ item.name }}
+    echo '{{ item.value|quote }}' | gpg --import-ownertrust && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   notify: update trustdb
@@ -32,7 +32,7 @@
   become: yes
   become_user: root
   shell: >
-    echo '{{ item.key }}' | gpg --allow-secret-key-import --batch --import && touch {{ duply_backup_lock_directory }}/{{ item.name }}
+    echo '{{ item.key|quote }}' | gpg --allow-secret-key-import --batch --import && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   with_items: "{{ backup_gpg_private_keys }}"

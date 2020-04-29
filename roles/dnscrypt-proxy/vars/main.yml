@@ -1,0 +1,9 @@
+---
+dnscrypt_configuration_path: "/etc/dnscrypt-proxy"
+dnscrypt_binary_path: "/usr/bin/dnscrypt-proxy"
+
+dnscrypt_proxy_repo: "https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest"
+dnscrypt_proxy_public_key: "RWTk1xXqcTODeYttYMCMLo0YJHaFEHn7a3akqHlb/7QvIQXHVPxKbjB5"
+
+dnscrypt_proxy_custom_version_download_url: "https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/{{ dnscrypt_proxy_version }}/dnscrypt-proxy-{{ dnscrypt_proxy_platform }}_{{ dnscrypt_proxy_cpu_platform }}-{{ dnscrypt_proxy_version }}.tar.gz"
+...

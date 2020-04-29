@@ -1,0 +1,37 @@
+---
+# This role configure docker to use custom DNS
+- name: Register docker0 host ip
+  shell: >
+    set -o pipefail &&
+    ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: docker_host_docker0_ip_register
+
+- name: Register docker_gwbridge host ip
+  shell: >
+    set -o pipefail &&
+    ip -4 addr show docker_gwbridge | grep -Po 'inet \K[\d.]+'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  ignore_errors: true
+  register: docker_host_docker_gwbridge_ip_register
+
+# Not used anymore, the firewall policy is handled directly by the firewall policy of the dns server role
+# add docker networks to allowed ips
+#
+# - name: Register firewall policy
+#  import_tasks: firewall.yml
+
+- name: Setup DNS for docker
+  become: yes
+  blockinfile:
+    marker: ""
+    dest: "/etc/docker/daemon.json"
+    block: "{{ lookup('template', 'files/daemon.json.j2') }}"
+    insertafter: '^{'
+  notify:
+    - restart docker
+...

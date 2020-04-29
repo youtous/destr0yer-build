@@ -1,5 +1,5 @@
 ---
-# This role contains oh-my-fish global installation
+# This role configures host configuration (hostname, /etc/hosts etc)
 - name: Define hostname
   become: yes
   hostname:
@@ -26,38 +26,5 @@
     mode: u=rwx,g=rx,o=rx
   notify:
     - restart network-manager
-  # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
-
-- name: Unlock /etc/resolv.conf
-  become: yes
-  file:
-    path: /etc/resolv.conf
-    attributes: -i
-  # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
-
-- name: Configure network settings
-  import_role:
-    name: ahuffman.resolv
-  vars:
-    resolv_domain: "{{ domain_name }}"
-    resolv_search: "{{ domain_search }}"
-    resolv_nameservers: "{{ nameservers }}"
-    resolv_options:
-      - "timeout:2"
-      - "rotate"
-  notify:
-    - restart network-manager
-
-# some server providers tries to overwrite resolv.conf...
-- name: Ensure resolv.conf is not overwritable
-  become: yes
-  file:
-    path: /etc/resolv.conf
-    owner: root
-    group: root
-    attributes: i
-    mode: u=rw,g=r,o=r
   # if the Filesystem does not handle ioctl we are maybe on a vm
   ignore_errors: yes
