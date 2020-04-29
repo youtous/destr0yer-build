@@ -1,3 +1,4 @@
+# the socket service is not used, we prefer .service
 [Unit]
 Description=DNSCrypt-proxy socket
 Documentation=https://github.com/jedisct1/dnscrypt-proxy/wiki

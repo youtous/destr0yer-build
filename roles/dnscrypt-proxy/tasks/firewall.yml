@@ -1,0 +1,31 @@
+---
+- name: Setup host.allow for DNS
+  become: yes
+  blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - DNS allowed ip whitelist ###"
+
+- name: List existing DNS UFW rules
+  become: yes
+  shell: >
+    set -o pipefail &&
+    ufw status numbered | grep -zoP '\[.*\]\s53(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: ufw_dns_rules
+
+- name: UFW delete existing DNS rules - tcp,udp/53
+  become: yes
+  shell: "yes y | ufw delete {{ item|quote }}"
+  with_items: "{{ ufw_dns_rules.stdout_lines }}"
+
+- name: UFW Allow DNS clients - tcp,udp/53
+  become: yes
+  ufw:
+    rule: allow
+    port: "53"
+    src: "{{ item }}"
+  with_items: "{{ dns_allowed_hosts }}"
+...

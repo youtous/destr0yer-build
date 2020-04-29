@@ -56,6 +56,9 @@ ssh_entrypoints:
   - "163.172.154.21"
   - "192.168.100.1"
 
+# allow docker networks (and eventually other networks such as vpn) to query the local dns server
+dns_allowed_hosts: "{{ local_docker_ips }}"
+
 # mariadb root CA certificate
 mariadb_ca_certificate: |
   -----BEGIN CERTIFICATE-----
@@ -103,11 +106,10 @@ trusted_backend_ips: "{{ ssh_entrypoints }}"
 # list of auth users for the backend user:bcrypt(pass):
 backend_users: "{{ backend_users|default([]) }}"
 
-# docker dns
-dnscrypt_proxy_listen_addresses: ['127.0.0.1:53', '[::1]:53', '172.17.0.1:53']
-
-# version of docker-compose to install
-docker_compose_version: "1.24.0"
+# local docker networks
+local_docker_ips:
+  - '172.17.0.0/16' # docker0
+  - '172.18.0.0/16' # docker_gwbridge
 
 # ips of the nodes of the swarm
 nodes_ips: "{{

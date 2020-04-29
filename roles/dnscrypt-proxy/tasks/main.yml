@@ -103,11 +103,12 @@
     group: root
     mode: u=rw,g=r,o=r
   with_items:
-    - src: dnscrypt-proxy.j2.socket
-      dest: dnscrypt-proxy.socket
     - src: dnscrypt-proxy.j2.service
       dest: dnscrypt-proxy.service
   notify: restart DNSCrypt-proxy
+
+- name: Install DNSCrypt-proxy firewall rules
+  import_tasks: firewall.yml
 
 - name: Enable DNSCrypt-proxy
   become: yes
