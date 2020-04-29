@@ -33,3 +33,15 @@ managers:
 workers:
   hosts:
     heaven-roberval.youtous.dv:
+
+#### Applications ####
+
+# Mailserver hosts
+mailserver:
+  hosts:
+    heaven-pascal.youtous.dv:
+
+# Nextcloud hosts
+nextcloud:
+  hosts:
+    heaven-pascal.youtous.dv:
