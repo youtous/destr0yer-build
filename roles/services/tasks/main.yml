@@ -3,12 +3,14 @@
 - name: List enabled Scaleway services
   become: yes
   shell: systemctl list-unit-files --state=enabled | grep -o -P "scw(\-|\w|\d)*"
+  changed_when: false
   register: scw_services_enabled
   ignore_errors: True
 
 - name: List running Scaleway services
   become: yes
   shell: systemctl --state=running | grep -o -P "scw(\-|\w|\d)*"
+  changed_when: false
   register: scw_services_running
   ignore_errors: True
 

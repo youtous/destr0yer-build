@@ -8,6 +8,7 @@
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s5000(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
   register: ufw_logstash_5000_rules
+  changed_when: false
 
 - name: UFW delete existing logstash rules - tcp/5000
   become: yes
@@ -27,6 +28,7 @@
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s5044(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
   register: ufw_logstash_5044_rules
+  changed_when: false
 
 - name: UFW delete existing logstash rules - tcp/5044
   become: yes
