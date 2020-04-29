@@ -9,7 +9,6 @@
 - name: List existing DNS UFW rules
   become: yes
   shell: >
-    set -o pipefail &&
     ufw status numbered | grep -zoP '\[.*\]\s53(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
   args:
     executable: /bin/bash

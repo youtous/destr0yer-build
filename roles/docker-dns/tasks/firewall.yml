@@ -11,7 +11,6 @@
 - name: List existing docker0/53 UFW rules
   become: yes
   shell: >
-    set -o pipefail &&
     ufw status numbered | grep -zoP '\[.*\]\s53 on docker0(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
   register: ufw_docker0_dns_rules
   args:
@@ -41,7 +40,6 @@
 - name: List existing docker_gwbridge/53 UFW rules
   become: yes
   shell: >
-    set -o pipefail &&
     ufw status numbered | grep -zoP '\[.*\]\s53 on docker_gwbridge(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
   register: ufw_docker_gwbridge_dns_rules
   args:
