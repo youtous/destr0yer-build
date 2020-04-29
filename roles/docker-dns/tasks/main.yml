@@ -9,35 +9,11 @@
   changed_when: false
   register: docker_host_ip_register
 
-- name: UFW docker0 networks - tcp,udp/53
-  become: yes
-  ufw:
-    rule: allow
-    interface: docker0
-    direction: "in"
-    port: "53"
-  when: docker_host_dns
-
-- name: List existing docker0/53 UFW rules
-  become: yes
-  shell: >
-    set -o pipefail &&
-    ufw status numbered | grep -zoP '\[.*\]\s53 on docker0(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
-  register: ufw_docker0_dns_rules
-  args:
-    executable: /bin/bash
-  changed_when: false
-  when: not docker_host_dns
-
-- name: Remove UFW docker0/53
-  become: yes
-  shell: >
-    set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
-  args:
-    executable: /bin/bash
-  with_items: "{{ ufw_docker0_dns_rules.stdout_lines }}"
-  when: not docker_host_dns
+# Not used anymore, the firewall policy is handled directly by the firewall policy of the dns server role
+# add docker networks to allowed ips
+#
+# - name: Register firewall policy
+#  import_tasks: firewall.yml
 
 - name: Setup DNS for docker
   become: yes
