@@ -156,4 +156,7 @@
 
 - name: Include mailserver deployment for regenerating firewall rules
   import_playbook: mailserver.yml
+
+- name: Include nextcloud deployment (just in case :))
+  import_playbook: nextcloud.yml
 ...
