@@ -13,8 +13,10 @@
   become: yes
   become_user: root
   shell: >
+    set -o pipefail &&
     echo '{{ item.key|quote }}' | gpg --import && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:
+    executable: /bin/bash
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   with_items: "{{ backup_gpg_public_keys }}"
 
@@ -22,8 +24,10 @@
   become: yes
   become_user: root
   shell: >
+    set -o pipefail &&
     echo '{{ item.value|quote }}' | gpg --import-ownertrust && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:
+    executable: /bin/bash
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   notify: update trustdb
   with_items: "{{ backup_gpg_ownertrusts }}"
@@ -32,8 +36,10 @@
   become: yes
   become_user: root
   shell: >
+    set -o pipefail &&
     echo '{{ item.key|quote }}' | gpg --allow-secret-key-import --batch --import && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:
+    executable: /bin/bash
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   with_items: "{{ backup_gpg_private_keys }}"
   no_log: true

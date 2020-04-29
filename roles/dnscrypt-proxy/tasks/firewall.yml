@@ -17,7 +17,11 @@
 
 - name: UFW delete existing DNS rules - tcp,udp/53
   become: yes
-  shell: "yes y | ufw delete {{ item|quote }}"
+  shell: >
+    set -o pipefail &&
+    yes y | ufw delete {{ item|quote }}
+  args:
+    executable: /bin/bash
   with_items: "{{ ufw_dns_rules.stdout_lines }}"
 
 - name: UFW Allow DNS clients - tcp,udp/53
