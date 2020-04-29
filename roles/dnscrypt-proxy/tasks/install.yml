@@ -1,7 +1,7 @@
 ---
 - name: Install building requirements
-  include_role:
-    name: minisign
+  import_role:
+    name: youtous.minisign
 
 - name: Ensure any existing DNSCrypt-proxy vestige is removed
   become: yes

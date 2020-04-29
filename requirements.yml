@@ -66,3 +66,7 @@
   src: https://github.com/geerlingguy/ansible-role-docker.git
   version: c94e327a74a16a85f23d73be386c161a9cfe81d4
 
+# Building  dnscrypt
+- name: youtous.minisign
+  src: https://github.com/youtous/ansible-minisign.git
+  version: 52ad172ac057a99573f46d56e27db620b3fa0bb3
