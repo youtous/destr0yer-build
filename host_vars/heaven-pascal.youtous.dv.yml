@@ -95,16 +95,9 @@ logstash_allowed_ips: "{{ nodes_ips }}" # by default, all nodes are allowed to s
 
 ### End of docker elastic parameters ###
 
-### Begin of dynamic updating parameters ###
-
-# dynamic-ip parameters
-update_ip_cloudflare_zone_name: youtous.me
-update_ip_cloudflare_record_name: test-dyn-heaven-pascal.youtous.dv
-
-### End of dynamic updating parameters ###
-
-
 ### Begin of mailserver parameters ###
+mailserver_ssl_type: ""
+mailserver_ssl_use_traefik: false
 mailserver_allowed_ips:
   port_587:
       - "172.17.0.0/16" # allow docker0 containers to access smtps
