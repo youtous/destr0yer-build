@@ -45,3 +45,8 @@ interfaces:
 backup_storage:
   hosts:
     heaven-pascal.youtous.dv:
+
+# hosts used as an WireGuard server
+wireguard_servers:
+  hosts:
+    heaven-pascal.youtous.dv:
