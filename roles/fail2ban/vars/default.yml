@@ -10,6 +10,7 @@
 # default services watched by fail2ban
 fail2ban_default_services:
   - name: sshd
+    mode: aggressive
     port: ssh
   - name: recidive
   - name: pam-generic
