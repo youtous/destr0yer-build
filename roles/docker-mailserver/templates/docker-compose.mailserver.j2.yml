@@ -37,9 +37,6 @@ configs:
   dovecot-quotas.cf:
     name: "{{ docker_mailserver_stack_name }}_dovecot-quotas-${DEPLOY_TIMESTAMP}"
     file: "./config/dovecot-quotas.cf"
-  ffdhe4096.pem:
-    name: "{{ docker_mailserver_stack_name }}_ffdhe4096.pem-${DEPLOY_TIMESTAMP}"
-    file: "./files/ffdhe4096.pem"
   cron-sa-learn:
     name: "{{ docker_mailserver_stack_name }}_cron-sa-learn-${DEPLOY_TIMESTAMP}"
     file: "./config/cron/sa-learn"
@@ -73,13 +70,11 @@ secrets:
 
 services:
 
-  # override default dhparams with ffdhe4096; when times will come PLEASE DISABLE DHE algorithms
   mailserver:
     image: tvial/docker-mailserver:latest
     command: >
       sh -c '
       mkdir -p /var/mail-state/lib-shared/ &&
-      cp /tmp/read-only/docker-mailserver/ffdhe4096.pem /var/mail-state/lib-shared/dhparams.pem &&
       cp -R /tmp/read-only/* /tmp/ &&
       supervisord -c /etc/supervisor/supervisord.conf
       '
@@ -124,8 +119,6 @@ services:
         target: "/tmp/read-only/docker-mailserver/postfix-main.cf"
       - source: postfix-master.cf
         target: "/tmp/read-only/docker-mailserver/postfix-master.cf"
-      - source: ffdhe4096.pem
-        target: "/tmp/read-only/docker-mailserver/ffdhe4096.pem"
       - source: cron-sa-learn
         target: "/etc/cron.d/sa-learn"
     secrets:
