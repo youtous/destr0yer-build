@@ -166,6 +166,7 @@ services:
       # SpamAssasin
       - "ENABLE_SPAMASSASSIN=$ENABLE_SPAMASSASSIN"
       - SPAMASSASSIN_SPAM_TO_INBOX=1
+      - MOVE_SPAM_TO_JUNK=1
       - SA_TAG=2.0
       - SA_TAG2=6.31
       - SA_KILL=6.31
