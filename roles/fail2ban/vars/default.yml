@@ -12,6 +12,9 @@ fail2ban_default_services:
   - name: sshd
     mode: aggressive
     port: ssh
+    bantime: 3600
+    maxretry: 3
+    findtime: 3600
   - name: recidive
   - name: pam-generic
 
