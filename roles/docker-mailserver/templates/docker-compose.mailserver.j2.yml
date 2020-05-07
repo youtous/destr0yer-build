@@ -170,7 +170,7 @@ services:
       - SA_TAG=2.0
       - SA_TAG2=6.31
       - SA_KILL=6.31
-      - SA_SPAM_SUBJECT=***SPAM*****
+      - SA_SPAM_SUBJECT=***SPAM****
       # Fetchmail
       - "ENABLE_FETCHMAIL=$ENABLE_FETCHMAIL"
       - "FETCHMAIL_POLL=$FETCHMAIL_POLL"

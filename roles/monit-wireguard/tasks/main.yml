@@ -1,0 +1,8 @@
+---
+# This role contains the default configuration for monitoring dnscrypt-proxy with Monit
+- name: Setup additional Monit configurations
+  become: yes
+  template:
+    src: "templates/etc/monit/conf.d/wireguard.j2"
+    dest: "/etc/monit/conf.d/wireguard-{{ monit_wireguard_interface }}"
+  notify: reload monit

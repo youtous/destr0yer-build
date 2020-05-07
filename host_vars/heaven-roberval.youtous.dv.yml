@@ -16,6 +16,19 @@ relay_password: "{{ secret_relay_password }}"
 
 ### End of smtp relay parameters ###
 
+### Begin of Wireguard client parameters ###
+
+# allow VPN clients to access DNS
+
+wireguard_client_public_key: "VtgEDbhCLKhGMULdFxDliyccRwXv03r69lhY41gWhjA=" # private in vault
+wireguard_client_server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc=" # private in vault
+wireguard_client_endpoint: "heaven-pascal.youtous.dv:1990"
+wireguard_client_address:
+  - 10.0.0.2/24
+  - fdc9:281f:04d7:9ee9::2/64
+
+### End of Wireguard client parameters ###
+
 
 ### Begin of Backup strategy parameters ###
 

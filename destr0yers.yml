@@ -153,12 +153,24 @@
 - name: Configure WireGuard servers
   hosts: wireguard_servers
   roles:
-    - wireguard
+    - wireguard-server
+    - monit-wireguard
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["wireguard"]
+  tags: ["wireguard", "wireguard-server"]
+
+- name: Configure WireGuard clients
+  hosts: wireguard_clients
+  roles:
+    - wireguard-client
+    - monit-wireguard
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["wireguard", "wireguard-client"]
 
 - name: Configure servers with dynamic ip
   hosts: dynamic_ip
