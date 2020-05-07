@@ -50,3 +50,8 @@ backup_storage:
 wireguard_servers:
   hosts:
     heaven-pascal.youtous.dv:
+
+# hosts using a VPN WireGuard server
+wireguard_clients:
+  hosts:
+    heaven-roberval.youtous.dv:

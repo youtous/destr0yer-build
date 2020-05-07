@@ -160,6 +160,16 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["wireguard", "wireguard-server"]
 
+- name: Configure WireGuard clients
+  hosts: wireguard_clients
+  roles:
+    - wireguard-client
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["wireguard", "wireguard-client"]
+
 - name: Configure servers with dynamic ip
   hosts: dynamic_ip
   roles:

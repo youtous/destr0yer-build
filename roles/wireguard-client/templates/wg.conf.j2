@@ -1,0 +1,21 @@
+[Interface]
+Address = {{ wireguard_client_address|join(', ') }}
+PrivateKey = {{ wireguard_client_private_key }}
+
+{% if wireguard_client_dns is defined and (wireguard_client_dns|length > 0)  %}
+DNS = {{ wireguard_client_dns|join(', ') }}
+{% endif %}
+
+{% if wireguard_client_mtu is defined and (wireguard_client_mtu|length > 0)  %}
+MTU = {{ wireguard_client_mtu }}
+{% endif %}
+
+[Peer]
+# Peer {{ wireguard_client_name }}
+PublicKey = {{ wireguard_client_public_key }}
+PresharedKey = {{ wireguard_client_preshared_key }}
+Endpoint = {{ wireguard_server_endpoint }}
+AllowedIPs = {{ wireguard_client_allowed_ips|join(', ') }}
+{% if wireguard_client_persistent_keepalive is defined  and (wireguard_client_persistent_keepalive|length > 0) %}
+PersistentKeepalive = {{ wireguard_client_persistent_keepalive }}
+{% endif %}
