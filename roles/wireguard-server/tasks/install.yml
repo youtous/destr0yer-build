@@ -37,7 +37,6 @@
     - restart wireguard
   when: ansible_os_family == "Debian" and ansible_lsb.major_release|int > 11
 
-
 - name: Enable WireGuard kernel module
   modprobe:
     name: wireguard
@@ -46,5 +45,7 @@
   until:  wireguard_module_enabled is succeeded
   retries: 10
   delay: 10
+  notify:
+    - restart wireguard
   failed_when: wireguard_module_enabled is failure
 ...

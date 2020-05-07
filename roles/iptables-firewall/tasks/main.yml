@@ -54,20 +54,20 @@
     - restart ufw
 
 # IP forwarding is disabled by default
-- name: Disable IPv4 forwarding
+- name: Set value IPv4 forwarding
   become: yes
   sysctl:
     name: net.ipv4.ip_forward
-    value: "0"
+    value: "{{ ipv4_ip_forwarding }}"
     sysctl_set: yes
     state: present
     reload: yes
 
-- name: Disable IPv6 forwarding
+- name: Set value IPv6 forwarding
   become: yes
   sysctl:
     name: net.ipv6.conf.all.forwarding
-    value: "0"
+    value: "{{ ipv6_ip_forwarding }}"
     sysctl_set: yes
     state: present
     reload: yes

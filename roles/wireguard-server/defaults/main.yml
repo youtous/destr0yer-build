@@ -5,6 +5,9 @@ wireguard_server_private_key: ""
 
 # the default wireguard port
 wireguard_server_port: 1990
+# restrict ips to access wireguard_server, by default, 'any' allow any ip
+wireguard_server_restrict_ips:
+  - "any"
 
 # the default interface name that wireguard should use if not specified otherwise.
 wireguard_interface: "wg0"
@@ -13,10 +16,28 @@ wireguard_server_address:
   - 10.0.0.1/24
   - fdc9:281f:04d7:9ee9::1/64
 
-# todo : default dns, same on clients
+# /!\ set these DNS on clients [Interface] and allow wireguard network for DNS queries using `dns_allowed_hosts`
 wireguard_server_dns:
   - 10.0.0.1
   - fdc9:281f:04d7:9ee9::1
+
+# external interface to forward traffic to
+wireguard_server_external_interface: eth0
+
+# hook actions, details https://github.com/pirate/wireguard-docs/blob/master/example-lan-briding/montreal/wg0.conf
+wireguard_server_pre_up: []
+wireguard_server_pre_down: []
+wireguard_server_post_up:
+  - sysctl -w net.ipv4.ip_forward=1
+  - sysctl -w net.ipv6.conf.all.forwarding=1
+  - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+wireguard_server_post_down:
+  - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+
+# optional wireguard MTU
+wireguard_server_mtu: ""
+
+wireguard_server_save_config: "true"
 
 wireguard_server_peers: []
 #  - name: "peerB"
@@ -27,9 +48,12 @@ wireguard_server_peers: []
 #      # The IP range that we may send packets to for this peer.
 #      - 10.8.0.2/32 # <---- /32 means only route traffic to 10.8.0.2 (client ip)
 #      - fdc9:281f:04d7:9ee9::2/128 # <---- /128 same
+#
+#     persistent_keepalive: "25" # only used when behind a NAT (https://www.wireguard.com/quickstart/)
+
 
 # for configuration on clients, see https://stanislas.blog/2019/01/how-to-setup-vpn-server-wireguard-nat-ipv6/
 # allowed_ips: # on the client will route all traffic to the vpn
-# - 0.0.0.0/0 # will route all traffic through VPN
+#       - 0.0.0.0/0 # will route all traffic through VPN
 #      - ::/0  # will route all traffic through VPN
 ...
