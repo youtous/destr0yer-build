@@ -65,7 +65,7 @@ mariadb_databases:
 
 ### End of database parameters ###
 
-### Begin of Wireguard parameters ###
+### Begin of Wireguard server parameters ###
 
 # allow VPN clients to access DNS
 dns_allowed_hosts: "{{ local_docker_ips + wireguard_server_address }}"
@@ -80,7 +80,7 @@ wireguard_server_external_interface: eth0
 ipv4_ip_forwarding: "1"
 ipv6_ip_forwarding: "1"
 
-### End of Wireguard parameters ###
+### End of Wireguard server parameters ###
 
 
 ### Begin of Nextcloud parameters ###

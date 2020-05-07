@@ -11,6 +11,10 @@ root_password: ""
 # smtp relay
 secret_relay_password: ""
 
+# wireguard vpn client
+wireguard_client_private_key: "PEER_B_PRIVATE_KEY"
+wireguard_client_preshared_key: "SERVER-PEER_B-PRESHARED_KEY"
+
 # generated keys for root
 root_public_key: ""
 root_private_key: |
