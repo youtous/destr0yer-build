@@ -4,7 +4,7 @@ wireguard_server_public_key: ""
 wireguard_server_private_key: ""
 
 # the default wireguard port
-wireguard_server_port: 1990
+wireguard_server_port: "1990"
 # restrict ips to access wireguard_server, by default, 'any' allow any ip
 wireguard_server_restrict_ips:
   - "any"
@@ -17,9 +17,7 @@ wireguard_server_address:
   - fdc9:281f:04d7:9ee9::1/64
 
 # /!\ set these DNS on clients [Interface] and allow wireguard network for DNS queries using `dns_allowed_hosts`
-wireguard_server_dns:
-  - 10.0.0.1
-  - fdc9:281f:04d7:9ee9::1
+#=> 10.0.0.1, fdc9:281f:04d7:9ee9::1
 
 # external interface to forward traffic to
 wireguard_server_external_interface: eth0

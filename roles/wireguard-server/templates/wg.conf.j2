@@ -4,9 +4,6 @@ ListenPort = {{ wireguard_server_port }}
 PrivateKey = {{ wireguard_server_private_key }}
 SaveConfig = {{ wireguard_server_save_config }}
 
-{% if wireguard_server_dns is defined and (wireguard_server_dns|length > 0)  %}
-DNS = {{ wireguard_server_dns|join(', ') }}
-{% endif %}
 {% if wireguard_server_mtu is defined and (wireguard_server_mtu|length > 0)  %}
 MTU = {{ wireguard_server_mtu }}
 {% endif %}

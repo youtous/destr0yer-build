@@ -11,10 +11,12 @@
   changed_when: False
 
 - name: Install kernel headers to compile wireguard with DKMS
+  become: yes
   apt:
     name:
       - "linux-headers-{{ dpkg_arch.stdout }}"
     state: present
+    update_cache: yes
 
 - name: Install wiregard using latest version from buster-backport
   become: yes
@@ -38,6 +40,7 @@
   when: ansible_os_family == "Debian" and ansible_lsb.major_release|int > 11
 
 - name: Enable WireGuard kernel module
+  become: yes
   modprobe:
     name: wireguard
     state: present
