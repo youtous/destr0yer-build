@@ -13,6 +13,11 @@
     msg: Wireguard client preshared_key is not defined.
   when: wireguard_client_preshared_key is not defined or wireguard_client_preshared_key|length == 0
 
+- name: Ensure wireguard server public_key is defined
+  fail:
+    msg: Wireguard server public key is not defined.
+  when: wireguard_client_server_public_key is not defined or wireguard_client_server_public_key|length == 0
+
 - name: Ensure wireguard client address is defined
   fail:
     msg: Wireguard client address is not defined.
@@ -20,8 +25,8 @@
 
 - name: Ensure wireguard server endpoint is defined
   fail:
-    msg: Wireguard server endpoint address is not defined.
-  when: wireguard_server_endpoint is not defined or wireguard_server_endpoint|length == 0
+    msg: Wireguard client endpoint address is not defined.
+  when: wireguard_client_endpoint is not defined or wireguard_client_endpoint|length == 0
 
 - name: Ensure wireguard configuration directory exists
   become: yes

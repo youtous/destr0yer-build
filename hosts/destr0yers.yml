@@ -53,5 +53,5 @@ wireguard_servers:
 
 # hosts using a VPN WireGuard server
 wireguard_clients:
-  hosts:
-    heaven-roberval.youtous.dv:
+#  hosts:
+#    heaven-roberval.youtous.dv: # disabled for tests only

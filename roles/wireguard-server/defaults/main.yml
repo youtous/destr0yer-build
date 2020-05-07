@@ -35,8 +35,6 @@ wireguard_server_post_down:
 # optional wireguard MTU
 wireguard_server_mtu: ""
 
-wireguard_server_save_config: "true"
-
 # generate preshared_key using `wg genpsk > peer_A-peer_B.psk`
 wireguard_server_peers: []
 #  - name: "peerB"
@@ -44,7 +42,7 @@ wireguard_server_peers: []
 #    preshared_key: "SERVER-PEER_B-PRESHARED_KEY"
 #    allowed_ips:
 #      # The IP range that we may send packets to for this peer.
-#      - 10.8.0.2/32 # <---- /32 means only route traffic to 10.8.0.2 (client ip)
+#      - 10.0.0.2/32 # <---- /32 means only route traffic to 10.0.0.2 (client ip)
 #      - fdc9:281f:04d7:9ee9::2/128 # <---- /128 same
 #
 #     persistent_keepalive: "25" # only used when behind a NAT (https://www.wireguard.com/quickstart/)

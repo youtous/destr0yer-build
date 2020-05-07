@@ -1,6 +1,7 @@
 ---
 # generate keys using (works for server/clients) `wg genkey | tee privatekey | wg pubkey > publickey`
-wireguard_client_public_key: ""
+wireguard_client_server_public_key: "" # <---- public key of the server
+wireguard_client_public_key: "" # <--- public key of the client
 wireguard_client_private_key: ""
 wireguard_client_preshared_key: "" # `wg genpsk > peer_A-peer_B.psk`
 
@@ -8,8 +9,8 @@ wireguard_client_address: []
 #  - 10.0.0.2/24
 #  - fdc9:281f:04d7:9ee9::2/64
 
-# wireguard_server_endpoint: "vpn.localhost.dv:1990" # VPN server endpoint
-wireguard_server_endpoint: ""
+# wireguard_client_endpoint: "vpn.localhost.dv:1990" # VPN server endpoint
+wireguard_client_endpoint: ""
 
 # /!\ set these DNS on clients [Interface] and allow wireguard network for DNS queries using `dns_allowed_hosts`
 #=> 10.0.0.1, fdc9:281f:04d7:9ee9::1
@@ -28,6 +29,7 @@ wireguard_client_allowed_ips:
   - ::/0 # route all traffic trougth the VPN
 
 wireguard_client_persistent_keepalive: "" # eventually set this value to `25` seconds when behind NAT
+
 
 # the default interface name that wireguard should use if not specified otherwise.
 wireguard_interface: "wg0"
