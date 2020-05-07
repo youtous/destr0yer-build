@@ -1,5 +1,5 @@
 ---
-# generate keys using ` wg genkey | tee privatekey | wg pubkey > publickey`
+# generate keys using (works for server/clients) `wg genkey | tee privatekey | wg pubkey > publickey`
 wireguard_server_public_key: ""
 wireguard_server_private_key: ""
 
@@ -39,11 +39,11 @@ wireguard_server_mtu: ""
 
 wireguard_server_save_config: "true"
 
+# generate preshared_key using `wg genpsk > peer_A-peer_B.psk`
 wireguard_server_peers: []
 #  - name: "peerB"
 #    public_key: "PEER_B_PUBLIC_KEY"
 #    preshared_key: "SERVER-PEER_B-PRESHARED_KEY"
-#    endpoint: "vpn.localhost.dv:1990"
 #    allowed_ips:
 #      # The IP range that we may send packets to for this peer.
 #      - 10.8.0.2/32 # <---- /32 means only route traffic to 10.8.0.2 (client ip)

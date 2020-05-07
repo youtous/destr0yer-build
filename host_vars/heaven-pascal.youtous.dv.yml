@@ -70,6 +70,7 @@ mariadb_databases:
 # allow VPN clients to access DNS
 dns_allowed_hosts: "{{ local_docker_ips + wireguard_server_address }}"
 
+wireguard_server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc=" # private in vault
 wireguard_server_port: 1990
 wireguard_server_address:
   - 10.0.0.1/24

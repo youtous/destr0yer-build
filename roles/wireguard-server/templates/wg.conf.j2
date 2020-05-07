@@ -41,7 +41,6 @@ PostDown = {{ wg_cmd }}
 PublicKey = {{ peer.public_key }}
 PresharedKey = {{ peer.preshared_key }}
 AllowedIPs = {{ peer.allowed_ips|join(', ') }}
-Endpoint = {{ peer.endpoint }}
 {% if peer.persistent_keepalive is defined  and (peer.persistent_keepalive|length > 0) %}
 PersistentKeepalive = {{ peer.persistent_keepalive }}
 {% endif %}
