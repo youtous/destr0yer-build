@@ -1,2 +1,15 @@
 ---
+
+- name: Install wireguard
+  import_tasks: install.yml
+
+- name: Ensure wireguard keys are defined
+  fail:
+    msg: Keys must be defined using wg genkey. No key proved.
+  when: (wireguard_server_public_key is not defined or wireguard_server_public_key|length == 0) or (wireguard_server_private_key is not defined or wireguard_server_private_key|length == 0)
+
+
+# Enable routing on the server https://stanislas.blog/2019/01/how-to-setup-vpn-server-wireguard-nat-ipv6/
+# Enable NAT on the server
+
 ...
