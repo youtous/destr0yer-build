@@ -16,6 +16,7 @@ specu_password: ""
 secret_relay_password: ""
 
 # wireguard vpn server
+wireguard_server_private_key: "SERVER_PRIVATE_KEY"
 wireguard_server_peers:
   - name: "heaven-roberval.youtous.dv"
     public_key: "PEER_B_PUBLIC_KEY"

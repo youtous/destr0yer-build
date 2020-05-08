@@ -18,6 +18,7 @@ _from https://wiki.archlinux.org/index.php/WireGuard_
 PrivateKey = CLIENT_PRIVATE_KEY
 Address = 10.0.0.2/24,fdc9:281f:04d7:9ee9::2/64 # <--- set client ip here
 DNS = 10.0.0.1, fdc9:281f:04d7:9ee9::1
+# PublicKey = CLIENT_PUBLIC_KEY
 
 [Peer]
 PublicKey = SERVER_PUBLIC_KEY
