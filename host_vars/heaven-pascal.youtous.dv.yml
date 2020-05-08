@@ -73,7 +73,7 @@ dns_allowed_hosts: "{{ local_docker_ips + wireguard_server_address }}"
 wireguard_server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc=" # private in vault
 wireguard_server_port: "1990"
 wireguard_server_address:
-  - 10.0.0.1/24
+  - 10.99.99.1/24
   - fdc9:281f:04d7:9ee9::1/64
 wireguard_server_external_interface: eth0
 # required for VPN server acting as a router

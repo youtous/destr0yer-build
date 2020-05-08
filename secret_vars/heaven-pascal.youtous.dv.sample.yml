@@ -22,7 +22,7 @@ wireguard_server_peers:
     public_key: "PEER_B_PUBLIC_KEY"
     preshared_key: "SERVER-PEER_B-PRESHARED_KEY"
     allowed_ips: # ip of the peer
-      - 10.0.0.2/32 # <---- /32 means only route traffic to 10.0.0.2 (client ip)
+      - 10.99.99.2/32 # <---- /32 means only route traffic to 10.99.99.2 (client ip)
       - fdc9:281f:04d7:9ee9::2/128 # <---- /128 same
 #   persistent_keepalive: "25" # only used when behind a NAT (https://www.wireguard.com/quickstart/)
 

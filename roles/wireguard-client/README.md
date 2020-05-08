@@ -1,5 +1,7 @@
 # ansible/wireguard-client
 
+Test leaks using https://ipleak.net/.
+
 #### Key Generation
 _from https://wiki.archlinux.org/index.php/WireGuard_
 

@@ -6,14 +6,14 @@ wireguard_client_private_key: ""
 wireguard_client_preshared_key: "" # `wg genpsk > peer_A-peer_B.psk`
 
 wireguard_client_address: []
-#  - 10.0.0.2/24
+#  - 10.99.99.2/24
 #  - fdc9:281f:04d7:9ee9::2/64
 
 # wireguard_client_endpoint: "vpn.localhost.dv:1990" # VPN server endpoint
 wireguard_client_endpoint: ""
 
 # /!\ set these DNS on clients [Interface] and allow wireguard network for DNS queries using `dns_allowed_hosts`
-#=> 10.0.0.1, fdc9:281f:04d7:9ee9::1
+#=> 10.99.99.1, fdc9:281f:04d7:9ee9::1
 # use vpn dns
 wireguard_client_dns: []
 

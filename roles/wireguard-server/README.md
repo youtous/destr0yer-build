@@ -4,6 +4,8 @@
 
 See default/main.yml
 
+Test leaks using https://ipleak.net/.
+
 #### Key Generation
 _from https://wiki.archlinux.org/index.php/WireGuard_
 
@@ -16,8 +18,8 @@ _from https://wiki.archlinux.org/index.php/WireGuard_
 ```toml
 [Interface]
 PrivateKey = CLIENT_PRIVATE_KEY
-Address = 10.0.0.2/24,fdc9:281f:04d7:9ee9::2/64 # <--- set client ip here
-DNS = 10.0.0.1, fdc9:281f:04d7:9ee9::1
+Address = 10.99.99.2/24,fdc9:281f:04d7:9ee9::2/64 # <--- set client ip here
+DNS = 10.99.99.1, fdc9:281f:04d7:9ee9::1
 # PublicKey = CLIENT_PUBLIC_KEY
 
 [Peer]
