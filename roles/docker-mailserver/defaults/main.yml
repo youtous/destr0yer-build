@@ -45,8 +45,7 @@ mailserver_debug: false
 mailserver_only_smtp: false
 
 mailserver_allowed_ips:
-  port_465: []
-  port_587: [] # list of ip/networks allowed to access port 587, whitelisting docker0 (172.17.0.0/16) or extended network (172.16.0.0/12) allows
+  port_465: [] # list of ip/networks allowed to access port 587, whitelisting docker0 (172.17.0.0/16) or extended network (172.16.0.0/12) allows
             # containers on running on the same host as docker-mailserver to access the mailserver
   port_993: []
 
