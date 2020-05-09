@@ -43,7 +43,7 @@ autoconfig.{{ mailserver.domain }}                   IN     CNAME {{ hostname }}
 {{ mailserver_domain }}                              IN      MX 10  {{ mailserver_hostname }}.{{ mailserver_domain }}
 {{ mailserver_domain }}                              IN      TXT    "mailconf=https://autoconfig.{{ mailserver_domain }}/mail/config-v1.1.xml"
 _imaps._tcp.{{ mailserver_domain }}                  IN      SRV    0 0 993 {{ mailserver_hostname }}.{{ mailserver_domain }}
-_submission._tcp.{{ mailserver_domain }}             IN      SRV    0 0 587 {{ mailserver_hostname }}.{{ mailserver_domain }}
+_submission._tcp.{{ mailserver_domain }}             IN      SRV    0 0 465 {{ mailserver_hostname }}.{{ mailserver_domain }}
 _autodiscover._tcp.{{ mailserver_domain }}           IN      SRV    0 0 443 autodiscover.{{ mailserver_domain }}.
 ```
 
@@ -63,7 +63,7 @@ testing.svur.org.			1	IN	MX	10 mailserver.testing.svur.org.
 ;; SRV Records
 _autodiscover._tcp.testing.svur.org.	1	IN	SRV	0 0 443 autodiscover.testing.
 _imaps._tcp.testing.svur.org.		1	IN	SRV	0 0 993 mailserver.testing.svur.org.
-_submission._tcp.testing.svur.org.	1	IN	SRV	0 0 587 mailserver.testing.svur.org.
+_submission._tcp.testing.svur.org.	1	IN	SRV	0 0 465 mailserver.testing.svur.org.
 
 ;; TXT Records
 testing.svur.org.			1	IN	TXT	"mailconf=https://autoconfig.testing.svur.org/mail/config-v1.1.xml"
@@ -160,15 +160,15 @@ mx_entries:
 Go to https://rainloop/?admin and configure the db and the mailserver :
 
  - mysql : `mysql_server` for hostname, and the db-user/db-name of you choice.
- - sieve, smtp : `mailserver` STARTLS:587
- - iamp : `mailserver` SSL/TLS:993
+ - sieve, smtp : `mailserver` SSL/TLS:465
+ - imap : `mailserver` SSL/TLS:993
  
 Disable certificate verification (it runs inside the stack only).
 
 ### Tests
 
 For sending emails, use `swaks`, in a debian container.
-For instance: `swaks -f noreply@svur.org -t contact@svur.org --server mailserver.svur.org:587 -tls -a LOGIN`
+For instance: `swaks -f noreply@svur.org -t contact@svur.org --server mailserver.svur.org:465 -tls -a LOGIN`
 
 free:
 - https://github.com/drwetter/testssl.sh

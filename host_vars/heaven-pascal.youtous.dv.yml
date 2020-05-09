@@ -117,7 +117,7 @@ logstash_allowed_ips: "{{ nodes_ips }}" # by default, all nodes are allowed to s
 mailserver_ssl_type: ""
 mailserver_ssl_use_traefik: false
 mailserver_allowed_ips:
-  port_587:
+  port_465:
       - "172.17.0.0/16" # allow docker0 containers to access smtps
       - "172.18.0.0/16" # allow docker_gwbridge containers to access smtps
   port_993: []
@@ -151,7 +151,7 @@ mailserver_domains:
 
 ### Begin of SSL/TLS monitoring parameters ###
 monitor_testssl_hosts:
-  - host: "mailserver.svur.org:587"
+  - host: "mailserver.svur.org:465"
     protocol: "smtp"
   - host: "svur.org:443"
     ipv6: true
