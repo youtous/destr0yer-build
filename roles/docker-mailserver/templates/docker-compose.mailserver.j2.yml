@@ -82,8 +82,8 @@ services:
       - target: 25
         published: 25
         mode: host
-      - target: 143
-        published: 143
+      - target: 465
+        published: 465
         mode: host
       - target: 587
         published: 587
@@ -394,7 +394,7 @@ services:
       - IMAP_PORT=993
       - IMAP_SOCKET=SSL
       - "SMTP_HOST={{ mailserver_fqdn }}"
-      - SMTP_PORT=587
+      - SMTP_PORT=465
       - SMTP_SOCKET=STARTTLS
     networks:
       - {{ traefik_network }}
