@@ -168,7 +168,7 @@ Disable certificate verification (it runs inside the stack only).
 ### Tests
 
 For sending emails, use `swaks`, in a debian container.
-For instance: `swaks -f noreply@svur.org -t contact@svur.org --server mailserver.svur.org:465 -tls -a LOGIN`
+For instance: `swaks -f noreply@svur.org -t contact@svur.org --server mailserver.svur.org:465 -tlsc -a LOGIN`
 
 free:
 - https://github.com/drwetter/testssl.sh
