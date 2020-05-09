@@ -44,7 +44,7 @@ HOSTS_TO_CHECK.each do |host|
     end
 
     report_status = ""
-    if html_report_results.downcase.include? "not ok"
+    if html_report_results.downcase.include? "(not ok)"
         report_status = "[NOT OK]"
     end
 
@@ -55,7 +55,7 @@ HOSTS_TO_CHECK.each do |host|
     content = html_report_results
     mail_command = "mail -a 'Content-Type: text/html' -s '#{subject}' #{to}<<EOF
     #{content}
-    EOF"
+EOF"
 
     puts "[#{Time.now}] Executing command: #{mail_command}"
     `#{mail_command}`
