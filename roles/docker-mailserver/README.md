@@ -160,7 +160,7 @@ mx_entries:
 Go to https://rainloop/?admin and configure the db and the mailserver :
 
  - mysql : `mysql_server` for hostname, and the db-user/db-name of you choice.
- - sieve, smtp : `mailserver` SSL/TLS:465
+ - sieve, smtp : `mailserver` STARTTLS:587 _(465 does not work when same host)_
  - imap : `mailserver` SSL/TLS:993
  
 Disable certificate verification (it runs inside the stack only).
