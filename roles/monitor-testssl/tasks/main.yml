@@ -42,7 +42,7 @@
     group: root
     mode: u=rw,g=r,o=
 
-- name: Cron changed-ip every 5mins
+- name: Cron monitor-testssl every defined period
   become: yes
   cron:
     name: "monitor ssl/tls hosts and send a report"
