@@ -181,4 +181,14 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["watch-ip"]
+
+- name: Monitor ssl hosts
+  hosts: watch_ssl
+  roles:
+    - monitor-testssl
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["watch-ssl"]
 ...

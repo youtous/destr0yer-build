@@ -1,0 +1,13 @@
+---
+# hosts entries to test
+monitor_testssl_hosts: []
+#  - host: "smtp.local.dv:587"
+#    protocol: "smtp" # ftp, smtp, pop3, imap, xmpp, telnet, ldap, irc, lmtp, nntp, postgres, mysql
+#    ipv6: true
+
+# Report will be generated every period https://docs.ansible.com/ansible/latest/modules/cron_module.html
+monitor_testsssl_cron_period: "monthly"
+
+# email where reports will be sent
+monitor_testssl_report_email: "{{ monitoring_email }}"
+...

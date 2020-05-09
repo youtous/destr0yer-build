@@ -38,6 +38,11 @@ watch_ip:
   #hosts:
   #  heaven-pascal.youtous.dv:
 
+# hosts which are monitoring ssl hosts, /!\ docker MUST be installed
+watch_ssl:
+  hosts:
+    heaven-pascal.youtous.dv:
+
 # hosts with specific interfaces configuration
 interfaces:
 

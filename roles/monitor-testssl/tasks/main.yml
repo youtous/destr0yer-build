@@ -1,0 +1,51 @@
+---
+# This role is monitoring ssl/tls hosts on protocols, it assumes docker is installed on the system
+- name: Install required packages
+  become: yes
+  apt:
+    name:
+      - cron
+      - ruby
+      - ruby-json
+      - aha
+
+- name: Enable cron
+  service:
+    name: cron
+    state: started
+    enabled: yes
+
+- name: Creates monitor-testssl directory
+  become: yes
+  file:
+    path: "{{ monitor_testssl_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=
+
+- name: Copy monitor-testssl script
+  become: yes
+  copy:
+    src: files/monitor_testssl.rb
+    dest: "{{ monitor_testssl_directory }}/monitor_testssl.rb"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Copy monitor-testssl hosts list
+  become: yes
+  template:
+    src: templates/hosts_list.json.j2
+    dest: "{{ monitor_testssl_directory }}/hosts_list.json"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=
+
+- name: Cron changed-ip every 5mins
+  become: yes
+  cron:
+    name: "monitor ssl/tls hosts and send a report"
+    special_time: "{{ monitor_testsssl_cron_period }}"
+    job: "{{ monitor_testssl_directory }}/monitor_testssl.rb '{{ monitor_testssl_image_name }}' '{{ monitor_testssl_report_email }}' > /dev/null"
+...

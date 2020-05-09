@@ -1,0 +1,4 @@
+---
+monitor_testssl_directory: "/etc/monitor_testssl"
+monitor_testssl_image_name: "drwetter/testssl.sh"
+...

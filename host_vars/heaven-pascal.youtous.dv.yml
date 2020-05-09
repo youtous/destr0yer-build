@@ -149,6 +149,15 @@ mailserver_domains:
         - mailing-heaven-pascal.heaven-pascal.youtous.dv # each mx entry must be listed here
 ### End of mailserver parameters ###
 
+### Begin of SSL/TLS monitoring parameters ###
+monitor_testssl_hosts:
+  - host: "mailserver.svur.org:587"
+    protocol: "smtp"
+  - host: "svur.org:443"
+    ipv6: true
+### End of SSL/TLS monitoring parameters ###
+
+
 ### Begin of Backup storage parameters ###
 backup_frozen_directory: "/home/frozen-backups/"
 # backup-storage parameters
