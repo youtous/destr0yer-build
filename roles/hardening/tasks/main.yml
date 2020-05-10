@@ -1,0 +1,10 @@
+---
+# This role is hardening linux kernel values. Based on https://github.com/dev-sec/ansible-os-hardening
+
+- import_tasks: limits.yml
+  become: yes
+
+- import_tasks: login_defs.yml
+  become: yes
+
+...

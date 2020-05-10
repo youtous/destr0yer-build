@@ -1,0 +1,4 @@
+---
+# https://linux-audit.com/understand-and-configure-core-dumps-work-on-linux/
+os_security_kernel_enable_core_dump: false
+...

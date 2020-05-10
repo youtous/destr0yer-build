@@ -55,6 +55,17 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["configure-systems"]
 
+- name: Configure destr0yers systems | hardening
+  hosts: [base_destr0yers, commander_destr0yers]
+  remote_user: "{{ arbiter_username }}"
+  roles:
+    - hardening # hardening systems
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["hardening",  "configure-systems"]
+
 - name: Configure destr0yers systems | sysstat
   hosts: [base_destr0yers, commander_destr0yers]
   remote_user: "{{ arbiter_username }}"
