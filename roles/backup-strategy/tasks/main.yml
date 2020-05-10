@@ -1,11 +1,52 @@
 ---
 # This role setup a backup server using sftp and chroot
 # ssh role must be used in order to have a properly configured server
-- name: Install duply and duplicity packages
+- name: Install build requierements
   become: yes
   apt:
     name:
-      - duplicity
+      - gettext
+      - librsync-dev
+
+- name: Remove duplicity installed with distribution
+  become: yes
+  apt:
+    name: duplicity
+    state: absent
+    purge: yes
+
+- name: Update python build tools
+  become: yes
+  pip:
+    executable: pip3
+    name:
+      - setuptools
+      - setuptools_scm
+      - wheel
+    state: latest
+    extra_args: --upgrade
+
+# our ssh client needs to be upgraded in order to support secure cyphers
+- name: Install pexpect at latest version
+  become: yes
+  pip:
+    executable: pip3
+    name: pexpect
+    state: latest
+    extra_args: --upgrade
+
+- name: Install duplicity using pip3
+  become: yes
+  pip:
+    executable: pip3
+    name: duplicity
+    state: latest
+    extra_args: --upgrade
+
+- name: Install duply package
+  become: yes
+  apt:
+    name:
       - duply
 
 # generate per host GPG key using : https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled
@@ -42,22 +83,3 @@
     owner: root
     group: root
     mode: u=rwx,g=,o=
-
-- name: Update python build tools
-  become: yes
-  pip:
-    executable: pip2 # it's a python 2 package
-    name:
-      - setuptools
-      - wheel
-    state: latest
-    extra_args: --upgrade
-
-# our ssh client needs to be upgraded in order to support secure cyphers
-- name: Install pexpect at latest version
-  become: yes
-  pip:
-    executable: pip2 # it's a python 2 package
-    name: pexpect
-    state: latest
-    extra_args: --upgrade
