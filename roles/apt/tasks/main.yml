@@ -32,6 +32,11 @@
   apt:
     update_cache: yes
 
+- name: Install debsums
+  become: yes
+  apt:
+    name: debsums
+
 - name: Install unattended-upgrades package to flag updates requiring reboot
   become: yes
   apt:
