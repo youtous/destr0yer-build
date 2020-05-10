@@ -7,4 +7,9 @@
 - import_tasks: login_defs.yml
   become: yes
 
+- import_tasks: apt.yml
+  become: yes
+
+- import_tasks: modprobe.yml
+  become: yes
 ...
