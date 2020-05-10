@@ -106,7 +106,8 @@ global_backup_profiles:
       gpg_pw_sign: "{{ global_backup_gpg_private_key_passphrase }}"
 
       # fix ioctl bug (https://wiki.archlinux.org/index.php/Duply)
-      gpg_opts: "--pinentry-mode loopback"
+      #gpg_opts: "--pinentry-mode loopback"
+      gpg_opts: ""
 
       # add accept new keys : https://serverfault.com/questions/638600/auto-accept-rsa-key-fingerprint-from-command-line
       # fix permanent prompt of the gpg passphrase, accept new host keys
