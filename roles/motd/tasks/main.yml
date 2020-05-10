@@ -36,9 +36,8 @@
 
 - name: Update static motd
   become: yes
-  copy:
-    remote_src: yes
-    src: "/etc/issue.net"
+  template:
+    src: templates/motd.j2
     dest: "/etc/motd"
     owner: root
     group: root

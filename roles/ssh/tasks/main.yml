@@ -110,7 +110,7 @@
 - name: Copy ssh client configuration
   become: yes
   template:
-    src: templates/ssh_config
+    src: templates/ssh_config.j2
     dest: /etc/ssh/ssh_config
     owner: root
     group: root
