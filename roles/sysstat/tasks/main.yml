@@ -1,0 +1,34 @@
+---
+- name: Install sysstat
+  become: yes
+  apt:
+    name: "sysstat"
+    state: latest
+
+- name: Copy sysstat configuration
+  become: yes
+  template:
+    src: templates/sysstat.j2
+    dest: /etc/default/sysstat
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  when: sysstat_enabled
+  notify: restart sysstat
+
+- name: Enable sysstat service
+  become: yes
+  service:
+    name: "sysstat"
+    enabled:
+    state: started
+  when: sysstat_enabled
+
+- name: Disable sysstat service
+  become: yes
+  service:
+    name: "sysstat"
+    enabled: no
+    state: stopped
+  when: not sysstat_enabled
+...

@@ -1,0 +1,4 @@
+---
+sysstat_enabled: true
+sysstat_collecting: true
+...
