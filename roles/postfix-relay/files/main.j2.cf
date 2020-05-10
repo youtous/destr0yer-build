@@ -4,6 +4,8 @@ compatibility_level = 2
 # Internet hostname of this mail system.
 myhostname = {{ myhostname }}
 
+smtpd_banner = $myhostname ESMTP
+
 # email domain
 mydomain = $myhostname
 
