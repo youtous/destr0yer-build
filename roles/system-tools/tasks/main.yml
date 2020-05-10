@@ -19,14 +19,6 @@
   apt:
     name: "{{ ruby_packages }}"
 
-- name: Install colorls gem
-  become: yes
-  gem:
-    name: colorls
-    state: latest
-    install_dir: /usr/local/bin/
-    user_install: false
-
 - name: Test ccat presence
   command: /usr/local/bin/ccat /dev/null
   register: ccat_present
@@ -58,10 +50,3 @@
     name: setuptools
     state: latest
     extra_args: --upgrade
-
-- name: Install mdv (Markdown viewer)
-  become: yes
-  pip:
-    executable: pip3
-    name: mdv
-    state: latest
