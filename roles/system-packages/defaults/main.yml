@@ -19,6 +19,7 @@ system_packages:
   - tar
   - htop
   - iftop
+  - sysstat
   - fish
   - git
   - nmap
@@ -33,3 +34,6 @@ system_packages:
 # services to enable by default
 system_services_enabled_by_default:
   - cron
+
+# enable sysstat
+system_enable_sysstat: true
