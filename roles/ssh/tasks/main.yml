@@ -68,6 +68,20 @@
     owner: root
     mode: u=rw,g=rw,o=r
 
+- name: Copy issue banners
+  become: yes
+  copy:
+    src: "files/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=rw,o=r
+  notify:
+    - restart sshd
+  with_items:
+    - { src: issue, dest: /etc/issue }
+    - { src: issue, dest: /etc/issue.net }
+
 - name: Copy sshd server configuration
   become: yes
   template:
@@ -95,8 +109,8 @@
 
 - name: Copy ssh client configuration
   become: yes
-  copy:
-    src: files/ssh_config
+  template:
+    src: templates/ssh_config
     dest: /etc/ssh/ssh_config
     owner: root
     group: root
