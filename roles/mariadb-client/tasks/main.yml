@@ -21,8 +21,12 @@
   when: mariadb_ssl_enabled == True
 
 - name: Disable SSL on mariadb
+  become: yes
   copy:
     content: "# disabled in Ansible"
     dest: "{{ mariadb_config_include_dir }}/50-ssl-clients.cnf"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
   when: mariadb_ssl_enabled == False
 ...
