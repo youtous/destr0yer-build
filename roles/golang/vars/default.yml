@@ -1,5 +1,6 @@
 ---
-go_version: '1.12.9'
+# https://golang.org/dl/
+go_version: '1.14.2'
 GOROOT: "/usr/local/go"
-go_amd64_checksum: "sha256:ac2a6efcc1f5ec8bdc0db0a988bb1d301d64b6d61b7e8d9e42f662fbb75a2b9b"
-go_arm64_checksum: "sha256:0d9be0efa9cd296d6f8ab47de45356ba45cb82102bc5df2614f7af52e3fb5842"
+go_amd64_checksum: "sha256:6272d6e940ecb71ea5636ddb5fab3933e087c1356173c61f4a803895e947ebb3"
+go_arm64_checksum: "sha256:bb6d22fe5806352c3d0826676654e09b6e41eb1af52e8d506d3fa85adf7f8d88"
