@@ -63,6 +63,21 @@
     - "5000"
     - "5044"
 
+- name: Ensure logstash root CA is defined
+  fail:
+    msg: root CA is empty or not defined.
+  when: logstash_CA_certificate is not defined or logstash_CA_certificate|length == 0
+
+- name: Ensure logstash node crt is defined
+  fail:
+    msg: crt is empty or not defined.
+  when: logstash_node_certificate is not defined or logstash_node_certificate|length == 0
+
+- name: Ensure logstash node key is defined
+  fail:
+    msg: key is empty or not defined.
+  when: logstash_node_private_key is not defined or logstash_node_private_key|length == 0
+
 # Setup TLS using x509 certificates
 - name: Register logstash secrets
   docker_secret:

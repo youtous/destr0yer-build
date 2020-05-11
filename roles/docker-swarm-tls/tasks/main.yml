@@ -12,6 +12,21 @@
     group: root
     mode: u=rwx,g=,o=
 
+- name: Ensure swarm root CA is defined
+  fail:
+    msg: root CA is empty or not defined.
+  when: docker_swarm_CA_certificate is not defined or docker_swarm_CA_certificate|length == 0
+
+- name: Ensure swarm node crt is defined
+  fail:
+    msg: crt is empty or not defined.
+  when: docker_swarm_node_certificate is not defined or docker_swarm_node_certificate|length == 0
+
+- name: Ensure swarm node key is defined
+  fail:
+    msg: key is empty or not defined.
+  when: docker_swarm_node_private_key is not defined or docker_swarm_node_private_key|length == 0
+
 - name: Copy RootCA certificate
   become: yes
   copy:

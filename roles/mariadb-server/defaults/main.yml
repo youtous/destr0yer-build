@@ -41,16 +41,13 @@ mariadb_config_include_dir: "/etc/mysql/my.extra.d"
 
 # provide a certificate and it key signed by a ca
 # using ssl
-mariadb_ca_certificate: |
-  -----BEGIN CERTIFICATE-----
-  -----END CERTIFICATE-----
+mariadb_ca_certificate: ""
+mariadb_server_certificate: ""
 
-mariadb_server_certificate: |
-  -----BEGIN CERTIFICATE-----
-  -----END CERTIFICATE-----
+# mariadb_server_certificate: |
+#  -----BEGIN CERTIFICATE-----
+#  -----END CERTIFICATE-----
 
 # THIS KEY MUST BE SECRET
-mariadb_server_key: |
-  -----BEGIN RSA PRIVATE KEY-----
-  -----END RSA PRIVATE KEY-----
+mariadb_server_key: ""
 ...
