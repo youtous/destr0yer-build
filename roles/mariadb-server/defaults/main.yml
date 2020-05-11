@@ -29,8 +29,12 @@ mariadb_users: []
 # where to store mariadb data
 mariadb_datadir: "/var/lib/mysql"
 
-# enable ssl
-mariadb_ssl_enabled: true
+# enable ssl, prefer use of a VPN such as wireguard for performance reasons
+# due to GLG licence reason, mariadb is not compiled with OpenSSL... Using mariadb ssl should be avoid.
+mariadb_ssl_enabled: false
+# NOT YET USE: will be available in mariadb 10.4.6
+mariadb_tls_version:
+  - "TLSv1.3"
 
 # additional files directory
 mariadb_config_include_dir: "/etc/mysql/my.extra.d"

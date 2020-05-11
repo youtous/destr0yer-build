@@ -1,10 +1,13 @@
 [mysql]
 # enable ssl communication with servers
 ssl-ca = /etc/mysql/ca.pem
+# will be available in mariadb 10.4.6
+# tls_version = {{ mariadb_tls_version|join(',') }}
+
 # use --ssl-verify-server-cert=true when connecting to external mariadb servers
 # ssl-verify-server-cert = on <= will cause ansible and localhost connections to fail, it will also break things like
 # backups
-# todo : check if possible to set these params ?
+# ONE-WAY Auth => Client does not requires to have a certificate, https://mariadb.com/kb/en/nodejs-connection-options/#one-way-ssl-authentication
 # ssl-ca=<directory>/ca-cert.pem
 # ssl-cert=<directory>/client-cert.pem
 # ssl-key=<directory>/client-key.pem

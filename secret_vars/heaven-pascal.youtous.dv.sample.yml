@@ -60,7 +60,7 @@ secret_backup_gpg_private_key: |
 
 secret_backup_gpg_key_passphrase: ''
 
-# mariadb ssl
+# mariadb ssl, required when mariadb_ssl_enabled = true
 mariadb_server_certificate: |
   -----BEGIN CERTIFICATE-----
   -----END CERTIFICATE-----

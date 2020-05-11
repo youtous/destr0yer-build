@@ -59,7 +59,8 @@ ssh_entrypoints:
 # allow docker networks (and eventually other networks such as vpn) to query the local dns server
 dns_allowed_hosts: "{{ local_docker_ips }}"
 
-# mariadb root CA certificate
+# mariadb root CA certificate, required when mariadb_ssl_enabled=true
+mariadb_ssl_enabled: true # consider using Wireguard instead
 mariadb_ca_certificate: |
   -----BEGIN CERTIFICATE-----
   MIIF6TCCA9GgAwIBAgIUQYB6TEX+OuGIaHMzQ0XFts4chJ0wDQYJKoZIhvcNAQEL
