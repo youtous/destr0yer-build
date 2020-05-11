@@ -1,12 +1,6 @@
 ---
 # This role setup a backup server using sftp and chroot
 # ssh role must be used in order to have a properly configured server
-- name: Install build requierements
-  become: yes
-  apt:
-    name:
-      - gettext
-      - librsync-dev
 
 - name: Remove duplicity installed with distribution
   become: yes
@@ -14,6 +8,14 @@
     name: duplicity
     state: absent
     purge: yes
+
+- name: Install build requierements
+  become: yes
+  apt:
+    name:
+      - gettext
+      - librsync-dev
+      - python3-dev
 
 - name: Update python build tools
   become: yes
