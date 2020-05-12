@@ -27,6 +27,12 @@ all_logging_elastic:
     heaven-pascal.youtous.dv:
     heaven-roberval.youtous.dv:
 
+# collect and send metrics of node, docker and processes to elastic cluster
+all_metric_elastic:
+  hosts:
+    heaven-pascal.youtous.dv:
+    heaven-roberval.youtous.dv:
+
 # Other manager nodes
 managers:
 

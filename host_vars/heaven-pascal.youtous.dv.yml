@@ -126,6 +126,11 @@ teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
 logstash_allowed_ips: "{{ nodes_ips }}" # by default, all nodes are allowed to send logs data, list can be completed
                                         # with external addresses
 
+metricbeats_modules:
+  - system
+  - docker
+  - mysql # enable metrics for mysql
+
 ### End of docker elastic parameters ###
 
 ### Begin of mailserver parameters ###

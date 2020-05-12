@@ -1,0 +1,7 @@
+---
+- name: restart metricbeat
+  become: yes
+  systemd:
+    name: metricbeat
+    state: restarted
+...

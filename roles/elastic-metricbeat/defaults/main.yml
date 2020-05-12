@@ -1,0 +1,25 @@
+---
+# logstash server address (ip, port) receiving logs from journalbeat
+# /!\ setup TLS in order to reach it, the certificate must be set accordingly the address
+metricbeat_output_server_address: "localhost"
+metricbeat_output_server_port: "5044"
+
+# modules to activate for metric collecting
+metricbeats_modules:
+  - system
+  - docker
+  # - mysql
+
+
+# Provide X509 certificates for TLS
+# you can use pipe syntax
+
+# logstash_CA_certificate: | # usually logstash-rootCA.crt
+# metricbeat_node_private_key: | # usually logstash-node-hostname.key
+# metricbeat_node_certificate: | # usually logstash-node-hostname.crt
+
+# apt repository
+elastic_gpg_keyserver: "pgp.mit.edu"
+elastic_gpg_key: "0xd27d666cd88e42b4"
+elastic_deb_repository: "https://artifacts.elastic.co/packages/7.x/apt"
+...

@@ -170,9 +170,10 @@ docker_swarm_CA_certificate: |
 
 # hostname of the elastic logstash node that will receive all docker logs
 # nodes must be allowed to reach it using TLS and the generated certificate
-logspout_output_server_address: "{{ groups['primary_manager'] | map('extract', hostvars, ['hostname']) | first }}"
-# same for journalbeat
-journalbeat_output_server_address: "{{ logspout_output_server_address }}"
+logstash_receiver_server_address: "{{ groups['primary_manager'] | map('extract', hostvars, ['hostname']) | first }}"
+journalbeat_output_server_address: "{{ logstash_receiver_server_address }}"
+logspout_output_server_address: "{{ logstash_receiver_server_address }}"
+metricbeat_output_server_address: "{{ logstash_receiver_server_address }}"
 
 # CA cert issuer of the logstash/logspout certs
 logstash_CA_certificate: |

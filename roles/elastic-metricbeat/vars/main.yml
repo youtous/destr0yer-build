@@ -1,0 +1,6 @@
+metricbeat_configuration_directory: /etc/metricbeat
+
+# certificates naming
+metricbeat_certificates_directory: "{{ metricbeat_configuration_directory }}/certs"
+logstash_root_CA_certificate_name: logstash-RootCA.crt
+metricbeat_node_certificate_name: metricbeat-node

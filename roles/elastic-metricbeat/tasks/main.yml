@@ -1,0 +1,35 @@
+---
+# This role setup journalbeat; a log exporter to elastic stack (using logstash receiver)
+
+- name: Install journalbeat
+  import_tasks: install.yml
+
+- name: Ensure metricbeat is enabled and started
+  become: yes
+  service:
+    name: metricbeat
+    enabled: yes
+    state: started
+
+- name: Ensure metricbeat configuration directory exists
+  become: yes
+  file:
+    state: directory
+    owner: root
+    group: root
+    path: "{{ metricbeat_configuration_directory }}"
+    mode: u=rwx,g=,o=
+
+- name: Configure TLS logstash/metricbeat certificates
+  import_tasks: certificates.yml
+
+- name: Copy metricbeat configuration
+  become: yes
+  template:
+    src: templates/metricbeat.j2.yml
+    dest: "{{ metricbeat_configuration_directory }}/metricbeat.yml"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - restart metricbeat
