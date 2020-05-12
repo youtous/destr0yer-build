@@ -52,17 +52,17 @@ name: "{{ hostname }}"
 
 #----------------------------- Logstash output --------------------------------
 output.logstash:
-  hosts: ["{{ journalbeat_output_server_address }}:{{ journalbeat_output_server_port }}"]
+  hosts: ["{{ metricbeat_output_server_address }}:{{ metricbeat_output_server_port }}"]
 
   # Optional SSL. By default is off.
   # List of root certificates for HTTPS server verifications
-  ssl.certificate_authorities: ["{{ journalbeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"]
+  ssl.certificate_authorities: ["{{ metricbeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"]
 
   # Certificate for SSL client authentication
-  ssl.certificate: "{{ journalbeat_certificates_directory }}/{{ journalbeat_node_certificate_name }}.crt"
+  ssl.certificate: "{{ metricbeat_certificates_directory }}/{{ metricbeat_node_certificate_name }}.crt"
 
   # Client Certificate Key
-  ssl.key: "{{ journalbeat_certificates_directory }}/{{ journalbeat_node_certificate_name }}.key"
+  ssl.key: "{{ metricbeat_certificates_directory }}/{{ metricbeat_node_certificate_name }}.key"
 
 #================================ Processors =====================================
 
