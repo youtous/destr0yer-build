@@ -63,6 +63,11 @@ services:
 
   kibana:
     image: "amazon/opendistro-for-elasticsearch-kibana:{{ opendistro_version }}"
+    entrypoint: >
+      sh -c '
+        /usr/share/kibana/bin/kibana-plugin remove opendistro_security &&
+        /usr/local/bin/kibana-docker
+      '
     configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
