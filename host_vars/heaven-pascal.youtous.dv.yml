@@ -92,7 +92,7 @@ ipv6_ip_forwarding: "1"
 nextcloud_db_name: "nextcloud"
 nextcloud_db_user: "nextcloud"
 nextcloud_db_password: "nextcloud"
-nextcloud_db_host: "{{ hostname }}"
+nextcloud_db_host: "172.18.0.1" # db on docker_gwbridge host
 
 # Nextcloud user conf
 nextcloud_admin_user: "nextcloud-admin"
