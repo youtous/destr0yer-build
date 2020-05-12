@@ -1,0 +1,44 @@
+---
+# This playbook plays with elastic stack roles some requires docker and for some it's optional
+
+- name: Setup docker elastic cluster
+  hosts: primary_manager_elastic
+  roles:
+    - docker-elastic # setup an elastic stack cluster
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["elastic", "elastic-cluster"]
+
+- name: Setup docker-swarm docker logging tools
+  hosts: primary_manager_logging_elastic
+  roles:
+    - docker-logspout # output docker logs to elastic cluster
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["elastic", "elastic-collector", "elastic-docker-logs-collector"]
+
+- name: Setup elastic for each node logging tools
+  hosts: all_logging_elastic
+  roles:
+    - elastic-journalbeat # output system logs from journalctl to elastic cluster (docker not required on the host)
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["elastic", "elastic-collector", "elastic-node-logs-collectors"]
+
+- name: Setup elastic for each node metrics tools
+  hosts: all_metric_elastic
+  roles:
+    - elastic-metricbeat # collect metrics of the node, docker or other processes (docker not required on the host)
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["elastic", "elastic-collector", "elastic-metrics-collectors"]
+
+...
