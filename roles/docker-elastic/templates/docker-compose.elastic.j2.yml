@@ -136,8 +136,11 @@ services:
       - target: 5000 # tcp
         published: 5000
         mode: host
-      - target: 5044 # beats
+      - target: 5044 # journalbeat
         published: 5044
+        mode: host
+      - target: 5045 # metricbeat
+        published: 5045
         mode: host
     deploy:
       mode: replicated
