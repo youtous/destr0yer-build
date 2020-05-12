@@ -100,6 +100,7 @@ global_backup_jobs:
 global_backup_profiles:
   global:
     conf:
+      python: /usr/bin/python3
       gpg_key: "{{ global_backup_gpg_public_key.name }}"
       gpg_pw: "{{ global_backup_gpg_key_passphrase }}"
       gpg_key_sign: "{{ global_backup_gpg_private_key.name }}"

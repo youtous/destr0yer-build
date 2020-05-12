@@ -1,14 +1,6 @@
 ---
 # This role setup a backup server using sftp and chroot
 # ssh role must be used in order to have a properly configured server
-
-- name: Remove duplicity installed with distribution
-  become: yes
-  apt:
-    name: duplicity
-    state: absent
-    purge: yes
-
 - name: Install build requierements
   become: yes
   apt:
@@ -50,6 +42,15 @@
   apt:
     name:
       - duply
+
+- name: Install duply wrapper
+  become: yes
+  copy:
+    src: files/duply
+    dest: /usr/local/bin/duply
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
 
 # generate per host GPG key using : https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled
 # /!\ Be careful about ' characters, it's better not to have one in the passphrase

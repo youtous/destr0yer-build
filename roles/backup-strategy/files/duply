@@ -1,0 +1,6 @@
+#!/bin/bash
+# wrapper for using duplicity pip3 version
+
+DUPLY=/usr/bin/duply
+PATH=/usr/local/bin/duplicity:$PATH
+"$DUPLY" "$@"
