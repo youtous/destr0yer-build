@@ -157,6 +157,9 @@
 - name: Include mailserver deployment for regenerating firewall rules
   import_playbook: mailserver.yml
 
-- name: Include nextcloud deployment (just in case :))
+- name: Include nextcloud deployment (just in case :)) # ufw rules
   import_playbook: nextcloud.yml
+
+- name: Include teamspeak deployment (just in case :)) # potential ufw rules (not yet used)
+  import_playbook: teamspeak.yml
 ...

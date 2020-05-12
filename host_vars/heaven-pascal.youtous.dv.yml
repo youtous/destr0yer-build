@@ -56,12 +56,17 @@ mariadb_users:
     host: "%" # allows connection from any host (filtered later by UFW)
     password: "nextcloud"
     priv: 'nextcloud.*:ALL'
+  - name: teamspeak
+    host: "%" # allows connection from any host (filtered later by UFW)
+    password: "teamspeak"
+    priv: 'teamspeak.*:ALL'
 
 # list of databases
 mariadb_databases:
   - name: youtous
   - name: dev-arb1t3r
   - name: nextcloud
+  - name: teamspeak
 
 ### End of database parameters ###
 
@@ -103,6 +108,16 @@ nextcloud_smtp_password: ""
 nextcloud_smtp_from: "nextcloud@localhost"
 nextcloud_smtp_domain_from: "{{ nextcloud_domain }}"
 ### End of Nextcloud parameters ###
+
+### Begin of Teamspeak parameters ###
+
+teamspeak_db_name: "teamspeak"
+teamspeak_db_user: "teamspeak"
+teamspeak_db_password: "teamspeak"
+teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
+
+### End of Teamspeak parameters ###
+
 
 
 ### Begin of docker elastic parameters ###

@@ -1,0 +1,25 @@
+---
+# teamspeak database
+teamspeak_db_name: "teamspeak"
+teamspeak_db_user: "teamspeak"
+teamspeak_db_password: ""
+teamspeak_db_host: ""
+
+# ts3 ports to open (virtual servers)
+teamspeak_virtual_ports:
+  - "9987:9987/udp"
+
+# This variable controls what kind of database the TeamSpeak server is using.
+teamspeak_db_plugin: ts3db_mariadb
+# This variable is the path to the sql scripts used to initialize the database. The path is relative to TS3SERVER_DB_SQLPATH
+teamspeak_db_sqlcreatepath: create_mariadb
+# This variable controls how many concurrent connections to the database are being used. Must be at least 2 and at most 100. Defaults to 10.
+teamspeak_db_connections: 10
+teamspeak_db_waituntilready: 30
+
+teamspeak_version: latest
+
+teamspeak_license: "" # optional license for ts3 (secret)
+
+teamspeak_stack_name: ts3
+...

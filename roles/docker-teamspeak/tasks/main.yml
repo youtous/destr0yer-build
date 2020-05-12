@@ -1,0 +1,53 @@
+---
+# This role setup a Teamspeak Server in a docker swarm cluster
+# see https://github.com/TeamSpeak-Systems/teamspeak-linux-docker-images for more details
+
+- name: Ensure teamspeak directory exists
+  file:
+    state: directory
+    path: "{{ teamspeak_compose_file_dest_directory }}"
+
+- name: Tag current node as teamspeak origin
+  docker_node:
+    hostname: "{{ hostname }}"
+    labels:
+      teamspeak.teamspeak-data: "true"
+
+- name: Register deployment timestamp
+  set_fact:
+    teamspeak_deploy_timestamp: "{{ ansible_date_time.epoch }}"
+
+- name: Copy teamspeak stack
+  template:
+    src: templates/docker-compose.teamspeak.j2.yml
+    dest: "{{ teamspeak_compose_file_dest }}"
+    mode: u=rw,g=,o=
+
+- name: Register teamspeak secrets | licensekey.dat
+  docker_secret:
+    name: "{{ teamspeak_stack_name }}_licensekey.dat-{{ teamspeak_deploy_timestamp }}"
+    data: "{{ teamspeak_license }}"
+    state: present
+  when: teamspeak_license is defined and (teamspeak_license|length>0)
+  no_log: true
+
+- name: Deploy Teamspeak Server
+  docker_stack:
+    state: present
+    prune: yes
+    name: "{{ teamspeak_stack_name }}"
+    compose:
+      - "{{ teamspeak_compose_file_dest }}"
+  environment:
+    TS3SERVER_DB_PLUGIN: "{{ teamspeak_db_plugin }}"
+    TS3SERVER_DB_HOST: "{{ teamspeak_db_host }}"
+    TS3SERVER_DB_USER: "{{ teamspeak_db_user }}"
+    TS3SERVER_DB_PASSWORD: "{{ teamspeak_db_password }}"
+    TS3SERVER_DB_NAME: "{{ teamspeak_db_name }}"
+    TS3SERVER_DB_SQLCREATEPATH: "{{ teamspeak_db_sqlcreatepath }}"
+    TS3SERVER_DB_WAITUNTILREADY: "{{ teamspeak_db_waituntilready }}"
+    TS3SERVER_DB_CONNECTIONS: "{{ teamspeak_db_connections }}"
+    # deploy timestamp
+    DEPLOY_TIMESTAMP: "{{ teamspeak_deploy_timestamp }}"
+  notify: docker prune
+...

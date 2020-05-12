@@ -1,0 +1,63 @@
+version: "3.7"
+
+{% if teamspeak_license is defined and (teamspeak_license|length>0) %}
+secrets:
+  licensekey.dat:
+    name: "{{ teamspeak_stack_name }}_licensekey.dat-{{ teamspeak_deploy_timestamp }}"
+    external: true
+{% endif %}
+
+services:
+
+  ts3server:
+    image: "teamspeak:{{ teamspeak_version }}"
+    volumes:
+      - teamspeak-data:/var/ts3server
+{% if teamspeak_license is defined and (teamspeak_license|length>0) %}
+    secrets:
+      - source: licensekey.dat
+        target: /var/ts3server/licensekey.dat
+{% endif %}
+    ports:
+{% for virtual_port in teamspeak_virtual_ports %}
+      - {{ virtual_port }}
+{% endfor %}
+      - 30033:30033
+    logging:
+      options:
+        # this tag could be used by fail2ban using `journalctl CONTAINER_TAG=teamspeak`
+        tag: "teamspeak"
+    environment:
+      - TS3SERVER_LOG_APPEND=0 # If this variable is set to 1, all new log entries are written into a single file per virtual server. We suggest setting this variable to 0 as it will make life easier when looking at the logs.
+      - TS3SERVER_QUERY_TIMEOUT= 300 # Number of seconds before a query connection is disconnected because of inactivity. If value is set to be zero or negative, the timeout will be disabled. The default is a timeout of 300 seconds.
+      - "TS3SERVER_DB_PLUGIN=${TS3SERVER_DB_PLUGIN}"
+      - "TS3SERVER_DB_SQLCREATEPATH=${TS3SERVER_DB_SQLCREATEPATH}"
+      - "TS3SERVER_DB_HOST=${TS3SERVER_DB_HOST}"
+      - "TS3SERVER_DB_USER=${TS3SERVER_DB_USER}"
+      - "TS3SERVER_DB_PASSWORD=${TS3SERVER_DB_PASSWORD}"
+      - "TS3SERVER_DB_NAME=${TS3SERVER_DB_NAME}"
+      - "TS3SERVER_DB_WAITUNTILREADY=${TS3SERVER_DB_WAITUNTILREADY}"
+      - "TS3SERVER_DB_CONNECTIONS=${TS3SERVER_DB_CONNECTIONS}"
+      - TS3SERVER_LICENSE=accept
+    networks:
+      teamspeak-network:
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.teamspeak.teamspeak-data == true
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 60s
+        max_attempts: 3
+
+networks:
+  teamspeak-network:
+    driver: overlay
+    driver_opts:
+      encrypted: ""
+
+volumes:
+  teamspeak-data:
+    driver: local

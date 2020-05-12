@@ -45,3 +45,8 @@ mailserver:
 nextcloud:
   hosts:
     heaven-pascal.youtous.dv:
+
+# Teamspeak hosts
+teamspeak:
+  hosts:
+    heaven-pascal.youtous.dv:

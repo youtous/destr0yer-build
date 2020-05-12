@@ -1,0 +1,3 @@
+teamspeak_compose_file_dest_directory: ~/teamspeak-server
+teamspeak_compose_file_dest_name: docker-compose.teamspeak.yml
+teamspeak_compose_file_dest: "{{ teamspeak_compose_file_dest_directory }}/{{ teamspeak_compose_file_dest_name }}"
