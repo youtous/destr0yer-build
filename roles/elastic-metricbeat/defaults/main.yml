@@ -2,7 +2,7 @@
 # logstash server address (ip, port) receiving logs from journalbeat
 # /!\ setup TLS in order to reach it, the certificate must be set accordingly the address
 metricbeat_output_server_address: "localhost"
-metricbeat_output_server_port: "5044"
+metricbeat_output_server_port: "5045"
 
 # modules to activate for metric collecting
 metricbeats_modules:
