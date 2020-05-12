@@ -1,6 +1,6 @@
 ---
-elastic_version: 7.0.1
-opendistro_version: 1.0.1
+elastic_version: 7.6.2
+opendistro_version: 1.6.0
 
 # a list of allowed ips to access logstash thought socket
 logstash_allowed_ips: [] # /!\ set both ipv6 and ipv4
@@ -10,8 +10,8 @@ elastic_heartbeat_urls: []
 
 # how much memory to allocate (in Mo)
 # /!\ less than 350 leads to startup issues
-elasticsearch_memory: 350
-logstash_memory: 350
+elasticsearch_memory: 512
+logstash_memory: 512
 
 # name of the traefik network
 traefik_network: "traefik-public"
