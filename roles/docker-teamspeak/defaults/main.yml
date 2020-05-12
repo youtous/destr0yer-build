@@ -7,7 +7,7 @@ teamspeak_db_host: ""
 
 # ts3 ports to open (virtual servers)
 teamspeak_virtual_ports:
-  - "9987:9987/udp"
+  - 9987
 
 # This variable controls what kind of database the TeamSpeak server is using.
 teamspeak_db_plugin: ts3db_mariadb

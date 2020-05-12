@@ -20,9 +20,13 @@ services:
 {% endif %}
     ports:
 {% for virtual_port in teamspeak_virtual_ports %}
-      - {{ virtual_port }}
+      - target: {{ virtual_port }}
+        published: {{ virtual_port }}
+        mode: host
 {% endfor %}
-      - 30033:30033
+      - target: 30033
+        published: 30033
+        mode: host
     logging:
       options:
         # this tag could be used by fail2ban using `journalctl CONTAINER_TAG=teamspeak`
