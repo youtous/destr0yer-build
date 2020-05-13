@@ -43,26 +43,6 @@
     src: "{{ item }}"
   with_items: "{{ logstash_allowed_ips }}"
 
-- name: List existing logstash tcp/504 UFW rules
-  become: yes
-  shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s5045(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
-  register: ufw_logstash_5045_rules
-  changed_when: false
-
-- name: UFW delete existing logstash rules - tcp/5045
-  become: yes
-  shell: "yes y | ufw delete {{ item|quote }}"
-  with_items: "{{ ufw_logstash_5045_rules.stdout_lines }}"
-
-- name: Allow nodes firewall - tcp/5045 (logstash)
-  become: yes
-  ufw:
-    rule: allow
-    port: "5045"
-    src: "{{ item }}"
-  with_items: "{{ logstash_allowed_ips }}"
-
 - name: Allow from docker0 containers networks to this host - tcp/5000,5044,5045 (logstash)
   become: yes
   ufw:
@@ -72,7 +52,6 @@
   with_items:
     - "5000"
     - "5044"
-    - "5045"
 
 - name: Allow from docker_gwbridge containers networks to this host - tcp/5000,5044,5045 (logstash)
   become: yes
@@ -83,7 +62,6 @@
   with_items:
     - "5000"
     - "5044"
-    - "5045"
 
 - name: Ensure logstash root CA is defined
   fail:
