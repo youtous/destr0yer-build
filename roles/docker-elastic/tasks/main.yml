@@ -54,6 +54,14 @@
     src: templates/docker-compose.elastic.j2.yml
     dest: "{{ elastic_compose_file_dest }}"
     mode: u=rw,g=,o=
+  when: not elastic_use_as_forwarder
+
+- name: Copy elastic stack (forwarder)
+  template:
+    src: templates/docker-compose.elastic-forwarder.j2.yml
+    dest: "{{ elastic_compose_file_dest }}"
+    mode: u=rw,g=,o=
+  when: elastic_use_as_forwarder
 
 - name: Configure additional parameters for logstash with docker
   import_tasks: docker-logstash.yml

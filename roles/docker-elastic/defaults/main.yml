@@ -24,6 +24,10 @@ traefik_public_tag: "traefik-public"
 # cluster information, useful when data is aggregated in a separated cluster
 elastic_cluster_name: "{{ hostname }}"
 
+# can be used as a forwarder
+elastic_use_as_forwarder: false
+elastic_logstash_destination: "" # localhost:port address of logstash receiver
+
 # domains
 kibana_domain: "kibana.{{ hostname }}"
 elasticsearch_domain: "elasticsearch.{{ hostname }}"
