@@ -141,15 +141,15 @@ processors:
   - drop_event:
       when:
         equals:
-          systemd.unit: "docker.service"
-  - drop_event:
-      when:
-        equals:
           systemd.unit: "journalbeat.service"
   - drop_event:
       when:
         equals:
           syslog.identifier: "kernel"
+  - drop_event:
+      when:
+        equals:
+          syslog.identifier: "audit"
   - drop_event: # fix spamming from docker healthcheck systemd bug https://github.com/docker/for-linux/issues/679
       when:
         regexp:

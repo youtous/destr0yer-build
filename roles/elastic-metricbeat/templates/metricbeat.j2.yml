@@ -89,13 +89,13 @@ metricbeat.modules:
     - process         # Per process metrics
     - process_summary # Process summary
     - uptime          # System Uptime
-    - socket_summary  # Socket summary
+    #- socket_summary  # Socket summary
     - core           # Per CPU core usage
     - diskio         # Disk IO
     - filesystem     # File system usage for each mountpoint
     - fsstat         # File system summary metrics
     #- raid           # Raid
-    - socket         # Sockets and connection info (linux only)
+    #- socket         # Sockets and connection info (linux only)
     - service        # systemd service information
   enabled: true
   period: 10s
@@ -124,11 +124,11 @@ metricbeat.modules:
 
     # How many processes to include from the top by CPU. The processes are sorted
     # by the `system.process.cpu.total.pct` field.
-    by_cpu: 20
+    by_cpu: 10
 
     # How many processes to include from the top by memory. The processes are sorted
     # by the `system.process.memory.rss.bytes` field.
-    by_memory: 20
+    by_memory: 10
 
   # If false, cmdline of a process is not cached.
   process.cmdline.cache.enabled: true
@@ -164,7 +164,7 @@ metricbeat.modules:
     - "container"
     - "cpu"
     - "diskio"
-    - "event"
+    #- "event"
     - "healthcheck"
     - "info"
     #- "image"

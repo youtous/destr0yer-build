@@ -19,12 +19,12 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["elastic", "elastic-collector", "elastic-docker-collector"]
+  tags: ["elastic", "elastic-collector", "elastic-logspout-collector"]
 
 - name: Setup elastic for each node logging tools
   hosts: all_logging_elastic
   roles:
-    - elastic-journalbeat # output system logs from journalctl to elastic cluster (docker not required on the host)
+    - elastic-journalbeat # output system logs from journalctl to elastic cluster, docker logs will be parsed too (docker not required on the host)
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
