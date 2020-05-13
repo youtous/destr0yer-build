@@ -7,6 +7,7 @@ services:
     image: "amazon/opendistro-for-elasticsearch:{{ opendistro_version }}"
     environment:
       - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m"
+      - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
     configs:
       - source: elasticsearch.yml
         target: /usr/share/elasticsearch/config/elasticsearch.yml
@@ -106,6 +107,8 @@ services:
         # Auth
         - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+    environment:
+      - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
     networks:
       - stack
       - {{ traefik_network }}
@@ -132,6 +135,7 @@ services:
         target: /etc/server.key
     environment:
       - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m"
+      - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
     ports: # in order to receive logs from allowed origins, theses ports are opened, access are filtered using UFW
       - target: 5000 # tcp
         published: 5000

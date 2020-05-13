@@ -5,6 +5,9 @@ opendistro_version: 1.6.0
 # a list of allowed ips to access logstash thought socket
 logstash_allowed_ips: [] # /!\ set both ipv6 and ipv4
 
+# a list of allowed ips to access logstash thought beats, it's used for external cluster submitting data
+logstash_beats_external_allowed_ips: [] # /!\ set both ipv6 and ipv4
+
 # http services to monitor
 elastic_heartbeat_urls: []
 
@@ -17,6 +20,9 @@ logstash_memory: 512
 traefik_network: "traefik-public"
 # traefik public-tag
 traefik_public_tag: "traefik-public"
+
+# cluster information, useful when data is aggregated in a separated cluster
+elastic_cluster_name: "{{ hostname }}"
 
 # domains
 kibana_domain: "kibana.{{ hostname }}"

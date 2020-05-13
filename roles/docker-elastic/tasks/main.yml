@@ -17,30 +17,37 @@
   set_fact:
     elastic_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
-- name: Copy elastic stack config files
-  copy:
-    src: "files/config"
-    dest: "{{ elastic_compose_file_dest_directory }}"
-    mode: u=rw,g=,o=
-
-- name: Ensure elastic beat directories exists
+- name: Ensure elastic config directories exists
   file:
     state: directory
     path: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}"
   with_items:
+    - elasticsearch
+    - kibana
+    - logstash
+    - logstash/pipeline
     - heartbeat
     - journalbeat
     - metricbeat
 
-- name: Copy elastic beat configs
+- name: Copy elastic configs
   template:
     src: "templates/config/{{ item }}/{{ item }}.j2.yml"
     dest: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}/{{ item }}.yml"
     mode: u=rw,g=,o=
   with_items:
+    - elasticsearch
+    - kibana
+    - logstash
     - heartbeat
     - journalbeat
     - metricbeat
+
+- name: Copy logstash pipeline conf
+  template:
+    src: "templates/config/logstash/pipeline/logstash.j2.conf"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/logstash.conf"
+    mode: u=rw,g=,o=
 
 - name: Copy elastic stack
   template:
@@ -60,4 +67,5 @@
       - "{{ elastic_compose_file_dest }}"
   environment:
     DEPLOY_TIMESTAMP: "{{ elastic_deploy_timestamp }}"
+    ELASTIC_CLUSTER_NAME: "{{ elastic_cluster_name }}"
   notify: docker prune
