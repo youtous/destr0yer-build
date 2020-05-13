@@ -20,3 +20,15 @@ setup.kibana:
 # enable data management
 setup.ilm.enable: true
 xpack.monitoring.enabled: true
+
+
+#================================ Logging =====================================
+
+# Sets log level. The default log level is info.
+# Available log levels are: error, warning, info, debug
+logging.level: warning
+
+# At debug level, you can selectively enable logging only for some components.
+# To enable all selectors use ["*"]. Examples of other selectors are "beat",
+# "publish", "service".
+#logging.selectors: ["*"]

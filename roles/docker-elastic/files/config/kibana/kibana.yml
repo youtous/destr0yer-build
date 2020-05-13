@@ -8,3 +8,8 @@ elasticsearch.hosts: http://elasticsearch:9200
 newsfeed.enabled: false
 telemetry.optIn: false
 telemetry.enabled: false
+
+
+#================================ Logging =====================================
+# only output errors
+logging.quiet: true
