@@ -189,6 +189,55 @@ services:
       timeout: 10s
       retries: 5
 
+  journalbeat-setup:
+    image: "docker.elastic.co/beats/journalbeat-oss:{{ elastic_version }}"
+    entrypoint: >
+      sh -c '
+      journalbeat setup --machine-learning &&
+      journalbeat setup --index-management
+      '
+    configs:
+      - source: journalbeat.yml
+        target: /usr/share/journalbeat/journalbeat.yml
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 30s
+        max_attempts: 10 # wait elastic and kibana to be up
+    networks:
+      - stack
+
+  metricbeat-setup:
+    image: "docker.elastic.co/beats/metricbeat-oss:{{ elastic_version }}"
+    entrypoint: >
+      sh -c '
+      metricbeat setup --dashboards &&
+      metricbeat setup --machine-learning &&
+      metricbeat setup --index-management
+      '
+    configs:
+      - source: metricbeat.yml
+        target: /usr/share/metricbeat/metricbeat.yml
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 30s
+        max_attempts: 10 # wait elastic and kibana to be up
+    networks:
+      - stack
+
   # check if services are up
   heartbeat:
     image: "docker.elastic.co/beats/heartbeat-oss:{{ elastic_version }}"
@@ -248,6 +297,12 @@ configs: # config are immutable :/
   heartbeat.yml:
     name: "{{ docker_elastic_stack_name }}_heartbeat.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/heartbeat/heartbeat.yml
+  journalbeat.yml:
+    name: "{{ docker_elastic_stack_name }}_journalbeat.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/journalbeat/journalbeat.yml
+  metricbeat.yml:
+    name: "{{ docker_elastic_stack_name }}_metricbeat.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/metricbeat/metricbeat.yml
 
 secrets:
   logstash-rootCA.crt:

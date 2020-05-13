@@ -23,16 +23,24 @@
     dest: "{{ elastic_compose_file_dest_directory }}"
     mode: u=rw,g=,o=
 
-- name: Ensure elastic heartbeat directory exists
+- name: Ensure elastic beat directories exists
   file:
     state: directory
-    path: "{{ elastic_compose_file_dest_directory }}/config/heartbeat"
+    path: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}"
+  with_items:
+    - heartbeat
+    - journalbeat
+    - metricbeat
 
-- name: Copy elastic heartbeat config
+- name: Copy elastic beat configs
   template:
-    src: "templates/config/heartbeat/heartbeat.j2.yml"
-    dest: "{{ elastic_compose_file_dest_directory }}/config/heartbeat/heartbeat.yml"
+    src: "templates/config/{{ item }}/{{ item }}.j2.yml"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}/{{ item }}.yml"
     mode: u=rw,g=,o=
+  with_items:
+    - heartbeat
+    - journalbeat
+    - metricbeat
 
 - name: Copy elastic stack
   template:

@@ -17,4 +17,7 @@ setup.kibana:
   host: "http://kibana:5601"
   protocol: "http"
 
+# enable data management
+setup.ilm.enable: true
+
 xpack.monitoring.enabled: true
