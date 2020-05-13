@@ -19,5 +19,4 @@ setup.kibana:
 
 # enable data management
 setup.ilm.enable: true
-
 xpack.monitoring.enabled: true

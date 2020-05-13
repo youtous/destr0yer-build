@@ -173,6 +173,10 @@ metricbeat.modules:
   hosts: ["unix:///var/run/docker.sock"]
   period: 10s
   enabled: true
+  processors:
+    - drop_fields:
+        fields: ["docker.event.actor.attributes", "docker.container.labels"]
+        ignore_missing: true
 
   # If set to true, replace dots in labels with `_`.
   #labels.dedot: false

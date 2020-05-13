@@ -4,3 +4,7 @@ server.host: "0"
 server.ssl.enabled: false
 
 elasticsearch.hosts: http://elasticsearch:9200
+
+newsfeed.enabled: false
+telemetry.optIn: false
+telemetry.enabled: false

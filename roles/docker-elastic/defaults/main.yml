@@ -10,7 +10,7 @@ elastic_heartbeat_urls: []
 
 # how much memory to allocate (in Mo)
 # /!\ less than 350 leads to startup issues
-elasticsearch_memory: 512
+elasticsearch_memory: 1024
 logstash_memory: 512
 
 # name of the traefik network

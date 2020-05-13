@@ -19,7 +19,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["elastic", "elastic-collector", "elastic-docker-logs-collector"]
+  tags: ["elastic", "elastic-collector", "elastic-docker-collector"]
 
 - name: Setup elastic for each node logging tools
   hosts: all_logging_elastic
@@ -29,7 +29,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["elastic", "elastic-collector", "elastic-node-logs-collectors"]
+  tags: ["elastic", "elastic-collector", "elastic-node-collector"]
 
 - name: Setup elastic for each node metrics tools
   hosts: all_metric_elastic
@@ -39,6 +39,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["elastic", "elastic-collector", "elastic-metrics-collectors"]
+  tags: ["elastic", "elastic-collector", "elastic-metric-collector"]
 
 ...

@@ -7,7 +7,9 @@ setup.kibana:
   protocol: "http"
 
 # enable data management
-setup.ilm.enable: true
+setup.ilm:
+  enable: true
+  overwrite: true
 
 # copy from elastic-metricbeat
 
