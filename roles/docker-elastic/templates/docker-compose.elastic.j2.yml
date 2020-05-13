@@ -193,8 +193,7 @@ services:
     image: "docker.elastic.co/beats/journalbeat-oss:{{ elastic_version }}"
     entrypoint: >
       sh -c '
-      journalbeat setup --index-management &&
-      journalbeat setup --machine-learning
+      journalbeat setup
       '
     configs:
       - source: journalbeat.yml
@@ -217,9 +216,7 @@ services:
     image: "docker.elastic.co/beats/metricbeat-oss:{{ elastic_version }}"
     entrypoint: >
       sh -c '
-      metricbeat setup --index-management &&
-      metricbeat setup --machine-learning &&
-      metricbeat setup --dashboards
+      metricbeat setup
       '
     configs:
       - source: metricbeat.yml
