@@ -1,0 +1,83 @@
+---
+#  firewall ipv6
+
+- name: Ensure docker external interface defined
+  fail:
+    msg: docker_external_interface is empty or not defined.
+  when: docker_external_interface is not defined or docker_external_interface|length == 0
+
+## beginning of rules 5000
+
+- name: List existing logstash tcp/5000 ip6tables rules
+  become: yes
+  shell: >
+    ip6tables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5000 .*\n' | awk  '{print $1}' | tr -d '\000' | sort -rn | sed '/^s*$/d'
+  register: ufw6_logstash_5000_rules
+  changed_when: false
+
+- name: ip6tables delete existing logstash rules - tcp/5000
+  become: yes
+  command: "ip6tables -D DOCKER-USER {{ item|quote }}"
+  with_items: "{{ ufw6_logstash_5000_rules.stdout_lines }}"
+
+- name: Allow nodes firewall - tcp/5000 (logstash)
+  become: yes
+  command: "ip6tables -A DOCKER-USER -i {{ docker_external_interface|quote }} -s {{ item }} -p tcp -m conntrack --ctorigdstport 5000 --ctdir ORIGINAL -j ACCEPT"
+  with_items: "{{ logstash_allowed_ip6s }}"
+
+- name: Drop other ips firewall - tcp/5000 (logstash)
+  become: yes
+  command: "ip6tables -A DOCKER-USER -i {{ docker_external_interface|quote }} -p tcp -m conntrack --ctorigdstport 5000 --ctdir ORIGINAL -j DROP"
+
+## end of rules 5000
+  
+## beginning of rules 5044
+
+- name: List existing logstash tcp/5044 ip6tables rules
+  become: yes
+  shell: >
+    ip6tables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5044 .*\n' | awk  '{print $1}' | tr -d '\000' | sort -rn | sed '/^s*$/d'
+  register: ufw6_logstash_5044_rules
+  changed_when: false
+
+- name: ip6tables delete existing logstash rules - tcp/5044
+  become: yes
+  command: "ip6tables -D DOCKER-USER {{ item|quote }}"
+  with_items: "{{ ufw6_logstash_5044_rules.stdout_lines }}"
+
+- name: Allow nodes firewall - tcp/5044 (logstash)
+  become: yes
+  command: "ip6tables -A DOCKER-USER -i {{ docker_external_interface|quote }} -s {{ item }} -p tcp -m conntrack --ctorigdstport 5044 --ctdir ORIGINAL -j ACCEPT"
+  with_items: "{{ logstash_allowed_ip6s }}"
+
+- name: Drop other ips firewall - tcp/5044 (logstash)
+  become: yes
+  command: "ip6tables -A DOCKER-USER -i {{ docker_external_interface|quote }} -p tcp -m conntrack --ctorigdstport 5044 --ctdir ORIGINAL -j DROP"
+
+## end of rules 5044
+
+## beginning of rules 5064 (external)
+
+- name: List existing logstash tcp/5064 ip6tables rules
+  become: yes
+  shell: >
+    ip6tables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5064 .*\n' | awk  '{print $1}' | tr -d '\000' | sort -rn | sed '/^s*$/d'
+  register: ufw6_logstash_5064_rules
+  changed_when: false
+
+- name: ip6tables delete existing logstash rules - tcp/5064
+  become: yes
+  command: "ip6tables -D DOCKER-USER {{ item|quote }}"
+  with_items: "{{ ufw66_logstash_5064_rules.stdout_lines }}"
+
+- name: Allow nodes firewall - tcp/5064 (logstash external)
+  become: yes
+  command: "ip6tables -A DOCKER-USER -i {{ docker_external_interface|quote }} -s {{ item }} -p tcp -m conntrack --ctorigdstport 5064 --ctdir ORIGINAL -j ACCEPT"
+  with_items: "{{ logstash_beats_external_allowed_ip6s }}"
+
+- name: Drop other ips firewall - tcp/5064 (logstash external)
+  become: yes
+  command: "ip6tables -A DOCKER-USER -i {{ docker_external_interface|quote }} -p tcp -m conntrack --ctorigdstport 5064 --ctdir ORIGINAL -j DROP"
+
+## end of rules 5064
+...

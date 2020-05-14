@@ -113,14 +113,17 @@ local_docker_ips:
   - '172.18.0.0/16' # docker_gwbridge
 
 # ips of the nodes of the swarm
-nodes_ips: "{{
+nodes_ip4s: "{{
   groups['workers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
-  groups['workers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique | default([]) +
   groups['managers'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
+  groups['primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])
+}}"
+nodes_ip6s: "{{
+  groups['workers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique | default([]) +
   groups['managers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([]) +
-  groups['primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
   groups['primary_manager'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])
 }}"
+nodes_ips: "{{ nodes_ip4s + nodes_ip6s }}"
 
 # first manager ipv4
 primary_manager_ipv4: "{{ groups['primary_manager'] | map('extract', hostvars, ['ipv4']) | first | first }}"
