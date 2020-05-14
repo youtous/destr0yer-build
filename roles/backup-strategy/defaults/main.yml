@@ -89,7 +89,7 @@ global_backup_cache_directory: "{{ backup_cache_directory }}"
 # /!\ it advisable to change it per host in order to have smooth bandwidth usage
 global_backup_jobs:
   - name: duply-backup-global
-    job: /usr/bin/duply global backup_verify_purge --force
+    job: PATH=/usr/local/bin:$PATH /usr/bin/duply global backup_verify_purge --force
     minute: "5"
     hour: "6"
     day: "*"
