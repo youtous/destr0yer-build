@@ -123,7 +123,7 @@ teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
 ### Begin of docker elastic parameters ###
 
 # list of nodes (ips) allowed to submit log data
-logstash_allowed_ips: "{{ nodes_ips }}" # by default, all nodes are allowed to send logs data, list can be completed
+logstash_allowed_ips: "{{ local_docker_ips + nodes_ips }}" # allow docker + all nodes are allowed to send logs data, list can be completed
                                         # with external addresses
 
 metricbeats_modules:
