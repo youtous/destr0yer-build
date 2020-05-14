@@ -22,6 +22,18 @@ POST _opendistro/_alerting/destinations
 
 2. Generate a monitor and alert triggers.
 
+Format of alert smtp:
+```
+to: ['monitoring@youtous.me']
+subject: 'Optional subject param'
+---
+Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the issue.
+- Trigger: {{ctx.trigger.name}}
+- Severity: {{ctx.trigger.severity}}
+- Period start: {{ctx.periodStart}}
+- Period end: {{ctx.periodEnd}}
+```
+
 ### 
 
 ### Heartbeat monitor
