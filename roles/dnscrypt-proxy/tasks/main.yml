@@ -12,7 +12,7 @@
     - bind9
 
 - name: Check if DNSCrypt-proxy is present
-  command: "{{ dnscrypt_binary_path }} -version"
+  command: "{{ dnscrypt_binary_path|quote }} -version"
   changed_when: false
   register: dnscrypt_proxy_present
   ignore_errors: True
@@ -63,7 +63,7 @@
   notify: restart DNSCrypt-proxy
 
 - name: Get current DNSCrypt-proxy version
-  command: "{{ dnscrypt_binary_path }} -version"
+  command: "{{ dnscrypt_binary_path|quote }} -version"
   when: dnscrypt_proxy_present is not failed
   changed_when: false
   register: dnscrypt_proxy_current_version

@@ -38,7 +38,7 @@
 
 - name: Generate rsa host key
   become: yes
-  command: ssh-keygen -q -t rsa -b "{{ rsa_key_size }}" -f /etc/ssh/ssh_host_rsa_key -C "" -N ""
+  command: ssh-keygen -q -t rsa -b "{{ rsa_key_size|quote }}" -f /etc/ssh/ssh_host_rsa_key -C "" -N ""
   when: flag_keys_generated.stat.exists == False
 
 # Will be available in Ansible 2.8
