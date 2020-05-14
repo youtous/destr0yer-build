@@ -28,6 +28,14 @@ elastic_cluster_name: "{{ hostname }}"
 elastic_use_as_forwarder: false
 elastic_logstash_destination: "" # localhost:port address of logstash receiver
 
+
+# email alerts settings
+alert_email_server: "{{ relay_server }}"
+alert_email_port: "{{ relay_port }}"
+alert_email_from: "{{ relay_email }}"
+alert_email_user: "{{ relay_user }}"
+alert_email_password: "{{ relay_password }}"
+
 # domains
 kibana_domain: "kibana.{{ hostname }}"
 elasticsearch_domain: "elasticsearch.{{ hostname }}"

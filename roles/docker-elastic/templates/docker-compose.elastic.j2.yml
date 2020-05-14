@@ -118,6 +118,30 @@ services:
       timeout: 10s
       retries: 5
 
+  # forward kibana alerts using smtp
+  alerts-smtp-forwarder:
+    image: "youtous/odfe-alerts-handler:latest"
+    networks:
+      - stack
+    environment:
+      - "SMTP_HOSTNAME=${SMTP_HOSTNAME}"
+      - "SMTP_PORT=${SMTP_PORT}"
+      - "SMTP_USERNAME=${SMTP_USERNAME}"
+      - "SMTP_PASSWORD=${SMTP_PASSWORD}"
+      - "SMTP_FROM=${SMTP_FROM}"
+    healthcheck:
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 30s
+        max_attempts: 3
+
   # process logs from everywhere
   logstash:
     image: "docker.elastic.co/logstash/logstash-oss:{{ elastic_version }}"

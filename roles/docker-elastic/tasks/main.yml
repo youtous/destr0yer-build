@@ -76,4 +76,10 @@
   environment:
     DEPLOY_TIMESTAMP: "{{ elastic_deploy_timestamp }}"
     ELASTIC_CLUSTER_NAME: "{{ elastic_cluster_name }}"
+
+    SMTP_HOSTNAME: "{{ alert_email_server }}"
+    SMTP_PORT: "{{ alert_email_port }}"
+    SMTP_USERNAME: "{{ alert_email_user }}"
+    SMTP_PASSWORD: "{{ alert_email_password }}"
+    SMTP_FROM: "{{ alert_email_from }}"
   notify: docker prune
