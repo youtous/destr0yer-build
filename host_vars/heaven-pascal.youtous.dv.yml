@@ -122,7 +122,7 @@ teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
 
 ### Begin of docker elastic parameters ###
 
-docker_external_interface: eth0
+docker_external_interfaces: ["eth0", "eth1"]
 # list of nodes (ips) allowed to submit log data
 logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s }}" # allow docker + all nodes are allowed to send logs data, list can be completed
 # ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it

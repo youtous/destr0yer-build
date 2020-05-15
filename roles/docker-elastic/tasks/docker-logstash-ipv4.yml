@@ -1,12 +1,10 @@
 ---
-# Setup the required components to send logs from docker nodes to the logstash processor node.
-# Transport will be done using TLS certificates (ensure encryption && identity)
-# Logstash node will filter any non-authorized ip using UFW and internal mechanism.
+# ipv4 firewall rules
 
-- name: Ensure docker external interface defined
+- name: Ensure docker external interfaces defined
   fail:
-    msg: docker_external_interface is empty or not defined.
-  when: docker_external_interface is not defined or docker_external_interface|length == 0
+    msg: docker_external_interfaces is empty or not defined.
+  when: docker_external_interfaces is not defined or docker_external_interfaces|length == 0
 
 ## beginning of rules 5000
 
@@ -22,14 +20,15 @@
   command: "iptables -D DOCKER-USER {{ item|quote }}"
   with_items: "{{ ufw_logstash_5000_rules.stdout_lines }}"
 
-- name: Allow nodes firewall - tcp/5000 (logstash)
-  become: yes
-  command: "iptables -A DOCKER-USER -i {{ docker_external_interface|quote }} -s {{ item }} -p tcp -m conntrack --ctorigdstport 5000 --ctdir ORIGINAL -j ACCEPT"
-  with_items: "{{ logstash_allowed_ip4s }}"
-
 - name: Drop other ips firewall - tcp/5000 (logstash)
   become: yes
-  command: "iptables -A DOCKER-USER -i {{ docker_external_interface|quote }} -p tcp -m conntrack --ctorigdstport 5000 --ctdir ORIGINAL -j DROP"
+  command: "iptables -I DOCKER-USER -i {{ item|quote }} -p tcp -m conntrack --ctorigdstport 5000 --ctdir ORIGINAL -j DROP"
+  with_items: "{{ docker_external_interfaces }}"
+
+- name: Allow nodes firewall - tcp/5000 (logstash)
+  become: yes
+  command: "iptables -I DOCKER-USER -i {{ item|quote }} -s {{ logstash_allowed_ip4s|join(',') }} -p tcp -m conntrack --ctorigdstport 5000 --ctdir ORIGINAL -j ACCEPT"
+  with_items: "{{ docker_external_interfaces }}"
 
 ## end of rules 5000
   
@@ -47,14 +46,15 @@
   command: "iptables -D DOCKER-USER {{ item|quote }}"
   with_items: "{{ ufw_logstash_5044_rules.stdout_lines }}"
 
-- name: Allow nodes firewall - tcp/5044 (logstash)
-  become: yes
-  command: "iptables -A DOCKER-USER -i {{ docker_external_interface|quote }} -s {{ item }} -p tcp -m conntrack --ctorigdstport 5044 --ctdir ORIGINAL -j ACCEPT"
-  with_items: "{{ logstash_allowed_ip4s }}"
-
 - name: Drop other ips firewall - tcp/5044 (logstash)
   become: yes
-  command: "iptables -A DOCKER-USER -i {{ docker_external_interface|quote }} -p tcp -m conntrack --ctorigdstport 5044 --ctdir ORIGINAL -j DROP"
+  command: "iptables -I DOCKER-USER -i {{ item|quote }} -p tcp -m conntrack --ctorigdstport 5044 --ctdir ORIGINAL -j DROP"
+  with_items: "{{ docker_external_interfaces }}"
+
+- name: Allow nodes firewall - tcp/5044 (logstash)
+  become: yes
+  command: "iptables -I DOCKER-USER -i {{ item|quote }} -s {{ logstash_allowed_ip4s|join(',') }} -p tcp -m conntrack --ctorigdstport 5044 --ctdir ORIGINAL -j ACCEPT"
+  with_items: "{{ docker_external_interfaces }}"
 
 ## end of rules 5044
 
@@ -72,14 +72,15 @@
   command: "iptables -D DOCKER-USER {{ item|quote }}"
   with_items: "{{ ufw_logstash_5064_rules.stdout_lines }}"
 
-- name: Allow nodes firewall - tcp/5064 (logstash external)
-  become: yes
-  command: "iptables -A DOCKER-USER -i {{ docker_external_interface|quote }} -s {{ item }} -p tcp -m conntrack --ctorigdstport 5064 --ctdir ORIGINAL -j ACCEPT"
-  with_items: "{{ logstash_beats_external_allowed_ip4s }}"
-
 - name: Drop other ips firewall - tcp/5064 (logstash external)
   become: yes
-  command: "iptables -A DOCKER-USER -i {{ docker_external_interface|quote }} -p tcp -m conntrack --ctorigdstport 5064 --ctdir ORIGINAL -j DROP"
+  command: "iptables -I DOCKER-USER -i {{ item|quote }} -p tcp -m conntrack --ctorigdstport 5064 --ctdir ORIGINAL -j DROP"
+  with_items: "{{ docker_external_interfaces }}"
+
+- name: Allow nodes firewall - tcp/5064 (logstash external)
+  become: yes
+  command: "iptables -I DOCKER-USER -i {{ item|quote }} -s {{ logstash_beats_external_allowed_ip4s|join(',') }} -p tcp -m conntrack --ctorigdstport 5064 --ctdir ORIGINAL -j ACCEPT"
+  with_items: "{{ docker_external_interfaces }}"
 
 ## end of rules 5064
 ...
