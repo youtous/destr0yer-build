@@ -1,5 +1,5 @@
 ---
-elastic_version: 7.6.2
+elastic_version: 7.7.0
 opendistro_version: 1.7.0
 
 docker_external_interfaces: [] # must be defined explicitly, this is the external interface, generally eth0.
