@@ -5,6 +5,9 @@ You can use it as a complete stack or as a forwarder (`elastic_use_as_forwarder:
 
 Remember to set a `elastic_cluster_name` for identifying the cluster data.
 
+### Use it with a VPN
+Use a VPN for `receiver <<----[VPN]--- forwarder`
+
 ### Alerts email
 
 1. Add the webhook:
@@ -35,6 +38,13 @@ Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the i
 ```
 
 ### 
+
+### SSL Monitoring
+
+Add all ports to monitoring
+```bash
+docker run --rm -ti --network=host drwetter/testssl.sh:3.1dev localhost:5000
+```
 
 ### Heartbeat monitor
 

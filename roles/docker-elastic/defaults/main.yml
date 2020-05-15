@@ -59,4 +59,11 @@ logstash_domain: "logstash.{{ hostname }}"
 # logstash_CA_certificate: | # usually logstash-rootCA.crt
 # logstash_node_private_key: | # usually logstash-node-hostname.key
 # logstash_node_certificate: | # usually logstash-node-hostname.crt
+
+
+elastic_disabled_tls_protocols: # event with these parameters, use the elastic stack behind a VPN!
+  - SSLv2Hello                  # Elastic TLS plugin implementation is not secure (different sources, tech etc...)
+  - SSLv3
+  - TLSv1
+  - TLSv1.1
 ...

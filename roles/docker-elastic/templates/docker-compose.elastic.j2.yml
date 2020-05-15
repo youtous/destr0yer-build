@@ -6,7 +6,7 @@ services:
   elasticsearch:
     image: "amazon/opendistro-for-elasticsearch:{{ opendistro_version }}"
     environment:
-      - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m"
+      - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
       - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
     configs:
       - source: elasticsearch.yml
@@ -158,7 +158,7 @@ services:
       - source: logstash-private-key.key
         target: /etc/server.key
     environment:
-      - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m"
+      - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
       - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
     ports: # in order to receive logs from allowed origins, theses ports are opened, access are filtered using UFW
       - target: 5000 # tcp
