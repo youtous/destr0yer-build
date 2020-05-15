@@ -20,6 +20,12 @@ services:
         target: /etc/server.crt
       - source: logstash-private-key.key
         target: /etc/server.key
+      - source: logstash-client-rootCA.crt
+        target: /etc/ca-client.crt
+      - source: logstash-client-certificate.crt
+        target: /etc/client.crt
+      - source: logstash-client-private-key.key
+        target: /etc/client.key
     environment:
       - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m"
       - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
@@ -107,4 +113,13 @@ secrets:
     external: true
   logstash-private-key.key:
     name: "{{ docker_elastic_stack_name }}_logstash-private-key.key-${DEPLOY_TIMESTAMP}"
+    external: true
+  logstash-client-rootCA.crt:
+    name: "{{ docker_elastic_stack_name }}_logstash-client-rootCA.crt-${DEPLOY_TIMESTAMP}"
+    external: true
+  logstash-client-certificate.crt:
+    name: "{{ docker_elastic_stack_name }}_logstash-client-certificate.crt-${DEPLOY_TIMESTAMP}"
+    external: true
+  logstash-client-private-key.key:
+    name: "{{ docker_elastic_stack_name }}_logstash-client-private-key.key-${DEPLOY_TIMESTAMP}"
     external: true

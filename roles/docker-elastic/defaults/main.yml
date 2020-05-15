@@ -36,7 +36,9 @@ elastic_cluster_name: "{{ hostname }}"
 # can be used as a forwarder
 elastic_use_as_forwarder: false
 elastic_logstash_destination: "" # localhost:port address of logstash receiver
-
+logstash_client_forwarder_CA_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
+logstash_client_forwarder_node_certificate: ""
+logstash_client_forwarder_node_private_key: ""
 
 # email alerts settings
 alert_email_server: "{{ relay_server }}"

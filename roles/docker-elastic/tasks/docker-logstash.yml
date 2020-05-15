@@ -29,4 +29,9 @@
     - {name: "{{ docker_elastic_stack_name }}_logstash-certificate.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_node_certificate }}"}
     - {name: "{{ docker_elastic_stack_name }}_logstash-private-key.key-{{ elastic_deploy_timestamp }}", data: "{{ logstash_node_private_key }}"}
   no_log: true
+
+
+- name: Import logstash client certificate (acting as a forwarder)
+  import_tasks: docker-logstash-forwarder.yml
+  when: elastic_use_as_forwarder
 ...

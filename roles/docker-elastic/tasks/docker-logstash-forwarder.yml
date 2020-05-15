@@ -1,0 +1,30 @@
+---
+# Setup certificates used by logstash client (acting as a forwarder)
+
+- name: Ensure logstash client root CA is defined
+  fail:
+    msg: root client CA is empty or not defined.
+  when: logstash_client_forwarder_CA_certificate is not defined or logstash_client_forwarder_CA_certificate|length == 0
+
+- name: Ensure logstash client node crt is defined
+  fail:
+    msg: crt is empty or not defined.
+  when: logstash_client_forwarder_node_certificate is not defined or logstash_client_forwarder_node_certificate|length == 0
+
+- name: Ensure logstash client node key is defined
+  fail:
+    msg: key is empty or not defined.
+  when: logstash_client_forwarder_node_private_key is not defined or logstash_client_forwarder_node_private_key|length == 0
+
+# Setup TLS using x509 certificates
+- name: Register logstash client secrets
+  docker_secret:
+    name: "{{ item.name }}"
+    data: "{{ item.data }}"
+    state: present
+  with_items:
+    - {name: "{{ docker_elastic_stack_name }}_logstash-client-rootCA.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_client_forwarder_CA_certificate }}"}
+    - {name: "{{ docker_elastic_stack_name }}_logstash-client-certificate.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_client_forwarder_node_certificate }}"}
+    - {name: "{{ docker_elastic_stack_name }}_logstash-client-private-key.key-{{ elastic_deploy_timestamp }}", data: "{{ logstash_client_forwarder_node_private_key }}"}
+  no_log: true
+...
