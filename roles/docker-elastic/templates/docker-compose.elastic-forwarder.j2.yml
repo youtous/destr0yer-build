@@ -9,10 +9,18 @@ services:
   logstash:
     image: "docker.elastic.co/logstash/logstash-oss:{{ elastic_version }}"
     configs:
-      - source: logstash.conf
-        target: /usr/share/logstash/pipeline/logstash.conf
       - source: logstash.yml
         target: /usr/share/logstash/config/logstash.yml
+      - source: pipelines.yml
+        target: /usr/share/logstash/config/pipelines.yml
+{% for pipeline in logstash_pipeline_files %}
+      - source: "pipeline_{{ pipeline }}"
+        target: "/usr/share/logstash/pipeline/{{ pipeline }}"
+{% endfor %}
+{% for grok in logstash_pipeline_patterns %}
+      - source: "pattern_{{ grok }}"
+        target: "/usr/share/logstash/pipeline/patterns.d/{{ grok }}"
+{% endfor %}
     secrets:
       - source: logstash-rootCA.crt
         target: /etc/ca.crt
@@ -27,7 +35,7 @@ services:
       - source: logstash-client-private-key.key
         target: /etc/client.key
     environment:
-      - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m"
+      - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
       - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
     ports: # in order to receive logs from allowed origins, theses ports are opened, access are filtered using UFW
       - target: 5000 # tcp
@@ -97,12 +105,20 @@ networks:
 # documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
 # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
 configs:
-  logstash.conf:
-    name: "{{ docker_elastic_stack_name }}_logstash.conf-${DEPLOY_TIMESTAMP}"
-    file: ./config/logstash/pipeline/logstash.conf
   logstash.yml:
-    name: "{{ docker_elastic_stack_name }}_logstash.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/logstash/logstash.yml
+    name: "{{ docker_elastic_stack_name }}_logstash.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/logstash/logstash.j2.yml
+
+{% for pipeline in logstash_pipeline_files %}
+  pipeline_{{ pipeline }}:
+    name: "{{ docker_elastic_stack_name }}_{{ pipeline }}-${DEPLOY_TIMESTAMP}"
+    file: "./config/logstash/pipeline-main/{{ pipeline }}"
+{% endfor %}
+{% for grok in logstash_pipeline_patterns %}
+  pattern_{{ grok }}:
+    name: "{{ docker_elastic_stack_name }}_{{ grok }}-${DEPLOY_TIMESTAMP}"
+    file: "./config/logstash/pipeline-main/patterns.d/{{ grok }}"
+{% endfor %}
 
 secrets:
   logstash-rootCA.crt:

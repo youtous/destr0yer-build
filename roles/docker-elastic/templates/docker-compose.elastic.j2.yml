@@ -146,10 +146,18 @@ services:
   logstash:
     image: "docker.elastic.co/logstash/logstash-oss:{{ elastic_version }}"
     configs:
-      - source: logstash.conf
-        target: /usr/share/logstash/pipeline/logstash.conf
       - source: logstash.yml
         target: /usr/share/logstash/config/logstash.yml
+      - source: pipelines.yml
+        target: /usr/share/logstash/config/pipelines.yml
+{% for pipeline in logstash_pipeline_files %}
+      - source: "pipeline_{{ pipeline }}"
+        target: "/usr/share/logstash/pipeline-main/{{ pipeline }}"
+{% endfor %}
+{% for grok in logstash_pipeline_patterns %}
+      - source: "pattern_{{ grok }}"
+        target: "/usr/share/logstash/pipeline-main/patterns.d/{{ grok }}"
+{% endfor %}
     secrets:
       - source: logstash-rootCA.crt
         target: /etc/ca.crt
@@ -306,28 +314,39 @@ volumes:
 
 # documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
 # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
-configs: # config are immutable :/
-  logstash.conf:
-    name: "{{ docker_elastic_stack_name }}_logstash.conf-${DEPLOY_TIMESTAMP}"
-    file: ./config/logstash/pipeline/logstash.conf
+configs:
   logstash.yml:
-    name: "{{ docker_elastic_stack_name }}_logstash.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/logstash/logstash.yml
+    name: "{{ docker_elastic_stack_name }}_logstash.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/logstash/logstash.j2.yml
+  pipelines.yml:
+    name: "{{ docker_elastic_stack_name }}_pipelines.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/logstash/pipelines.j2.yml
   elasticsearch.yml:
-    name: "{{ docker_elastic_stack_name }}_elasticsearch.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/elasticsearch/elasticsearch.yml
+    name: "{{ docker_elastic_stack_name }}_elasticsearch.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/elasticsearch/elasticsearch.j2.yml
   kibana.yml:
-    name: "{{ docker_elastic_stack_name }}_kibana.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/kibana/kibana.yml
+    name: "{{ docker_elastic_stack_name }}_kibana.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/kibana/kibana.j2.yml
   heartbeat.yml:
-    name: "{{ docker_elastic_stack_name }}_heartbeat.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/heartbeat/heartbeat.yml
+    name: "{{ docker_elastic_stack_name }}_heartbeat.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/heartbeat/heartbeat.j2.yml
   journalbeat.yml:
-    name: "{{ docker_elastic_stack_name }}_journalbeat.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/journalbeat/journalbeat.yml
+    name: "{{ docker_elastic_stack_name }}_journalbeat.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/journalbeat/journalbeat.j2.yml
   metricbeat.yml:
-    name: "{{ docker_elastic_stack_name }}_metricbeat.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/metricbeat/metricbeat.yml
+    name: "{{ docker_elastic_stack_name }}_metricbeat.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/metricbeat/metricbeat.j2.yml
+
+{% for pipeline in logstash_pipeline_files %}
+  pipeline_{{ pipeline }}:
+    name: "{{ docker_elastic_stack_name }}_{{ pipeline }}-${DEPLOY_TIMESTAMP}"
+    file: "./config/logstash/pipeline/{{ pipeline }}"
+{% endfor %}
+{% for grok in logstash_pipeline_patterns %}
+  pattern_{{ grok }}:
+    name: "{{ docker_elastic_stack_name }}_{{ grok }}-${DEPLOY_TIMESTAMP}"
+    file: "./config/logstash/pipeline/patterns.d/{{ grok }}"
+{% endfor %}
 
 secrets:
   logstash-rootCA.crt:

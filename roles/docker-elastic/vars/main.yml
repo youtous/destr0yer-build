@@ -1,3 +1,23 @@
+logstash_pipeline_files:
+  - 10-input.j2.conf
+  - 45-filter-syslog-before.j2.conf
+  - 47-filter-journalbeat-json.j2.conf
+  - 47-filter-syslog-json.j2.conf
+  - 50-filter-container.j2.conf
+  - 50-filter-elb-healtcheck.j2.conf
+  - 50-filter-journalbeat-traefik.j2.conf
+  - 50-filter-syslog-traefik.j2.conf
+  - 55-filter-journalbeat-after.j2.conf
+  - 55-filter-syslog-after.j2.conf
+  - 60-filter-beats.j2.conf
+  - 60-filter-internal.j2.conf
+  - 65-filter-remove-tags.j2.conf
+  - 90-output.j2.conf
+  #- 399-output-debug.j2.conf
+
+logstash_pipeline_patterns:
+  - postfix.grok
+
 elastic_compose_file_dest_directory: ~/elastic
 elastic_compose_file_dest_name: docker-compose.elastic.yml
 elastic_compose_file_dest: "{{ elastic_compose_file_dest_directory }}/{{ elastic_compose_file_dest_name }}"

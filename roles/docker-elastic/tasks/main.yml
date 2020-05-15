@@ -26,28 +26,38 @@
     - kibana
     - logstash
     - logstash/pipeline
+    - logstash/pipeline/patterns.d
     - heartbeat
     - journalbeat
     - metricbeat
 
 - name: Copy elastic configs
   template:
-    src: "templates/config/{{ item }}/{{ item }}.j2.yml"
-    dest: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}/{{ item }}.yml"
+    src: "templates/config/{{ item.dir }}/{{ item.file }}"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/{{ item.dir }}/{{ item.file }}"
     mode: u=rw,g=,o=
   with_items:
-    - elasticsearch
-    - kibana
-    - logstash
-    - heartbeat
-    - journalbeat
-    - metricbeat
+    - { dir: elasticsearch, file: elasticsearch.j2.yml}
+    - { dir: kibana, file: kibana.j2.yml }
+    - { dir: logstash, file: logstash.j2.yml }
+    - { dir: logstash, file: pipelines.j2.yml }
+    - { dir: heartbeat, file: heartbeat.j2.yml }
+    - { dir: journalbeat, file: journalbeat.j2.yml }
+    - { dir: metricbeat, file: metricbeat.j2.yml }
 
-- name: Copy logstash pipeline conf
+- name: Copy logstash pipeline configurations
   template:
-    src: "templates/config/logstash/pipeline/logstash.j2.conf"
-    dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/logstash.conf"
+    src: "templates/config/logstash/pipeline/{{ item }}"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/{{ item }}"
     mode: u=rw,g=,o=
+  with_items: "{{ logstash_pipeline_files }}"
+
+- name: Copy logstash pipeline patterns configurations
+  template:
+    src: "templates/config/logstash/pipeline/patterns.d/{{ item }}"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/patterns.d/{{ item }}"
+    mode: u=rw,g=,o=
+  with_items: "{{ logstash_pipeline_patterns }}"
 
 - name: Copy elastic stack
   template:
