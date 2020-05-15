@@ -96,17 +96,12 @@
   blockinfile:
     create: yes
     dest: "/etc/iptables.docker-user.rules.v6"
-    block: "{{ ip6tables_docker_user_rules.stdout }}"
-    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv6 DOCKER-USER before rules ###"
-  when: ip6tables_docker_user_rules is not failed
+    block: |
+      *filter
 
-- name: Ensure iptables docker-user rules are persistent
-  become: yes
-  copy:
-    src: "files/ip6tables-docker-user-restore"
-    dest: "/etc/network/if-pre-up.d/ip6tables-docker-user-restore"
-    owner: root
-    group: root
-    mode: u=rwx,g=xr,o=x
+      {{ ip6tables_docker_user_rules.stdout }}
+
+      COMMIT
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv6 DOCKER-USER before rules ###"
   when: ip6tables_docker_user_rules is not failed
 ...

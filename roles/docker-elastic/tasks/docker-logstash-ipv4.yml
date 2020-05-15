@@ -96,17 +96,12 @@
   blockinfile:
     create: yes
     dest: "/etc/iptables.docker-user.rules.v4"
-    block: "{{ iptables_docker_user_rules.stdout }}"
-    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv4 DOCKER-USER before rules ###"
-  when: iptables_docker_user_rules is not failed
+    block: |
+      *filter
 
-- name: Ensure iptables docker-user rules are persistent
-  become: yes
-  copy:
-    src: "files/iptables-docker-user-restore"
-    dest: "/etc/network/if-pre-up.d/iptables-docker-user-restore"
-    owner: root
-    group: root
-    mode: u=rwx,g=xr,o=x
+      {{ iptables_docker_user_rules.stdout }}
+
+      COMMIT
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv4 DOCKER-USER before rules ###"
   when: iptables_docker_user_rules is not failed
 ...

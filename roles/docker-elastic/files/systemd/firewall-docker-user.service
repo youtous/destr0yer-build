@@ -1,0 +1,14 @@
+[Unit]
+Description=Firewall DOCKER-USER Rules
+After=docker.service
+BindsTo=docker.service
+ReloadPropagatedFrom=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/etc/network/firewall/docker-user-rules.sh
+ExecReload=/etc/network/firewall/docker-user-rules.sh
+
+[Install]
+WantedBy=multi-user.target

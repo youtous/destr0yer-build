@@ -1,2 +1,0 @@
- #!/bin/sh
- /sbin/ip6tables-restore -n < /etc/iptables.docker-user.rules.v6
