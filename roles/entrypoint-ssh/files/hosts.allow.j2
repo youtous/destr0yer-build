@@ -5,10 +5,9 @@ sshd : {{ host_ssh_allowed }} : allow
 {% endfor %}
 
 # allow localhost interfaces
-sshd : localhost : allow
-sshd : 127.0.0.1 : allow
-sshd : ip6-localhost : allow
-sshd : ::1 : allow
+{% for host_ssh_allowed in ssh_entrypoints_local_interfaces %}
+sshd : {{ host_ssh_allowed }} : allow
+{% endfor %}
 
 sshd : ALL : deny
 {% endif %}

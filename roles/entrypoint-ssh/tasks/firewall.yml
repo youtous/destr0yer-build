@@ -1,0 +1,33 @@
+---
+# firewall rules for ssh
+- name: List existing ssh UFW rules
+  become: yes
+  shell: >
+    ufw status numbered | grep -zoP '\[.*\]\s22(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
+  changed_when: false
+  register: ufw_ssh_rules
+
+- name: UFW delete existing ssh rules - tcp,udp/22
+  become: yes
+  shell: "yes y | ufw delete {{ item|quote }}"
+  with_items: "{{ ufw_ssh_rules.stdout_lines }}"
+
+- name: UFW Allow ssh local clients - ALLOW tcp/22
+  become: yes
+  ufw:
+    rule: allow
+    port: ssh
+    proto: tcp
+    src: "{{ item }}"
+  with_items: "{{ ssh_entrypoints_local_interfaces_ips }}"
+
+- name: UFW Allow ssh clients - LIMIT tcp/22
+  become: yes
+  ufw:
+    rule: limit
+    port: ssh
+    proto: tcp
+    src: "{{ item }}"
+  with_items: "{{ ssh_entrypoints }}"
+
+...
