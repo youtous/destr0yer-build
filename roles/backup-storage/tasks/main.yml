@@ -50,13 +50,8 @@
   notify:
     - restart sshd
 
-- name: Whitelists allowed ips of accounts to access ssh
-  become: yes
-  blockinfile:
-    dest: "/etc/hosts.allow"
-    block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
-    insertbefore: BOF
-    marker: "### {mark} ANSIBLE MANAGED BLOCK - backup ip whitelist ###"
+- name: Configure firewall for allow sftp access
+  import_tasks: firewall.yml
 
 - name: Configure sftp group policy
   become: yes
