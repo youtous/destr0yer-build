@@ -39,11 +39,11 @@ journalbeat.inputs:
     #  env: staging
 
 
-    #========================= Journalbeat global options ============================
-    #journalbeat:
-    # Name of the registry file. If a relative path is used, it is considered relative to the
-    # data path.
-    #registry_file: registry
+#========================= Journalbeat global options ============================
+#journalbeat:
+# Name of the registry file. If a relative path is used, it is considered relative to the
+# data path.
+#registry_file: registry
 
 #==================== Elasticsearch template setting ==========================
 setup.template.settings:
