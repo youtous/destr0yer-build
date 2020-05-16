@@ -1,0 +1,35 @@
+---
+# This role setup filebeat; a log exporter to elastic stack (using logstash receiver)
+
+- name: Install filebeat
+  import_tasks: install.yml
+
+- name: Ensure filebeat is enabled and started
+  become: yes
+  service:
+    name: filebeat
+    enabled: yes
+    state: started
+
+- name: Ensure filebeat configuration directory exists
+  become: yes
+  file:
+    state: directory
+    owner: root
+    group: root
+    path: "{{ filebeat_configuration_directory }}"
+    mode: u=rwx,g=,o=
+
+- name: Configure TLS logstash/filebeat certificates
+  import_tasks: certificates.yml
+
+- name: Copy filebeat configuration
+  become: yes
+  template:
+    src: templates/filebeat.j2.yml
+    dest: "{{ filebeat_configuration_directory }}/filebeat.yml"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - restart filebeat

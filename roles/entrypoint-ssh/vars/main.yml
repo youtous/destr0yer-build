@@ -1,0 +1,11 @@
+---
+# local interfaces to allow
+ssh_entrypoints_local_interfaces_ips:
+  - "127.0.0.1"
+  - "::1"
+ssh_entrypoints_local_interfaces_alias:
+  - "localhost"
+  - "ip6-localhost"
+
+ssh_entrypoints_local_interfaces: "{{ ssh_entrypoints_local_interfaces_ips + ssh_entrypoints_local_interfaces_alias }}"
+...

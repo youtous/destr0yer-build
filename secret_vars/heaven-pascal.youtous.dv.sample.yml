@@ -78,15 +78,6 @@ logstash_node_private_key: |
   -----BEGIN OPENSSH PRIVATE KEY-----
   -----END OPENSSH PRIVATE KEY-----
 
-# logspout TLS
-logspout_node_certificate: |
-  -----BEGIN CERTIFICATE-----
-  -----END CERTIFICATE-----
-
-logspout_node_private_key: |
-  -----BEGIN OPENSSH PRIVATE KEY-----
-  -----END OPENSSH PRIVATE KEY-----
-
 # journalbeat TLS
 journalbeat_node_certificate: |
   -----BEGIN CERTIFICATE-----
@@ -95,4 +86,16 @@ journalbeat_node_certificate: |
 journalbeat_node_private_key: |
   -----BEGIN OPENSSH PRIVATE KEY-----
   -----END OPENSSH PRIVATE KEY-----
+
+# logspout TLS (shared with journalbeat and metricbeat=
+logspout_node_certificate: "{{ journalbeat_node_certificate }}"
+logspout_node_private_key: "{{ journalbeat_node_private_key }}"
+
+# metricbeat TLS (share with journalbeat and logspout)
+metricbeat_node_certificate: "{{ journalbeat_node_certificate }}"
+metricbeat_node_private_key: "{{ journalbeat_node_private_key }}"
+
+# filebeat TLS (share with journalbeat and logspout)
+filebeat_node_certificate: "{{ journalbeat_node_certificate }}"
+filebeat_node_private_key: "{{ journalbeat_node_private_key }}"
 ...

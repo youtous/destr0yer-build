@@ -17,31 +17,69 @@
   set_fact:
     elastic_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
-- name: Copy elastic stack config files
-  copy:
-    src: "files/config"
-    dest: "{{ elastic_compose_file_dest_directory }}"
-    mode: u=rw,g=,o=
-
-- name: Ensure elastic heartbeat directory exists
+- name: Ensure elastic config directories exists
   file:
     state: directory
-    path: "{{ elastic_compose_file_dest_directory }}/config/heartbeat"
+    path: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}"
+  with_items:
+    - elasticsearch
+    - kibana
+    - logstash
+    - logstash/pipeline
+    - logstash/pipeline/patterns.d
+    - heartbeat
+    - filebeat
+    - journalbeat
+    - metricbeat
 
-- name: Copy elastic heartbeat config
+- name: Copy elastic configs
   template:
-    src: "templates/config/heartbeat/heartbeat.j2.yml"
-    dest: "{{ elastic_compose_file_dest_directory }}/config/heartbeat/heartbeat.yml"
+    src: "templates/config/{{ item.dir }}/{{ item.file }}"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/{{ item.dir }}/{{ item.file }}"
     mode: u=rw,g=,o=
+  with_items:
+    - { dir: elasticsearch, file: elasticsearch.j2.yml}
+    - { dir: kibana, file: kibana.j2.yml }
+    - { dir: logstash, file: logstash.j2.yml }
+    - { dir: logstash, file: pipelines.j2.yml }
+    - { dir: heartbeat, file: heartbeat.j2.yml }
+    - { dir: filebeat, file: filebeat.j2.yml }
+    - { dir: journalbeat, file: journalbeat.j2.yml }
+    - { dir: metricbeat, file: metricbeat.j2.yml }
+
+- name: Copy logstash pipeline configurations
+  template:
+    src: "templates/config/logstash/pipeline/{{ item }}"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/{{ item }}"
+    mode: u=rw,g=,o=
+  with_items: "{{ logstash_pipeline_files }}"
+
+- name: Copy logstash pipeline patterns configurations
+  copy:
+    src: "templates/config/logstash/pipeline/patterns.d/{{ item }}"
+    dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/patterns.d/{{ item }}"
+    mode: u=rw,g=,o=
+  with_items: "{{ logstash_pipeline_patterns }}"
 
 - name: Copy elastic stack
   template:
     src: templates/docker-compose.elastic.j2.yml
     dest: "{{ elastic_compose_file_dest }}"
     mode: u=rw,g=,o=
+  when: not elastic_use_as_forwarder
+
+- name: Copy elastic stack (forwarder)
+  template:
+    src: templates/docker-compose.elastic-forwarder.j2.yml
+    dest: "{{ elastic_compose_file_dest }}"
+    mode: u=rw,g=,o=
+  when: elastic_use_as_forwarder
 
 - name: Configure additional parameters for logstash with docker
   import_tasks: docker-logstash.yml
+
+- name: Configure stack firewall
+  import_tasks: firewall.yml
 
 - name: Deploy elastic
   docker_stack:
@@ -52,4 +90,11 @@
       - "{{ elastic_compose_file_dest }}"
   environment:
     DEPLOY_TIMESTAMP: "{{ elastic_deploy_timestamp }}"
+    ELASTIC_CLUSTER_NAME: "{{ elastic_cluster_name }}"
+
+    SMTP_HOSTNAME: "{{ alert_email_server }}"
+    SMTP_PORT: "{{ alert_email_port }}"
+    SMTP_USERNAME: "{{ alert_email_user }}"
+    SMTP_PASSWORD: "{{ alert_email_password }}"
+    SMTP_FROM: "{{ alert_email_from }}"
   notify: docker prune

@@ -14,6 +14,8 @@ backup_frozen_cron:
   minute: "0"
   hour: "8"
 
+sshd_port: 22
+
 backup_users: []
 #  - username: backup_hostname
 #    ssh_keys: [] # specify host public key

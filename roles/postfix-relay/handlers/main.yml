@@ -13,7 +13,7 @@
 
 - name: hash sasl passwd
   become: yes
-  command: "postmap hash:{{ postfix_sasl_file }}"
+  command: "postmap hash:{{ postfix_sasl_file|quote }}"
 
 - name: newaliases
   become: yes

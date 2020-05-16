@@ -1,0 +1,32 @@
+---
+- name: Whitelists allowed ips of accounts to access ssh
+  become: yes
+  blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
+    insertbefore: BOF
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - backup ip whitelist ###"
+
+## same with firewall rules
+- name: List existing sftp backup UFW rules
+  become: yes
+  shell: >
+    ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port|quote }}(?!\\d).*\# backup client allowed\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
+  changed_when: false
+  register: ufw_ssh_backup_rules
+
+- name: UFW delete existing sftp backup rules - tcp,udp/ssh
+  become: yes
+  shell: "yes y | ufw delete {{ item|quote }}"
+  with_items: "{{ ufw_ssh_backup_rules.stdout_lines }}"
+
+- name: UFW Allow sftp backup clients - LIMIT tcp/ssh
+  become: yes
+  ufw:
+    rule: limit
+    port: ssh
+    proto: tcp
+    src: "{{ item }}"
+    comment: 'backup client allowed'
+  with_items: "{{ backup_users | map(attribute='restrict_ips') | list | flatten | unique }}"
+...

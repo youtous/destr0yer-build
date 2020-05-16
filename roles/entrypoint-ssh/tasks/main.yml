@@ -7,3 +7,6 @@
     dest: "/etc/hosts.allow"
     block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - ssh entrypoint ip whitelist ###"
+
+- name: Configure firewall ssh
+  import_tasks: firewall.yml

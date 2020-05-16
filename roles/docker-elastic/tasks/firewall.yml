@@ -1,0 +1,63 @@
+---
+# configure the firewall for this stack
+
+- name: Ensure network firewall directory exists
+  become: yes
+  file:
+    path: "/etc/network/firewall"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
+- name: Copy Firewall DOCKER-USER Rules script
+  become: yes
+  copy:
+    src: "files/docker-user-rules.sh"
+    dest: "/etc/network/firewall/docker-user-rules.sh"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
+- name: Copy Firewall DOCKER-USER Rules service configuration
+  become: yes
+  copy:
+    src: "files/systemd/{{ item.src }}"
+    dest: "/lib/systemd/system/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - src: firewall-docker-user.service
+      dest: firewall-docker-user.service
+
+- name: Enable Firewall DOCKER-USER Rules service
+  become: yes
+  systemd:
+    name: firewall-docker-user
+    enabled: yes
+    masked: no
+
+- name: Check if docker ipv4 iptables is enabled
+  become: yes
+  command: iptables -L DOCKER-USER
+  register: docker_ipv4
+  ignore_errors: True
+  changed_when: false
+
+- name: Configure docker logstash firewall ipv4
+  import_tasks: docker-logstash-ipv4.yml
+  when: docker_ipv4 is not failed
+
+- name: Check if docker ipv6 iptables is enabled
+  become: yes
+  command: ip6tables -L DOCKER-USER
+  register: docker_ipv6
+  ignore_errors: True
+  changed_when: false
+
+- name: Configure docker logstash firewall ipv6
+  import_tasks: docker-logstash-ipv6.yml
+  when: docker_ipv6 is not failed
+
+...

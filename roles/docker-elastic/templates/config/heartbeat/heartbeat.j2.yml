@@ -1,10 +1,4 @@
-heartbeat.monitors:
-  - type: http
-    schedule: '@every 10s'
-    urls:
-{% for url in elastic_heartbeat_default_urls|default([]) + elastic_heartbeat_urls|default([]) %}
-      - "{{ url }}"
-{% endfor %}
+heartbeat.monitors: {{ elastic_combined_heartbeat_monitors }}
 
 processors:
   #- add_cloud_metadata:
@@ -17,4 +11,22 @@ setup.kibana:
   host: "http://kibana:5601"
   protocol: "http"
 
-xpack.monitoring.enabled: true
+
+# enable data management
+setup.ilm:
+  enable: true
+  overwrite: true
+
+monitoring.enabled: true
+
+
+#================================ Logging =====================================
+
+# Sets log level. The default log level is info.
+# Available log levels are: error, warning, info, debug
+logging.level: warning
+
+# At debug level, you can selectively enable logging only for some components.
+# To enable all selectors use ["*"]. Examples of other selectors are "beat",
+# "publish", "service".
+#logging.selectors: ["*"]

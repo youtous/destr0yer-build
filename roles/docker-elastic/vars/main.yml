@@ -1,3 +1,30 @@
+logstash_pipeline_files:
+  - 10-input.j2.conf
+  - 40-filter-elb-healtcheck.j2.conf
+  - 45-filter-syslog-before.j2.conf
+  - 47-filter-journalbeat-json.j2.conf
+  - 47-filter-syslog-json.j2.conf
+  - 50-filter-container.j2.conf
+  - 50-filter-filebeat-system.j2.conf
+  - 50-filter-journalbeat-postfix.j2.conf
+  - 50-filter-journalbeat-fail2ban.j2.conf
+  - 50-filter-journalbeat-mailserver.j2.conf
+  - 50-filter-journalbeat-traefik.j2.conf
+  - 50-filter-syslog-traefik.j2.conf
+  - 55-filter-journalbeat-after.j2.conf
+  - 55-filter-syslog-after.j2.conf
+  - 60-filter-beats.j2.conf
+  - 60-filter-internal.j2.conf
+  - 65-filter-remove-tags.j2.conf
+  - 90-output.j2.conf
+  #- 399-output-debug.j2.conf
+
+logstash_pipeline_patterns:
+  - fail2ban.grok
+  - postfix.grok
+  - dovecot.grok
+  - amavis.grok
+
 elastic_compose_file_dest_directory: ~/elastic
 elastic_compose_file_dest_name: docker-compose.elastic.yml
 elastic_compose_file_dest: "{{ elastic_compose_file_dest_directory }}/{{ elastic_compose_file_dest_name }}"
@@ -7,7 +34,13 @@ docker_elastic_stack_name: "elastic"
 elasticsearch_memory_reservation: "{{ (elasticsearch_memory|int / 2) | round }}"
 
 # default urls to monitor
-elastic_heartbeat_default_urls:
-  - http://elasticsearch:9200
-  - http://kibana:5601
-  - http://logstash:8082
+elastic_heartbeat_default_monitors:
+  - type: http
+    id: internal-elastic
+    name: Elastic stack status
+    schedule: '@every 30s'
+    urls:
+      - http://elasticsearch:9200
+      - http://kibana:5601
+      - http://logstash:8082
+elastic_combined_heartbeat_monitors: "{{ elastic_heartbeat_default_monitors|default([]) + elastic_heartbeat_monitors|default([]) }}"

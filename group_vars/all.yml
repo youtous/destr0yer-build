@@ -113,14 +113,17 @@ local_docker_ips:
   - '172.18.0.0/16' # docker_gwbridge
 
 # ips of the nodes of the swarm
-nodes_ips: "{{
+nodes_ip4s: "{{
   groups['workers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
-  groups['workers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique | default([]) +
   groups['managers'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
+  groups['primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])
+}}"
+nodes_ip6s: "{{
+  groups['workers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique | default([]) +
   groups['managers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([]) +
-  groups['primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
   groups['primary_manager'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])
 }}"
+nodes_ips: "{{ nodes_ip4s + nodes_ip6s }}"
 
 # first manager ipv4
 primary_manager_ipv4: "{{ groups['primary_manager'] | map('extract', hostvars, ['ipv4']) | first | first }}"
@@ -170,9 +173,12 @@ docker_swarm_CA_certificate: |
 
 # hostname of the elastic logstash node that will receive all docker logs
 # nodes must be allowed to reach it using TLS and the generated certificate
-logspout_output_server_address: "{{ groups['primary_manager'] | map('extract', hostvars, ['hostname']) | first }}"
-# same for journalbeat
-journalbeat_output_server_address: "{{ logspout_output_server_address }}"
+logstash_receiver_server_address: "{{ groups['primary_manager'] | map('extract', hostvars, ['hostname']) | first }}"
+journalbeat_output_server_address: "{{ logstash_receiver_server_address }}"
+logspout_output_server_address: "{{ logstash_receiver_server_address }}"
+metricbeat_output_server_address: "{{ logstash_receiver_server_address }}"
+filebeat_output_server_address: "{{ logstash_receiver_server_address }}"
+elastic_cluster_name: "youtous.dv"
 
 # CA cert issuer of the logstash/logspout certs
 logstash_CA_certificate: |

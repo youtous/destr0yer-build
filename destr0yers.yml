@@ -118,7 +118,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["configure-slaves-systems", "configure-systems"]
+  tags: ["configure-slaves-systems", "configure-systems", "entrypoint-ssh"]
 
 - name: Configure Postfix relay servers
   hosts: smtp_relays

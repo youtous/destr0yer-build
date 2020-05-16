@@ -3,66 +3,6 @@
 # Transport will be done using TLS certificates (ensure encryption && identity)
 # Logstash node will filter any non-authorized ip using UFW and internal mechanism.
 
-- name: List existing logstash tcp/5000 UFW rules
-  become: yes
-  shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s5000(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
-  register: ufw_logstash_5000_rules
-  changed_when: false
-
-- name: UFW delete existing logstash rules - tcp/5000
-  become: yes
-  shell: "yes y | ufw delete {{ item|quote }}"
-  with_items: "{{ ufw_logstash_5000_rules.stdout_lines }}"
-
-- name: Allow nodes firewall - tcp/5000 (logstash)
-  become: yes
-  ufw:
-    rule: allow
-    port: "5000"
-    src: "{{ item }}"
-  with_items: "{{ logstash_allowed_ips }}"
-
-- name: List existing logstash tcp/5044 UFW rules
-  become: yes
-  shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s5044(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
-  register: ufw_logstash_5044_rules
-  changed_when: false
-
-- name: UFW delete existing logstash rules - tcp/5044
-  become: yes
-  shell: "yes y | ufw delete {{ item|quote }}"
-  with_items: "{{ ufw_logstash_5044_rules.stdout_lines }}"
-
-- name: Allow nodes firewall - tcp/5044 (logstash)
-  become: yes
-  ufw:
-    rule: allow
-    port: "5044"
-    src: "{{ item }}"
-  with_items: "{{ logstash_allowed_ips }}"
-
-- name: Allow from docker0 containers networks to this host - tcp/5000,5044 (logstash)
-  become: yes
-  ufw:
-    rule: allow
-    src: "172.17.0.0/16"
-    port: "{{ item }}"
-  with_items:
-    - "5000"
-    - "5044"
-
-- name: Allow from docker_gwbridge containers networks to this host - tcp/5000,5044 (logstash)
-  become: yes
-  ufw:
-    rule: allow
-    src: "172.18.0.0/16"
-    port: "{{ item }}"
-  with_items:
-    - "5000"
-    - "5044"
-
 - name: Ensure logstash root CA is defined
   fail:
     msg: root CA is empty or not defined.
@@ -89,4 +29,9 @@
     - {name: "{{ docker_elastic_stack_name }}_logstash-certificate.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_node_certificate }}"}
     - {name: "{{ docker_elastic_stack_name }}_logstash-private-key.key-{{ elastic_deploy_timestamp }}", data: "{{ logstash_node_private_key }}"}
   no_log: true
+
+
+- name: Import logstash client certificate (acting as a forwarder)
+  import_tasks: docker-logstash-forwarder.yml
+  when: elastic_use_as_forwarder
 ...

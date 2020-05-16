@@ -1,0 +1,141 @@
+---
+version: '3.7'
+
+services:
+
+  # this stack act as a forwarder to an other logstash entrypoint
+
+  # process logs from everywhere
+  logstash:
+    image: "docker.elastic.co/logstash/logstash-oss:{{ elastic_version }}"
+    configs:
+      - source: logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+      - source: pipelines.yml
+        target: /usr/share/logstash/config/pipelines.yml
+{% for pipeline in logstash_pipeline_files %}
+      - source: "pipeline_{{ pipeline }}"
+        target: "/usr/share/logstash/pipeline/{{ pipeline }}"
+{% endfor %}
+{% for grok in logstash_pipeline_patterns %}
+      - source: "pattern_{{ grok }}"
+        target: "/usr/share/logstash/pipeline/patterns.d/{{ grok }}"
+{% endfor %}
+    secrets:
+      - source: logstash-rootCA.crt
+        target: /etc/ca.crt
+      - source: logstash-certificate.crt
+        target: /etc/server.crt
+      - source: logstash-private-key.key
+        target: /etc/server.key
+      - source: logstash-client-rootCA.crt
+        target: /etc/ca-client.crt
+      - source: logstash-client-certificate.crt
+        target: /etc/client.crt
+      - source: logstash-client-private-key.key
+        target: /etc/client.key
+    environment:
+      - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
+      - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
+    ports: # in order to receive logs from allowed origins, theses ports are opened, access are filtered using UFW
+      - target: 5000 # tcp
+        published: 5000
+        mode: host
+      - target: 5044 # beats
+        published: 5044
+        mode: host
+      - target: 5064 # external input
+        published: 5064
+        mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 30s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: "{{ logstash_memory }}M"
+      labels:
+        - "traefik.frontend.rule=Host:{{ logstash_domain }}"
+        - traefik.enable=true
+        - traefik.port=8080
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ logstash_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth => here we can configure access for other clusters to submit logs
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}" # todo : configure accounts for other services (other clusters)
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1" # todo : configure trusted cluster ips
+    networks:
+      - stack
+      - {{ traefik_network }}
+    healthcheck:
+      test: curl -s http://localhost:8082 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  stack: # encrypted if Swarm want to split services on managers
+    driver: overlay
+    driver_opts:
+      encrypted: ""
+  {{ traefik_network }}:
+    external: true
+
+# documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
+# an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
+configs:
+  logstash.yml:
+    name: "{{ docker_elastic_stack_name }}_logstash.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/logstash/logstash.j2.yml
+
+{% for pipeline in logstash_pipeline_files %}
+  pipeline_{{ pipeline }}:
+    name: "{{ docker_elastic_stack_name }}_{{ pipeline }}-${DEPLOY_TIMESTAMP}"
+    file: "./config/logstash/pipeline-main/{{ pipeline }}"
+{% endfor %}
+{% for grok in logstash_pipeline_patterns %}
+  pattern_{{ grok }}:
+    name: "{{ docker_elastic_stack_name }}_{{ grok }}-${DEPLOY_TIMESTAMP}"
+    file: "./config/logstash/pipeline-main/patterns.d/{{ grok }}"
+{% endfor %}
+
+secrets:
+  logstash-rootCA.crt:
+    name: "{{ docker_elastic_stack_name }}_logstash-rootCA.crt-${DEPLOY_TIMESTAMP}"
+    external: true
+  logstash-certificate.crt:
+    name: "{{ docker_elastic_stack_name }}_logstash-certificate.crt-${DEPLOY_TIMESTAMP}"
+    external: true
+  logstash-private-key.key:
+    name: "{{ docker_elastic_stack_name }}_logstash-private-key.key-${DEPLOY_TIMESTAMP}"
+    external: true
+  logstash-client-rootCA.crt:
+    name: "{{ docker_elastic_stack_name }}_logstash-client-rootCA.crt-${DEPLOY_TIMESTAMP}"
+    external: true
+  logstash-client-certificate.crt:
+    name: "{{ docker_elastic_stack_name }}_logstash-client-certificate.crt-${DEPLOY_TIMESTAMP}"
+    external: true
+  logstash-client-private-key.key:
+    name: "{{ docker_elastic_stack_name }}_logstash-client-private-key.key-${DEPLOY_TIMESTAMP}"
+    external: true

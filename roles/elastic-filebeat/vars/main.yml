@@ -1,0 +1,6 @@
+filebeat_configuration_directory: /etc/filebeat
+
+# certificates naming
+filebeat_certificates_directory: "{{ filebeat_configuration_directory }}/certs"
+logstash_root_CA_certificate_name: logstash-RootCA.crt
+filebeat_node_certificate_name: filebeat-node

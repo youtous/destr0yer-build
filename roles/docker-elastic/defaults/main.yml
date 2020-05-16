@@ -1,22 +1,58 @@
 ---
-elastic_version: 7.0.1
-opendistro_version: 1.0.1
+elastic_version: 7.7.0
+opendistro_version: 1.7.0
+
+docker_external_interfaces: [] # must be defined explicitly, this is the external interface, generally eth0.
+#       /!\ BE CAREFUL this interface is used for restricting exposed ports to specific ips /!\
 
 # a list of allowed ips to access logstash thought socket
-logstash_allowed_ips: [] # /!\ set both ipv6 and ipv4
+logstash_allowed_ip6s: [] # requires docker ipv6 enabled! todo : when ipv6, add docker networks here
+logstash_allowed_ip4s:  # /!\ set only ipv4
+  - '172.17.0.0/16' # docker0
+  - '172.18.0.0/16' # docker_gwbridge
 
-# http services to monitor
-elastic_heartbeat_urls: []
+# a list of allowed ips to access logstash thought beats, it's used for external cluster submitting data
+logstash_beats_external_allowed_ip6s: []
+logstash_beats_external_allowed_ip4s:
+  - '172.17.0.0/16' # docker0
+  - '172.18.0.0/16' # docker_gwbridge
+
+# services to monitor
+#elastic_heartbeat_monitors:
+#  - type: http
+#    id: internal-stack
+#    name: My stack status
+#    schedule: '@every 30s'
+#    urls:
+#      - http://myurl:9200
+#      - http://other:5601
 
 # how much memory to allocate (in Mo)
 # /!\ less than 350 leads to startup issues
-elasticsearch_memory: 350
-logstash_memory: 350
+elasticsearch_memory: 1024
+logstash_memory: 512
 
 # name of the traefik network
 traefik_network: "traefik-public"
 # traefik public-tag
 traefik_public_tag: "traefik-public"
+
+# cluster information, useful when data is aggregated in a separated cluster
+elastic_cluster_name: "{{ hostname }}"
+
+# can be used as a forwarder
+elastic_use_as_forwarder: false
+elastic_logstash_destination: "" # localhost:port address of logstash receiver
+logstash_client_forwarder_CA_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
+logstash_client_forwarder_node_certificate: ""
+logstash_client_forwarder_node_private_key: ""
+
+# email alerts settings
+alert_email_server: "{{ relay_server }}"
+alert_email_port: "{{ relay_port }}"
+alert_email_from: "{{ relay_email }}"
+alert_email_user: "{{ relay_user }}"
+alert_email_password: "{{ relay_password }}"
 
 # domains
 kibana_domain: "kibana.{{ hostname }}"
@@ -30,4 +66,11 @@ logstash_domain: "logstash.{{ hostname }}"
 # logstash_CA_certificate: | # usually logstash-rootCA.crt
 # logstash_node_private_key: | # usually logstash-node-hostname.key
 # logstash_node_certificate: | # usually logstash-node-hostname.crt
+
+
+elastic_disabled_tls_protocols: # event with these parameters, use the elastic stack behind a VPN!
+  - SSLv2Hello                  # Elastic TLS plugin implementation is not secure (different sources, tech etc...)
+  - SSLv3
+  - TLSv1
+  - TLSv1.1
 ...
