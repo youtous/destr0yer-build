@@ -18,7 +18,7 @@ logstash_beats_external_allowed_ip4s:
   - '172.18.0.0/16' # docker_gwbridge
 
 # services to monitor
-elastic_heartbeat_default_monitors:
+#elastic_heartbeat_monitors:
 #  - type: http
 #    id: internal-stack
 #    name: My stack status

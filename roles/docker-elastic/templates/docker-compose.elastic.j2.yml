@@ -279,7 +279,7 @@ services:
       '
     configs:
       - source: filebeat.yml
-        target: /usr/share/metricbeat/filebeat.yml
+        target: /usr/share/filebeat/filebeat.yml
     deploy:
       mode: replicated
       replicas: 1
@@ -355,7 +355,7 @@ configs:
     file: ./config/heartbeat/heartbeat.j2.yml
   filebeat.yml:
     name: "{{ docker_elastic_stack_name }}_filebeat.j2.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/heartbeat/filebeat.j2.yml
+    file: ./config/filebeat/filebeat.j2.yml
   journalbeat.yml:
     name: "{{ docker_elastic_stack_name }}_journalbeat.j2.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/journalbeat/journalbeat.j2.yml

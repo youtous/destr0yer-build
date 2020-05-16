@@ -1,4 +1,4 @@
-heartbeat.monitors: "{{ elastic_heartbeat_default_monitors|default({}) + elastic_heartbeat_monitors|default({}) }}"
+heartbeat.monitors: {{ elastic_combined_heartbeat_monitors }}
 
 processors:
   #- add_cloud_metadata:
