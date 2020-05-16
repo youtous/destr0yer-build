@@ -297,8 +297,12 @@ services:
   # check if services are up
   heartbeat:
     image: "docker.elastic.co/beats/heartbeat-oss:{{ elastic_version }}"
-    command: --strict.perms=false -e  # -e flag to log to stderr and disable syslog/file output
-    configs:
+    entrypoint: >
+      sh -c '
+      heartbeat setup &&
+      heartbeat --strict.perms=false -e
+      '
+    configs: # -e flag to log to stderr and disable syslog/file output
       - source: heartbeat.yml
         target: /usr/share/heartbeat/heartbeat.yml
     deploy:

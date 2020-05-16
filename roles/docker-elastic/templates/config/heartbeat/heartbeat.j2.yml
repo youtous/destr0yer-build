@@ -17,7 +17,7 @@ setup.ilm:
   enable: true
   overwrite: true
 
-xpack.monitoring.enabled: true
+monitoring.enabled: true
 
 
 #================================ Logging =====================================

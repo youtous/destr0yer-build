@@ -5,6 +5,7 @@ logstash_pipeline_files:
   - 47-filter-journalbeat-json.j2.conf
   - 47-filter-syslog-json.j2.conf
   - 50-filter-container.j2.conf
+  - 50-filter-filebeat-system.j2.conf
   - 50-filter-journalbeat-postfix.j2.conf
   - 50-filter-journalbeat-fail2ban.j2.conf
   - 50-filter-journalbeat-traefik.j2.conf
