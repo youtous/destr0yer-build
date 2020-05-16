@@ -243,8 +243,8 @@ services:
       restart_policy:
         condition: on-failure
         delay: 5s
-        window: 30s
-        max_attempts: 10 # wait elastic and kibana to be up
+        window: 300s
+        max_attempts: 0 # wait elastic and kibana to be up
     networks:
       - stack
 
@@ -266,8 +266,8 @@ services:
       restart_policy:
         condition: on-failure
         delay: 5s
-        window: 30s
-        max_attempts: 10 # wait elastic and kibana to be up
+        window: 300s
+        max_attempts: 0 # wait elastic and kibana to be up
     networks:
       - stack
 
@@ -289,8 +289,8 @@ services:
       restart_policy:
         condition: on-failure
         delay: 5s
-        window: 30s
-        max_attempts: 10 # wait elastic and kibana to be up
+        window: 300s
+        max_attempts: 0 # wait elastic and kibana to be up
     networks:
       - stack
 
@@ -314,8 +314,8 @@ services:
       restart_policy:
         condition: on-failure
         delay: 5s
-        window: 30s
-        max_attempts: 3
+        window: 300s
+        max_attempts: 0
       resources:
         limits:
           memory: 64M

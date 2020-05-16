@@ -1,7 +1,7 @@
 ---
 #==================== Elasticsearch template setting ==========================
-setup.template.settings:
-  index.number_of_shards: 1
+#setup.template.settings:
+  #index.number_of_shards: 1
   #index.codec: best_compression
   #_source.enabled: false
 
