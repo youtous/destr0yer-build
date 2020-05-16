@@ -17,8 +17,15 @@ logstash_beats_external_allowed_ip4s:
   - '172.17.0.0/16' # docker0
   - '172.18.0.0/16' # docker_gwbridge
 
-# http services to monitor
-elastic_heartbeat_urls: []
+# services to monitor
+elastic_heartbeat_default_monitors:
+#  - type: http
+#    id: internal-stack
+#    name: My stack status
+#    schedule: '@every 30s'
+#    urls:
+#      - http://myurl:9200
+#      - http://other:5601
 
 # how much memory to allocate (in Mo)
 # /!\ less than 350 leads to startup issues

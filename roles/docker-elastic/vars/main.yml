@@ -30,7 +30,12 @@ docker_elastic_stack_name: "elastic"
 elasticsearch_memory_reservation: "{{ (elasticsearch_memory|int / 2) | round }}"
 
 # default urls to monitor
-elastic_heartbeat_default_urls:
-  - http://elasticsearch:9200
-  - http://kibana:5601
-  - http://logstash:8082
+elastic_heartbeat_default_monitors:
+  - type: http
+    id: internal-elastic
+    name: Elastic stack status
+    schedule: '@every 30s'
+    urls:
+      - http://elasticsearch:9200
+      - http://kibana:5601
+      - http://logstash:8082
