@@ -25,6 +25,7 @@
   hosts: all_logging_elastic
   roles:
     - elastic-journalbeat # output system logs from journalctl to elastic cluster, docker logs will be parsed too (docker not required on the host)
+    - elastic-filebeat # output system logs such as /var/log/auth.log
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

@@ -1,0 +1,7 @@
+---
+- name: restart filebeat
+  become: yes
+  systemd:
+    name: filebeat
+    state: restarted
+...

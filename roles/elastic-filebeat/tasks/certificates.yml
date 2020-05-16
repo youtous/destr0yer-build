@@ -1,0 +1,63 @@
+---
+# Setup the required components to send logs from journalctl to the logstash processor node.
+
+# Setup TLS using x509 certificates
+- name: Setup filebeat certificates folder
+  become: yes
+  file:
+    path: "{{ filebeat_certificates_directory }}"
+    owner: root
+    group: root
+    state: directory
+    mode: u=rwx,g=,o=
+
+- name: Ensure logstash root CA is defined
+  fail:
+    msg: root CA is empty or not defined.
+  when: logstash_CA_certificate is not defined or logstash_CA_certificate|length == 0
+
+- name: Ensure logstash node crt is defined
+  fail:
+    msg: crt is empty or not defined.
+  when: filebeat_node_certificate is not defined or filebeat_node_certificate|length == 0
+
+- name: Ensure logstash node key is defined
+  fail:
+    msg: key is empty or not defined.
+  when: filebeat_node_private_key is not defined or filebeat_node_private_key|length == 0
+
+
+- name: Copy logstash RootCA certificate
+  become: yes
+  copy:
+    content: "{{ logstash_CA_certificate }}"
+    dest: "{{ filebeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - restart filebeat
+
+- name: Copy filebeat node certificate
+  become: yes
+  copy:
+    content: "{{ filebeat_node_certificate }}"
+    dest: "{{ filebeat_certificates_directory }}/{{ filebeat_node_certificate_name }}.crt"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - restart filebeat
+
+- name: Copy filebeat node private key
+  become: yes
+  copy:
+    content: "{{ filebeat_node_private_key }}"
+    dest: "{{ filebeat_certificates_directory }}/{{ filebeat_node_certificate_name }}.key"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  no_log: true
+  notify:
+    - restart filebeat
+...

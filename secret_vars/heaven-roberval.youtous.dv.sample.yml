@@ -48,6 +48,10 @@ journalbeat_node_private_key: |
   -----BEGIN OPENSSH PRIVATE KEY-----
   -----END OPENSSH PRIVATE KEY-----
 
+# filebeat TLS (share with journalbeat and logspout)
+filebeat_node_certificate: "{{ journalbeat_node_certificate }}"
+filebeat_node_private_key: "{{ journalbeat_node_private_key }}"
+
 # metricbeat TLS (share with journalbeat and logspout)
 metricbeat_node_certificate: "{{ journalbeat_node_certificate }}"
 metricbeat_node_private_key: "{{ journalbeat_node_private_key }}"
