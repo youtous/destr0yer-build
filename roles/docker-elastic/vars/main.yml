@@ -6,6 +6,7 @@ logstash_pipeline_files:
   - 47-filter-syslog-json.j2.conf
   - 50-filter-container.j2.conf
   - 50-filter-journalbeat-postfix.j2.conf
+  - 50-filter-journalbeat-fail2ban.j2.conf
   - 50-filter-journalbeat-traefik.j2.conf
   - 50-filter-syslog-traefik.j2.conf
   - 55-filter-journalbeat-after.j2.conf
@@ -18,6 +19,7 @@ logstash_pipeline_files:
 
 logstash_pipeline_patterns:
   - postfix.grok
+  - fail2ban.grok
 
 elastic_compose_file_dest_directory: ~/elastic
 elastic_compose_file_dest_name: docker-compose.elastic.yml
