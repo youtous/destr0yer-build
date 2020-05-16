@@ -55,7 +55,7 @@
   with_items: "{{ logstash_pipeline_files }}"
 
 - name: Copy logstash pipeline patterns configurations
-  template:
+  copy:
     src: "templates/config/logstash/pipeline/patterns.d/{{ item }}"
     dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/patterns.d/{{ item }}"
     mode: u=rw,g=,o=
