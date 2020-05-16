@@ -271,6 +271,29 @@ services:
     networks:
       - stack
 
+  filebeat-setup:
+    image: "docker.elastic.co/beats/filebeat-oss:{{ elastic_version }}"
+    entrypoint: >
+      sh -c '
+      filebeat setup
+      '
+    configs:
+      - source: filebeat.yml
+        target: /usr/share/metricbeat/filebeat.yml
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 30s
+        max_attempts: 10 # wait elastic and kibana to be up
+    networks:
+      - stack
+
   # check if services are up
   heartbeat:
     image: "docker.elastic.co/beats/heartbeat-oss:{{ elastic_version }}"
@@ -330,6 +353,9 @@ configs:
   heartbeat.yml:
     name: "{{ docker_elastic_stack_name }}_heartbeat.j2.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/heartbeat/heartbeat.j2.yml
+  filebeat.yml:
+    name: "{{ docker_elastic_stack_name }}_filebeat.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/heartbeat/filebeat.j2.yml
   journalbeat.yml:
     name: "{{ docker_elastic_stack_name }}_journalbeat.j2.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/journalbeat/journalbeat.j2.yml
