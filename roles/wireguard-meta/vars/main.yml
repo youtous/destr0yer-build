@@ -1,0 +1,5 @@
+---
+wireguard_combined_server_interfaces: "{{ wireguard_servers | map(attribute='interface') | list }}"
+wireguard_combined_client_interfaces: "{{ wireguard_clients | map(attribute='interface') | list }}"
+wireguard_combined_interfaces: "{{ wireguard_combined_server_interfaces + wireguard_combined_client_interfaces }}"
+...

@@ -1,5 +1,12 @@
 ---
 # This role configures multiple wireguard clients / server on the same host
+- name: Verify no duplicates in wireguard interfaces
+  assert:
+    that: >
+      wireguard_combined_interfaces | count
+      ==
+      wireguard_combined_interfaces | unique | count
+    msg: "wireguard interfaces must not contain duplicates"
 
 - name: Setup wireguard servers
   include_role:

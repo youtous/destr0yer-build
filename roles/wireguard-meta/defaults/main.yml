@@ -45,5 +45,5 @@ wireguard_clients: []
 #    preshared_key: ""
 
 # list of wireguard interfaces to monitor with monit
-wireguard_monit_interfaces:  "{{ ((wireguard_servers | map(attribute='interface') | list) + (wireguard_clients | map(attribute='interface') | list)) | unique }}"
+wireguard_monit_interfaces:  "{{ wireguard_combined_interfaces }}"
 ...
