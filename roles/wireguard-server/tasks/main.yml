@@ -6,7 +6,7 @@
 - name: Ensure wireguard keys are defined
   fail:
     msg: Keys must be defined using wg genkey. No key provided.
-  when: (wireguard_server_public_key is not defined or wireguard_server_public_key|length == 0) or (wireguard_server_private_key is not defined or wireguard_server_private_key|length == 0)
+  when: (wireguard_server.public_key is not defined or wireguard_server.public_key|length == 0) or (wireguard_server.private_key is not defined or wireguard_server.private_key|length == 0)
 
 - name: Ensure wireguard configuration directory exists
   become: yes
@@ -26,7 +26,7 @@
     group: root
     mode: u=rwx,g=,o=
   with_items:
-    - { src: wg.conf.j2, dest: "{{ wireguard_interface }}.conf" }
+    - { src: wg.conf.j2, dest: "{{ wireguard_server.interface }}.conf" }
   notify:
     - restart wireguard
 

@@ -75,12 +75,30 @@ mariadb_databases:
 # allow VPN clients to access DNS
 dns_allowed_hosts: "{{ local_docker_ips + wireguard_server_address }}"
 
-wireguard_server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc=" # private in vault
-wireguard_server_port: "1990"
-wireguard_server_address:
-  - 10.99.99.1/24
-  - fdc9:281f:04d7:9ee9::1/64
 wireguard_server_external_interface: eth0
+wireguard_servers:
+  - interface: wg0
+    addresses: # server address + network
+      - 10.99.99.1/24
+      - fdc9:281f:04d7:9ee9::1/64
+    port: "1990"
+    mtu: ""
+    public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc="
+    private_key: "{{ wireguard_server_private_key }}"
+    restrict_ips:
+      - "any"
+    peers: "{{ wireguard_server_peers }}"
+    pre_up: []
+    pre_down: []
+    post_up:
+      - sysctl -w net.ipv4.ip_forward=1
+      - sysctl -w net.ipv6.conf.all.forwarding=1
+      - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+    post_down:
+      - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+
 # required for VPN server acting as a router
 ipv4_ip_forwarding: "1"
 ipv6_ip_forwarding: "1"
