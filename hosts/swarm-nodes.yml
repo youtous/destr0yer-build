@@ -8,15 +8,13 @@ primary_manager:
 
 # Primary manager to setup an swarmprom on the cluster
 primary_manager_swarmprom:
-  hosts:
-    heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
 
 # Primary manager to setup an elastic cluster
 primary_manager_elastic:
   hosts:
     heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
 
-# redirect logs from docker using a docker container (logspout) to elastic cluster
+# redirect logs from docker using a docker container (logspout) to elastic cluster <not used anymore/deprcated>
 primary_manager_logging_elastic:
 
 # redirect machine logs to elastic cluster (including docker)
