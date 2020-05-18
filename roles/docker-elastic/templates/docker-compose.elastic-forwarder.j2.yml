@@ -116,12 +116,12 @@ configs:
 {% for pipeline in logstash_pipeline_files %}
   pipeline_{{ pipeline }}:
     name: "{{ docker_elastic_stack_name }}_{{ pipeline }}-${DEPLOY_TIMESTAMP}"
-    file: "./config/logstash/pipeline-main/{{ pipeline }}"
+    file: "./config/logstash/pipeline/{{ pipeline }}"
 {% endfor %}
 {% for grok in logstash_pipeline_patterns %}
   pattern_{{ grok }}:
     name: "{{ docker_elastic_stack_name }}_{{ grok }}-${DEPLOY_TIMESTAMP}"
-    file: "./config/logstash/pipeline-main/patterns.d/{{ grok }}"
+    file: "./config/logstash/pipeline/patterns.d/{{ grok }}"
 {% endfor %}
 
 secrets:
