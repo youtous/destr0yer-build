@@ -23,8 +23,16 @@
     group: root
     mode: u=rw,g=r,o=r
   with_items:
-    - empty.conf # used only by logwatch
     - fail2ban.conf
+
+- name: Create logwatch empty file (used when Journalctl)
+  become: yes
+  file:
+    path: /etc/logwatch/empty
+    state: touch
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
 
 - name: Setup Logwatch
   become: yes
