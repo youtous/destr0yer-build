@@ -12,6 +12,10 @@ Pin: release o=Debian,a=stable-updates
 Pin-Priority: 500
 
 Package: *
+Pin: release a=testing
+Pin-Priority: 250
+
+Package: *
 Pin: release o=Debian,a=buster-backports
 Pin-Priority: 100
 

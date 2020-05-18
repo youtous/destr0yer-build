@@ -1,32 +1,35 @@
 ---
-# This role contains the default policy for logrotate
-- name: Include default vars
-  include_vars: default.yml
+# This role contains the default policy for logwatch
+- name: Install logwatch
+  import_tasks: install.yml
 
-- name: Install cron
-  apt:
-    pkg: cron
-    state: present
-
-- name: Enable cron
-  service:
-    name: cron
-    state: started
-    enabled: yes
-
-- name: Override kernel.conf service | Remove networking operation
+- name: Override logwatch conf service
   become: yes
   copy:
-    src: files/services/kernel.conf
-    dest: /etc/logwatch/conf/services/kernel.conf
+    src: "files/services/{{ item }}"
+    dest: "/etc/logwatch/conf/services/{{ item }}"
     owner: root
     group: root
     mode: u=rw,g=r,o=r
+  with_items:
+    - kernel.conf
+    - fail2ban.conf
+
+- name: Override logwatch conf logfiles
+  become: yes
+  copy:
+    src: "files/logfiles/{{ item }}"
+    dest: "/etc/logwatch/conf/logfiles/{{ item }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - empty.conf # used only by logwatch
 
 - name: Setup Logwatch
   become: yes
   import_role:
     name: youtous.logwatch
   vars:
-    logwatch_email: "{{ logwatch_email }}"
-    logwatch_detail: "{{ logwatch_detail }}"
+    logwatch_email: "{{ logwatch_conf_email }}"
+    logwatch_detail: "{{ logwatch_conf_detail }}"

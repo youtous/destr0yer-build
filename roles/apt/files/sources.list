@@ -19,3 +19,8 @@ deb-src http://deb.debian.org/debian buster-updates main
 ## newer versions of some applications which may provide useful features.
 deb http://deb.debian.org/debian buster-backports main
 deb-src http://deb.debian.org/debian buster-backports main
+
+## Next release, used for cherry picking specific packages
+# Testing
+deb http://deb.debian.org/debian testing main
+deb-src http://deb.debian.org/debian testing main

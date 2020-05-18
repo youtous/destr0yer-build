@@ -1,0 +1,8 @@
+# https://wiki.debian.org/AptConfiguration
+# https://debian-facile.org/doc:systeme:apt:pinning
+
+Package: logwatch
+Pin: release a=testing
+Pin-Priority: 700
+
+
