@@ -87,10 +87,10 @@ services:
         - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
 {% endif %}
-      networks:
-        - stack
+    networks:
+      - stack
 {% if enable_logstash_webui %}
-        - {{ traefik_network }}
+      - {{ traefik_network }}
 {% endif %}
     healthcheck:
       test: curl -s http://localhost:8082 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
