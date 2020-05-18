@@ -19,15 +19,57 @@ relay_password: "{{ secret_relay_password }}"
 ### Begin of Wireguard client parameters ###
 
 # allow VPN clients to access DNS
+wireguard_clients:
+#  - interface: wg0
+#    name: "{{ hostname }}"
+#    addresses: # client address + network
+#      - 10.99.99.2/24
+#      - fdc9:281f:04d7:9ee9::2/64
+#    endpoint: "heaven-pascal.youtous.dv:1990" # vpn server address
+#    persistent_keepalive: "" # only used when behind a NAT
+#    mtu: "" # optional mtu
+#    allowed_ips: # which traffice to redirect to the vpn?
+#      - 0.0.0.0/0
+#      - ::/0 # route all traffic trougth the VPN
+#    dns: [] # optional DNS ips to use for this VPN
+#    server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc=" # public key of the server
+#    public_key: "VtgEDbhCLKhGMULdFxDliyccRwXv03r69lhY41gWhjA=" # client keys
+#    private_key: "{{ wireguard_client_private_key }}"
+#    preshared_key: "{{ wireguard_client_preshared_key }}"
 
-wireguard_client_public_key: "VtgEDbhCLKhGMULdFxDliyccRwXv03r69lhY41gWhjA=" # private in vault
-wireguard_client_server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc=" # private in vault
-wireguard_client_endpoint: "heaven-pascal.youtous.dv:1990"
-wireguard_client_address:
-  - 10.99.99.2/24
-  - fdc9:281f:04d7:9ee9::2/64
+  - interface: wg-elastic
+    name: "{{ hostname }}"
+    addresses: # client address + network
+      - 10.101.101.2/24
+    endpoint: "heaven-pascal.youtous.dv:1991" # vpn server address
+    persistent_keepalive: "" # only used when behind a NAT
+    mtu: "" # optional mtu
+    allowed_ips: # which traffic to redirect to the vpn?
+      - 10.101.101.0/24
+    dns: [] # optional DNS ips to use for this VPN
+    server_public_key: "PsC3chEjluFdDCH2DXZ2WfRMr0dcTx20l9oKRXwqVXI=" # public key of the server
+    public_key: "5HolfEsx3ZSrh+Tio8FE63y/LSOZV5Zqs6PsI5qRxgY=" # client keys
+    private_key: "{{ wireguard_elastic_client_private_key }}"
+    preshared_key: "{{ wireguard_elastic_client_preshared_key }}"
 
 ### End of Wireguard client parameters ###
+
+### Begin of Elastic forwarder simulation parameters ###
+journalbeat_output_server_address: "localhost"
+logspout_output_server_address: "localhost"
+metricbeat_output_server_address: "localhost"
+filebeat_output_server_address: "localhost"
+
+elastic_use_as_forwarder: true
+elastic_cluster_name: "roberval.dv"
+logstash_receiver_server_address: "10.101.101.1"
+logstash_receiver_server_port: "5064"
+elastic_logstash_destination: "{{ logstash_receiver_server_address }}:{{ logstash_receiver_server_port }}" # localhost:port address of logstash receiver
+logstash_client_forwarder_CA_certificate: "{{ logstash_CA_certificate }}" # CA shared with the logstash receiver, this is required when used as a forwarder
+logstash_client_forwarder_node_certificate: "{{ journalbeat_node_certificate }}"
+logstash_client_forwarder_node_private_key: "{{ journalbeat_node_private_key }}"
+
+### End of Elastic forwarder simulation parameters ###
 
 
 ### Begin of Backup strategy parameters ###

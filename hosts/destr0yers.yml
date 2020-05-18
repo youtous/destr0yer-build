@@ -51,12 +51,8 @@ backup_storage:
   hosts:
     heaven-pascal.youtous.dv:
 
-# hosts used as an WireGuard server
-wireguard_servers:
+# hosts using Wireguard
+wireguard_peers:
   hosts:
     heaven-pascal.youtous.dv:
-
-# hosts using a VPN WireGuard server
-wireguard_clients:
-#  hosts:
-#    heaven-roberval.youtous.dv: # disabled for tests only
+    heaven-roberval.youtous.dv:

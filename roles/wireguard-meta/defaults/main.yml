@@ -1,0 +1,49 @@
+---
+# wireguard interfaces used as a server provider
+wireguard_servers: []
+#  - interface: wg0
+#    addresses: # server address + network
+#      - 10.99.99.1/24
+#      - fdc9:281f:04d7:9ee9::1/64
+#    port: 1990
+#    mtu: ""
+#    public_key: ""
+#    private_key: ""
+#    restrict_ips:
+#      - "any"
+#    peers: [] # see wireguard-server role for details
+#      - name: "peerB"
+#        public_key: "PEER_B_PUBLIC_KEY"
+#        preshared_key: "SERVER-PEER_B-PRESHARED_KEY"
+#        allowed_ips:
+#          # The IP range that we may send packets to for this peer.
+#          - 10.99.99.2/32 # <---- /32 means only route traffic to 10.99.99.2 (client ip)
+#          - fdc9:281f:04d7:9ee9::2/128 # <---- /128 same
+#        #persistent_keepalive: "25" # only used when behind a NAT (https://www.wireguard.com/quickstart/)
+#    pre_up: []
+#    pre_down: []
+#    post_up: []
+#    post_down: []
+
+# wireguard interfaces used as a client user
+wireguard_clients: []
+#  - interface: wg1
+#    name: "peerB"
+#    addresses: # client address + network
+#      - 10.99.99.2/24
+#      - fdc9:281f:04d7:9ee9::2/64
+#    endpoint: "vpn.localhost.dv:1990" # vpn server address
+#    persistent_keepalive: "" # only used when behind a NAT
+#    mtu: "" # optional mtu
+#    allowed_ips: # which traffice to redirect to the vpn?
+#      - 0.0.0.0/0
+#      - ::/0 # route all traffic trougth the VPN
+#    dns: [] # optional DNS ips to use for this VPN
+#    server_public_key: "" # public key of the server
+#    public_key: "" # client keys
+#    private_key: ""
+#    preshared_key: ""
+
+# list of wireguard interfaces to monitor with monit
+wireguard_monit_interfaces:  "{{ wireguard_combined_interfaces }}"
+...

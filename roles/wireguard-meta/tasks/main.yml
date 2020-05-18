@@ -1,0 +1,36 @@
+---
+# This role configures multiple wireguard clients / server on the same host
+- name: Verify no duplicates in wireguard interfaces
+  assert:
+    that: >
+      wireguard_combined_interfaces | count
+      ==
+      wireguard_combined_interfaces | unique | count
+    msg: "wireguard interfaces must not contain duplicates"
+
+- name: Setup wireguard servers
+  include_role:
+    name: wireguard-server
+  vars:
+    wireguard_server: "{{ wg_server }}"
+  loop:  "{{ wireguard_servers|flatten(levels=1) }}"
+  loop_control:
+    loop_var: wg_server
+  no_log: true
+
+- name: Setup wireguard clients
+  include_role:
+    name: wireguard-client
+  vars:
+    wireguard_client: "{{ wg_client }}"
+  loop:  "{{ wireguard_clients|flatten(levels=1) }}"
+  loop_control:
+    loop_var: wg_client
+  no_log: true
+
+- name: Setup monit wireguard
+  include_role:
+    name: monit-wireguard
+  vars:
+    monit_wireguard_interfaces: "{{ wireguard_monit_interfaces }}"
+...

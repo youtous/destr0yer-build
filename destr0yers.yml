@@ -172,27 +172,15 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["database-clients", "database"]
 
-- name: Configure WireGuard servers
-  hosts: wireguard_servers
+- name: Configure WireGuard peers
+  hosts: wireguard_peers
   roles:
-    - wireguard-server
-    - monit-wireguard
+    - wireguard-meta
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["wireguard", "wireguard-server"]
-
-- name: Configure WireGuard clients
-  hosts: wireguard_clients
-  roles:
-    - wireguard-client
-    - monit-wireguard
-  vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["wireguard", "wireguard-client"]
+  tags: ["wireguard"]
 
 - name: Watch servers ips
   hosts: watch_ip

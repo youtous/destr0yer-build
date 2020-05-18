@@ -75,12 +75,61 @@ mariadb_databases:
 # allow VPN clients to access DNS
 dns_allowed_hosts: "{{ local_docker_ips + wireguard_server_address }}"
 
-wireguard_server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc=" # private in vault
-wireguard_server_port: "1990"
-wireguard_server_address:
-  - 10.99.99.1/24
-  - fdc9:281f:04d7:9ee9::1/64
 wireguard_server_external_interface: eth0
+wireguard_servers:
+  - interface: wg0
+    addresses: # server address + network
+      - 10.99.99.1/24
+      - fdc9:281f:04d7:9ee9::1/64
+    port: "1990"
+    mtu: ""
+    public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc="
+    private_key: "{{ wireguard_server_private_key }}"
+    restrict_ips:
+      - "any"
+    peers: "{{ wireguard_server_peers }}"
+    pre_up: []
+    pre_down: []
+    post_up:
+      - sysctl -w net.ipv4.ip_forward=1
+      - sysctl -w net.ipv6.conf.all.forwarding=1
+      - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+    post_down:
+      - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+
+  - interface: wg-elastic
+    addresses: # server address + network
+      - 10.101.101.1/24
+    port: "1991"
+    mtu: ""
+    public_key: "PsC3chEjluFdDCH2DXZ2WfRMr0dcTx20l9oKRXwqVXI="
+    private_key: "{{ wireguard_elastic_server_private_key }}"
+    restrict_ips:
+      - "192.168.100.11"
+    peers: "{{ wireguard_elastic_server_peers }}"
+    pre_up: []
+    pre_down: []
+    post_up:
+      - sysctl -w net.ipv4.ip_forward=1
+      # test it with `curl 10.101.101.1` from https://serverfault.com/questions/1005927/configure-wireguard-to-block-all-non-ssh-traffic
+      - iptables -F wireguard-filter-elastic || true # flush existing rules
+      - iptables -t filter -N wireguard-filter-elastic # create chain
+      # permit anything coming from or going to port 5064 (elastic)
+      - iptables -t filter -A wireguard-filter-elastic -p tcp --dport 1024:65535 --sport 5064 -m state --state ESTABLISHED -j ACCEPT
+      - iptables -t filter -A wireguard-filter-elastic -p tcp --sport 1024:65535 --dport 5064 -m state --state NEW,ESTABLISHED -j ACCEPT
+      # drop everything else
+      - iptables -t filter -A wireguard-filter-elastic -j DROP
+      # redirect the traffic to the dedicated chain
+      - iptables -t filter -I FORWARD -i %i -j wireguard-filter-elastic
+      - iptables -t filter -I FORWARD -o %i -j wireguard-filter-elastic
+    post_down: # cleanup
+      - iptables -t filter -D FORWARD -i %i -j wireguard-filter-elastic
+      - iptables -t filter -D FORWARD -o %i -j wireguard-filter-elastic
+      - iptables -F wireguard-filter-elastic
+      - iptables -X wireguard-filter-elastic
+
 # required for VPN server acting as a router
 ipv4_ip_forwarding: "1"
 ipv6_ip_forwarding: "1"
@@ -124,6 +173,8 @@ teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
 
 docker_external_interfaces: ["eth0", "eth1"]
 # list of nodes (ips) allowed to submit log data
+logstash_trough_vpn: ["10.101.101.2"] # vpn for logstash data exchange
+logstash_external_allowed_ip4s: "{{ local_docker_ips + logstash_trough_vpn }}"
 logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s }}" # allow docker + all nodes are allowed to send logs data, list can be completed
 # ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it
 

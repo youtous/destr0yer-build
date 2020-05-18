@@ -3,21 +3,21 @@
 - name: List existing wireguard UFW rules
   become: yes
   shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s{{ wireguard_server_port }}(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
+    ufw status numbered | grep -zoP '\[.*\]\s{{ wireguard_server.port }}(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_wirguard_rules
 
-- name: "UFW delete existing wireguard rules - tcp,udp/{{ wireguard_server_port }}"
+- name: "UFW delete existing wireguard rules - tcp,udp/{{ wireguard_server.port }}"
   become: yes
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_wirguard_rules.stdout_lines }}"
 
-- name: "UFW Allow wireguard networks - tcp,udp/{{ wireguard_server_port }}"
+- name: "UFW Allow wireguard networks - tcp,udp/{{ wireguard_server.port }}"
   become: yes
   ufw:
     rule: allow
-    port: "{{ wireguard_server_port }}"
+    port: "{{ wireguard_server.port }}"
     src: "{{ item }}"
-  with_items: "{{ wireguard_server_restrict_ips }}"
+  with_items: "{{ wireguard_server.restrict_ips }}"
 
 ...

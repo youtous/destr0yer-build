@@ -1,37 +1,37 @@
 [Interface]
-Address = {{ wireguard_server_address|join(', ') }}
-ListenPort = {{ wireguard_server_port }}
-PrivateKey = {{ wireguard_server_private_key }}
+Address = {{ wireguard_server.addresses|join(', ') }}
+ListenPort = {{ wireguard_server.port }}
+PrivateKey = {{ wireguard_server.private_key }}
 
-{% if wireguard_server_mtu is defined and (wireguard_server_mtu|length > 0)  %}
-MTU = {{ wireguard_server_mtu }}
+{% if wireguard_server.mtu is defined and (wireguard_server.mtu|length > 0)  %}
+MTU = {{ wireguard_server.mtu }}
 {% endif %}
 
-{% if wireguard_server_pre_up is defined and (wireguard_server_pre_up|length > 0)  %}
-{% for wg_cmd in wireguard_server_pre_up %}
+{% if wireguard_server.pre_up is defined and (wireguard_server.pre_up|length > 0)  %}
+{% for wg_cmd in wireguard_server.pre_up %}
 PreUp = {{ wg_cmd }}
 {% endfor %}
 {% endif %}
 
-{% if wireguard_server_pre_down is defined and (wireguard_server_pre_down|length > 0)  %}
-{% for wg_cmd in wireguard_server_pre_down %}
+{% if wireguard_server.pre_down is defined and (wireguard_server.pre_down|length > 0)  %}
+{% for wg_cmd in wireguard_server.pre_down %}
 PreDown = {{ wg_cmd }}
 {% endfor %}
 {% endif %}
 
-{% if wireguard_server_post_up is defined and (wireguard_server_post_up|length > 0)  %}
-{% for wg_cmd in wireguard_server_post_up %}
+{% if wireguard_server.post_up is defined and (wireguard_server.post_up|length > 0)  %}
+{% for wg_cmd in wireguard_server.post_up %}
 PostUp = {{ wg_cmd }}
 {% endfor %}
 {% endif %}
 
-{% if wireguard_server_post_down is defined and (wireguard_server_post_down|length > 0)  %}
-{% for wg_cmd in wireguard_server_post_down %}
+{% if wireguard_server.post_down is defined and (wireguard_server.post_down|length > 0)  %}
+{% for wg_cmd in wireguard_server.post_down %}
 PostDown = {{ wg_cmd }}
 {% endfor %}
 {% endif %}
 
-{% for peer in wireguard_server_peers %}
+{% for peer in wireguard_server.peers %}
 [Peer]
 # Peer {{ peer.name }}
 PublicKey = {{ peer.public_key }}
