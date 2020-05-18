@@ -21,7 +21,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attempts: 3
+        max_attempts: 5
       resources:
         limits:
           memory: "{{ elasticsearch_memory }}M"
@@ -65,6 +65,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 300s
 
   kibana:
     image: "amazon/opendistro-for-elasticsearch-kibana:{{ opendistro_version }}"
@@ -85,7 +86,7 @@ services:
       restart_policy:
         condition: on-failure
         delay: 30s
-        max_attempts: 3
+        max_attempts: 4
         window: 120s
       labels:
         - "traefik.frontend.rule=Host:{{ kibana_domain }}"
@@ -121,8 +122,9 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 300s
 
-  # forward kibana alerts using smtp
+# forward kibana alerts using smtp
   alerts-smtp-forwarder:
     image: "youtous/odfe-alerts-handler:latest"
     networks:
@@ -232,6 +234,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 300s
 
   journalbeat-setup:
     image: "docker.elastic.co/beats/journalbeat-oss:{{ elastic_version }}"
@@ -334,6 +337,7 @@ services:
       interval: 30s
       timeout: 15s
       retries: 5
+      start_period: 60s
 
 networks:
   stack: # encrypted if Swarm want to split services on managers
