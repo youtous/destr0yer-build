@@ -15,11 +15,11 @@ services:
         target: /usr/share/logstash/config/pipelines.yml
 {% for pipeline in logstash_pipeline_files %}
       - source: "pipeline_{{ pipeline }}"
-        target: "/usr/share/logstash/pipeline/{{ pipeline }}"
+        target: "/usr/share/logstash/pipeline-main/{{ pipeline }}"
 {% endfor %}
 {% for grok in logstash_pipeline_patterns %}
       - source: "pattern_{{ grok }}"
-        target: "/usr/share/logstash/pipeline/patterns.d/{{ grok }}"
+        target: "/usr/share/logstash/pipeline-main/patterns.d/{{ grok }}"
 {% endfor %}
     secrets:
       - source: logstash-rootCA.crt
@@ -62,6 +62,8 @@ services:
         limits:
           memory: "{{ logstash_memory }}M"
       labels:
+{% if enable_logstash_webui %}
+      labels:
         - "traefik.frontend.rule=Host:{{ logstash_domain }}"
         - traefik.enable=true
         - traefik.port=8080
@@ -83,11 +85,14 @@ services:
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
         # Auth => here we can configure access for other clusters to submit logs
-        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}" # todo : configure accounts for other services (other clusters)
-        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1" # todo : configure trusted cluster ips
-    networks:
-      - stack
-      - {{ traefik_network }}
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+{% endif %}
+      networks:
+        - stack
+{% if enable_logstash_webui %}
+        - {{ traefik_network }}
+{% endif %}
     healthcheck:
       test: curl -s http://localhost:8082 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
       interval: 30s
