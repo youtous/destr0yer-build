@@ -3,9 +3,26 @@
 - name: Remove unwanted sources.d
   become: yes
   file:
-    path: "/etc/apt/sources.d/{{ item }}"
+    path: "{{ apt_directory }}/sources.list.d/{{ item }}"
     state: absent
   with_items: "{{ apt_remove_sourcesd }}"
+
+- name: Remove patterns sources.d | listing
+  become: yes
+  find:
+    paths: "{{ apt_directory }}/sources.list.d"
+    hidden: yes
+    recurse: yes
+    file_type: any
+    patterns: "{{ apt_unwanted_sources_patterns }}"
+  register: sources_unwanted_apt_found
+
+- name: Remove unwanted sources.d | removing
+  become: yes
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ sources_unwanted_apt_found.files }}"
 
 - name: Copy sources.list
   become: yes
