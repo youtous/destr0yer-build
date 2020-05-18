@@ -112,6 +112,9 @@ configs:
   logstash.yml:
     name: "{{ docker_elastic_stack_name }}_logstash.j2.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/logstash/logstash.j2.yml
+  pipelines.yml:
+    name: "{{ docker_elastic_stack_name }}_pipelines.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/logstash/pipelines.j2.yml
 
 {% for pipeline in logstash_pipeline_files %}
   pipeline_{{ pipeline }}:
