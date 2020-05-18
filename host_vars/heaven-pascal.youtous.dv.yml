@@ -99,6 +99,21 @@ wireguard_servers:
       - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
       - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
 
+  - interface: wg-elastic
+    addresses: # server address + network
+      - 10.101.101.1/24
+    port: "1991"
+    mtu: ""
+    public_key: "PsC3chEjluFdDCH2DXZ2WfRMr0dcTx20l9oKRXwqVXI="
+    private_key: "{{ wireguard_elastic_server_private_key }}"
+    restrict_ips:
+      - "192.168.100.11"
+    peers: "{{ wireguard_elastic_server_peers }}"
+    pre_up: []
+    pre_down: []
+    post_up: []
+    post_down: []
+
 # required for VPN server acting as a router
 ipv4_ip_forwarding: "1"
 ipv6_ip_forwarding: "1"
