@@ -61,7 +61,6 @@ services:
       resources:
         limits:
           memory: "{{ logstash_memory }}M"
-      labels:
 {% if enable_logstash_webui %}
       labels:
         - "traefik.frontend.rule=Host:{{ logstash_domain }}"
