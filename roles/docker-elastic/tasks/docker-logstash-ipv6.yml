@@ -79,7 +79,7 @@
 
 - name: Allow nodes firewall - tcp/5064 (logstash external)
   become: yes
-  command: "ip6tables -I DOCKER-USER -i {{ item|quote }} -s {{ logstash_beats_external_allowed_ip6s|join(',') }} -p tcp -m conntrack --ctorigdstport 5064 --ctdir ORIGINAL -j ACCEPT"
+  command: "ip6tables -I DOCKER-USER -i {{ item|quote }} -s {{ logstash_external_allowed_ip6s|join(',') }} -p tcp -m conntrack --ctorigdstport 5064 --ctdir ORIGINAL -j ACCEPT"
   with_items: "{{ docker_external_interfaces }}"
 
 ## end of rules 5064

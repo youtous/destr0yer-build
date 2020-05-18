@@ -12,8 +12,8 @@ logstash_allowed_ip4s:  # /!\ set only ipv4
   - '172.18.0.0/16' # docker_gwbridge
 
 # a list of allowed ips to access logstash thought beats, it's used for external cluster submitting data
-logstash_beats_external_allowed_ip6s: []
-logstash_beats_external_allowed_ip4s:
+logstash_external_allowed_ip6s: []
+logstash_external_allowed_ip4s:
   - '172.17.0.0/16' # docker0
   - '172.18.0.0/16' # docker_gwbridge
 
