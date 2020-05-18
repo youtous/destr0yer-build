@@ -13,7 +13,6 @@
     mode: u=rw,g=r,o=r
   with_items:
     - kernel.conf
-    - fail2ban.conf
 
 - name: Override logwatch conf logfiles
   become: yes
@@ -25,6 +24,7 @@
     mode: u=rw,g=r,o=r
   with_items:
     - empty.conf # used only by logwatch
+    - fail2ban.conf
 
 - name: Setup Logwatch
   become: yes
