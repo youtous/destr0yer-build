@@ -28,5 +28,5 @@
     proto: tcp
     src: "{{ item }}"
     comment: 'backup client allowed'
-  with_items: "{{ backup_users | map(attribute='restrict_ips') | list | flatten | unique }}"
+  with_items: "{{ backup_users | json_query('[*].restrict_ips') | list | flatten | unique }}"
 ...
