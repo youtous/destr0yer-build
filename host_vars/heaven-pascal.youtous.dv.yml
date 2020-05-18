@@ -111,8 +111,24 @@ wireguard_servers:
     peers: "{{ wireguard_elastic_server_peers }}"
     pre_up: []
     pre_down: []
-    post_up: []
-    post_down: []
+    post_up:
+      - sysctl -w net.ipv4.ip_forward=1
+      # test it with `curl 10.101.101.1` from https://serverfault.com/questions/1005927/configure-wireguard-to-block-all-non-ssh-traffic
+      - iptables -F wireguard-filter-elastic || true # flush existing rules
+      - iptables -t filter -N wireguard-filter-elastic # create chain
+      # permit anything coming from or going to port 5064 (elastic)
+      - iptables -t filter -A wireguard-filter-elastic -p tcp --dport 1024:65535 --sport 5064 -m state --state ESTABLISHED -j ACCEPT
+      - iptables -t filter -A wireguard-filter-elastic -p tcp --sport 1024:65535 --dport 5064 -m state --state NEW,ESTABLISHED -j ACCEPT
+      # drop everything else
+      - iptables -t filter -A wireguard-filter-elastic -j DROP
+      # redirect the traffic to the dedicated chain
+      - iptables -t filter -I FORWARD -i %i -j wireguard-filter-elastic
+      - iptables -t filter -I FORWARD -o %i -j wireguard-filter-elastic
+    post_down: # cleanup
+      - iptables -t filter -D FORWARD -i %i -j wireguard-filter-elastic
+      - iptables -t filter -D FORWARD -o %i -j wireguard-filter-elastic
+      - iptables -F wireguard-filter-elastic
+      - iptables -X wireguard-filter-elastic
 
 # required for VPN server acting as a router
 ipv4_ip_forwarding: "1"
