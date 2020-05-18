@@ -27,6 +27,7 @@ services:
           memory: "{{ elasticsearch_memory }}M"
         reservations:
           memory: "{{ elasticsearch_memory_reservation }}M"
+{% if enable_elasticsearch_webui %}
       labels:
         - "traefik.frontend.rule=Host:{{ elasticsearch_domain }}"
         - traefik.enable=true
@@ -51,9 +52,12 @@ services:
         # Auth
         - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
         - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+{% endif %}
     networks:
       - stack
+{% if enable_elasticsearch_webui %}
       - {{ traefik_network }}
+{% endif %}
     volumes:
       - 'es_data:/usr/share/elasticsearch/data'
     healthcheck:
@@ -192,6 +196,7 @@ services:
       resources:
         limits:
           memory: "{{ logstash_memory }}M"
+{% if enable_logstash_webui %}
       labels:
         - "traefik.frontend.rule=Host:{{ logstash_domain }}"
         - traefik.enable=true
@@ -214,11 +219,14 @@ services:
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
         # Auth => here we can configure access for other clusters to submit logs
-        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}" # todo : configure accounts for other services (other clusters)
-        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1" # todo : configure trusted cluster ips
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+{% endif %}
     networks:
       - stack
+{% if enable_logstash_webui %}
       - {{ traefik_network }}
+{% endif %}
     healthcheck:
       test: curl -s http://localhost:8082 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
       interval: 30s
