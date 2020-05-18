@@ -13,6 +13,7 @@
     mode: u=rw,g=r,o=r
   with_items:
     - kernel.conf
+    - fail2ban.conf
 
 - name: Override logwatch conf logfiles
   become: yes
@@ -27,9 +28,12 @@
 
 - name: Create logwatch empty file (used when Journalctl)
   become: yes
-  file:
-    path: /etc/logwatch/empty
-    state: touch
+  copy:
+    dest: /etc/logwatch/empty
+    content: |
+      this file is containing
+      empty content
+      for journalctl processing
     owner: root
     group: root
     mode: u=rw,g=r,o=r
