@@ -23,22 +23,27 @@
     dest: "{{ nextcloud_compose_file_dest }}"
     mode: u=rw,g=,o=
 
-- name: Copy Nextcloud stack nginx conf
-  template:
-    src: templates/nginx.conf
-    dest: "{{ nextcloud_compose_file_dest_directory }}/nginx.conf"
-    mode: u=rw,g=,o=
+- name: Ensure Nextcloud config directories exists
+  file:
+    state: directory
+    path: "{{ nextcloud_compose_file_dest_directory }}/{{ item }}"
+  with_items:
+    - php-fpm.d
 
-- name: Copy Nextcloud php additional config
+- name: Copy Nextcloud configs
   template:
     src: "templates/{{ item.src }}"
     dest: "{{ nextcloud_compose_file_dest_directory }}/{{ item.dest }}"
     mode: u=rw,g=,o=
   with_items:
+    - src: nginx.conf
+      dest: nginx.conf
     - src: url-cli.config.php
       dest: url-cli.config.php
     - src: logs.config.php
       dest: logs.config.php
+    - src: php-fpm.d/www2.conf
+      dest: php-fpm.d/www2.conf
 
 - name: Fail2ban for nextcloud
   import_tasks: fail2ban.yml

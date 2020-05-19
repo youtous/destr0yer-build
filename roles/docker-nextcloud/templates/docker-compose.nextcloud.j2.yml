@@ -10,6 +10,9 @@ configs:
   url-cli.config.php:
     name: "{{ nextcloud_stack_name }}_url-cli.config.php-${DEPLOY_TIMESTAMP}"
     file: "./url-cli.config.php"
+  www2.conf:
+    name: "{{ nextcloud_stack_name }}_www2.conf-${DEPLOY_TIMESTAMP}"
+    file: "./php-fpm.d/www2.conf"
 
 services:
   nextcloud: &nextcloud
@@ -29,6 +32,8 @@ services:
         target: /tmp/config/logs.config.php
       - source: url-cli.config.php
         target: /tmp/config/url-cli.config.php
+      - source: www2.conf
+        target: /usr/local/etc/php-fpm.d/www2.conf
     logging:
       options:
         # this tag is used by fail2ban using `journalctl CONTAINER_TAG=nextcloud`
