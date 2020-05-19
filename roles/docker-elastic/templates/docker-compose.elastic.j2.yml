@@ -19,7 +19,7 @@ services:
           - node.role == manager
       restart_policy:
         condition: on-failure
-        delay: 5s
+        delay: 30s
         window: 30s
         max_attempts: 5
       resources:
@@ -253,7 +253,7 @@ services:
           - node.role == manager
       restart_policy:
         condition: on-failure
-        delay: 5s
+        delay: 30s
         window: 300s
         max_attempts: 0 # wait elastic and kibana to be up
     networks:
@@ -276,7 +276,7 @@ services:
           - node.role == manager
       restart_policy:
         condition: on-failure
-        delay: 5s
+        delay: 30s
         window: 300s
         max_attempts: 0 # wait elastic and kibana to be up
     networks:
@@ -299,7 +299,7 @@ services:
           - node.role == manager
       restart_policy:
         condition: on-failure
-        delay: 5s
+        delay: 30s
         window: 300s
         max_attempts: 0 # wait elastic and kibana to be up
     networks:
@@ -324,7 +324,7 @@ services:
           - node.role == manager
       restart_policy:
         condition: on-failure
-        delay: 5s
+        delay: 30s
         window: 300s
         max_attempts: 0
       resources:
