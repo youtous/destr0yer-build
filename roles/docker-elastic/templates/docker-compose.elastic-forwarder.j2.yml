@@ -61,6 +61,8 @@ services:
       resources:
         limits:
           memory: "{{ logstash_memory }}M"
+        reservations:
+          memory: "{{ logstash_memory_reservation }}M"
 {% if enable_logstash_webui %}
       labels:
         - "traefik.frontend.rule=Host:{{ logstash_domain }}"

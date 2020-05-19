@@ -31,6 +31,10 @@ logstash_external_allowed_ip4s:
 # /!\ less than 350 leads to startup issues
 elasticsearch_memory: 1024
 logstash_memory: 512
+# elasticsearch_memory_reservation: "{{ (elasticsearch_memory|int / 2) | round }}"
+# full memory for stability
+elasticsearch_memory_reservation: "{{ elasticsearch_memory }}"
+logstash_memory_reservation: "{{ logstash_memory }}"
 
 # name of the traefik network
 traefik_network: "traefik-public"
