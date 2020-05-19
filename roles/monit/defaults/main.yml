@@ -61,6 +61,13 @@ monit_mailserver_password: ""
 monit_mailserver_encryption: "" # https://mmonit.com/monit/documentation/monit.html#SSL-OPTIONS
 monit_mailserver_timeout: "60"
 
+# alert limits
+monit_swap_usage_alert: "70%"
+monit_memory_usage_alert: "80%"
+monit_cpu_user_usage_alert: "80%"
+monit_cpu_system_usage_alert: "20%"
+monit_cpu_wait_usage_alert: "20%"
+
 # Monit should not be exposed
 monit_port: 2812
 monit_address: localhost
