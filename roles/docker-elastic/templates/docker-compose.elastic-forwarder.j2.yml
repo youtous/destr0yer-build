@@ -92,12 +92,12 @@ services:
 {% if enable_logstash_webui %}
       - {{ traefik_network }}
 {% endif %}
-    healthcheck:
-      test: curl -s http://localhost:8082 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 300s
+#    healthcheck: # temp disabled, due to the huge resources consumed by elastic, sometimes it's stuck
+#      test: curl -s http://localhost:8082 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
+#      start_period: 300s
 
 networks:
   stack: # encrypted if Swarm want to split services on managers
