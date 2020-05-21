@@ -21,7 +21,7 @@ services:
         condition: on-failure
         delay: 30s
         window: 30s
-        max_attempts: 5
+        max_attempts: 0 # unlimited restarts
       resources:
         limits:
           memory: "{{ elasticsearch_memory }}M"
@@ -60,12 +60,12 @@ services:
 {% endif %}
     volumes:
       - 'es_data:/usr/share/elasticsearch/data'
-#    healthcheck: # temp disabled, due to the huge resources consumed by elastic, sometimes it's stuck
-#      test: curl -s http://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
-#      start_period: 300s
+    healthcheck:
+      test: curl --silent --output --fail http://localhost:9200 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
 
   kibana:
     image: "amazon/opendistro-for-elasticsearch-kibana:{{ opendistro_version }}"
@@ -86,7 +86,7 @@ services:
       restart_policy:
         condition: on-failure
         delay: 30s
-        max_attempts: 4
+        max_attempts: 0 # unlimited restarts
         window: 120s
       labels:
         - "traefik.frontend.rule=Host:{{ kibana_domain }}"
@@ -118,7 +118,7 @@ services:
       - stack
       - {{ traefik_network }}
     healthcheck:
-      test: curl -s http://localhost:5601 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      test: curl --silent --output --fail http://localhost:5601 || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -194,7 +194,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attempts: 3
+        max_attempts: 0 # unlimited restarts
       resources:
         limits:
           memory: "{{ logstash_memory }}M"
@@ -231,12 +231,12 @@ services:
 {% if enable_logstash_webui %}
       - {{ traefik_network }}
 {% endif %}
-#    healthcheck: # temp disabled, due to the huge resources consumed by elastic, sometimes it's stuck
-#      test: curl -s http://localhost:8082 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
-#      start_period: 300s
+    healthcheck:
+      test: curl --silent --output --fail http://localhost:9600 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
 
   journalbeat-setup:
     image: "docker.elastic.co/beats/journalbeat-oss:{{ elastic_version }}"
