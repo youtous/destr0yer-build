@@ -1,0 +1,7 @@
+# from https://wiki.debian-fr.xyz/Monit
+
+check program filebeat with path "/usr/bin/systemctl is-active --quiet filebeat.service"
+  if status != 0 then alert
+  start program = "/usr/bin/systemctl start filebeat.service"
+  stop  program = "/usr/bin/systemctl stop filebeat.service"
+  if 5 restarts within 5 cycles then timeout

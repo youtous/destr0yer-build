@@ -26,6 +26,8 @@
   roles:
     - elastic-journalbeat # output system logs from journalctl to elastic cluster, docker logs will be parsed too (docker not required on the host)
     - elastic-filebeat # output system logs such as /var/log/auth.log
+    - monit-journalbeat # monitor
+    - monit-filebeat
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -36,6 +38,7 @@
   hosts: all_metric_elastic
   roles:
     - elastic-metricbeat # collect metrics of the node, docker or other processes (docker not required on the host)
+    - monit-metricbeat
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
