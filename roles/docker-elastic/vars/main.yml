@@ -13,8 +13,10 @@ logstash_pipeline_files:
   - 55-filter-journalbeat-after.j2.conf
   - 55-filter-syslog-after.j2.conf
   - 60-filter-beats.j2.conf
+  - 60-filter-external.j2.conf
   - 60-filter-internal.j2.conf
-  - 65-filter-remove-tags.j2.conf
+  - 70-filter-export-external.j2.conf
+  - 85-filter-remove-tags.j2.conf
   - 90-output.j2.conf
   #- 399-output-debug.j2.conf
 
