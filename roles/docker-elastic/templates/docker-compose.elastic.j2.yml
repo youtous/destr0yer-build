@@ -65,7 +65,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 300s
+      start_period: 600s
 
   kibana:
     image: "amazon/opendistro-for-elasticsearch-kibana:{{ opendistro_version }}"
@@ -122,7 +122,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 300s
+      start_period: 600s
 
 # forward kibana alerts using smtp
   alerts-smtp-forwarder:
@@ -236,7 +236,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 300s
+      start_period: 600s
 
   journalbeat-setup:
     image: "docker.elastic.co/beats/journalbeat-oss:{{ elastic_version }}"
