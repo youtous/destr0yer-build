@@ -8,6 +8,62 @@ Remember to set a `elastic_cluster_name` for identifying the cluster data.
 ### Use it with a VPN
 Use a VPN for `receiver <<----[VPN]--- forwarder`
 
+### Define index-patterns
+
+_delete can be done in settings > saved objects > filter by pattern_
+In elastic console, add: 
+```http request
+# delete existing indices
+DELETE /docker-*
+
+# ensure no mapping exists
+GET /docker-*/_mapping/field/source.geo
+
+# define new mapping
+PUT _template/docker-
+{
+  "index_patterns": ["docker-*"],
+  "mappings": {
+    "properties": {
+      "host.name": {
+        "type": "keyword"
+      },
+      "host.hostname": {
+        "type": "keyword"
+      },
+      "cluster.name": {
+        "type": "keyword"
+      },
+      "source.geo": {
+          "dynamic": true,
+          "properties" : {
+            "ip": { "type": "ip" },
+            "location" : { "type" : "geo_point" },
+            "latitude" : { "type" : "half_float" },
+            "longitude" : { "type" : "half_float" }
+          }
+      },
+      "geoip": {
+         "dynamic": true,
+          "properties" : {
+            "ip": { "type": "ip" },
+            "location" : { "type" : "geo_point" },
+            "latitude" : { "type" : "half_float" },
+            "longitude" : { "type" : "half_float" }
+          }
+        }
+      }
+    }
+  }
+}
+```
+2. Create the pattern using the interface
+-  `docker-*`, `id=f7f65d60-9946-11ea-ad57-f9074afbf2d7`
+-  `journalbeat-*`, `id=f152ec60-9948-11ea-ad57-f9074afbf2d7`
+-  `metricbeat-*`, `id=metricbeat-*`
+-  `heartbeat-*`, `id=fca68d10-9948-11ea-ad57-f9074afbf2d7`
+-  `filebeat-*`, `id=filebeat-*`
+
 ### Alerts email
 
 1. Add the webhook:
@@ -37,7 +93,9 @@ Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the i
 - Period end: {{ctx.periodEnd}}
 ```
 
-### 
+###  Index
+
+Refresh index mapping for enabling keywords etc
 
 ### SSL Monitoring
 
