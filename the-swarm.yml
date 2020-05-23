@@ -61,6 +61,16 @@
       meta: refresh_inventory
   tags: ["docker-swarm-init-cleanup"]
 
+- name: Integrate fail2ban for docker (recidive)
+  hosts: all
+  roles:
+    - docker-fail2ban
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-fail2ban"]
+
 - name: Setup auto-restore DOCKER-USER chain
   hosts: all
   roles:
