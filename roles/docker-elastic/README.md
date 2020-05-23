@@ -43,6 +43,15 @@ PUT _template/docker-
             "longitude" : { "type" : "half_float" }
           }
       },
+      "fail2ban_bgp": {
+          "dynamic": true,
+          "properties" : {
+            "ip": { "type": "ip" },
+            "location" : { "type" : "geo_point" },
+            "latitude" : { "type" : "half_float" },
+            "longitude" : { "type" : "half_float" }
+          }
+      },
       "geoip": {
          "dynamic": true,
           "properties" : {
