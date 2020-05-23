@@ -46,4 +46,8 @@ consul_ui_domain: "consul.{{ hostname }}"
 # So, you probably want to set CONSUL_REPLICAS=3 or CONSUL_REPLICAS=5, but not more.
 # It can leads to quorum vote issue if menuconfigure
 consul_replicas: 1
+
+# docker restart policies
+traefik_max_attempts: 9
+consul_max_attempts: 9
 ...
