@@ -30,4 +30,16 @@
         port: http,https
         backend: systemd
         chain: DOCKER-USER
+
+
+# fail2ban DOCKER-USER
+- name: Always restart fail2ban for generating DOCKER-USER chain
+  become: yes
+  systemd:
+    name: fail2ban
+    state: restarted
+
+- name: Save DOCKER-USER rules made by fail2ban
+  import_role:
+    name: docker-user-chain
 ...
