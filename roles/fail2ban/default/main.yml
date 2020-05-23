@@ -24,3 +24,5 @@ fail2ban_default_services:
     banaction: "{{ fail2ban_recidive_banaction }}"
 
   - name: pam-generic
+
+fail2ban_services: "{{ fail2ban_default_services|default([]) + fail2ban_additional_services|default([]) }}"
