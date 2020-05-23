@@ -7,23 +7,6 @@ fail2ban_logtarget: "SYSLOG" # log to systemd
 # fail2ban_pidfile: /var/run/fail2ban/fail2ban.pid
 # fail2ban_dbpurgeage: 86400
 
-# default services watched by fail2ban
-fail2ban_default_services:
-  - name: sshd
-    mode: aggressive
-    port: ssh
-    bantime: 3600
-    maxretry: 3
-    findtime: 3600
-  - name: recidive
-    backend: systemd # https://github.com/fail2ban/fail2ban/issues/1283#issuecomment-223794740
-    bantime: "{{ fail2ban_recidive_bantime }}"
-    findtime: "{{ fail2ban_recidive_findtime }}"
-    maxretry: "{{ fail2ban_recidive_maxretry }}"
-    banaction: "{{ fail2ban_recidive_banaction }}"
-
-  - name: pam-generic
-
 # fail2ban_sendername: 'Fail2ban'
 fail2ban_services: "{{ fail2ban_default_services|default([]) + fail2ban_additional_services|default([]) }}"
 # all entrypoints are allowed
