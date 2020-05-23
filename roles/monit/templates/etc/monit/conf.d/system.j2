@@ -1,8 +1,8 @@
 
 # System load checking
 check system {{ hostname }}
-    if loadavg (5min) > {{ ansible_processor_cores * 1.5 }} for 5 cycles then alert
-    if loadavg (15min) > {{ ansible_processor_cores }} for 5 cycles then alert
+    if loadavg (5min) > {{ monit_load_avg_5min_alert }} for 5 cycles then alert
+    if loadavg (15min) > {{ monit_load_avg_15min_alert }} for 5 cycles then alert
     if memory usage > {{ monit_memory_usage_alert }} for 5 cycles then alert
     if swap usage > {{ monit_swap_usage_alert }} for 5 cycles then alert
     if cpu usage (user) > {{ monit_cpu_user_usage_alert }} for 5 cycles then alert

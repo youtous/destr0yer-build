@@ -67,6 +67,9 @@ monit_memory_usage_alert: "80%"
 monit_cpu_user_usage_alert: "80%"
 monit_cpu_system_usage_alert: "20%"
 monit_cpu_wait_usage_alert: "20%"
+monit_load_avg_5min_alert: "{{ ansible_processor_cores * 1.5 }}"
+monit_load_avg_15min_alert: "{{ ansible_processor_cores }}"
+
 
 # Monit should not be exposed
 monit_port: 2812
