@@ -32,6 +32,19 @@
     - restart fail2ban
   when: ansible_os_family == "Debian" and ansible_lsb.major_release|int < 10
 
+- name: Copy fail2ban configurations files
+  become: yes
+  copy:
+    src: "files/{{ item.src }}"
+    dest: "/etc/fail2ban/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - restart fail2ban
+  with_items:
+    - { src: filter.d/recidive.conf, dest: filter.d/recidive.conf }
+
 - name: Monit fail2ban
   import_role:
     name: monit-fail2ban

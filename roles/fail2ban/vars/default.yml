@@ -17,7 +17,6 @@ fail2ban_default_services:
     findtime: 3600
   - name: recidive
     backend: systemd # https://github.com/fail2ban/fail2ban/issues/1283#issuecomment-223794740
-    journalmatch:
   - name: pam-generic
 
 # fail2ban_sendername: 'Fail2ban'
