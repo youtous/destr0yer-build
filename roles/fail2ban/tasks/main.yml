@@ -43,7 +43,7 @@
   notify:
     - restart fail2ban
   with_items:
-    - { src: filter.d/recidive.conf, dest: filter.d/recidive.conf }
+    - { src: filter.d/recidive.conf, dest: filter.d/recidive.conf } # update from upstream, default debian don't match
 
 - name: Monit fail2ban
   import_role:
