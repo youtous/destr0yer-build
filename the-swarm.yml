@@ -61,6 +61,16 @@
       meta: refresh_inventory
   tags: ["docker-swarm-init-cleanup"]
 
+- name: Setup auto-restore DOCKER-USER chain
+  hosts: all
+  roles:
+    - docker-user-chain
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-user-chain"]
+
 - name: Setup docker backup tools
   hosts: all
   roles:

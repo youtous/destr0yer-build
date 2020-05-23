@@ -1,0 +1,24 @@
+---
+
+## save rules across reboots
+- name: Export DOCKER-USER ip6tables chain
+  become: yes
+  shell: ip6tables -S DOCKER-USER
+  register: ip6tables_docker_user_rules
+  changed_when: false
+
+- name: Save DOCKER-USER ip6tables rules
+  become: yes
+  blockinfile:
+    create: yes
+    dest: "/etc/iptables.docker-user.rules.v6"
+    block: |
+      *filter
+
+      {{ ip6tables_docker_user_rules.stdout }}
+
+      COMMIT
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv6 DOCKER-USER before rules ###"
+  when: ip6tables_docker_user_rules is not failed
+
+...
