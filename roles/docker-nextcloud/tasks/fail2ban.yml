@@ -24,4 +24,5 @@
       - name: nextcloud
         port: http,https
         backend: systemd
+        chain: DOCKER-USER
 ...

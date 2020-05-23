@@ -24,7 +24,10 @@
       - name: traefik-auth
         port: http,https
         backend: systemd
+        chain: DOCKER-USER
+
       - name: traefik-botsearch
         port: http,https
         backend: systemd
+        chain: DOCKER-USER
 ...

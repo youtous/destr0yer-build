@@ -32,28 +32,33 @@
         mode: aggressive
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        chain: DOCKER-USER
 
       - name: pam-generic-docker
         port: '%(banaction_allports)s'
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        chain: DOCKER-USER
 
       - name: postfix-docker
         port: smtp,submission,465
         mode: aggressive
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        chain: DOCKER-USER
 
       - name: postfix-sasl-docker # special fix from docker-mailserver
         port: smtp,submission,465
         mode: aggressive
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        chain: DOCKER-USER
 
       - name: sieve-docker
         port: smtp,465,submission,sieve
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        chain: DOCKER-USER
 
 - name: Add rainloop filters to fail2ban
   become: yes
@@ -78,5 +83,6 @@
         port: http,https
         maxretry: "{{ rainloop_f2b_max_retries|default(6) }}"
         backend: systemd
+        chain: DOCKER-USER
   when: rainloop_enabled
 ...
