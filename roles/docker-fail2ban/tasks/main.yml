@@ -7,5 +7,9 @@
       - name: recidive-docker # copy of recidive jail
         filter: recidive
         backend: systemd
+        bantime: "{{ fail2ban_recidive_bantime }}"
+        findtime: "{{ fail2ban_recidive_findtime }}"
+        maxretry: "{{ fail2ban_recidive_maxretry }}"
+        banaction: "{{ fail2ban_recidive_banaction }}"
         chain: DOCKER-USER
 ...

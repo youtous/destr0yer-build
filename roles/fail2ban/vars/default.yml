@@ -17,6 +17,11 @@ fail2ban_default_services:
     findtime: 3600
   - name: recidive
     backend: systemd # https://github.com/fail2ban/fail2ban/issues/1283#issuecomment-223794740
+    bantime: "{{ fail2ban_recidive_bantime }}"
+    findtime: "{{ fail2ban_recidive_findtime }}"
+    maxretry: "{{ fail2ban_recidive_maxretry }}"
+    banaction: "{{ fail2ban_recidive_banaction }}"
+
   - name: pam-generic
 
 # fail2ban_sendername: 'Fail2ban'

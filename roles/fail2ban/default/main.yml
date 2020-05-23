@@ -1,3 +1,9 @@
 ---
 # additional services that you would to define, see https://github.com/Oefenweb/ansible-fail2ban
 fail2ban_additional_services: []
+
+# recidive parameters
+fail2ban_recidive_bantime: "1d"
+fail2ban_recidive_findtime: "1d"
+fail2ban_recidive_maxretry: 5
+fail2ban_recidive_banaction: "%(banaction_allports)s"
