@@ -113,6 +113,12 @@ Add all ports to monitoring
 docker run --rm -ti --network=host drwetter/testssl.sh:3.1dev localhost:5000
 ```
 
+## Elastic objects
+
+Kibana objects to imports are located in `elastic-objects`
+
+- Heartbeat from https://github.com/elastic/uptime-contrib/blob/master/dashboards/http_dashboard.json
+
 ### Heartbeat monitor
 
 Check url availability using `elastic_heartbeat_urls: [""https://google.com"]`
