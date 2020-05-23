@@ -8,5 +8,4 @@
         filter: recivide
         backend: systemd
         chain: DOCKER-USER
-  when: rainloop_enabled
 ...
