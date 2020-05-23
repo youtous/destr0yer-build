@@ -14,4 +14,8 @@
   systemd:
     name: fail2ban
     state: restarted
+  notify: register fail2ban chain
+
+- name: Save fail2ban chain in docker-user
+  include: save-docker-user-chain.yml
 ...
