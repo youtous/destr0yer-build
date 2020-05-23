@@ -5,7 +5,7 @@
   vars:
     fail2ban_services:
       - name: recidive-docker # copy of recidive jail
-        filter: recivide
+        filter: recidive
         backend: systemd
         chain: DOCKER-USER
 ...
