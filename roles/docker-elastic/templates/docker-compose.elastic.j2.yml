@@ -146,7 +146,7 @@ services:
         condition: on-failure
         delay: 5s
         window: 30s
-        max_attempts: 3
+        max_attempts: 0 # unlimited restarts
 
   # process logs from everywhere
   logstash:
