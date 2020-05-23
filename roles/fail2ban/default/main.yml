@@ -1,28 +1,3 @@
 ---
 # additional services that you would to define, see https://github.com/Oefenweb/ansible-fail2ban
 fail2ban_additional_services: []
-
-# recidive parameters
-fail2ban_recidive_bantime: "1d"
-fail2ban_recidive_findtime: "1d"
-fail2ban_recidive_maxretry: 5
-fail2ban_recidive_banaction: "%(banaction_allports)s"
-
-# default services watched by fail2ban
-fail2ban_default_services:
-  - name: sshd
-    mode: aggressive
-    port: ssh
-    bantime: 3600
-    maxretry: 3
-    findtime: 3600
-  - name: recidive
-    backend: systemd # https://github.com/fail2ban/fail2ban/issues/1283#issuecomment-223794740
-    bantime: "{{ fail2ban_recidive_bantime }}"
-    findtime: "{{ fail2ban_recidive_findtime }}"
-    maxretry: "{{ fail2ban_recidive_maxretry }}"
-    banaction: "{{ fail2ban_recidive_banaction }}"
-
-  - name: pam-generic
-
-fail2ban_services: "{{ fail2ban_default_services|default([]) + fail2ban_additional_services|default([]) }}"
