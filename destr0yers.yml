@@ -45,7 +45,6 @@
     - ssh # define OpenSSH policy
     - ssh-user-keys # deploy ssh keys on the server
     - logrotate # manage log rotation
-    - monit # monitor server using Monit
     - iptables-firewall # define firewall policy
     - notify-login # notify when an user connects
   vars_files:
@@ -53,6 +52,17 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["configure-systems"]
+
+- name: Configure destr0yers systems | monit
+  hosts: [base_destr0yers, commander_destr0yers]
+  remote_user: "{{ arbiter_username }}"
+  roles:
+    - monit
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["monit",  "configure-systems"]
 
 - name: Configure destr0yers systems | fail2ban
   hosts: [base_destr0yers, commander_destr0yers]
