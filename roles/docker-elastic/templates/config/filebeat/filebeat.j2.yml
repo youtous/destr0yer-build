@@ -10,3 +10,10 @@ setup.kibana:
 setup.ilm:
   enable: true
   overwrite: true
+
+# template settings
+setup.template:
+  name: "filebeat"
+  pattern: "filebeat-*"
+  settings:
+    index.opendistro.index_state_management.policy_id: "filebeat_policy_workflow"

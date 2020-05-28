@@ -23,6 +23,9 @@ GET /docker-*/_mapping/field/source.geo
 PUT _template/docker-
 {
   "index_patterns": ["docker-*"],
+  "settings": {
+      "opendistro.index_state_management.policy_id": "docker_policy_workflow",
+  },
   "mappings": {
     "properties": {
       "host.name": {
@@ -101,6 +104,25 @@ Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the i
 - Period start: {{ctx.periodStart}}
 - Period end: {{ctx.periodEnd}}
 ```
+
+### IML
+
+1. Add the policies in kibana exported)
+2. _(eventually update the template)_ first `GET` the template, add the policy id using `PUT`
+
+```
+
+PUT _template/metricbeat-
+{
+    "order" : 1,
+    "index_patterns" : [
+      "metricbeat-*"
+    ],
+    "settings" : {
+      "opendistro.index_state_management.policy_id": "metricbeat_policy_workflow",
+```
+
+See https://discuss.opendistrocommunity.dev/t/can-you-automatically-manage-indices/2034
 
 ###  Index
 

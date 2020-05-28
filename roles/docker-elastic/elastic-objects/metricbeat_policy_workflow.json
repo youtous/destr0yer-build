@@ -1,0 +1,60 @@
+{
+  "policy": {
+    "policy_id": "metricbeat_policy_workflow",
+    "description": "metricbeat policiy",
+    "last_updated_time": 1590703945182,
+    "schema_version": 1,
+    "error_notification": null,
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_index_age": "1d"
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "warm"
+          }
+        ]
+      },
+      {
+        "name": "warm",
+        "actions": [
+          {
+            "force_merge": {
+              "max_num_segments": 1
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_index_age": "5d"
+            }
+          },
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_size": "3gb"
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "delete": {}
+          }
+        ],
+        "transitions": []
+      }
+    ]
+  }
+}

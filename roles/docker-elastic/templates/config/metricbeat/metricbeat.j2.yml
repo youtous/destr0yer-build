@@ -11,6 +11,13 @@ setup.ilm:
   enable: true
   overwrite: true
 
+# template settings
+setup.template:
+  name: "metricbeat"
+  pattern: "metricbeat-*"
+  settings:
+    index.opendistro.index_state_management.policy_id: "metricbeat_policy_workflow"
+
 # copy from elastic-metricbeat
 
 metricbeat.modules:

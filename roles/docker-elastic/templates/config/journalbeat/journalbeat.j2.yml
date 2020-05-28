@@ -11,3 +11,10 @@ setup.ilm:
   enable: true
   overwrite: true
 
+# template settings
+setup.template:
+  name: "journalbeat"
+  pattern: "journalbeat-*"
+  settings:
+    index.opendistro.index_state_management.policy_id: "journalbeat_policy_workflow"
+
