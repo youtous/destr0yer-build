@@ -1,7 +1,7 @@
 ---
 # which filesystems to monitor
 monit_filesystems: []
-#  - {mnt: "/home", usage_alert: "90%"}, default are already configured
+#  - {mnt: "/home", usage_alerts: ["90%", "99%"]}, default are already configured
 
 # Monit installation
 monit_version: "5.26.0"

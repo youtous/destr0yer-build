@@ -5,15 +5,10 @@ monit_var_directory: "/var/lib/monit"
 
 # which filesystems to monitor
 monit_default_filesystems:
-  - {mnt: "/home", usage_alert: "90%"}
-  - {mnt: "/home", usage_alert: "99%"}
-  - {mnt: "/", usage_alert: "80%"}
-  - {mnt: "/", usage_alert: "99%"}
-  - {mnt: "/tmp", usage_alert: "80%"}
-  - {mnt: "/tmp", usage_alert: "99%"}
-  - {mnt: "/var", usage_alert: "80%"}
-  - {mnt: "/var", usage_alert: "99%"}
-  - {mnt: "/data", usage_alert: "80%"}
-  - {mnt: "/data", usage_alert: "99%"}
+  - {mnt: "/home", usage_alerts: ["90%", "99%"]}
+  - {mnt: "/", usage_alerts: ["80%", "99%"]}
+  - {mnt: "/tmp", usage_alerts: ["80%", "99%"]}
+  - {mnt: "/var", usage_alerts: ["80%", "99%"]}
+  - {mnt: "/data", usage_alerts: ["80%", "99%"]}
 
 monit_all_filesystems: "{{ monit_default_filesystems|default([]) + monit_filesystems|default([]) }}"

@@ -14,7 +14,9 @@ check system {{ hostname }}
 {% for fs in monit_all_filesystems %}
 {% if fs.mnt in mounted_devices_path %}
 check filesystem {{ fs.mnt|replace('/','') }}fs with path {{ fs.mnt }}
-    if space usage > {{ fs.usage_alert }} then alert
+{% for fs_usage_alert in fs.usage_alerts %}
+    if space usage > {{ fs_usage_alert }} then alert
+{% endfor %}
 {% endif %}
 {% endfor %}
 
