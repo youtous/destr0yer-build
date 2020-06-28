@@ -23,6 +23,7 @@ setup.template:
   pattern: "heartbeat-*"
   settings:
     index.opendistro.index_state_management.policy_id: "heartbeat_policy_workflow"
+    index.opendistro.index_state_management.rollover_alias: "heartbeat_rollover"
 
 monitoring.enabled: true
 

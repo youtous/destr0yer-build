@@ -25,6 +25,7 @@ PUT _template/docker-
   "index_patterns": ["docker-*"],
   "settings": {
       "opendistro.index_state_management.policy_id": "docker_policy_workflow",
+      "opendistro.index_state_management.rollover_alias": "docker_rollover"
   },
   "mappings": {
     "properties": {
@@ -120,6 +121,16 @@ PUT _template/metricbeat-
     ],
     "settings" : {
       "opendistro.index_state_management.policy_id": "metricbeat_policy_workflow",
+      "opendistro.index_state_management.rollover_alias": "metricbeat_rollover",
+```
+
+Update existing **indices** using :
+```http request
+PUT metricbeat*/_settings 
+{
+        "opendistro.index_state_management.policy_id": "metricbeat_policy_workflow",
+        "opendistro.index_state_management.rollover_alias": "metricbeat_rollover"
+}
 ```
 
 See https://discuss.opendistrocommunity.dev/t/can-you-automatically-manage-indices/2034

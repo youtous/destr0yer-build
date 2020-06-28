@@ -17,3 +17,4 @@ setup.template:
   pattern: "filebeat-*"
   settings:
     index.opendistro.index_state_management.policy_id: "filebeat_policy_workflow"
+    index.opendistro.index_state_management.rollover_alias: "filebeat_rollover"

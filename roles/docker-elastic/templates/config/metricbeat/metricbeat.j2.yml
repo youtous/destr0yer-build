@@ -17,6 +17,7 @@ setup.template:
   pattern: "metricbeat-*"
   settings:
     index.opendistro.index_state_management.policy_id: "metricbeat_policy_workflow"
+    index.opendistro.index_state_management.rollover_alias: "metricbeat_rollover"
 
 # copy from elastic-metricbeat
 
