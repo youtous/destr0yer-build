@@ -1,7 +1,7 @@
 {
   "policy": {
-    "policy_id": "metricbeat_policy_workflow",
-    "description": "metricbeat policiy",
+    "policy_id": "journalbeat_policy_workflow",
+    "description": "journalbeat policiy",
     "last_updated_time": 1590703945183,
     "schema_version": 1,
     "error_notification": null,
@@ -35,7 +35,7 @@
           {
             "state_name": "delete",
             "conditions": {
-              "min_index_age": "7d"
+              "min_index_age": "30d"
             }
           }
         ]
