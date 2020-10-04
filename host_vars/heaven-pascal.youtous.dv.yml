@@ -72,8 +72,9 @@ mariadb_databases:
 
 ### Begin of Wireguard server parameters ###
 
-# allow VPN clients to access DNS
-dns_allowed_hosts: "{{ local_docker_ips + wireguard_server_address }}"
+# allow VPN clients to access DNS         # <=> wireguard_server.interface.addresses
+dns_allowed_hosts: "{{ local_docker_ips + ['10.99.99.1/24', 'fdc9:281f:04d7:9ee9::1/64'] }}"
+# dns_allowed_hosts: "{{ local_docker_ips + wireguard_server_address }}"
 
 wireguard_server_external_interface: eth0
 wireguard_servers:
