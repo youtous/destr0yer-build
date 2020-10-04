@@ -4,9 +4,9 @@ monit_filesystems: []
 #  - {mnt: "/home", usage_alerts: ["90%", "99%"]}, default are already configured
 
 # Monit installation
-monit_version: "5.26.0"
+monit_version: "5.27.0"
 # checksum is available at https://bitbucket.org/tildeslash/monit/downloads/
-monit_download_checksum: "sha256:c2f0f3c5f9271ccb2abfa1474869b153ba0e5fc1d21ff90fce30262d6d89cc42"
+monit_download_checksum: "sha256:d8c0deef624f193a952502fe9baabfa66e3d8d057df5738da43f9a37792afca4"
 
 # From ANXS
 monit_eventqueue_slots: 100
