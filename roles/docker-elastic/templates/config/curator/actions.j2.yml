@@ -1,0 +1,159 @@
+---
+# Remember, leave a key empty if there is no value.  None will be a string,
+# not a Python "NoneType"
+#
+# Also remember that all examples have 'disable_action' set to True.  If you
+# want to use this action as a template, be sure to set this to False after
+# copying it.
+
+# see https://discuss.elastic.co/t/deleting-data-from-elastic/74756/4
+
+actions:
+  1:
+    action: delete_indices
+    description: >-
+      Delete docker indices when 15G reached
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: docker-
+      - filtertype: space
+        disk_space: {{ curator_max_size_docker }}
+        use_age: True
+        source: creation_date
+
+  2:
+    action: delete_indices
+    description: >-
+      Delete filebeat indices when 3G reached
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: filebeat-
+      - filtertype: space
+        disk_space: {{ curator_max_size_filebeat }}
+        use_age: True
+        source: creation_date
+
+  3:
+    action: delete_indices
+    description: >-
+      Delete heartbeat indices when 1G reached
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: heartbeat-
+      - filtertype: space
+        disk_space: {{ curator_max_size_heartbeat }}
+        use_age: True
+        source: creation_date
+
+  4:
+    action: delete_indices
+    description: >-
+      Delete journalbeat indices when 5G reached
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: journalbeat-
+      - filtertype: space
+        disk_space: {{ curator_max_size_journalbeat }}
+        use_age: True
+        source: creation_date
+
+  5:
+    action: delete_indices
+    description: >-
+      Delete metricbeat indices when 5G reached
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: metricbeat-
+      - filtertype: space
+        disk_space: {{ curator_max_size_metricbeat }}
+        use_age: True
+        source: creation_date
+#      - filtertype: age
+#        source: creation_date
+#        direction: older
+#        unit: days
+#        unit_count: 90
+
+  6:
+    action: forcemerge
+    description: >-
+      forceMerge Year.month.day indices older than 2 days (based on index
+      creation_date) to 1 segment per shard.  Delay 120 seconds between each
+      forceMerge operation to allow the cluster to quiesce.
+      This action will ignore indices already forceMerged to the same or fewer
+      number of segments per shard, so the 'forcemerged' filter is unneeded.
+    options:
+      ignore_empty_list: True
+      max_num_segments: 1
+      delay: 120
+      timeout_override: 7200
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: timestring
+        value: '%Y.%m.%d'
+        exclude: False
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: 1
+        exclude:
+
+  7:
+    action: forcemerge
+    description: >-
+      forceMerge Year.month indices (excluding Year.month.day indices) older
+      than 32 days (based on index creation_date) to 1 segment per shard.
+      Delay 120 seconds between each forceMerge operation to allow the cluster
+      to quiesce.
+      This action will ignore indices already forceMerged to the same or fewer
+      number of segments per shard, so the 'forcemerged' filter is unneeded.
+    options:
+      ignore_empty_list: True
+      max_num_segments: 1
+      delay: 120
+      timeout_override: 7200
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: timestring
+        value: '%Y.%m.%d'
+        exclude: True
+      - filtertype: pattern
+        kind: timestring
+        value: '%Y.%m'
+        exclude: False
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: 32
+        exclude:

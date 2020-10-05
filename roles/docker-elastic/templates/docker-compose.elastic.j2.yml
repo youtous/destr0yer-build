@@ -341,6 +341,30 @@ services:
       retries: 5
       start_period: 60s
 
+  # cleanup indices
+  curator:
+    image: "bobrik/curator:latest"
+    command: "/actions.yml"
+    configs:
+      - source: actions.yml
+        target: /actions.yml
+      - source: curator.yml
+        target: /.curator/curator.yml
+    deploy:
+      mode: replicated
+      replicas: 0
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: none
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=0 */30 * * * *"
+        - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
+    networks:
+      - stack
+
 networks:
   stack: # encrypted if Swarm want to split services on managers
     driver: overlay
@@ -380,6 +404,12 @@ configs:
   metricbeat.yml:
     name: "{{ docker_elastic_stack_name }}_metricbeat.j2.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/metricbeat/metricbeat.j2.yml
+  actions.yml:
+    name: "{{ docker_elastic_stack_name }}_actions.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/curator/actions.j2.yml
+  curator.yml:
+    name: "{{ docker_elastic_stack_name }}_curator.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/curator/curator.j2.yml
 
 {% for pipeline in logstash_pipeline_files %}
   pipeline_{{ pipeline }}:

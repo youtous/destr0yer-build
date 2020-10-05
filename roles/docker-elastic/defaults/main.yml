@@ -36,6 +36,13 @@ logstash_memory: 512
 elasticsearch_memory_reservation: "{{ elasticsearch_memory }}"
 logstash_memory_reservation: "{{ logstash_memory }}"
 
+# indices limits (curator) in GB
+curator_max_size_docker: 15
+curator_max_size_filebeat: 3
+curator_max_size_heartbeat: 1
+curator_max_size_journalbeat: 5
+curator_max_size_metricbeat: 5
+
 # name of the traefik network
 traefik_network: "traefik-public"
 # traefik public-tag

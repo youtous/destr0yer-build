@@ -1,0 +1,194 @@
+1:
+  action: delete_indices
+  description: >-
+    Delete indices older than 15 days (based on index name), for any Year.month.day
+    indices. Ignore the error if the filter does not result in an
+    actionable list of indices (ignore_empty_list) and exit cleanly.
+  options:
+    ignore_empty_list: True
+    timeout_override:
+    continue_if_exception: False
+    disable_action: False
+  filters:
+    - filtertype: age
+      source: name
+      direction: older
+      timestring: '%Y.%m.%d'
+      unit: days
+      unit_count: 15
+      exclude:
+  2:
+    action: close
+    description: >-
+      Close indices older than 14 days (based on index name), for Year.month.day
+      indices. Ignore the error if the filter does not result in an
+      actionable list of indices (ignore_empty_list) and exit cleanly.
+    options:
+      ignore_empty_list: True
+      timeout_override:
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: age
+        source: name
+        direction: older
+        timestring: '%Y.%m.%d'
+        unit: days
+        unit_count: 14
+        exclude:
+  3:
+    action: delete_snapshots
+    description: >-
+      Delete 'daily-' prefixed snapshots from the selected repository older
+      than 30 days (based on creation_date)
+    options:
+      ignore_empty_list: True
+      repository: Untergeek
+      timeout_override:
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: 'daily-'
+        exclude: True
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: 30
+        exclude:
+  4:
+    action: delete_snapshots
+    description: >-
+      Delete 'monthlyinc-' prefixed snapshots from the selected repository older
+      than 32 days (based on creation_date)
+    options:
+      ignore_empty_list: True
+      repository: Untergeek
+      timeout_override:
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: 'monthlyinc-'
+        exclude:
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: 32
+        exclude:
+  5:
+    action: delete_snapshots
+    description: >-
+      Delete 'monthly-' prefixed snapshots from the selected repository older
+      than 7 months (based on creation_date)
+    options:
+      ignore_empty_list: True
+      repository: Untergeek
+      timeout_override:
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: 'monthly-'
+        exclude:
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: months
+        unit_count: 7
+        exclude:
+  6:
+    action: forcemerge
+    description: >-
+      forceMerge Year.month.day indices older than 2 days (based on index
+      creation_date) to 1 segment per shard.  Delay 120 seconds between each
+      forceMerge operation to allow the cluster to quiesce.
+      This action will ignore indices already forceMerged to the same or fewer
+      number of segments per shard, so the 'forcemerged' filter is unneeded.
+    options:
+      ignore_empty_list: True
+      max_num_segments: 1
+      delay: 120
+      timeout_override: 7200
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: timestring
+        value: '%Y.%m.%d'
+        exclude: False
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: 1
+        exclude:
+  7:
+    action: forcemerge
+    description: >-
+      forceMerge Year.month indices (excluding Year.month.day indices) older
+      than 32 days (based on index creation_date) to 1 segment per shard.
+      Delay 120 seconds between each forceMerge operation to allow the cluster
+      to quiesce.
+      This action will ignore indices already forceMerged to the same or fewer
+      number of segments per shard, so the 'forcemerged' filter is unneeded.
+    options:
+      ignore_empty_list: True
+      max_num_segments: 1
+      delay: 120
+      timeout_override: 7200
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: timestring
+        value: '%Y.%m.%d'
+        exclude: True
+      - filtertype: pattern
+        kind: timestring
+        value: '%Y.%m'
+        exclude: False
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: 32
+        exclude:
+  8:
+    action: snapshot
+    description: >-
+      Snapshot daily indices older than 1 day (based on index
+      creation_date) with the default snapshot name pattern of
+      'daily-%Y%m%d%H%M%S'.  Wait for the snapshot to complete.  Do not skip
+      the repository filesystem access check.  Use the other options to create
+      the snapshot.
+    options:
+      ignore_empty_list: True
+      repository: Untergeek
+      # Leaving name blank will result in the default 'curator-%Y%m%d%H%M%S'
+      name: 'daily-%Y%m%d%H%M%S'
+      ignore_unavailable: False
+      include_global_state: True
+      partial: False
+      wait_for_completion: True
+      skip_repo_fs_check: False
+      timeout_override: 7200
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: timestring
+        value: '%Y.%m.%d'
+        exclude: False
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: 1
+        exclude:
+      - filtertype: closed

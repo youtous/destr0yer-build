@@ -31,6 +31,7 @@
     - filebeat
     - journalbeat
     - metricbeat
+    - curator
 
 - name: Copy elastic configs
   template:
@@ -46,6 +47,8 @@
     - { dir: filebeat, file: filebeat.j2.yml }
     - { dir: journalbeat, file: journalbeat.j2.yml }
     - { dir: metricbeat, file: metricbeat.j2.yml }
+    - { dir: curator, file: actions.j2.yml }
+    - { dir: curator, file: curator.j2.yml }
 
 - name: Copy logstash pipeline configurations
   template:
