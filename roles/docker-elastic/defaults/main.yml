@@ -48,6 +48,8 @@ curator_max_age_days_journalbeat: 90
 curator_max_size_metricbeat: 5
 curator_max_age_days_metricbeat: 15
 
+elasticsearch_number_of_replicas: 0
+
 # name of the traefik network
 traefik_network: "traefik-public"
 # traefik public-tag
