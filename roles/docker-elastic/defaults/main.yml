@@ -38,10 +38,15 @@ logstash_memory_reservation: "{{ logstash_memory }}"
 
 # indices limits (curator) in GB
 curator_max_size_docker: 15
+curator_max_age_days_docker: 90
 curator_max_size_filebeat: 3
+curator_max_age_days_filebeat: 90
 curator_max_size_heartbeat: 1
+curator_max_age_days_heartbeat: 15
 curator_max_size_journalbeat: 5
+curator_max_age_days_journalbeat: 90
 curator_max_size_metricbeat: 5
+curator_max_age_days_metricbeat: 15
 
 # name of the traefik network
 traefik_network: "traefik-public"

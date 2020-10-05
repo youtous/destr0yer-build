@@ -12,9 +12,9 @@ actions:
   1:
     action: delete_indices
     description: >-
-      Delete docker indices when 15G reached
+      Delete docker indices when {{ curator_max_size_docker }}G reached
     options:
-      allow_ilm_indices: true
+      allow_ilm_indices: true # eventually change this
       continue_if_exception: False
       ignore_empty_list: True
     filters:
@@ -25,11 +25,28 @@ actions:
         disk_space: {{ curator_max_size_docker }}
         use_age: True
         source: creation_date
-
   2:
     action: delete_indices
     description: >-
-      Delete filebeat indices when 3G reached
+      Delete docker indices when {{ curator_max_age_days_docker }} days passed
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: docker-
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: {{ curator_max_age_days_docker }}
+
+  3:
+    action: delete_indices
+    description: >-
+      Delete filebeat indices when {{ curator_max_size_filebeat }}G reached
     options:
       allow_ilm_indices: true
       continue_if_exception: False
@@ -42,11 +59,28 @@ actions:
         disk_space: {{ curator_max_size_filebeat }}
         use_age: True
         source: creation_date
-
-  3:
+  4:
     action: delete_indices
     description: >-
-      Delete heartbeat indices when 1G reached
+      Delete filebeat indices when {{ curator_max_age_days_filebeat }} days passed
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: filebeat-
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: {{ curator_max_age_days_filebeat }}
+
+  5:
+    action: delete_indices
+    description: >-
+      Delete heartbeat indices when {{ curator_max_size_heartbeat }}G reached
     options:
       allow_ilm_indices: true
       continue_if_exception: False
@@ -59,11 +93,28 @@ actions:
         disk_space: {{ curator_max_size_heartbeat }}
         use_age: True
         source: creation_date
-
-  4:
+  6:
     action: delete_indices
     description: >-
-      Delete journalbeat indices when 5G reached
+      Delete heartbeat indices when {{ curator_max_age_days_heartbeat }} days passed
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: filebeat-
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: {{ curator_max_age_days_heartbeat }}
+
+  7:
+    action: delete_indices
+    description: >-
+      Delete journalbeat indices when {{ curator_max_size_journalbeat }}G reached
     options:
       allow_ilm_indices: true
       continue_if_exception: False
@@ -76,11 +127,28 @@ actions:
         disk_space: {{ curator_max_size_journalbeat }}
         use_age: True
         source: creation_date
-
-  5:
+  8:
     action: delete_indices
     description: >-
-      Delete metricbeat indices when 5G reached
+      Delete journalbeat indices when {{ curator_max_age_days_journalbeat }} days passed
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: journalbeat-
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: {{ curator_max_age_days_journalbeat }}
+
+  9:
+    action: delete_indices
+    description: >-
+      Delete metricbeat indices when {{ curator_max_size_metricbeat }}G reached
     options:
       allow_ilm_indices: true
       continue_if_exception: False
@@ -99,7 +167,26 @@ actions:
 #        unit: days
 #        unit_count: 90
 
-  6:
+  10:
+    action: delete_indices
+    description: >-
+      Delete metricbeat indices when {{ curator_max_age_days_metricbeat }} days passed
+    options:
+      allow_ilm_indices: true
+      continue_if_exception: False
+      ignore_empty_list: True
+    filters:
+      - filtertype: pattern
+        kind: prefix
+        value: metricbeat-
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: days
+        unit_count: {{ curator_max_age_days_metricbeat }}
+
+
+  11:
     action: forcemerge
     description: >-
       forceMerge Year.month.day indices older than 2 days (based on index
@@ -126,7 +213,7 @@ actions:
         unit_count: 1
         exclude:
 
-  7:
+  12:
     action: forcemerge
     description: >-
       forceMerge Year.month indices (excluding Year.month.day indices) older
