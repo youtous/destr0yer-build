@@ -7,5 +7,3 @@ node.name: node-1
 cluster.initial_master_nodes: node-1
 
 opendistro_security.disabled: true
-
-index.number_of_replicas: {{ elasticsearch_number_of_replicas }}
