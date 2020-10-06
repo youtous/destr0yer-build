@@ -5,5 +5,3 @@ transport.host: 0.0.0.0
 # set a master node
 node.name: node-1
 cluster.initial_master_nodes: node-1
-
-opendistro_security.disabled: true
