@@ -120,8 +120,8 @@ services:
     healthcheck:
       test: curl --silent --output --fail http://localhost:5601 || exit 1
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 30s
+      retries: 0
       start_period: 1200s
 
 # forward kibana alerts using smtp
