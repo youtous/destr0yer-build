@@ -5,6 +5,12 @@ services:
 
   elasticsearch:
     image: "amazon/opendistro-for-elasticsearch:{{ opendistro_version }}"
+    entrypoint: >
+      sh -c '
+        /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security --purge &&
+        /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_performance_analyzer --purge &&
+        /usr/local/bin/docker-entrypoint.sh
+      '
     environment:
       - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
       - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
