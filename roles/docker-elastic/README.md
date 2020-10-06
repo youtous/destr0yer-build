@@ -77,6 +77,15 @@ PUT _template/docker-
 -  `heartbeat-*`, `id=fca68d10-9948-11ea-ad57-f9074afbf2d7`
 -  `filebeat-*`, `id=filebeat-*`
 
+### Import kibana dashboard
+
+Use elastic-importer from the docker-compose.
+Simply mount the volume and the `kibana_index.ndjson` in.
+
+-or-
+
+You can use the import/export function in kibana.
+
 ### Alerts email
 
 1. Add the webhook:
