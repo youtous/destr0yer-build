@@ -142,6 +142,7 @@ services:
       - PFLOGSUMM_TRIGGER=logrotate # Enables regular pflogsumm mail reports when logs are rotated
       - "PFLOGSUMM_RECIPIENT=$PFLOGSUMM_RECIPIENT" # Recipient address for pflogsumm reports.
       - "LOGROTATE_INTERVAL=$LOGROTATE_INTERVAL"
+      - "LOGWATCH_INTERVAL=$LOGWATCH_INTERVAL"
       # ClamAV conf
       - "ENABLE_CLAMAV=$ENABLE_CLAMAV"
       - "VIRUSMAILS_DELETE_DELAY=$VIRUSMAILS_DELETE_DELAY"

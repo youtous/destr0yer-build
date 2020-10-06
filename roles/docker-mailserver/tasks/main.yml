@@ -110,6 +110,7 @@
 
     PFLOGSUMM_RECIPIENT: "{{ mailserver_reporting_recipient }}"
     LOGROTATE_INTERVAL: "{{ mailserver_reporting_interval }}"
+    LOGWATCH_INTERVAL: "{{ mailserver_reporting_interval }}"
 
     ENABLE_CLAMAV: "{{ mailserver_enable_clamav|default(false)|int }}"
     VIRUSMAILS_DELETE_DELAY: "{{ mailserver_virus_delete_delay }}"
