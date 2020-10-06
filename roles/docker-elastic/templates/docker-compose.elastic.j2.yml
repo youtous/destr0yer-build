@@ -347,6 +347,30 @@ services:
       retries: 5
       start_period: 60s
 
+  # backup indices
+  elasticdump:
+    image: "elasticdump/elasticsearch-dump:latest"
+    command: >
+      --input=http://elasticsearch:9200/.kibana
+      --output=/tmp/kibana_index.json
+      --type=data
+    deploy:
+      mode: replicated
+      replicas: 0
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: none
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=0 */30 * * * *"
+        - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
+    networks:
+      - stack
+    volumes:
+      - 'es_backup:/tmp'
+
   # cleanup indices
   curator:
     image: "bobrik/curator:latest"
@@ -382,6 +406,8 @@ networks:
 # use docker volume to persist ES data outside of a container.
 volumes:
   es_data: {}
+  # backup kibana indices
+  es_backup: {}
 
 # documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
 # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
