@@ -67,3 +67,4 @@
               - missingok
               - notifempty
               - create 0640 root root
+  when: fail2ban_logtarget not in ['SYSLOG', 'STDERR', 'STDOUT']
