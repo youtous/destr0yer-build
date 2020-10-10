@@ -106,7 +106,7 @@ POST _opendistro/_alerting/destinations
 Format of alert smtp:
 ```
 to: ['monitoring@youtous.me']
-subject: 'Optional subject param'
+subject: '[ElastAlert] {{ctx.monitor.name}} >>> {{ctx.trigger.name}} <<<'
 ---
 Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the issue.
 - Trigger: {{ctx.trigger.name}}
