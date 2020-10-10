@@ -347,6 +347,31 @@ services:
       retries: 5
       start_period: 60s
 
+  # backup opendistro indices
+  elasticdump-opendistro:
+    image: "elasticdump/elasticsearch-dump:latest"
+    entrypoint: >
+      multielasticdump
+        --direction=dump
+        --match='^.opendistro-'
+        --input=http://elasticsearch:9200
+        --output=/tmp
+    deploy:
+      mode: replicated
+      replicas: 0
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: none
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.schedule=0 45 2 * * *"
+        - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
+    networks:
+      - stack
+    volumes:
+      - 'es_backup_opendistro:/tmp'
   # backup indices
   elasticdump:
     image: "elasticdump/elasticsearch-dump:latest"
@@ -428,6 +453,7 @@ volumes:
   es_data: {}
   # backup kibana indices
   es_backup: {}
+  es_backup_opendistro: {}
 
 # documentation about keystore https://nicklang.com/posts/learning-to-love-the-keystore
 # an other way to store sensible information but in this case, the user of the docker-cluster already have privileged access
