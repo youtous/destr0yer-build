@@ -18,7 +18,6 @@ system_packages:
   - sqlite3
   - tar
   - htop
-  - glances # super htop
   - iftop
   - sysstat
   - fish

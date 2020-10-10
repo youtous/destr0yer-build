@@ -53,6 +53,17 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["configure-systems"]
 
+- name: Configure destr0yers systems | glances
+  hosts: [base_destr0yers, commander_destr0yers]
+  remote_user: "{{ arbiter_username }}"
+  roles:
+    - glances # boosted htop
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["configure-systems", "update-systems"]
+
 - name: Configure destr0yers systems | monit
   hosts: [base_destr0yers, commander_destr0yers]
   remote_user: "{{ arbiter_username }}"
