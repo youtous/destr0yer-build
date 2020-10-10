@@ -351,11 +351,16 @@ services:
   elasticdump-opendistro:
     image: "elasticdump/elasticsearch-dump:latest"
     entrypoint: >
-      multielasticdump
-        --direction=dump
-        --match='^.opendistro-'
-        --input=http://elasticsearch:9200
-        --output=/tmp
+      sh -c '
+      rm -Rf /tmp/older &&
+      mv /tmp/current /tmp/older ;
+      mkdir -p /tmp/current &&
+      multielasticdump \
+        --direction=dump \
+        --match='^.opendistro-' \
+        --input=http://elasticsearch:9200 \
+        --output=/tmp/current
+      '
     deploy:
       mode: replicated
       replicas: 0
