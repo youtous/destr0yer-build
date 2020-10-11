@@ -1,5 +1,6 @@
 logstash_pipeline_files:
   - 10-input.j2.conf
+  - 40-filter-elb-healtcheck.j2.conf
   - 45-filter-syslog-before.j2.conf
   - 47-filter-journalbeat-json.j2.conf
   - 47-filter-syslog-json.j2.conf
