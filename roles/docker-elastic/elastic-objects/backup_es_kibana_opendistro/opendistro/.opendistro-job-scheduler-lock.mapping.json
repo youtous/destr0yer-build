@@ -1,0 +1,1 @@
+{".opendistro-job-scheduler-lock":{"mappings":{"dynamic":"strict","properties":{"job_id":{"type":"keyword"},"job_index_name":{"type":"keyword"},"lock_duration_seconds":{"type":"long"},"lock_time":{"type":"date","format":"epoch_second"},"released":{"type":"boolean"}}}}}
