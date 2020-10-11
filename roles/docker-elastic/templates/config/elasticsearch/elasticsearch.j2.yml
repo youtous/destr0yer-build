@@ -5,3 +5,6 @@ transport.host: 0.0.0.0
 # set a master node
 node.name: node-1
 cluster.initial_master_nodes: node-1
+
+# allow regex for painless scripts
+script.painless.regex.enabled: true
