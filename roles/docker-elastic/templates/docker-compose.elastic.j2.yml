@@ -371,7 +371,7 @@ services:
         condition: none
       labels:
         - "swarm.cronjob.enable=true"
-        - "swarm.cronjob.schedule=0 45 2 * * *"
+        - "swarm.cronjob.schedule=5 2 * * *"
         - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
     networks:
       - stack
@@ -380,11 +380,16 @@ services:
   # backup indices
   elasticdump:
     image: "elasticdump/elasticsearch-dump:latest"
-    command: >
-      --input=http://elasticsearch:9200/.kibana
-      --output=/tmp/kibana_index.ndjson
-      --type=data
-      --ignore-errors
+    entrypoint: >
+      sh -c '
+      rm -Rf /tmp/older &&
+      mv /tmp/current /tmp/older ;
+      mkdir -p /tmp/current &&
+      elasticdump \
+        --input=http://elasticsearch:9200/.kibana \
+        --output=/tmp/current/kibana_index.ndjson \
+        --type=data
+      '
     deploy:
       mode: replicated
       replicas: 0
@@ -395,7 +400,7 @@ services:
         condition: none
       labels:
         - "swarm.cronjob.enable=true"
-        - "swarm.cronjob.schedule=0 */30 * * * *"
+        - "swarm.cronjob.schedule=*/30 * * * *"
         - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
     networks:
       - stack
@@ -406,7 +411,7 @@ services:
     image: "elasticdump/elasticsearch-dump:latest"
     command: >
       --output=http://elasticsearch:9200/.kibana
-      --input=/tmp/kibana_index.ndjson
+      --input=/tmp/current/kibana_index.ndjson
       --type=data
     deploy:
       mode: replicated
@@ -440,7 +445,7 @@ services:
         condition: none
       labels:
         - "swarm.cronjob.enable=true"
-        - "swarm.cronjob.schedule=0 */30 * * * *"
+        - "swarm.cronjob.schedule=*/30 * * * *"
         - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
     networks:
       - stack
