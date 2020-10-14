@@ -5,6 +5,14 @@ You can use it as a complete stack or as a forwarder (`elastic_use_as_forwarder:
 
 Remember to set a `elastic_cluster_name` for identifying the cluster data.
 
+## Certificates x509
+
+The elastic cluster is managed using x509 certificates.
+A common scheme is to use :
+- a root certificate for mananing the cluster (use `generate-x509.rb`) (e.g. `elastic.domain.tld`)
+- a common certificate for all **beats** agents on the **same node**. (e.g. `node.elastic.domain.tld`)
+- dedicated certificate per docker service such as **logstash** or eventually logspout. (e.g. `logstash.elastic.domain.tld`)
+
 ### Use it with a VPN
 Use a VPN for `receiver <<----[VPN]--- forwarder`
 
