@@ -63,11 +63,15 @@ _We follow this guide: https://github.com/Oefenweb/ansible-duply-backup#advance-
 4. Save the public and the private key in the host secret vault.
 5. Define this key as encryption key for the backup in `host_vars`. **/!\\** don't forget to set the names and the ownertrust.
 6. Save the _ownertrust_, the _both keys_ and the _passphrase_ in a **safe place**. 
+7. When the export is completed, **delete the GPG key from the host machine**.
+
 
 ### Create CA for swarm or elastic cluster
 
 **Script:** a dedicated scrip has been created for this task. It create a client certificate signed by a root authority (X509 standard).
 Use `./generate-X509-certificate.rb`
+
+**REMINDER :** add the expiration date as a comment and as a calendar event.
 
 Using a personal Root CA is useful for swarm mode over TLS.
 Details of the procedure are available on : https://gist.github.com/fntlnz/cf14feb5a46b2eda428e000157447309
@@ -87,6 +91,54 @@ To sum up :
 *Notes :*
  - chacha20 is currently secured enough and resists against timing guess attacks
  - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121) 
+
+### Use elastic for logging
+
+Two options are available for log forwarding :
+- setup an elastic cluster using docker-elastic (see dedicated `roles/docker-elastic/README.md`)
+- forward logs using _logstash_ and _wireguard_
+
+The following instructions will detail this last option:
+0. On the server node, add a new (peer) wireguard client targeting the new server, see `roles/wireguard-server/README.md`
+1. On the client node, setup a wireguard client connection
+```yaml
+wireguard_clients:
+  - interface: wg-elastic
+    name: "{{ hostname }} elastic"
+    addresses: # client address + network
+      - 10.101.101.2/24
+    endpoint: "logstash.castle.youtous.me:1991" # vpn server address
+    persistent_keepalive: "" # only used when behind a NAT
+    mtu: "" # optional mtu
+    allowed_ips: # which traffic to redirect to the vpn?
+      - 10.101.101.0/24
+    dns: [] # optional DNS ips to use for this VPN
+    server_public_key: "server public key=" # public key of the server
+    public_key: "client public key=" # client keys
+    private_key: "{{ wireguard_elastic_client_private_key }}"
+    preshared_key: "{{ wireguard_elastic_client_preshared_key }}"
+```
+2. Add the client peer ip on the wireguard server to allowed external logstash using
+```yaml
+logstash_external_allowed_ip4s: # vpn for logstash data exchange
+  - "10.101.101.2" # myclient hostname
+```
+
+When wireguard tunnel is setup, elastic cluster must be configured:
+1. On the elastic master node: generate a client certificate and key used by the client node for submitting data to the elastic receiver.
+```yaml
+# on the forwarder node
+logstash_client_forwarder_CA_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
+logstash_client_forwarder_node_certificate: ""
+logstash_client_forwarder_node_private_key: ""
+```
+2. On the elastic client node: generate a rootCA used for generating certificates in the swarm cluster.
+```yaml
+logstash_CA_certificate: | # usually logstash-rootCA.crt
+logstash_node_private_key: | # usually logstash-node-hostname.key
+logstash_node_certificate: | # usually logstash-node-hostname.crt
+```
+See `docker-elastic` for detailed instructions.
 
 ### Examples
 #### DockerSwarm hosts
