@@ -1,5 +1,6 @@
 ---
 - name: Install GPG - required to add wireguard key
+  become: yes
   apt:
     name: gnupg2
     state: present
