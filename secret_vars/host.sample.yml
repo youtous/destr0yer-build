@@ -1,3 +1,4 @@
+# vim: ts=2 sw=2 et
 ---
 # Variables listed here are not committed and are specific to a named host
 # rename the file using {$host}.yml format

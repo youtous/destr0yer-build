@@ -1,3 +1,4 @@
+# vim: ts=2 sw=2 et
 ---
 # Variables listed here are not committed and are shared between all hosts
 # Moreover this file should be protected using
