@@ -37,7 +37,6 @@
     - system-packages # system packages (htop, curl etc)
     - users # create a sudo user that will be used for configuration
     - host # configure system host files
-    - dnscrypt-proxy # configure system DNS resolution
     - system-configuration # configure the system (selinux, timezone...)
     - system-tools # server cli tools (vim, ccat, etc)
     - mount # manage mount devices
@@ -46,6 +45,7 @@
     - ssh-user-keys # deploy ssh keys on the server
     - logrotate # manage log rotation
     - iptables-firewall # define firewall policy
+    - dnscrypt-proxy # configure system DNS resolution
     - notify-login # notify when an user connects
   vars_files:
     - secret_vars/all.yml

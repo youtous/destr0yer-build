@@ -29,7 +29,6 @@ system_packages:
   - sudo
   - ncdu
   - apparmor # security (MAC) :)
-  - ufw # iptables interface
   - ccze # colorization
   - grc # colorization
 
