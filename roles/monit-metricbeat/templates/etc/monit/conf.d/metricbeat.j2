@@ -1,7 +1,7 @@
 # from https://wiki.debian-fr.xyz/Monit
 
-check program metricbeat with path "/usr/bin/systemctl is-active --quiet metricbeat.service"
+check program metricbeat with path "/bin/systemctl is-active --quiet metricbeat.service"
   if status != 0 then alert
-  start program = "/usr/bin/systemctl start metricbeat.service"
-  stop  program = "/usr/bin/systemctl stop metricbeat.service"
+  start program = "/bin/systemctl start metricbeat.service"
+  stop  program = "/bin/systemctl stop metricbeat.service"
   if 5 restarts within 5 cycles then timeout

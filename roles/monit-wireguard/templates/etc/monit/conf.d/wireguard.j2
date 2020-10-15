@@ -3,8 +3,8 @@
 {% for monit_wireguard_interface in monit_wireguard_interfaces %}
 check program wg-quick-{{ monit_wireguard_interface }} with path "/usr/bin/wg show {{ monit_wireguard_interface }}"
   if status != 0 then alert
-  start program = "/usr/bin/systemctl start wg-quick@{{ monit_wireguard_interface }}.service"
-  stop  program = "/usr/bin/systemctl stop wg-quick@{{ monit_wireguard_interface }}.service"
+  start program = "/bin/systemctl start wg-quick@{{ monit_wireguard_interface }}.service"
+  stop  program = "/bin/systemctl stop wg-quick@{{ monit_wireguard_interface }}.service"
   if 5 restarts within 5 cycles then timeout
 
 {% endfor %}
