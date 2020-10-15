@@ -2,5 +2,6 @@
 wireguard_service_name: "wg-quick@{{ wireguard_client.interface }}.service"
 wireguard_conf_directory: /etc/wireguard
 wireguard_packages:
-  - wireguard
+  - wireguard-dkms
+  - wireguard-tools
 ...

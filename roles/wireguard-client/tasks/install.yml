@@ -17,7 +17,6 @@
       - "linux-headers-{{ dpkg_arch.stdout }}"
     state: present
     update_cache: yes
-  when: ansible_kernel is version('5.6.0', '<')
 
 - name: Install wiregard using latest version from buster-backport
   become: yes
@@ -52,5 +51,4 @@
   notify:
     - restart wireguard
   failed_when: wireguard_module_enabled is failure
-  when: ansible_kernel is version('5.6.0', '<')
 ...
