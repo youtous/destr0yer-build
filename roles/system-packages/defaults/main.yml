@@ -3,6 +3,7 @@ system_packages:
   - cron
   - attr
   - curl
+  - network-manager # manage network systemd's way
   - wget
   - curl
   - dnsutils
