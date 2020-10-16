@@ -29,3 +29,7 @@ postfix_uses_client_ssl_tls: "yes"
 
 # you can change the default smtp port in order not to interfer with other mailserver
 postfix_smtp_port: "smtp"
+
+# postfix relay user
+postfix_relay_user_username: "{{ relay_email.split('@')[0] }}"
+postfix_relay_user_domain: "{{ relay_email.split('@')[1] }}"

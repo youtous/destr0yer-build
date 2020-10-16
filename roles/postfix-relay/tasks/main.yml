@@ -52,17 +52,20 @@
     - hash sasl passwd
   no_log: true
 
-- name: Copy postfix configuration
+- name: Copy postfix configurations
   become: yes
   template:
-    src: files/main.j2.cf
-    dest: /etc/postfix/main.cf
+    src: "files/{{ item.src }}"
+    dest: "/etc/postfix/{{ item.dest }}"
     owner: root
     group: root
     mode: u=rw,g=r,o=r
   notify:
     - restart postfix
-
+  with_items:
+    - { src: main.j2.cf, dest: main.cf }
+    - { src: header_check.j2, dest: header_check }
+    - { src: sender_canonical_maps.j2, dest: sender_canonical_maps }
 
 - name: Change inet smtp port
   become: yes

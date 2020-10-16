@@ -33,6 +33,12 @@ smtp_sasl_auth_enable = yes
 # Set username and password
 smtp_sasl_password_maps = hash:{{ postfix_sasl_file }}
 
+# Rewriting FROM emails with relay account
+# see (https://serverfault.com/questions/147921/forcing-the-from-address-when-postfix-relays-over-smtp)
+sender_canonical_classes=envelope_sender,header_sender
+sender_canonical_maps=regexp:/etc/postfix/sender_canonical_maps
+smtp_header_checks=regexp:/etc/postfix/header_check
+
 # see https://wiki.debian.org/PostfixAndSASL#SASL_authentication_in_the_Postfix_SMTP_client
 smtp_sasl_security_options = noanonymous
 # Turn on tls encryption see http://www.postfix.org/postconf.5.html#smtp_tls_security_level
