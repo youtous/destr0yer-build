@@ -43,7 +43,9 @@ smtp_tls_mandatory_ciphers = high
 # verify everything see http://www.postfix.org/postconf.5.html#smtp_tls_verify_cert_match
 smtp_tls_verify_cert_match = hostname, nexthop, dot-nexthop
 # define which tls protocol to use
-smtp_tls_mandatory_protocols = !SSLv2, !SSLv3
+smtp_tls_mandatory_protocols = >=TLSv1.2
+
+smtp_tls_wrappermode = {{ postfix_uses_client_ssl_tls }}
 
 tls_random_source = dev:/dev/urandom
 
