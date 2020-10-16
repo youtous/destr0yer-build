@@ -21,8 +21,8 @@ nameservers: # use DNSCrypt-proxy
 monitoring_email: "monitoring@youtous.me"
 
 # email server used to deliver emails
-relay_server: "mail.youtous.me"
-relay_port: 587
+relay_server: "mailserver.youtous.me"
+relay_port: 465
 
 common_users:
   # arbiter is the only sudoer
