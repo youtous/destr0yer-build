@@ -77,6 +77,7 @@ enable_elasticsearch_webui: false
 elasticsearch_domain: "elasticsearch.{{ hostname }}"
 enable_logstash_webui: false
 logstash_domain: "logstash.{{ hostname }}"
+enable_webhook_smtp_forwarder: true
 
 
 # Provide X509 certificates for TLS

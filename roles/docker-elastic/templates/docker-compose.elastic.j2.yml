@@ -130,7 +130,8 @@ services:
       retries: 40
       start_period: 1200s
 
-# forward kibana alerts using smtp
+{% if enable_webhook_smtp_forwarder %}
+  # forward kibana alerts using smtp
   alerts-smtp-forwarder:
     image: "youtous/odfe-alerts-handler:latest"
     networks:
@@ -153,6 +154,7 @@ services:
         delay: 5s
         window: 30s
         max_attempts: 0 # unlimited restarts
+{% endif %}
 
   # process logs from everywhere
   logstash:

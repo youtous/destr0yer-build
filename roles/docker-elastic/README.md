@@ -13,6 +13,8 @@ A common scheme is to use :
 - a common certificate for all **beats** agents on the **same node**. (e.g. `node.elastic.domain.tld`)
 - dedicated certificate per docker service such as **logstash** or eventually logspout. (e.g. `logstash.elastic.domain.tld`)
 
+**IMPORTANT :** the FQDN of certificates must match with the `hostname` (krug.svur.org for instance).
+
 ### Use it with a VPN
 Use a VPN for `receiver <<----[VPN]--- forwarder`
 
