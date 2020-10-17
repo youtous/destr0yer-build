@@ -23,6 +23,7 @@ services:
       - target: {{ virtual_port }}
         published: {{ virtual_port }}
         mode: host
+        protocol: udp
 {% endfor %}
       - target: 30033
         published: 30033
