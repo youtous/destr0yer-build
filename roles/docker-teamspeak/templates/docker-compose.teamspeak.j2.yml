@@ -11,12 +11,18 @@ services:
 
   ts3server:
     image: "teamspeak:{{ teamspeak_version }}"
+    entrypoint: >
+      sh -c '
+        rm -f /var/ts3server/licensekey.dat;
+        cp /tmp/ro/licensekey.dat /var/ts3server/licensekey.dat;
+        ./entrypoint.sh
+      '
     volumes:
       - teamspeak-data:/var/ts3server
 {% if teamspeak_license is defined and (teamspeak_license|length>0) %}
     secrets:
       - source: licensekey.dat
-        target: /var/ts3server/licensekey.dat
+        target: /tmp/ro/licensekey.dat
 {% endif %}
     ports:
 {% for virtual_port in teamspeak_virtual_ports %}
