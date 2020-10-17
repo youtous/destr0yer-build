@@ -15,7 +15,7 @@ services:
       sh -c '
         rm -f /var/ts3server/licensekey.dat;
         cp /tmp/ro/licensekey.dat /var/ts3server/licensekey.dat;
-        /opt/ts3server/entrypoint.sh
+        /opt/ts3server/entrypoint.sh ts3server
       '
     volumes:
       - teamspeak-data:/var/ts3server
