@@ -3,6 +3,8 @@ server.name: kibana
 server.host: "0"
 server.ssl.enabled: false
 
+csp.strict: true
+
 elasticsearch.hosts: http://elasticsearch:9200
 
 newsfeed.enabled: false

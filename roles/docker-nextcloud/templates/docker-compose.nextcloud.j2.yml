@@ -126,7 +126,10 @@ services:
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
         # security labels
+        - "traefik.frontend.headers.customResponseHeaders=Server:||X-Powered-By:" # Features-Permissions are set by Nextcloud
+        - traefik.frontend.headers.referrerPolicy=same-origin
         - traefik.frontend.headers.browserXSSFilter=true
+        # csp defined by nextcloud
         - traefik.frontend.headers.customFrameOptionsValue=sameorigin # allow same origin for iframes
         - traefik.frontend.headers.contentTypeNosniff=true
         # rate limits
