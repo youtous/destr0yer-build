@@ -35,7 +35,7 @@ services:
         - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
         - traefik.frontend.headers.browserXSSFilter=true
         - traefik.frontend.headers.frameDeny=true
-        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
         - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
