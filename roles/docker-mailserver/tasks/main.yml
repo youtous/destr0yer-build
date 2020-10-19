@@ -75,6 +75,8 @@
       dest: cron/sa-learn
     - src: spamassassin-rules.cf.j2
       dest: spamassassin-rules.cf
+    - src: amavis-user.cf.j2
+      dest: amavis-user.cf
   no_log: true
 
 - name: Copy mailserver files

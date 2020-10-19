@@ -1,0 +1,18 @@
+# Managed by Ansible
+# Custom Amavis conf https://wiki.evolix.org/HowtoAmavis
+use strict;
+
+#
+# Place your configuration directives here.  They will override those in
+# earlier files.
+#
+# See /usr/share/doc/amavisd-new/ for documentation and examples of
+# the directives you can use in this file
+#
+
+{{ mailserver_amavis_custom_conf|default('') }}
+
+
+#------------ Do not modify anything below this line -------------
+1;  # ensure a defined return
+# IMPORTANT, KEEP A NEW LINE AT THE END OF THIS FILE.
