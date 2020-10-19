@@ -434,7 +434,7 @@ services:
         - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
         - traefik.frontend.headers.browserXSSFilter=true
         - traefik.frontend.headers.frameDeny=true # deny iframes
-        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self'; img-src 'self'; style-src 'self' https://stackpath.bootstrapcdn.com/* 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; style-src 'self' https://stackpath.bootstrapcdn.com/* 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
         - traefik.frontend.headers.contentTypeNosniff=true
         # rate limits
         - traefik.frontend.rateLimit.extractorFunc=client.ip
