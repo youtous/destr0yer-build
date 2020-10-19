@@ -40,6 +40,9 @@ configs:
   cron-sa-learn:
     name: "{{ docker_mailserver_stack_name }}_cron-sa-learn-${DEPLOY_TIMESTAMP}"
     file: "./config/cron/sa-learn"
+  spamassassin-rules.cf:
+    name: "{{ docker_mailserver_stack_name }}_spamassassin-rules-${DEPLOY_TIMESTAMP}"
+    file: "./config/spamassassin-rules.cf"
 {% for mailserver in mailserver_domains %}
 {% if mailserver.mta_sts is defined %}
   mta_sts_file_{{ mailserver.domain }}.txt:
@@ -116,6 +119,8 @@ services:
         target: "/tmp/read-only/docker-mailserver/postfix-main.cf"
       - source: postfix-master.cf
         target: "/tmp/read-only/docker-mailserver/postfix-master.cf"
+      - source: spamassassin-rules.cf
+        target: "/tmp/read-only/docker-mailserver/spamassassin-rules.cf"
       - source: cron-sa-learn
         target: "/etc/cron.d/sa-learn"
     secrets:

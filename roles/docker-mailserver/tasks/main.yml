@@ -73,6 +73,8 @@
       dest: dovecot-quotas.cf
     - src: cron/sa-learn.j2
       dest: cron/sa-learn
+    - src: spamassassin-rules.cf.j2
+      dest: spamassassin-rules.cf
   no_log: true
 
 - name: Copy mailserver files

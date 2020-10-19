@@ -1,0 +1,6 @@
+# Managed by Ansible
+# Custom SpamAssassin rules https://spamassassin.apache.org/full/3.1.x/doc/Mail_SpamAssassin_Conf.html
+
+{{ mailserver_spamassassin_custom_rules|default('') }}
+
+# IMPORTANT, KEEP A NEW LINE AT THE END OF THIS FILE.

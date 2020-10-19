@@ -67,6 +67,10 @@ mailserver_whitelist_clients: []
 mailserver_send_restricted: [] # emails banned to be used as destination
 mailserver_receive_restricted: [] # emails banned to send email to this server
 
+# custom rules for SA, see https://spamassassin.apache.org/full/3.1.x/doc/Mail_SpamAssassin_Conf.html
+mailserver_spamassassin_custom_rules: ""
+# mailserver_spamassassin_custom_rules: |
+
 # domains configuration
 # see DNS to setup https://hub.docker.com/r/monogramm/autodiscover-email-settings
 mailserver_domains:
