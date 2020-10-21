@@ -72,6 +72,9 @@ mailserver_spamassassin_custom_rules: ""
 # mailserver_spamassassin_custom_rules: |
 mailserver_amavis_custom_conf: ""
 
+# fail2ban conf
+mailserver_fail2ban_dovecot_mode_aggressive: false # causes lot of false positives on MTA; normal mode is sufficient
+
 # domains configuration
 # see DNS to setup https://hub.docker.com/r/monogramm/autodiscover-email-settings
 mailserver_domains:

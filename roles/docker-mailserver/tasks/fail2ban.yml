@@ -29,7 +29,7 @@
     fail2ban_services:
       - name: dovecot-docker
         port: smtp,pop3,pop3s,imap,imaps,submission,465,sieve
-        mode: aggressive
+        mode: "{{ 'aggressive' if (mailserver_fail2ban_dovecot_mode_aggressive) else 'normal' }}"
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
         chain: DOCKER-USER
