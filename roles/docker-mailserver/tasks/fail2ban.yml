@@ -59,6 +59,7 @@
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
         chain: DOCKER-USER
+        ignoreregex: "{{ '' if (mailserver_fail2ban_postfix_mode == 'aggressive') else 'authentication failed: Connection lost to authentication server$' }}"
 
       - name: sieve-docker
         port: smtp,465,submission,sieve
