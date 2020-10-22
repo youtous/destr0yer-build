@@ -4,6 +4,12 @@
 # sudo fail2ban-regex systemd-journal  /etc/fail2ban/filter.d/postfix-docker.conf  -v --print-all-matched
 # sudo fail2ban-regex systemd-journal  /etc/fail2ban/filter.d/dovecot-docker.conf   -v --print-all-matched
 
+- name: Verify fail2ban postfix mode
+  assert:
+    that: >
+      mailserver_fail2ban_postfix_mode in ['normal','more','extra','aggressive']
+    msg: "fail2ban postfix modes (mailserver_fail2ban_postfix_mode): normal, more, extra, aggressive"
+
 - name: Add mailserver filters to fail2ban
   become: yes
   copy:
@@ -42,14 +48,14 @@
 
       - name: postfix-docker
         port: smtp,submission,465
-        mode: aggressive
+        mode: "{{ mailserver_fail2ban_postfix_mode }}"
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
         chain: DOCKER-USER
 
       - name: postfix-sasl-docker # special fix from docker-mailserver
         port: smtp,submission,465
-        mode: aggressive
+        mode: "{{ mailserver_fail2ban_postfix_mode }}"
         backend: systemd
         ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
         chain: DOCKER-USER
