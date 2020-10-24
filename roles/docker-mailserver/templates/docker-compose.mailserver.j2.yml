@@ -43,6 +43,12 @@ configs:
   spamassassin-rules.cf:
     name: "{{ docker_mailserver_stack_name }}_spamassassin-rules-${DEPLOY_TIMESTAMP}"
     file: "./config/spamassassin-rules.cf"
+  update-resolver.conf:
+    name: "{{ docker_mailserver_stack_name }}_update-resolver-conf-${DEPLOY_TIMESTAMP}"
+    file: "./files/update-resolver.conf"
+  update-resolver-ip.sh:
+    name: "{{ docker_mailserver_stack_name }}_update-resolver-sh-${DEPLOY_TIMESTAMP}"
+    file: "./files/update-resolver-ip.sh"
   amavis-user.cf:
     name: "{{ docker_mailserver_stack_name }}_amavis-user-${DEPLOY_TIMESTAMP}"
     file: "./config/amavis-user.cf"
@@ -82,6 +88,11 @@ services:
       sh -c '
       mkdir -p /var/mail-state/lib-shared/ &&
       cp -R /tmp/read-only/* /tmp/ &&
+{% if mailserver_use_embedded_resolver %}
+      cp /tmp/read-only/customs/update-resolver-ip.sh /usr/local/bin/update-resolver-ip.sh &&
+      chmod +x /usr/local/bin/update-resolver-ip.sh &&
+      cp /tmp/read-only/customs/update-resolver.conf /etc/supervisor/conf.d/ &&
+{% endif %}
       supervisord -c /etc/supervisor/supervisord.conf
       '
     ports:
@@ -128,6 +139,10 @@ services:
         target: "/tmp/read-only/docker-mailserver/amavis.cf"
       - source: cron-sa-learn
         target: "/etc/cron.d/sa-learn"
+      - source: update-resolver.conf
+        target: "/tmp/read-only/customs/update-resolver.conf"
+      - source: update-resolver-ip.sh
+        target: "/tmp/read-only/customs/update-resolver-ip.sh"
     secrets:
       - source: postfix-accounts.cf
         target: "/tmp/read-only/docker-mailserver/postfix-accounts.cf"
@@ -237,6 +252,30 @@ services:
         # render 404 could be a possibility, todo : with traefik v2
         - "traefik.frontend.redirect.replacement=https://{{ mailserver_domain }}/" # redirect access to smtp/imap domain to and other domain (e.g. webmail or autoconfig)
 {% endif %}
+{% endif %}
+
+{% if mailserver_use_embedded_resolver %}
+  resolver:
+    image: mailu/unbound:master
+    command: >
+      sh -c '
+      chmod o+w /dev/stdout &&
+      /start.py
+      '
+    environment:
+      - SUBNET={{ mailserver_internal_network_whitelisted }}
+    networks:
+      - mailserver-fixed
+    deploy:
+      placement:
+        constraints: # we want to keep the resolver attached to the mailserver node
+          - node.role == manager
+          - node.labels.mailserver.mailserver-data == true
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 30s
+        max_attempts: 5
 {% endif %}
 
   mta-sts-web:

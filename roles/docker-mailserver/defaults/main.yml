@@ -137,6 +137,9 @@ mailserver_enable_host_fail2ban: true
 # ManageSieve, used by clients, for instance on RainLoop, port is not exposed
 mailserver_enable_managesieve: true
 
+# Use docker unbound service as a resolver
+mailserver_use_embedded_resolver: true
+
 # Fetchmail
 mailserver_enable_fetchmail: false
 mailserver_fetchmail_poll_interval: 300
