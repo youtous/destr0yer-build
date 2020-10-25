@@ -12,24 +12,32 @@ See the link below for more information:
 https://github.com/DNSCrypt/dnscrypt-proxy/wiki/Anonymized-DNS
 
 
-## anon-am-us
+## anon-acsacsar-ams-ipv4
 
-Anonymized DNS relay hosted in Seattle - US
-sdns://gRQxMDQuMTY4LjI0Ny4xMzg6NDM0Mw
+Anonymized DNS relay hosted in AMS on Scaleway
+
+sdns://gRE1MS4xNTguMTY2Ljk3OjQ0Mw
+
+
+## anon-acsacsar-ams-ipv6
+
+Anonymized DNS relay hosted in AMS on Scaleway
+
+sdns://gRpbMjAwMTpiYzg6MTgyNDo3Mzg6OjFdOjQ0Mw
 
 
 ## anon-ams-nl
 
 Anonymized DNS relay hosted in Netherlands - NL
 
-sdns://gRE1MS4xNS4xMjQuMjA4OjQ0Mw
+sdns://gRI1MS4xNS4xMjQuMjA4OjQzNDM
 
 
-## anon-charis
+## anon-bcn
 
-Anonymized DNS relay by lucenera
+Anonymized DNS relay hosted in Barcelona, Spain.
 
-sdns://gRMxOTIuMjQxLjE1NC4xMzY6NDQz
+sdns://gRMxODUuMjUzLjE1NC42Njo0MzQz
 
 
 ## anon-cs-ca2
@@ -144,6 +152,13 @@ Anonymized DNS relay hosted in US - Dallas, TX provided by https://cryptostorm.i
 sdns://gREyMDkuNTguMTQ3LjM2OjQ0Mw
 
 
+## anon-dnscrypt.one
+
+Anonymized DNS relay hosted in Germany (Nuremberg)
+
+sdns://gRIxNDQuOTEuMTA2LjIyNzo0NDM
+
+
 ## anon-dnscrypt.uk-ipv4
 
 Anonymized DNS relay hosted in UK on DigitalOcean
@@ -158,39 +173,32 @@ Anonymized DNS relay hosted in UK on DigitalOcean
 sdns://gR5bMmEwMzpiMGMwOjE6ZTA6OjJlMzplMDAxXTo0NDM
 
 
-## anon-edoardo
-
-Anonymized DNS relay by lucenera
-
-sdns://gRA1MS4xNS43MS4xNDc6NDQz
-
-
 ## anon-ev-to
 
 Anonymized DNS relay provided by evilvibes.com Location: Toronto, Canada
 
-sdns://gQ0yMy4xMTEuNjkuMjM4
+sdns://gQw2Ni44NS4zMC4xMDU
 
 
 ## anon-ev-va
 
 Anonymized DNS relay provided by evilvibes.com Location: Vancouver, Canada
 
-sdns://gQ4xMDQuMzYuMTQ5LjE3Nw
+sdns://gQ4xMDQuMzYuMTQ4LjIyMQ
 
 
 ## anon-ibksturm
 
 Hosted in Switzerland and maintained by @ibksturm, aka Andreas Ziegler.
 
-sdns://gQ84My43Ny44NS43Ojg0NDM
+sdns://gRI4My43OC4xMjAuMjI3Ojg0NDM
 
 
 ## anon-ibksturm-ipv6
 
 Hosted in Switzerland and maintained by @ibksturm, aka Andreas Ziegler.
 
-sdns://gS5bMmEwMjoxMjA1OjM0ZDU6NTA3MDpiMjZlOmJmZmY6ZmUxZDplMTliXTo4NDQz
+sdns://gS5bMmEwMjoxMjA1OjM0ZTc6OGUzMDpiMjZlOmJmZmY6ZmUxZDplMTliXTo4NDQz
 
 
 ## anon-inconnu
@@ -210,9 +218,23 @@ sdns://gRIxMzcuNzQuMjIzLjIzNDo0NDM
 
 ## anon-meganerd
 
-Anonymized DNS relay hosted by MegaNerd.nl in Amsterdam, The Netherlands
+Anonymized DNS relay hosted by MegaNerd.nl (https://www.meganerd.nl/encrypted-dns-server) in Amsterdam, The Netherlands
 
-sdns://gRE5NS4xNzkuMTUxLjc5OjQ0Mw
+sdns://gRIxMzYuMjQ0Ljk3LjExNDo0NDM
+
+
+## anon-meganerd-ipv6
+
+Anonymized DNS relay hosted by MegaNerd.nl (https://www.meganerd.nl/encrypted-dns-server) in Amsterdam, The Netherlands
+
+sdns://gStbMjAwMToxOWYwOjUwMDE6Y2JiOjU0MDA6M2ZmOmZlMDc6ZjcwZF06NDQz
+
+
+## anon-plan9-dns
+
+Anonymized DNS relay hosted in New Jersey, USA. Running the official Docker image on Vultr by @jlongua1
+
+sdns://gRIxNzMuMTk5LjEyNi4zNTo0NDM
 
 
 ## anon-publicarray
@@ -265,14 +287,7 @@ sdns://gRtbMjAwMTpiYzg6MTgyNDoxNzBmOjoxXTo0NDM
 
 Anonymized DNS relay hosted in Sweden - SE
 
-sdns://gRE0NS4xNTMuMTg3Ljk2OjQ0Mw
-
-
-## anon-suami
-
-Anonymized DNS relay by lucenera
-
-sdns://gRE1MS4xNS4xNDMuMTIzOjQ0Mw
+sdns://gRI0NS4xNTMuMTg3Ljk2OjQzNDM
 
 
 ## anon-tiarap
@@ -301,3 +316,18 @@ sdns://gRMxMDQuMjM4LjE4Ni4xOTI6NDQz
 Anonymized DNS relay hosted in UK on Vultr
 
 sdns://gSxbMjAwMToxOWYwOjc0MDI6MTU3NDo1NDAwOjJmZjpmZTY2OjJjZmZdOjQ0Mw
+
+
+## anon-yofiji-se-ipv4
+
+Anonymized DNS relay hosted in Sweden and maintained by yofiji.
+
+sdns://gRMxODUuMTkzLjEyNy4yNDQ6NDQz
+
+
+## anon-yofiji-se-ipv6
+
+Anonymized DNS relay hosted in Sweden and maintained by yofiji.
+
+sdns://gSlbMmEwYTozODQwOjEzMzc6MTI3OjA6YjljMTo3ZmY0OjEzMzddOjQ0Mw
+
