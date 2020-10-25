@@ -34,7 +34,7 @@
     dest: "/etc/ssh/sshd_config"
     block: "AllowGroups {{ backup_group_name }}"
     insertafter: "^AllowGroups"
-    marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp allow groups ssh ###"
+    marker: "\n### {mark} ANSIBLE MANAGED BLOCK - sftp allow groups ssh ###"
     validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
   notify:
     - restart sshd
