@@ -13,6 +13,7 @@ host_users:
     ssh_key: "{{ specu_ssh_keys }}"
     password: "{{ specu_password }}"
     update_password: "always"
+    restrict_ips: ['192.168.100.1']
 
 ### Begin of relay-smtp parameters ###
 

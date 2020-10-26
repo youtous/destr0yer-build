@@ -1,0 +1,6 @@
+---
+users: []
+#  - username: backup_hostname
+#    ssh_keys: [] # specify host public key
+#    restrict_ips: [] # specify list of allowed ips, no restriction if the list is empty, DO NOT USE DOMAINS, it will not be resolved
+...

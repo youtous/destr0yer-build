@@ -6,6 +6,7 @@
   remote_user: "{{ arbiter_username }}"
   roles:
     - users
+    - restrict-user-ssh-ips # restrict some users to a list of ips for ssh
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
