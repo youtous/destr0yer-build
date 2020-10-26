@@ -14,7 +14,7 @@
 # user management
 - name: youtous.users
   src: https://github.com/youtous/ansible-users.git
-  version: e2c47b83d5518d46174a05613f1f98a320145f02
+  version: 79dbcbc58181580c1fc01e233d59ee6248267c3d
 
 # Resolv.conf
 - name: ahuffman.resolv
