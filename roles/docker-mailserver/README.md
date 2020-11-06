@@ -39,7 +39,8 @@ autoconfig.{{ mailserver.domain }}                   IN     CNAME {{ hostname }}
 {{ mailserver_hostname }}.{{ mailserver_domain }}    IN     CNAME {{ target_mailserver }} # the mailserver addr
 
 
-{{ mailserver_domain }}                              IN      CNAME  {{ hostname }}
+{{ mailserver_domain }}                              IN      A  {{ hostname_ipv4 }} # /!\ NEVER USE CNAME on MX domains
+{{ mailserver_domain }}                              IN      AAAA  {{ hostname_ipv6 }} # (eventually)
 {{ mailserver_domain }}                              IN      MX 10  {{ mailserver_hostname }}.{{ mailserver_domain }}
 {{ mailserver_domain }}                              IN      TXT    "mailconf=https://autoconfig.{{ mailserver_domain }}/mail/config-v1.1.xml"
 _imaps._tcp.{{ mailserver_domain }}                  IN      SRV    0 0 993 {{ mailserver_hostname }}.{{ mailserver_domain }}
@@ -55,7 +56,7 @@ testing.svur.org.			1	IN	CNAME	krug.svur.org.
 mail.testing.svur.org.			1	IN	CNAME	krug.svur.org.
 autoconfig.testing.svur.org.		1	IN	CNAME	krug.svur.org.
 autodiscover.testing.svur.org.		1	IN	CNAME	krug.svur.org.
-mailserver.testing.svur.org.		1	IN	CNAME	krug.svur.org.
+mailserver.testing.svur.org.		1	IN	A	192.168.1.202
 
 ;; MX Records
 testing.svur.org.			1	IN	MX	10 mailserver.testing.svur.org.
