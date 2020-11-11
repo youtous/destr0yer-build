@@ -225,7 +225,9 @@ mailserver_domains:
 
 ### Begin of SSL/TLS monitoring parameters ###
 monitor_testssl_hosts:
+  - host: "mailserver.svur.org:993"
   - host: "mailserver.svur.org:465"
+  - host: "mailserver.svur.org:25"
     protocol: "smtp"
   - host: "svur.org:443"
     ipv6: true
