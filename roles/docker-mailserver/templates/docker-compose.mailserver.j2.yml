@@ -242,6 +242,9 @@ services:
         - "traefik.port=443" # dummy port, not used
         - "traefik.tags={{ traefik_public_tag }}"
 
+        # ensure usage of RSA certificate for mailserver
+        - "traefik.acme.keyType=RSA4096"
+
         - "traefik.frontend.rule=Host:{{ mailserver_fqdn }}" # traefik ACME will handle creation of certificates for this domain
         - "traefik.frontend.entryPoints=https"
         - "traefik.frontend.redirect.regex=.*" # always redirect
