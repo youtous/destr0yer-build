@@ -1,5 +1,8 @@
 # youtous/docker-mailserver
 
+# References for crypto
+https://bettercrypto.org/#_tls_usage_in_mail_server_protocols
+
 ## How to?
 
 1. Add the *mailserver* host in `hosts/mailserver.yml` and add the docker network in `mailserver_allowed_ips` if you want access smtps server from others host containers.

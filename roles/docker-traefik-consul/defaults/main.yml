@@ -21,6 +21,9 @@ traefik_public_tag: "traefik-public"
 # minimal TLS version
 traefik_min_tls_version: "VersionTLS12"
 
+# for backwards compatibility (and mailserver), we stick with RSA, TODO => configure EC384 and configure mailservers accordingly (they need RSA AND EC)
+traefik_acme_keytype: "RSA4096"
+
 # list of supported ciphers; the server will fail if one cipher is not valid
 traefik_cipher_suites:
     # TLS 1.3
