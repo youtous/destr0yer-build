@@ -180,6 +180,13 @@ logstash_external_allowed_ip4s: "{{ local_docker_ips + logstash_trough_vpn }}"
 logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s }}" # allow docker + all nodes are allowed to send logs data, list can be completed
 # ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it
 
+# elastic alert configuration
+elastic_alert_email_server: "{{ relay_server }}"
+elastic_alert_email_port: "{{ relay_port }}"
+elastic_alert_email_from: "{{ relay_user }}"
+elastic_alert_email_user: "{{ relay_user }}"
+elastic_alert_email_password: "{{ relay_password }}"
+
 metricbeats_modules:
   - system
   - docker
