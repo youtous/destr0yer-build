@@ -64,12 +64,12 @@ logstash_client_forwarder_CA_certificate: "" # CA shared with the logstash recei
 logstash_client_forwarder_node_certificate: ""
 logstash_client_forwarder_node_private_key: ""
 
-# email alerts settings
-alert_email_server: "{{ relay_server }}"
-alert_email_port: "{{ relay_port }}"
-alert_email_from: "{{ relay_email }}"
-alert_email_user: "{{ relay_user }}"
-alert_email_password: "{{ relay_password }}"
+# email alerts settings, it is advised to create a dedicated email account for elastic
+elastic_alert_email_server: ""
+elastic_alert_email_port: ""
+elastic_alert_email_from: ""
+elastic_alert_email_user: ""
+elastic_alert_email_password: ""
 
 # domains
 kibana_domain: "kibana.{{ hostname }}"
