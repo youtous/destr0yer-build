@@ -1,0 +1,32 @@
+---
+promgraf_prometheus_retention: "15d"
+
+# email alerts settings, it is advised to create a dedicated email account for elastic
+promgraf_alert_email_server: ""
+promgraf_alert_email_port: ""
+promgraf_alert_email_from: ""
+promgraf_alert_email_to: ""
+promgraf_alert_email_user: ""
+promgraf_alert_email_password: ""
+
+# base domain of promgraf
+promgraf_base_domain: "rtm.{{ hostname }}"
+
+# traefik public-tag
+traefik_public_tag: "traefik-public"
+
+# name of the traefik network
+traefik_network: "traefik-public"
+
+# activate grafana
+promgraf_grafana_activated: true
+
+promgraf_prometheus_domain: "prom.{{ promgraf_base_domain }}"
+promgraf_alertmanager_domain: "alerts.{{ promgraf_base_domain }}"
+promgraf_grafana_domain: "graph.{{ promgraf_base_domain }}"
+
+# images versions
+promgraf_prometheus_version: "latest"
+promgraf_grafana_version: "latest"
+promgraf_alertmanager_version: "latest"
+...

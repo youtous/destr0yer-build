@@ -1,0 +1,7 @@
+---
+promgraf_compose_file_dest_directory: ~/promgraf
+promgraf_compose_file_dest_name: docker-compose.promgraf.yml
+promgraf_compose_file_dest: "{{ promgraf_compose_file_dest_directory }}/{{ promgraf_compose_file_dest_name }}"
+
+docker_promgraf_stack_name: promgraf
+...

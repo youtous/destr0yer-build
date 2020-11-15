@@ -1,0 +1,242 @@
+---
+version: "3.7"
+
+# adapted from
+# https://github.com/swarmstack/swarmstack/blob/master/docker-compose.yml
+
+services:
+
+{% if promgraf_grafana_activated %}
+  # visualization
+  grafana:
+    image: "grafana/grafana:{{ promgraf_grafana_version }}"
+    environment:
+      # disable auth, will be handled with traefik
+      # see https://github.com/grafana/grafana/issues/2335
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_PROXY_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+      # Grafana alert system with emails
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_FROM_NAME=Grafana
+      - "GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS}"
+      - "GF_SMTP_HOST=${GF_SMTP_HOST}"
+      - "GF_SMTP_USER=${GF_SMTP_USER}"
+      - "GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}"
+    volumes:
+      - grafana:/var/lib/grafana
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        window: 30s
+        max_attempts: 0 # unlimited restarts
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 64M
+      labels:
+        - "traefik.frontend.rule=Host:{{ promgraf_grafana_domain }}"
+        - traefik.enable=true
+        - traefik.port=3000
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - "traefik.frontend.headers.customResponseHeaders=Server:||X-Powered-By:||Permissions-Policy:accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ promgraf_grafana_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+    networks:
+      - net
+      - {{ traefik_network }}
+{% endif %}
+
+  # sends alerts
+  alertmanager:
+    image: "prom/alertmanager:{{ promgraf_alertmanager_version }}"
+    secrets:
+      - source: alertmanager
+        target: /etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - alertmanager:/alertmanager
+    healthcheck:
+      test: "/bin/wget -q -Y off http://localhost:9093/-/healthy -O /dev/null > /dev/null 2>&1"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        window: 30s
+        max_attempts: 0 # unlimited restarts
+      labels:
+        - "traefik.frontend.rule=Host:{{ promgraf_alertmanager_domain }}"
+        - traefik.enable=true
+        - traefik.port=9093
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - "traefik.frontend.headers.customResponseHeaders=Server:||X-Powered-By:||Permissions-Policy:accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ promgraf_alertmanager_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+    networks:
+      - net
+      - {{ traefik_network }}
+
+  # database metrics
+  prometheus:
+    image: "prom/prometheus:{{ promgraf_prometheus_version }}"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention={{ promgraf_prometheus_retention }}'
+    volumes:
+      - prometheus:/prometheus
+    configs:
+      - source: node_rules
+        target: /etc/prometheus/swarm_node.rules.yml
+      - source: task_rules
+        target: /etc/prometheus/swarm_task.rules.yml
+    healthcheck:
+      test: "/bin/wget -q -Y off http://localhost:9090/status -O /dev/null > /dev/null 2>&1"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        window: 60s
+        max_attempts: 0 # unlimited restarts
+      resources:
+        limits:
+          memory: 1536M
+        reservations:
+          memory: 512M
+      labels:
+        - "traefik.frontend.rule=Host:{{ promgraf_prometheus_domain }}"
+        - traefik.enable=true
+        - traefik.port=9090
+        - "traefik.tags={{ traefik_public_tag }}"
+        - "traefik.docker.network={{ traefik_network }}"
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+        # security labels
+        - "traefik.frontend.headers.customResponseHeaders=Server:||X-Powered-By:||Permissions-Policy:accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
+        - traefik.frontend.headers.browserXSSFilter=true
+        - traefik.frontend.headers.frameDeny=true
+        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+        - traefik.frontend.headers.contentTypeNosniff=true
+        # HSTS
+        - traefik.frontend.headers.SSLRedirect=true
+        - "traefik.frontend.headers.SSLHost={{ promgraf_prometheus_domain }}"
+        - traefik.frontend.headers.STSSeconds=315360000
+        - traefik.frontend.headers.STSIncludeSubdomains=true
+        - traefik.frontend.headers.STSPreload=true
+        # Auth
+        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
+        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+    networks:
+      - net
+      - {{ traefik_network }}
+
+networks:
+  net:
+    driver: overlay
+    driver_opts:
+      encrypted: ""
+    attachable: true
+  {{ traefik_network }}:
+    external: true
+
+volumes:
+  prometheus: {}
+  grafana: {}
+  alertmanager: {}
+
+configs:
+  node_rules:
+    name: "{{ docker_promgraf_stack_name }}_node_rules-${DEPLOY_TIMESTAMP}"
+    file: ./prometheus/rules/swarm_node.rules.yml
+  task_rules:
+    name: "{{ docker_promgraf_stack_name }}_task_rules-${DEPLOY_TIMESTAMP}"
+    file: ./prometheus/rules/swarm_task.rules.yml
+
+secrets:
+  alertmanager:
+    name: "{{ docker_promgraf_stack_name }}_alertmanager-${DEPLOY_TIMESTAMP}"
+    external: true
+...

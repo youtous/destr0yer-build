@@ -1,0 +1,61 @@
+---
+# This role setup a complete monitoring application for containers in swarm mode
+# see https://github.com/stefanprodan/promgraf for more details
+
+- name: Ensure promgraf directory exists
+  file:
+    state: directory
+    path: "{{ promgraf_compose_file_dest_directory }}"
+
+- name: Register deployment timestamp
+  set_fact:
+    promgraf_deploy_timestamp: "{{ ansible_date_time.epoch }}"
+
+- name: Ensure prometheus rules directory exists
+  file:
+    state: directory
+    path: "{{ promgraf_compose_file_dest_directory }}/prometheus/rules"
+
+- name: Copy prometheus rules configuration
+  copy:
+    src: "files/prometheus/rules/{{ item }}"
+    dest: "{{ promgraf_compose_file_dest_directory }}/prometheus/rules/{{ item }}"
+    mode: u=rw,g=,o=
+  with_items:
+    - swarm_node.rules.yml
+    - swarm_task.rules.yml
+
+- name: Ensure alertmanager directory exists
+  file:
+    state: directory
+    path: "{{ promgraf_compose_file_dest_directory }}/alertmanager"
+
+- name: Register Swarmprom AlertManager configuration as a secret
+  docker_secret:
+    name: "{{ docker_promgraf_stack_name }}_alertmanager-{{ promgraf_deploy_timestamp }}"
+    data: "{{ lookup('template', 'templates/alertmanager/alertmanager.j2.yml') }}"
+    state: present
+  no_log: true
+
+- name: Copy Swarmprom stack
+  template:
+    src: files/docker-compose.promgraf.j2.yml
+    dest: "{{ promgraf_compose_file_dest }}"
+    mode: u=rw,g=,o=
+
+- name: Deploy promgraf stack
+  docker_stack:
+    state: present
+    prune: yes
+    name: "{{ docker_promgraf_stack_name }}"
+    compose:
+      - "{{ promgraf_compose_file_dest }}"
+  environment:
+    GF_SMTP_HOST: "{{ promgraf_alert_email_server }}:{{ promgraf_alert_email_port }}"
+    GF_SMTP_FROM_ADDRESS: "{{ promgraf_alert_email_from }}"
+    GF_SMTP_USER: "{{ promgraf_alert_email_user }}"
+    GF_SMTP_PASSWORD: "{{ promgraf_alert_email_password }}"
+
+    DEPLOY_TIMESTAMP: "{{ promgraf_deploy_timestamp }}"
+  notify: docker prune
+...
