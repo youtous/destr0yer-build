@@ -9,7 +9,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-setup"]
+  tags: ["docker-setup", "docker-swarm-setup", "docker-swarm-init"]
 
 - name: Setup docker swarm mode on all systems
   hosts: all # Due to daemon.json format, DO NOT run roles of this task individually
@@ -22,7 +22,7 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-swarm-setup"]
+  tags: ["docker-swarm-setup", "docker-swarm-init"]
 
 - name: Initiate the primary manager
   hosts: primary_manager
@@ -59,7 +59,7 @@
   tasks:
     - name: refresh inventory
       meta: refresh_inventory
-  tags: ["docker-swarm-init-cleanup"]
+  tags: ["docker-swarm-init", "docker-swarm-init-cleanup"]
 
 - name: Integrate fail2ban for docker (recidive)
   hosts: all
@@ -91,6 +91,16 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-backup-tools"]
+
+- name: Setup docker common tools
+  hosts: all
+  roles:
+    - docker-ctop-cmd
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-common-tools"]
 
 - name: Setup traefik reverse-proxy with consul
   hosts: primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
