@@ -194,6 +194,17 @@ metricbeats_modules:
 
 ### End of docker elastic parameters ###
 
+### Begin of docker promgraf parameters ###
+promgraf_alert_email_server: "{{ relay_server }}"
+promgraf_alert_email_port: "{{ relay_port }}"
+promgraf_alert_email_from: "{{ relay_user }}"
+promgraf_alert_email_to: "{{ monitoring_email }}"
+promgraf_alert_email_user: "{{ relay_user }}"
+promgraf_alert_email_password: "{{ relay_password }}"
+### End of docker promgraf parameters ###
+
+
+
 ### Begin of mailserver parameters ###
 mailserver_ssl_type: ""
 mailserver_ssl_use_traefik: false

@@ -147,6 +147,9 @@
 - name: Include elastic cluster setup
   import_playbook: elastic.yml
 
+- name: Include promgraf cluster setup
+  import_playbook: promgraf.yml
+
 - name: Include mailserver deployment for regenerating firewall rules
   import_playbook: mailserver.yml
 

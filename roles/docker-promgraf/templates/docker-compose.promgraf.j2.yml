@@ -1,7 +1,7 @@
 ---
 version: "3.7"
 
-# adapted from
+# adapted from swarmprom / swarmstack
 # https://github.com/swarmstack/swarmstack/blob/master/docker-compose.yml
 
 services:
@@ -26,10 +26,17 @@ services:
       - "GF_SMTP_HOST=${GF_SMTP_HOST}"
       - "GF_SMTP_USER=${GF_SMTP_USER}"
       - "GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}"
+
+      - "GF_INSTALL_PLUGINS=${GF_INSTALL_PLUGINS}"
+
+      # map reverse proxy
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s
+      - "GF_SERVER_DOMAIN=${GF_SERVER_DOMAIN}"
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
     volumes:
       - grafana:/var/lib/grafana
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+      test: "wget -q -Y off -O /dev/null http://localhost:3000/login > /dev/null 2>&1"
       interval: 30s
       timeout: 5s
       retries: 5
@@ -40,6 +47,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.labels.promgraf.grafana-data == true
       restart_policy:
         condition: on-failure
         delay: 30s
@@ -86,7 +94,7 @@ services:
   alertmanager:
     image: "prom/alertmanager:{{ promgraf_alertmanager_version }}"
     secrets:
-      - source: alertmanager
+      - source: alertmanager.yml
         target: /etc/alertmanager/alertmanager.yml
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
@@ -94,7 +102,7 @@ services:
     volumes:
       - alertmanager:/alertmanager
     healthcheck:
-      test: "/bin/wget -q -Y off http://localhost:9093/-/healthy -O /dev/null > /dev/null 2>&1"
+      test: "wget -q -Y off http://localhost:9093/metrics -O /dev/null > /dev/null 2>&1"
       interval: 30s
       timeout: 5s
       retries: 5
@@ -105,6 +113,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.labels.promgraf.alertmanager-data == true
       resources:
         limits:
           memory: 256M
@@ -150,18 +159,20 @@ services:
   prometheus:
     image: "prom/prometheus:{{ promgraf_prometheus_version }}"
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--config.file=/etc/prometheus/conf/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention={{ promgraf_prometheus_retention }}'
+      - '--storage.tsdb.retention.time={{ promgraf_prometheus_retention }}'
     volumes:
       - prometheus:/prometheus
     configs:
-      - source: node_rules
-        target: /etc/prometheus/swarm_node.rules.yml
-      - source: task_rules
-        target: /etc/prometheus/swarm_task.rules.yml
+{% for prometheus_rule in promgraf_prometheus_rules %}
+      - source: {{ prometheus_rule }}
+        target: "/etc/prometheus/rules/{{ prometheus_rule }}"
+{% endfor %}
+      - source: prometheus.yml
+        target: /etc/prometheus/conf/prometheus.yml
     healthcheck:
-      test: "/bin/wget -q -Y off http://localhost:9090/status -O /dev/null > /dev/null 2>&1"
+      test: "wget -q -Y off http://localhost:9090/status -O /dev/null > /dev/null 2>&1"
       interval: 30s
       timeout: 5s
       retries: 5
@@ -172,6 +183,7 @@ services:
       placement:
         constraints:
           - node.role == manager
+          - node.labels.promgraf.prometheus-data == true
       restart_policy:
         condition: on-failure
         delay: 30s
@@ -218,7 +230,6 @@ networks:
     driver: overlay
     driver_opts:
       encrypted: ""
-    attachable: true
   {{ traefik_network }}:
     external: true
 
@@ -228,15 +239,18 @@ volumes:
   alertmanager: {}
 
 configs:
-  node_rules:
-    name: "{{ docker_promgraf_stack_name }}_node_rules-${DEPLOY_TIMESTAMP}"
-    file: ./prometheus/rules/swarm_node.rules.yml
-  task_rules:
-    name: "{{ docker_promgraf_stack_name }}_task_rules-${DEPLOY_TIMESTAMP}"
-    file: ./prometheus/rules/swarm_task.rules.yml
+  prometheus.yml:
+    name: "{{ docker_promgraf_stack_name }}_prometheus.yml-${DEPLOY_TIMESTAMP}"
+    file: ./prometheus/conf/prometheus.yml
+
+{% for prometheus_rule in promgraf_prometheus_rules %}
+  {{ prometheus_rule }}:
+    name: "{{ docker_promgraf_stack_name }}_{{ prometheus_rule }}-${DEPLOY_TIMESTAMP}"
+    file: ./prometheus/rules/{{ prometheus_rule }}
+{% endfor %}
 
 secrets:
-  alertmanager:
-    name: "{{ docker_promgraf_stack_name }}_alertmanager-${DEPLOY_TIMESTAMP}"
+  alertmanager.yml:
+    name: "{{ docker_promgraf_stack_name }}_alertmanager_-${DEPLOY_TIMESTAMP}"
     external: true
 ...

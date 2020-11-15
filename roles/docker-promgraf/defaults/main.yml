@@ -1,5 +1,7 @@
 ---
 promgraf_prometheus_retention: "15d"
+promgraf_scrap_interval: "15s"
+promgraf_evalutation_interval: "15s"
 
 # email alerts settings, it is advised to create a dedicated email account for elastic
 promgraf_alert_email_server: ""
@@ -8,6 +10,26 @@ promgraf_alert_email_from: ""
 promgraf_alert_email_to: ""
 promgraf_alert_email_user: ""
 promgraf_alert_email_password: ""
+
+prometheus_scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: [ 'localhost:9090' ]
+#
+#  - job_name: 'cadvisor'
+#    - targets: ['node1-cluster-xyz:8080', 'node2-cluster-xyz:8080']
+#      labels:
+#        clusterID: xyz
+#    - targets: ['node1-cluster-abc:8080', 'node2-cluster-abc:8080']
+#      labels:
+#        clusterID: abc
+#
+#  - job_name: 'node-exporter'
+#    dns_sd_configs:
+#      - names:
+#          - 'tasks.node-exporter'
+#        type: 'A'
+#        port: 9100
 
 # base domain of promgraf
 promgraf_base_domain: "rtm.{{ hostname }}"
@@ -18,7 +40,8 @@ traefik_public_tag: "traefik-public"
 # name of the traefik network
 traefik_network: "traefik-public"
 
-# activate grafana
+# configure grafana
+promgraf_grafana_plugins: [] # plugins to install
 promgraf_grafana_activated: true
 
 promgraf_prometheus_domain: "prom.{{ promgraf_base_domain }}"

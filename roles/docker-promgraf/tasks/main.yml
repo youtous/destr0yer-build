@@ -11,35 +11,56 @@
   set_fact:
     promgraf_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
-- name: Ensure prometheus rules directory exists
+- name: Ensure prometheus directories exists
   file:
     state: directory
-    path: "{{ promgraf_compose_file_dest_directory }}/prometheus/rules"
+    path: "{{ promgraf_compose_file_dest_directory }}/{{ item }}"
+  with_items:
+    - prometheus/rules
+    - prometheus/conf
 
 - name: Copy prometheus rules configuration
   copy:
     src: "files/prometheus/rules/{{ item }}"
     dest: "{{ promgraf_compose_file_dest_directory }}/prometheus/rules/{{ item }}"
     mode: u=rw,g=,o=
-  with_items:
-    - swarm_node.rules.yml
-    - swarm_task.rules.yml
+  with_items: "{{ promgraf_prometheus_rules }}"
+
+- name: Copy prometheus configuration
+  template:
+    src: "templates/prometheus/conf/prometheus.j2.yml"
+    dest: "{{ promgraf_compose_file_dest_directory }}/prometheus/conf/prometheus.yml"
+    mode: u=rw,g=,o=
 
 - name: Ensure alertmanager directory exists
   file:
     state: directory
     path: "{{ promgraf_compose_file_dest_directory }}/alertmanager"
 
-- name: Register Swarmprom AlertManager configuration as a secret
-  docker_secret:
-    name: "{{ docker_promgraf_stack_name }}_alertmanager-{{ promgraf_deploy_timestamp }}"
-    data: "{{ lookup('template', 'templates/alertmanager/alertmanager.j2.yml') }}"
-    state: present
-  no_log: true
+- name: Register promgraf secrets
+  import_tasks: secrets.yml
 
-- name: Copy Swarmprom stack
+- name: Tag current node as prometheus origin
+  docker_node:
+    hostname: "{{ hostname }}"
+    labels:
+      promgraf.prometheus-data: "true"
+
+- name: Tag current node as alertmanager origin
+  docker_node:
+    hostname: "{{ hostname }}"
+    labels:
+      promgraf.alertmanager-data: "true"
+
+- name: Tag current node as grafana origin
+  docker_node:
+    hostname: "{{ hostname }}"
+    labels:
+      promgraf.grafana-data: "true"
+
+- name: Copy promgraf stack
   template:
-    src: files/docker-compose.promgraf.j2.yml
+    src: templates/docker-compose.promgraf.j2.yml
     dest: "{{ promgraf_compose_file_dest }}"
     mode: u=rw,g=,o=
 
@@ -56,6 +77,10 @@
     GF_SMTP_USER: "{{ promgraf_alert_email_user }}"
     GF_SMTP_PASSWORD: "{{ promgraf_alert_email_password }}"
 
+    GF_SERVER_DOMAIN: "{{ promgraf_grafana_domain }}"
+    GF_INSTALL_PLUGINS: "{{ promgraf_grafana_plugins|join(',') }}"
+
     DEPLOY_TIMESTAMP: "{{ promgraf_deploy_timestamp }}"
   notify: docker prune
+  no_log: true
 ...

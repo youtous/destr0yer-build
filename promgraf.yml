@@ -1,0 +1,32 @@
+---
+# This playbook plays with promgraf stack roles some requires docker and for some it's optional
+
+- name: Setup docker promgraf cluster
+  hosts: primary_manager_promgraf
+  roles:
+    - docker-promgraf # setup an promgraf stack cluster
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["promgraf", "promgraf-cluster"]
+
+- name: Setup promgraf node-exporter
+  hosts: all_node_promgraf
+  roles: []
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["promgraf", "promgraf-collector", "promgraf-collector-node"]
+
+- name: Setup promgraf docker exporter
+  hosts: all_docker_promgraf
+  roles: []
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["promgraf", "promgraf-collector", "promgraf-collector-docker"]
+
+...

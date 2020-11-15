@@ -1,0 +1,16 @@
+global:
+  scrape_interval:     {{ promgraf_scrap_interval }}
+  evaluation_interval: {{ promgraf_evalutation_interval }}
+
+  external_labels:
+    monitor: 'grafprom'
+
+rule_files: {{ promgraf_prometheus_rules }}
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs: {{ prometheus_scrape_configs }}
