@@ -31,9 +31,6 @@ prometheus_scrape_configs:
 #        type: 'A'
 #        port: 9100
 
-# base domain of promgraf
-promgraf_base_domain: "rtm.{{ hostname }}"
-
 # traefik public-tag
 traefik_public_tag: "traefik-public"
 
@@ -44,6 +41,12 @@ traefik_network: "traefik-public"
 promgraf_grafana_plugins: [] # plugins to install
 promgraf_grafana_activated: true
 
+# memory tuning
+grafprom_prometheus_memory_reservation: "512M"
+grafprom_prometheus_memory_limit: "1536M"
+
+# base domain of promgraf
+promgraf_base_domain: "rtm.{{ hostname }}"
 promgraf_prometheus_domain: "prom.{{ promgraf_base_domain }}"
 promgraf_alertmanager_domain: "alerts.{{ promgraf_base_domain }}"
 promgraf_grafana_domain: "graph.{{ promgraf_base_domain }}"

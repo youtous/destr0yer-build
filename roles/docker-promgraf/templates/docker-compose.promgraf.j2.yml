@@ -10,6 +10,9 @@ services:
   # visualization
   grafana:
     image: "grafana/grafana:{{ promgraf_grafana_version }}"
+    configs:
+      - source: grafana_prometheus.yml
+        target: /etc/grafana/provisioning/datasources/prometheus.yml
     environment:
       # disable auth, will be handled with traefik
       # see https://github.com/grafana/grafana/issues/2335
@@ -28,11 +31,6 @@ services:
       - "GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}"
 
       - "GF_INSTALL_PLUGINS=${GF_INSTALL_PLUGINS}"
-
-      # map reverse proxy
-      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s
-      - "GF_SERVER_DOMAIN=${GF_SERVER_DOMAIN}"
-      - GF_SERVER_SERVE_FROM_SUB_PATH=false
     volumes:
       - grafana:/var/lib/grafana
     healthcheck:
@@ -74,7 +72,7 @@ services:
         - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
         - traefik.frontend.headers.browserXSSFilter=true
         - traefik.frontend.headers.frameDeny=true
-        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
         - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
@@ -140,7 +138,7 @@ services:
         - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
         - traefik.frontend.headers.browserXSSFilter=true
         - traefik.frontend.headers.frameDeny=true
-        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
         - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
@@ -191,9 +189,9 @@ services:
         max_attempts: 0 # unlimited restarts
       resources:
         limits:
-          memory: 1536M
+          memory: "{{ grafprom_prometheus_memory_limit }}"
         reservations:
-          memory: 512M
+          memory: "{{ grafprom_prometheus_memory_reservation }}"
       labels:
         - "traefik.frontend.rule=Host:{{ promgraf_prometheus_domain }}"
         - traefik.enable=true
@@ -210,7 +208,7 @@ services:
         - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
         - traefik.frontend.headers.browserXSSFilter=true
         - traefik.frontend.headers.frameDeny=true
-        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
         - traefik.frontend.headers.contentTypeNosniff=true
         # HSTS
         - traefik.frontend.headers.SSLRedirect=true
@@ -242,6 +240,10 @@ configs:
   prometheus.yml:
     name: "{{ docker_promgraf_stack_name }}_prometheus.yml-${DEPLOY_TIMESTAMP}"
     file: ./prometheus/conf/prometheus.yml
+
+  grafana_prometheus.yml:
+    name: "{{ docker_promgraf_stack_name }}_grafana_prometheus-${DEPLOY_TIMESTAMP}"
+    file: ./grafana/datasources/prometheus.yml
 
 {% for prometheus_rule in promgraf_prometheus_rules %}
   {{ prometheus_rule }}:

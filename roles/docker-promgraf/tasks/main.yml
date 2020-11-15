@@ -18,6 +18,7 @@
   with_items:
     - prometheus/rules
     - prometheus/conf
+    - grafana/datasources
 
 - name: Copy prometheus rules configuration
   copy:
@@ -28,9 +29,12 @@
 
 - name: Copy prometheus configuration
   template:
-    src: "templates/prometheus/conf/prometheus.j2.yml"
-    dest: "{{ promgraf_compose_file_dest_directory }}/prometheus/conf/prometheus.yml"
+    src: "{{ item.src }}"
+    dest: "{{ promgraf_compose_file_dest_directory }}/{{ item.dest }}"
     mode: u=rw,g=,o=
+  with_items:
+    - { src: prometheus/conf/prometheus.j2.yml, dest: prometheus/conf/prometheus.yml }
+    - { src: grafana/datasources/prometheus.j2.yml, dest: grafana/datasources/prometheus.yml }
 
 - name: Ensure alertmanager directory exists
   file:
@@ -77,7 +81,6 @@
     GF_SMTP_USER: "{{ promgraf_alert_email_user }}"
     GF_SMTP_PASSWORD: "{{ promgraf_alert_email_password }}"
 
-    GF_SERVER_DOMAIN: "{{ promgraf_grafana_domain }}"
     GF_INSTALL_PLUGINS: "{{ promgraf_grafana_plugins|join(',') }}"
 
     DEPLOY_TIMESTAMP: "{{ promgraf_deploy_timestamp }}"
