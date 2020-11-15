@@ -223,6 +223,30 @@ services:
       - net
       - {{ traefik_network }}
 
+  blackbox-exporter:
+    image: "prom/blackbox-exporter:{{ promgraf_blackbox_version }}"
+    command:
+      - '--config.file=/etc/prometheus/blackbox.yml'
+    configs:
+      - source: blackbox.yml
+        target: /etc/prometheus/blackbox.yml
+    networks:
+      - net
+    healthcheck:
+      test: "wget -q -Y off http://localhost:9115 -O /dev/null > /dev/null 2>&1"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        window: 60s
+        max_attempts: 0 # unlimited restarts
+
 networks:
   net:
     driver: overlay
@@ -240,6 +264,10 @@ configs:
   prometheus.yml:
     name: "{{ docker_promgraf_stack_name }}_prometheus.yml-${DEPLOY_TIMESTAMP}"
     file: ./prometheus/conf/prometheus.yml
+
+  blackbox.yml:
+    name: "{{ docker_promgraf_stack_name }}_blackbox.yml-${DEPLOY_TIMESTAMP}"
+    file: ./blackbox/blackbox.yml
 
   grafana_prometheus.yml:
     name: "{{ docker_promgraf_stack_name }}_grafana_prometheus-${DEPLOY_TIMESTAMP}"

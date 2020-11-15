@@ -1,0 +1,42 @@
+modules:
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+  tcp_connect:
+    prober: tcp
+    timeout: 5s
+  imap_check:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      tls: true
+      preferred_ip_protocol: "ip4" # todo : when ipv6 available, add it
+      query_response:
+        - expect: "CAPABILITY IMAP4rev1"
+        - send: "QUIT"
+  ssh_banner:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      query_response:
+        - expect: "^SSH-2.0-"
+  smtp_starttls:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      query_response:
+        - expect: "^220 "
+        - send: "EHLO prober\r"
+        - expect: "^250-STARTTLS"
+        - send: "STARTTLS\r"
+        - expect: "^220"
+        - starttls: true
+        - send: "EHLO prober\r"
+        - expect: "^250-AUTH"
+        - send: "QUIT\r"
+  icmp_test:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: ip4

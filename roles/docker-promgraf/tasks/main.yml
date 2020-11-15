@@ -19,6 +19,7 @@
     - prometheus/rules
     - prometheus/conf
     - grafana/datasources
+    - blackbox
 
 - name: Copy prometheus rules configuration
   copy:
@@ -35,6 +36,7 @@
   with_items:
     - { src: prometheus/conf/prometheus.j2.yml, dest: prometheus/conf/prometheus.yml }
     - { src: grafana/datasources/prometheus.j2.yml, dest: grafana/datasources/prometheus.yml }
+    - { src: blackbox/blackbox.j2.yml, dest: blackbox/blackbox.yml }
 
 - name: Ensure alertmanager directory exists
   file:
