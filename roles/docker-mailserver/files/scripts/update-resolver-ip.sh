@@ -10,7 +10,7 @@ echo "Starting resolver service updater"
 apt update && apt -y install --no-install-recommends dnsutils || exit 1
 
 while true; do
-  resolver_ip=`dig +short resolver`
+  resolver_ip=`dig +short resolver 2>/dev/null`
 
   if [ -n "${resolver_ip}" ]; then
     # gather previous ip in resolv.conf
