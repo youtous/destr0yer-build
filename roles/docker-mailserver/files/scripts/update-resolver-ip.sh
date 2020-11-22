@@ -12,7 +12,7 @@ apt update && apt -y install --no-install-recommends dnsutils || exit 1
 while true; do
   resolver_ip=`dig +short resolver 2>/dev/null`
 
-  if [ -n "${resolver_ip}" ]; then
+  if [ -n "${resolver_ip}" ] && ! [ "${resolver_ip}" =~ ^;.* ]; then
     # gather previous ip in resolv.conf
     starting_ip=`echo "${resolver_ip}" | awk -F. {'print $1'}`
     previous_ip=`grep -Po "^(?:nameserver\\s+)${starting_ip}\\.(.*)" /etc/resolv.conf | awk {'print $2'}`
@@ -38,6 +38,8 @@ while true; do
         supervisorctl restart dovecot
       fi
     fi
+  else
+    echo "Resolver not yet ready... waiting 10 seconds"
   fi
 
    # check changes every 10 secs
