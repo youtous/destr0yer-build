@@ -8,13 +8,14 @@ setup.kibana:
 
 # enable data management
 setup.ilm:
-  enable: true
+  enable: false # delegate to curator
   overwrite: true
 
 # template settings
 setup.template:
   name: "filebeat"
   pattern: "filebeat-*"
+# deprecated ism
 #  settings:
 #    index.opendistro.index_state_management.policy_id: "filebeat_policy_workflow"
 #    index.opendistro.index_state_management.rollover_alias: "filebeat_rollover"

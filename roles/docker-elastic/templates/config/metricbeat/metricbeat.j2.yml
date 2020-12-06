@@ -8,16 +8,17 @@ setup.kibana:
 
 # enable data management
 setup.ilm:
-  enable: true
+  enable: false # delegate to curator
   overwrite: true
 
 # template settings
 setup.template:
   name: "metricbeat"
   pattern: "metricbeat-*"
-  settings:
-    index.opendistro.index_state_management.policy_id: "metricbeat_policy_workflow"
-    index.opendistro.index_state_management.rollover_alias: "metricbeat_rollover"
+# depracated ism
+#  settings:
+#    index.opendistro.index_state_management.policy_id: "metricbeat_policy_workflow"
+#    index.opendistro.index_state_management.rollover_alias: "metricbeat_rollover"
 
 # copy from elastic-metricbeat
 

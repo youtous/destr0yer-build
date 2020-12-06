@@ -8,13 +8,14 @@ setup.kibana:
 
 # enable data management
 setup.ilm:
-  enable: true
+  enable: false # delegate to curator
   overwrite: true
 
 # template settings
 setup.template:
   name: "journalbeat"
   pattern: "journalbeat-*"
+# deprecated ism
 #  settings:
 #    index.opendistro.index_state_management.policy_id: "journalbeat_policy_workflow"
 #    index.opendistro.index_state_management.rollover_alias: "journalbeat_rollover"
