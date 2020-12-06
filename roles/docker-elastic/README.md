@@ -33,10 +33,6 @@ GET /docker-*/_mapping/field/source.geo
 PUT _template/docker-
 {
   "index_patterns": ["docker-*"],
-  "settings": {
-      "opendistro.index_state_management.policy_id": "docker_policy_workflow",
-      "opendistro.index_state_management.rollover_alias": "docker_rollover"
-  },
   "mappings": {
     "properties": {
       "host.name": {
@@ -125,7 +121,7 @@ Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the i
 - Period end: {{ctx.periodEnd}}
 ```
 
-### IML
+### IML (deprecated)
 
 1. Add the policies in kibana exported)
 2. _(eventually update the template)_ first `GET` the template, add the policy id using `PUT`

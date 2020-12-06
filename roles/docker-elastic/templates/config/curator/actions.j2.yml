@@ -104,7 +104,7 @@ actions:
     filters:
       - filtertype: pattern
         kind: prefix
-        value: filebeat-
+        value: heartbeat-
       - filtertype: age
         source: creation_date
         direction: older
