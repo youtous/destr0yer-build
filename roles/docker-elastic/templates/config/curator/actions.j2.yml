@@ -244,3 +244,30 @@ actions:
         unit: days
         unit_count: 32
         exclude:
+
+  13:
+    action: forcemerge
+    description: >-
+      forceMerge Year.week indices older than 4 weeks (based on index
+      creation_date) to 1 segment per shard.  Delay 120 seconds between each
+      forceMerge operation to allow the cluster to quiesce.
+      This action will ignore indices already forceMerged to the same or fewer
+      number of segments per shard, so the 'forcemerged' filter is unneeded.
+    options:
+      ignore_empty_list: True
+      max_num_segments: 1
+      delay: 120
+      timeout_override: 7200
+      continue_if_exception: False
+      disable_action: False
+    filters:
+      - filtertype: pattern
+        kind: timestring
+        value: '%G.%W'
+        exclude: False
+      - filtertype: age
+        source: creation_date
+        direction: older
+        unit: weeks
+        unit_count: 4
+        exclude:
