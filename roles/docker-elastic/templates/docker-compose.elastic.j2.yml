@@ -390,10 +390,11 @@ services:
       rm -Rf /tmp/older &&
       mv /tmp/current /tmp/older ;
       mkdir -p /tmp/current &&
-      elasticdump \
-        --input=http://elasticsearch:9200/.kibana \
-        --output=/tmp/current/kibana_index.ndjson \
-        --type=data
+      multielasticdump \
+        --direction=dump \
+        --match='^.kibana' \
+        --input=http://elasticsearch:9200 \
+        --output=/tmp/current
       '
     deploy:
       mode: replicated
