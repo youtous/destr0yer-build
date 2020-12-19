@@ -42,6 +42,8 @@
       dest: url-cli.config.php
     - src: logs.config.php
       dest: logs.config.php
+    - src: old-encryption.config.php
+      dest: old-encryption.config.php
     - src: php-fpm.d/www2.conf
       dest: php-fpm.d/www2.conf
 
