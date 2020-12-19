@@ -126,7 +126,7 @@ services:
         - traefik.frontend.headers.STSIncludeSubdomains=true
         - traefik.frontend.headers.STSPreload=true
         # security labels
-        - "traefik.frontend.headers.customResponseHeaders=X-Robots-Tag:noindex, nofollow, noarchive, nosnippet, notranslate, noimageindex||Server:||X-Powered-By:" # Features-Permissions are set by Nextcloud
+        - "traefik.frontend.headers.customResponseHeaders=X-Robots-Tag:none||Server:||X-Powered-By:" # Features-Permissions are set by Nextcloud
         - traefik.frontend.headers.referrerPolicy=same-origin
         - traefik.frontend.headers.browserXSSFilter=true
         # csp defined by nextcloud
