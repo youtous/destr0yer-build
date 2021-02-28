@@ -90,7 +90,7 @@ services:
         - "swarm.cronjob.enable=true"
         - "swarm.cronjob.schedule=0 */5 * * * *"
         - "swarm.cronjob.skip-running=true" # do not start a job is one already exists
-    command: su -l www-data -s /bin/sh -c 'php -f /var/www/html/cron.php'
+    command: su -l www-data -s /bin/sh -c 'PHP_MEMORY_LIMIT=512M php -f /var/www/html/cron.php'
 
   nginx:
     image: nginx
