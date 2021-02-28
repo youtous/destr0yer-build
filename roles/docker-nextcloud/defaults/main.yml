@@ -1,6 +1,6 @@
 ---
 # base domain of nextcloud
-nextcloud_version: "20"
+nextcloud_version: "21"
 nextcloud_domain: "cloud.{{ hostname }}"
 
 # Nextcloud database
