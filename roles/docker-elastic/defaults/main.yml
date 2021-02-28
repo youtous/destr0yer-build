@@ -1,6 +1,6 @@
 ---
-elastic_version: 7.10.0
-opendistro_version: 1.12.0
+elastic_version: 7.10.2
+opendistro_version: 1.13.0
 
 docker_external_interfaces: [] # must be defined explicitly, this is the external interface, generally eth0.
 #       /!\ BE CAREFUL this interface is used for restricting exposed ports to specific ips /!\
