@@ -83,7 +83,7 @@ secrets:
 services:
 
   mailserver:
-    image: youtous/docker-mailserver:latest
+    image: "mailserver/docker-mailserver:{{ mailserver_docker_mailserver_version }}"
     command: >
       sh -c '
       mkdir -p /var/mail-state/lib-shared/ &&

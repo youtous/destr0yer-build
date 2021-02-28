@@ -19,6 +19,9 @@ mailserver_ssl_type:
 mailserver_ssl_cert_path:
 mailserver_ssl_key_path:
 
+# list of available versions https://hub.docker.com/r/mailserver/docker-mailserver/tags?page=1&ordering=last_updated
+mailserver_docker_mailserver_version: "stable"
+
 # Rainloop
 rainloop_enabled: true
 rainloop_domain: "mail.{{ mailserver_domain }}"
