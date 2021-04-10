@@ -8,7 +8,7 @@
 - name: List existing docker-mailserver:465 UFW rules
   become: yes
   shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s465(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
+    ufw status numbered | grep -zoP '\[.*\]\s465(?!\\d).*\n'  | sed 's/\[.*\([0-9]\).*\].*/\1/'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_mailserver_465_rules
 
@@ -31,7 +31,7 @@
 - name: List existing docker-mailserver:993 UFW rules
   become: yes
   shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s993(?!\\d).*\n'  |awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn | sed '/^s*$/d'
+    ufw status numbered | grep -zoP '\[.*\]\s993(?!\\d).*\n' | sed 's/\[.*\([0-9]\).*\].*/\1/'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_mailserver_993_rules
 
