@@ -68,7 +68,7 @@
 - name: List existing mariadb UFW rules
   become: yes
   shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s3306(?!\\d).*\n'  | sed 's/\[.*\([0-9]\).*\].*/\1/'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
+    ufw status numbered | grep -zoP '\[.*\]\s3306(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_mariadb_rules
 
