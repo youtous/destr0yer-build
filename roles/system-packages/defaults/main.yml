@@ -26,7 +26,6 @@ system_packages:
   - nmap
   - ca-certificates
   - time
-  - molly-guard # protect from mistake reboots
   - sudo
   - ncdu
   - apparmor # security (MAC) :)
