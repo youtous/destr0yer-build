@@ -1,5 +1,5 @@
-database_clients_ips: "{{ groups['database_clients'] | map('extract', hostvars, ['ipv4']) |  list | flatten | unique | default([]) +
-                            groups['database_clients'] | map('extract', hostvars, ['ipv6']) | list | flatten | unique | default([]) }}"
+database_clients_ips: "{{ groups['database_clients'] | map('extract', hostvars, ['mariadb_client_ipv4']) |  list | flatten | unique | default([]) +
+                            groups['database_clients'] | map('extract', hostvars, ['mariadb_client_ipv6']) | list | flatten | unique | default([]) }}"
 
-# define database_clients allowed to access database servers
-mariadb_allowed_ips: "{{ database_clients_ips + local_docker_ips }}"
+# define database_clients allowed to access database servers, filter current host
+mariadb_allowed_ips: "{{ (database_clients_ips + local_docker_ips) | difference((mariadb_client_ipv4|default([]) + mariadb_client_ipv6|default([]))) }}"

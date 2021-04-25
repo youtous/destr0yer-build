@@ -43,6 +43,10 @@ consul_external_network_enabled: true
 
 ### Begin of database parameters ###
 
+# mariadb client ip to use (always prefer private network)
+mariadb_client_ipv4: "{{ ipv4 }}"
+mariadb_client_ipv6: "{{ ipv6 }}"
+
 # list of mariadb users
 mariadb_users:
   - name: youtous

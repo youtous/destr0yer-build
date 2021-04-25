@@ -10,6 +10,14 @@ swarm_node_ipv6: "{{ ipv6 }}"
 
 host_users: []
 
+### Begin of mariadb parameters ###
+
+# mariadb client ip to use (always prefer private network)
+mariadb_client_ipv4: "{{ ipv4 }}"
+mariadb_client_ipv6: "{{ ipv6 }}"
+
+### End of mariadb parameters ###
+
 ### Begin of smtp relay parameters ###
 
 # smtp relay parameters
