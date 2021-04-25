@@ -1,0 +1,6 @@
+---
+# https://golang.org/dl/
+go_version: '1.16.3'
+go_amd64_checksum: "sha256:951a3c7c6ce4e56ad883f97d9db74d3d6d80d5fec77455c6ada6c1f7ac4776d2"
+go_arm64_checksum: "sha256:566b1d6f17d2bc4ad5f81486f0df44f3088c3ed47a3bec4099d8ed9939e90d5d"
+...
