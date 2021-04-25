@@ -9,8 +9,8 @@ VAGRANTFILE_API_VERSION = "2"
 servers=[
     {
         :hostname => "heaven-pascal.youtous.dv",
-        :ipv4 => "192.168.100.10",
-        :ipv6 => "fde4:8dba:82e1::c1",
+        :ipv4 => "192.168.100.10/24",
+        :ipv6 => "fde4:8dba:82e1::c1/64",
         :box => "debian/buster64",
         #:box_version => "10.0.0",
         :ram => 2048,
@@ -18,8 +18,8 @@ servers=[
     },
     {
         :hostname => "heaven-roberval.youtous.dv",
-        :ipv4 => "192.168.100.11",
-        :ipv6 => "fde4:8dba:82e1::c2",
+        :ipv4 => "192.168.100.11/24",
+        :ipv6 => "fde4:8dba:82e1::c2/64",
         :box => "debian/buster64",
 				#:box_version => "10.0.0",
 				:ram => 2048,
@@ -59,7 +59,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		
 			# register ssh keys	
 			node.vm.provision "shell" do |s|
-    				ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+    				ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_ed25519.pub").first.strip
     				s.inline = <<-SHELL
     				    echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
     				    mkdir -p /root/.ssh/
