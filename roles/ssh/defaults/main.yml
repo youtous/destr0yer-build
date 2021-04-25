@@ -11,3 +11,4 @@ algorithms_files_to_remove:
 
 rsa_key_size: 4096
 key_generated_flag_file: "/etc/ssh/ansible-generated-keys"
+...

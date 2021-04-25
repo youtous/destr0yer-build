@@ -85,3 +85,4 @@
     group: root
     mode: u=rw,g=rx,o=rx
   when: host_scw_aarch64 is not failed
+...

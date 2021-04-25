@@ -72,3 +72,4 @@
     line: '%admin ALL=(ALL) PASSWD: ALL'
     validate: '/usr/sbin/visudo -cf %s'
   tags: ["users", "groups", "configuration"]
+...

@@ -12,3 +12,4 @@
     state: started
     enabled: yes
   with_items: "{{ system_services_enabled_by_default }}"
+...

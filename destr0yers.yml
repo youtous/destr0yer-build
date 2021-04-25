@@ -40,7 +40,7 @@
     - system-configuration # configure the system (selinux, timezone...)
     - system-tools # server cli tools (vim, ccat, etc)
     - mount # manage mount devices
-    - services # define services policy (disable scaleway etc)
+    - scaleway-services # define services policy for scaleway
     - ssh # define OpenSSH policy
     - ssh-user-keys # deploy ssh keys on the server
     - logrotate # manage log rotation

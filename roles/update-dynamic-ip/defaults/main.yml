@@ -8,3 +8,4 @@ update_ip_ids_file: cloudflare.ids
 update_ip_log_file: /var/log/auto-update-ip.log
 # ipv4, ipv6
 update_ip_protocol: ipv4
+...

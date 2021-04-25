@@ -6,3 +6,4 @@ users_ssh_keys: []
 #    type: "ed25519" # optional, by default it will be ed25519
 
 # you can generate a couple of keys using `ssh-keygen -t ed25519 -C "username@hostname"`
+...

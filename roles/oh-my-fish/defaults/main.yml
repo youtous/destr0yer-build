@@ -10,3 +10,4 @@ omf_plugin_repo_base: "https://github.com/oh-my-fish/plugin-"
 omf_plugin_directory: "{{ omf_installation_directory }}/pkg"
 omf_plugins:
   - "vcs"
+...

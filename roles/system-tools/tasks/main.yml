@@ -50,3 +50,4 @@
     name: setuptools
     state: latest
     extra_args: --upgrade
+...

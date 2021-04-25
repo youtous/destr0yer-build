@@ -81,3 +81,4 @@ monit_allow: ["localhost"]
 # monit_cert: "/etc/monit/monit.pem"
 
 monit_monitors_sshd_port: "{{ sshd_port|default(22) }}"
+...

@@ -5,3 +5,4 @@ docker_log_backend: journald
 # rsyslog only
 docker_log_file: /var/log/docker.log
 docker_log_max_size: 100M
+...

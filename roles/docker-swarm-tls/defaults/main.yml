@@ -9,3 +9,4 @@ docker_swarm_node_certificate_name: node
 # docker_swarm_CA_certificate: | # usually rootCA.crt
 # docker_swarm_node_private_key: | # usually node-hostname.key
 # docker_swarm_node_certificate: | # usually node-hostname.crt
+...

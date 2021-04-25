@@ -19,3 +19,4 @@
     mode: u=rw,g=,o=
   with_items: "{{ users_ssh_keys }}"
   no_log: true
+...

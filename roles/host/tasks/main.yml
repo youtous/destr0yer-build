@@ -28,3 +28,4 @@
     - restart network-manager
   # if the Filesystem does not handle ioctl we are maybe on a vm
   ignore_errors: yes
+...

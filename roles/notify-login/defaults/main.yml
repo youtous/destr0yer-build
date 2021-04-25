@@ -4,3 +4,4 @@
 
 # Set the e-mail notification receiver
 # ssh_login_notifications_mail_receiver: "root"
+...
