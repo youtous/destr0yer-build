@@ -3,6 +3,6 @@
 - name: Attach managers to swarm cluster
   docker_swarm:
     state: join
-    advertise_addr: "{{ ipv4|first }}"
+    advertise_addr: "{{ docker_swarm_node_advertise_addr }}"
     join_token: "{{ hostvars['swarm_first_manager']['swarm_info']['swarm_facts']['JoinTokens']['Manager'] }}"
     remote_addrs: "{{ primary_manager_ipv4 }}"

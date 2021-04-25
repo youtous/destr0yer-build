@@ -4,6 +4,9 @@ ipv4: # /!\ When one of the host ip is changed, playbook should be completely re
   - 192.168.100.10
 ipv6:
   - fde4:8dba:82e1::c1
+# docker swarm node ip to use (always prefer private network)
+swarm_node_ipv4: "{{ ipv4 }}"
+swarm_node_ipv6: "{{ ipv6 }}"
 
 host_users:
   - username: specu

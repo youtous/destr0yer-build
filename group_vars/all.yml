@@ -12,7 +12,7 @@ server_environment: "dev"
 
 # Network configuration
 domain_name: youtous.me
-domain_search: []
+domain_search: [ ]
 nameservers: # use DNSCrypt-proxy
   - '127.0.0.1'
   - '::1'
@@ -28,7 +28,7 @@ common_users:
   # arbiter is the only sudoer
   - username: "{{ arbiter_username }}"
     name: System's Arbiter
-    groups: ['admin', 'sshusers', 'docker']
+    groups: [ 'admin', 'sshusers', 'docker' ]
     uid: 1006
     home: /home/dev-arbiter
     profile:
@@ -114,24 +114,27 @@ local_docker_ips:
 
 # ips of the nodes of the swarm
 nodes_ip4s: "{{
-  groups['workers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
-  groups['managers'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
-  groups['primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])
+  groups['workers'] | map('extract', hostvars, ['swarm_node_ipv4']) | list | flatten | unique | default([]) +
+  groups['managers'] | map('extract', hostvars, ['swarm_node_ipv4'])  | list | flatten | unique  | default([])  +
+  groups['primary_manager'] | map('extract', hostvars, ['swarm_node_ipv4'])  | list | flatten | unique  | default([])
 }}"
+nodes_ip4s_without_current_host: "{{ nodes_ip4s | difference(swarm_node_ipv4) }}"
 nodes_ip6s: "{{
-  groups['workers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique | default([]) +
-  groups['managers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([]) +
-  groups['primary_manager'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])
+  groups['workers'] | map('extract', hostvars, ['swarm_node_ipv6'])  | list | flatten | unique | default([]) +
+  groups['managers'] | map('extract', hostvars, ['swarm_node_ipv6'])   | list | flatten | unique  | default([]) +
+  groups['primary_manager'] | map('extract', hostvars, ['swarm_node_ipv6'])  | list | flatten | unique  | default([])
 }}"
-nodes_ips: "{{ nodes_ip4s + nodes_ip6s }}"
-
+nodes_ip6s_without_current_host: "{{ nodes_ip6s | difference(swarm_node_ipv6) }}"
 # first manager ipv4
-primary_manager_ipv4: "{{ groups['primary_manager'] | map('extract', hostvars, ['ipv4']) | first | first }}"
+primary_manager_ipv4: "{{ groups['primary_manager'] | map('extract', hostvars, ['swarm_node_ipv4']) | first | first }}"
+# for security reason, exclude current host
+nodes_ips_without_current_host: "{{ nodes_ip4s_without_current_host + nodes_ip6s_without_current_host  }}" # subtract current host
+nodes_ips: "{{ nodes_ips_without_current_host }}"
 
 # when you delete a node from the cluster, add his ip here in order to revoke his access
-revoked_nodes_ips: []
+revoked_nodes_ips: [ ]
 # list of node ids to remove from the cluster
-revoked_nodes_ids: []
+revoked_nodes_ids: [ ]
 
 # CA cert issuer of the node certs
 docker_swarm_CA_certificate: |
