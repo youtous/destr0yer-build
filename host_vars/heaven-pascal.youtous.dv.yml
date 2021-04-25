@@ -184,7 +184,7 @@ docker_external_interfaces: ["eth0", "eth1"]
 # list of nodes (ips) allowed to submit log data
 logstash_trough_vpn: ["10.101.101.2"] # vpn for logstash data exchange
 logstash_external_allowed_ip4s: "{{ local_docker_ips + logstash_trough_vpn }}"
-logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s }}" # allow docker + all nodes are allowed to send logs data, list can be completed
+logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s_without_current_host }}" # allow docker + all nodes are allowed to send logs data, list can be completed
 # ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it
 
 # elastic alert configuration
