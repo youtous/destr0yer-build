@@ -1,2 +1,9 @@
 ---
+# syslog options
+logrotate_syslog_rotate: 7
+logrotate_syslog_size: "500M"
+
+# others options
+logrotate_core_rotate: 4
+logrotate_core_size: "50M"
 ...
