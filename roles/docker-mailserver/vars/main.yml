@@ -1,3 +1,4 @@
+---
 mailserver_compose_file_dest_directory: ~/mailserver
 mailserver_compose_file_dest_name: docker-compose.mailserver.yml
 mailserver_compose_file_dest: "{{ mailserver_compose_file_dest_directory }}/{{ mailserver_compose_file_dest_name }}"
@@ -26,3 +27,4 @@ mailserver_default_mta_sts_mode: "testing"
 mailserver_default_mta_sts_max_age: 86401
 # traefik params against dos
 mailserver_mta_sts_max_requests_3s_per_client: 15
+...

@@ -6,3 +6,4 @@
     name: grzegorznowak.ansible_ssh_login_notifications
   vars:
     ssh_login_notifications_slack_enable: false
+...

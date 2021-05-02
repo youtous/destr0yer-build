@@ -33,3 +33,4 @@
     loop_var: service
   notify:
     - restart fail2ban
+...

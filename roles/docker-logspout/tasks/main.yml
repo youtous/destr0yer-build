@@ -29,3 +29,4 @@
   environment:
     DEPLOY_TIMESTAMP: "{{ logspout_deploy_timestamp }}"
   notify: docker prune
+...

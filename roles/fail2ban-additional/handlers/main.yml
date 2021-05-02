@@ -4,3 +4,4 @@
   systemd:
     name: fail2ban
     state: restarted
+...

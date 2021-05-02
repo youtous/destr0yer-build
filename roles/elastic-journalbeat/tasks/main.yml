@@ -33,3 +33,4 @@
     mode: u=rw,g=,o=
   notify:
     - restart journalbeat
+...

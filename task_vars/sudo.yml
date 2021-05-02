@@ -1,3 +1,5 @@
+---
 # set the target user used for sudo commands
 ansible_user: "{{ arbiter_username }}"
 ansible_become_pass: "{{ arbiter_clear_password }}"
+...

@@ -72,3 +72,4 @@
     repo: "{{ omf_plugin_repo_base }}{{item}}"
     dest: "{{ omf_plugin_directory }}/{{ item }}"
   with_items: "{{ omf_plugins }}"
+...

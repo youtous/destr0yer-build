@@ -40,3 +40,4 @@
     insertafter: '^{'
   notify:
     - restart docker
+...

@@ -103,3 +103,4 @@
 
 # there is no need to configure /var/log/mail.* with logrotate,
 # it's already configured with rsyslog
+...

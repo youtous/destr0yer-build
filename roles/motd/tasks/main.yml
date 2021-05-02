@@ -49,3 +49,4 @@
     dest: "/etc/pam.d/sshd"
     regexp: "^session    optional     pam_motd.so  motd="
     line: "session    optional     pam_motd.so  motd=/run/motd.dynamic"
+...

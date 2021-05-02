@@ -76,3 +76,4 @@
   become: yes
   ufw:
     state: enabled
+...

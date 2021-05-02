@@ -10,3 +10,4 @@
     insertbefore: '"debug": false,'
   notify:
     - restart docker
+...

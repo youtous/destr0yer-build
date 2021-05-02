@@ -22,3 +22,4 @@
     TIMEZONE: "{{ swarm_cronjob_timezone }}"
     LOG_LEVEL: "{{ swarm_cronjob_log_level }}"
   notify: docker prune
+...

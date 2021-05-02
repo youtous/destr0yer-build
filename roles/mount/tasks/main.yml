@@ -23,3 +23,4 @@
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ unmount_devices }}"
+...

@@ -1,3 +1,5 @@
+---
 swarm_cronjob_compose_file_dest_directory: ~/swarm_cronjob
 swarm_cronjob_compose_file_dest_name: docker-compose.swarm_cronjob.yml
 swarm_cronjob_compose_file_dest: "{{ swarm_cronjob_compose_file_dest_directory }}/{{ swarm_cronjob_compose_file_dest_name }}"
+...

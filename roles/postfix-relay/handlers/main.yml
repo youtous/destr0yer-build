@@ -18,3 +18,4 @@
 - name: newaliases
   become: yes
   command: "newaliases"
+...

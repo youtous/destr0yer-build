@@ -1,5 +1,7 @@
+---
 swarmprom_compose_file_dest_directory: ~/swarmprom
 swarmprom_compose_file_dest_name: docker-compose.swarmprom.yml
 swarmprom_compose_file_dest: "{{ swarmprom_compose_file_dest_directory }}/{{ swarmprom_compose_file_dest_name }}"
 
 docker_swarmprom_stack_name: swarmprom
+...

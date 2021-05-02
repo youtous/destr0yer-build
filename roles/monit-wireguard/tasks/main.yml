@@ -6,3 +6,4 @@
     src: "templates/etc/monit/conf.d/wireguard.j2"
     dest: "/etc/monit/conf.d/wireguard"
   notify: reload monit
+...
