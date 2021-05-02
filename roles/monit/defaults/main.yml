@@ -6,7 +6,7 @@ monit_filesystems: []
 # Monit installation
 monit_version: "5.28.0"
 # checksum is available at https://bitbucket.org/tildeslash/monit/downloads/ (tar.gz)
-monit_download_checksum: "sha256:9fc6287fd9570b25a85c5d5bf988ee8bd4c54d0e9e01ff04cc4b9398a159849c"
+monit_download_checksum: "sha256:1594b09faaf8e28e95ccc31b080dc72558bbaa19afc1667f5461a185b86870ef"
 
 # From ANXS
 monit_eventqueue_slots: 100

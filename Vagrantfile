@@ -6,6 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 
 # {FIX} In order to have Virtualbox Guest Additions synced with the host, install
 # vagrant plugin install vagrant-vbguest
+# {FIX} : set /etc/network/interfaces eth0 to auto for NetworkManager restart issues
 servers=[
     {
         :hostname => "heaven-pascal.youtous.dv",
