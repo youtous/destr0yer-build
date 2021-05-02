@@ -8,9 +8,13 @@ services:
     entrypoint: >
       sh -c '
         /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security --purge &&
-        /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_performance_analyzer --purge &&
+        /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro-performance-analyzer --purge &&
         /usr/local/bin/docker-entrypoint.sh
       '
+    ulimits:
+      nofile:
+        soft: {{ elastic_ulimits_files_soft }}
+        hard: {{ elastic_ulimits_files_hard }}
     environment:
       - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
       - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
@@ -70,8 +74,8 @@ services:
       test: curl --silent --output --fail http://localhost:9200 || exit 1
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 600s
+      retries: {{ elastic_healthcheck_elastic_retries }}
+      start_period: "{{ elastic_healthcheck_elastic_start_period }}"
 
   kibana:
     image: "amazon/opendistro-for-elasticsearch-kibana:{{ opendistro_version }}"
@@ -130,8 +134,8 @@ services:
       test: curl --silent --output --fail http://localhost:5601 || exit 1
       interval: 30s
       timeout: 30s
-      retries: 40
-      start_period: 1200s
+      retries: {{ elastic_healthcheck_kibana_retries }}
+      start_period: "{{ elastic_healthcheck_kibana_start_period }}"
 
 {% if enable_webhook_smtp_forwarder %}
   # forward kibana alerts using smtp
@@ -246,8 +250,8 @@ services:
       test: curl --silent --output --fail http://localhost:9600 || exit 1
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 600s
+      retries: {{ elastic_healthcheck_logstash_retries }}
+      start_period: "{{ elastic_healthcheck_logstash_start_period }}"
 
   journalbeat-setup:
     image: "docker.elastic.co/beats/journalbeat-oss:{{ elastic_version }}"

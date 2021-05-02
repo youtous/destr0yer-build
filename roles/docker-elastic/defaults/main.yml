@@ -79,6 +79,15 @@ enable_logstash_webui: false
 logstash_domain: "logstash.{{ hostname }}"
 enable_webhook_smtp_forwarder: true
 
+# docker healthcheck
+elastic_healthcheck_elastic_start_period: "600s"
+elastic_healthcheck_elastic_retries: 5
+
+elastic_healthcheck_kibana_start_period: "1200s"
+elastic_healthcheck_kibana_retries: 40
+
+elastic_healthcheck_logstash_start_period: "600s"
+elastic_healthcheck_logstash_retries: 5
 
 # Provide X509 certificates for TLS
 # you can use pipe syntax
@@ -86,6 +95,10 @@ enable_webhook_smtp_forwarder: true
 # logstash_CA_certificate: | # usually logstash-rootCA.crt
 # logstash_node_private_key: | # usually logstash-node-hostname.key
 # logstash_node_certificate: | # usually logstash-node-hostname.crt
+
+# ulimits configuration
+elastic_ulimits_files_soft: 262144
+elastic_ulimits_files_hard: 262144
 
 
 elastic_disabled_tls_protocols: # event with these parameters, use the elastic stack behind a VPN!

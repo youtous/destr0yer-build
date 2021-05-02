@@ -14,7 +14,7 @@ servers=[
         :ipv6 => "fde4:8dba:82e1::c1",
         :box => "debian/buster64",
         #:box_version => "10.0.0",
-        :ram => 2048,
+        :ram => 4096,
         :cpu => 2
     },
     {
@@ -23,7 +23,7 @@ servers=[
         :ipv6 => "fde4:8dba:82e1::c2",
         :box => "debian/buster64",
 				#:box_version => "10.0.0",
-				:ram => 2048,
+				:ram => 4096,
         :cpu => 2
     }
 ]
