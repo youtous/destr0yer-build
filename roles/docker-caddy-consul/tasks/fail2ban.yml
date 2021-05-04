@@ -1,0 +1,33 @@
+---
+# fail2ban for caddy
+# resource : https://github.com/crazy-max/docker-fail2ban/
+- name: Add caddy filters to fail2ban
+  become: yes
+  copy:
+    src: files/filter.d/{{ item }}
+    dest: /etc/fail2ban/filter.d/{{ item }}
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - caddy-auth.conf
+    - botsearch-common-docker.conf
+    - caddy-botsearch.conf
+  notify:
+    - restart fail2ban
+# todo : f2b filters
+- name: Activate caddy jails using fail2ban
+  include_role:
+    name: fail2ban-additional
+  vars:
+    fail2ban_services:
+      - name: caddy-auth
+        port: http,https
+        backend: systemd
+        chain: DOCKER-USER
+
+      - name: caddy-botsearch
+        port: http,https
+        backend: systemd
+        chain: DOCKER-USER
+...

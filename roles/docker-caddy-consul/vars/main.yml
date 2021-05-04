@@ -1,0 +1,8 @@
+---
+caddy_compose_file_dest_directory: ~/caddy
+caddy_compose_file_dest_name: docker-compose.caddy.yml
+caddy_file_dest_name: Caddyfile
+caddy_consul_stack_name: caddy-consul
+caddy_compose_file_dest: "{{ caddy_compose_file_dest_directory }}/{{ caddy_compose_file_dest_name }}"
+caddy_config_file_dest: "{{ caddy_compose_file_dest_directory }}/{{ caddy_file_dest_name }}"
+...

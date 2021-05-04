@@ -1,0 +1,206 @@
+version: '3.8'
+
+# used for specific settings you have outside of your docker config
+# ex: proxies to external servers, storage configuration...
+# remove this block entirely if not needed (Only used for Docker Swarm)
+configs:
+  Caddyfile:
+    name: "{{ caddy_consul_stack_name }}_Caddyfile-{{ caddy_consul_timestamp_deploy }}"
+    file: "./Caddyfile"
+
+services:
+
+  # todo : local healtcheck
+  # todo : consul replicated
+  consul-leader:
+    image: consul
+    command: agent -server -client=0.0.0.0 -bootstrap -ui
+    volumes:
+      - consul-data-leader:/consul/data
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - 'CONSUL_LOCAL_CONFIG={"leave_on_terminate": true}'
+    networks:
+      - default
+      - "{{ caddy_network }}"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: {{ consul_max_attempts }}
+      labels:
+        caddy: "{{ consul_ui_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "max-age=63072000; includeSubDomains; preload"
+
+        # security labels
+        caddy.1_header.Server: ""
+        caddy.1_header.X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "1; mode=block"
+        caddy.1_header.Content-Security-Policy: "default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; style-src 'self' 'unsafe-inline' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
+
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ trusted_backend_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 8500}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_path: "/ui/" # todo: implement this
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "403"
+
+  consul-replica:
+    image: consul
+    command: agent -server -client=0.0.0.0 -retry-join="consul-leader"
+    volumes:
+      - consul-data-replica:/consul/data
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - 'CONSUL_LOCAL_CONFIG={"leave_on_terminate": true}'
+    networks:
+      - default
+    deploy:
+      replicas: {{ consul_replicas }}
+      placement:
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: on-failure
+        delay: 15s
+        window: 120s
+        max_attempts: {{ consul_max_attempts }}
+
+  caddy:
+    image: "youtous/caddy-consul-docker:{{ caddy_version }}"
+    command: caddy docker-proxy -caddyfile-path=/etc/caddy/Caddyfile
+    healthcheck:
+      test: "" # todo : healthcheck
+    configs:
+      - source: Caddyfile
+        target: /etc/caddy/Caddyfile
+    ports:
+      # read the client IP in your applications/stacks using the X-Forwarded-For
+      #  or X-Real-IP headers provided by caddy
+      - target: 80
+        published: 80
+        mode: host
+      - target: 443
+        published: 443
+        mode: host
+    volumes:
+      - caddy-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - "CADDY_INGRESS_NETWORKS={{ caddy_network }}"
+      - CADDY_DOCKER_LABEL_PREFIX=caddy
+      - CADDY_DOCKER_MODE=standalone
+      - CADDY_DOCKER_PROCESS_CADDYFILE=true
+      - CADDY_DOCKER_PROXY_SERVICE_TASKS=true
+    deploy:
+      # replicas + 1 which is the leader
+      replicas: {{ caddy_replicas + 1}}
+      placement:
+        constraints:
+          - node.role == manager
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: on-failure
+        delay: 15s
+        window: 30s
+        max_attempts: {{ caddy_max_attempts }}
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 200M
+      labels:
+        caddy: "{{ caddy_metrics_domain }}"
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "max-age=63072000; includeSubDomains; preload"
+
+        # security labels
+        caddy.1_header.Server: ""
+        caddy.1_header.X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "1; mode=block"
+        caddy.1_header.Content-Security-Policy: "default-src 'self'; script-src 'self'; img-src 'self'; style-src 'self'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy"
+
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ trusted_backend_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_metrics: "/metrics"
+
+        # or reject
+        caddy.4_respond: "403"
+
+    logging:
+      options:
+        # this tag is used by fail2ban using `journalctl CONTAINER_TAG=caddy-consul`
+        tag: "caddy-consul"
+    networks:
+      - default
+      - "{{ caddy_network }}"
+
+  # do not expose docker socket directly
+  docker-proxy:
+    image: rancher/socat-docker
+    networks:
+      - default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      # replicas + 1 which is the leader
+      replicas: {{ caddy_replicas + 1}}
+      placement:
+        constraints:
+          - node.role == manager
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: on-failure
+        delay: 15s
+        window: 30s
+
+volumes:
+  consul-data-leader:
+  consul-data-replica:
+  caddy-data:
+
+networks:
+  {{ caddy_network }}:
+    external: true

@@ -1,0 +1,33 @@
+# global conf
+{
+{% if caddy_debug is sameas true %}
+    debug
+{% endif %}
+
+    http_port   {{ caddy_http_port }}
+    https_port   {{ caddy_https_port }}
+    email {{ lets_encrypt_email }}
+    key_type {{ caddy_acme_keytype }}
+
+{% if caddy_local_certs is sameas true %}
+    local_certs
+{% endif %}
+
+{% if caddy_custom_acme_ca|length %}
+    acme_ca {{ caddy_custom_acme_ca }}
+{% endif %}
+
+    # consul conf https://github.com/pteich/caddy-tlsconsul
+    storage consul {
+        address      "consul-leader:8500"
+        prefix       "caddytls"
+        tls_enabled  "false"
+        tls_insecure "true"
+    }
+
+    {{ caddy_servers_directives }}
+}
+
+{{ caddy_caddyfile_content }}
+
+# todo : healthcheck

@@ -1,0 +1,79 @@
+---
+# version of caddy to use
+caddy_version: "latest"
+
+# name of the caddy network
+caddy_network: "caddy-public"
+
+# domain used by caddy UI
+caddy_metrics_domain: "caddy.{{ hostname }}"
+
+# number of caddy replicas
+caddy_replicas: 3
+
+# caddy public-tag, this tag is used to mark a service as public
+caddy_public_tag: "caddy-public"
+
+# for backwards compatibility (and mailserver), we stick with RSA, waiting LE supporting ed25519, P- curves are not trusted (NSA)
+caddy_acme_keytype: "rsa4096"
+
+# let's encrypt email for certificates
+lets_encrypt_email: "{{ monitoring_email }}"
+
+# domain used by consul UI
+consul_ui_domain: "consul.{{ hostname }}"
+
+
+# number of consul replicas (try to align with number of caddy replicas for HA)
+consul_replicas: 1
+
+# docker restart policies
+caddy_max_attempts: 9
+consul_max_attempts: 9
+
+# ports used by caddy
+caddy_http_port: 80
+caddy_https_port: 443
+
+# for tests, use CA https://acme-staging-v02.api.letsencrypt.org/directory, do not define for production
+caddy_custom_acme_ca: ""
+
+# Caddy Server Options (global) https://caddyserver.com/docs/caddyfile/options#server-options
+caddy_servers_directives: |
+  servers :443 {
+    protocol {
+      experimental_http3
+      strict_sni_host
+    }
+  }
+
+# enable debug?
+caddy_debug: false
+
+# Causes all certificates to be issued internally by default
+caddy_local_certs: false
+
+# Caddyfile additional content
+caddy_caddyfile_content: ""
+# caddy_caddyfile_content: |
+
+
+# minimal TLS version
+# global TLS configuration is not supported (https://github.com/caddyserver/caddy/issues/3591), configure per site needs
+# UNSUPPORTED: caddy_min_tls_version: "VersionTLS12"
+
+# list of supported ciphers; the server will fail if one cipher is not valid
+# todo : configure per site
+# UNSUPPORTED: caddy_cipher_suites:
+#    # TLS 1.3
+#    - TLS_AES_128_GCM_SHA256
+#    - TLS_AES_256_GCM_SHA384
+#    - TLS_CHACHA20_POLY1305_SHA256
+#    # < 1.3
+#    - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+#    - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+#    - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+#    - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+#    - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+#    - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+...

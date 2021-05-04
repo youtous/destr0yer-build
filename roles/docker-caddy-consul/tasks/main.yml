@@ -1,0 +1,43 @@
+---
+# This role setup a reverse-proxy/load balancer for the swarm using caddy and consul
+- name: Create caddy-public network with encryption
+  docker_network:
+    name: "{{ caddy_network }}"
+    driver: overlay
+
+- name: Ensure caddy directories exists
+  file:
+    state: directory
+    path: "{{ item }}"
+  with_items:
+    - "{{ caddy_compose_file_dest_directory }}"
+
+- name: Register deployment timestamp
+  set_fact:
+    caddy_consul_timestamp_deploy: "{{ ansible_date_time.epoch }}"
+
+- name: Copy Caddyfile config
+  template:
+    src: templates/Caddyfile.j2
+    dest: "{{ caddy_config_file_dest }}"
+    mode: u=rw,g=,o=
+
+- name: Copy caddy-Consul stack
+  template:
+    src: templates/docker-compose.caddy.j2.yml
+    dest: "{{ caddy_compose_file_dest }}"
+    mode: u=rw,g=,o=
+
+- name: Fail2ban for caddy
+  import_tasks: fail2ban.yml
+
+# always redeploy permits to have always up to date
+- name: Deploy caddy
+  docker_stack:
+    state: present
+    prune: yes
+    name: caddy-consul
+    compose:
+      - "{{ caddy_compose_file_dest }}"
+  notify: docker prune
+...
