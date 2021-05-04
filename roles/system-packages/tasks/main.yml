@@ -3,6 +3,7 @@
 - name: Install system packages
   become: yes
   apt:
+    update_cache: yes
     name: "{{ system_packages }}"
 
 - name: Enable default services
