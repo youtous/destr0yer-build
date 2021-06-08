@@ -11,7 +11,7 @@
 - name: List existing logstash tcp/5000 iptables rules
   become: yes
   shell: >
-    iptables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5000 .*\n' | awk  '{print $1}' | tr -d '\000' | sort -rn | sed '/^s*$/d'
+    iptables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5000 .*\n' | cut -d' ' -f1 | tr -d '\000' | sort -rn | sed '/^s*$/d'
   register: ufw_logstash_5000_rules
   changed_when: false
 
@@ -37,7 +37,7 @@
 - name: List existing logstash tcp/5044 iptables rules
   become: yes
   shell: >
-    iptables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5044 .*\n' | awk  '{print $1}' | tr -d '\000' | sort -rn | sed '/^s*$/d'
+    iptables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5044 .*\n' | cut -d' ' -f1 | tr -d '\000' | sort -rn | sed '/^s*$/d'
   register: ufw_logstash_5044_rules
   changed_when: false
 
@@ -63,7 +63,7 @@
 - name: List existing logstash tcp/5064 iptables rules
   become: yes
   shell: >
-    iptables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5064 .*\n' | awk  '{print $1}' | tr -d '\000' | sort -rn | sed '/^s*$/d'
+    iptables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 5064 .*\n' | cut -d' ' -f1 | tr -d '\000' | sort -rn | sed '/^s*$/d'
   register: ufw_logstash_5064_rules
   changed_when: false
 
