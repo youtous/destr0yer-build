@@ -1,0 +1,29 @@
+---
+# This role setup a node_exporter export
+
+- name: Ensure node_exporter directory exists
+  file:
+    state: directory
+    path: "{{ node_exporter_compose_file_dest_directory }}"
+
+- name: Copy node_exporter stack
+  template:
+    src: templates/docker-compose.node_exporter.j2.yml
+    dest: "{{ node_exporter_compose_file_dest }}"
+    mode: u=rw,g=,o=
+
+- name: Configure stack firewall
+  import_tasks: firewall.yml
+
+- name: Install docker-compose pip module
+  pip:
+    name: docker-compose
+
+# docker-compose deployment per host is required in order to access full stats
+- name: Deploy node_exporter (docker-compose)
+  community.docker.docker_compose:
+    project_name: node_exporter
+    project_src: "{{ node_exporter_compose_file_dest_directory }}"
+    state: present
+  notify: docker prune
+...

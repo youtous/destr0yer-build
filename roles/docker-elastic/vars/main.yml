@@ -1,3 +1,4 @@
+---
 logstash_pipeline_files:
   - 10-input.j2.conf
   - 40-filter-elb-healtcheck.j2.conf
@@ -43,3 +44,4 @@ elastic_heartbeat_default_monitors:
       - http://kibana:5601
       - http://logstash:8082
 elastic_combined_heartbeat_monitors: "{{ elastic_heartbeat_default_monitors|default([]) + elastic_heartbeat_monitors|default([]) }}"
+...

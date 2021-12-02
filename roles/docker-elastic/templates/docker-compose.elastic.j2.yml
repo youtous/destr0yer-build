@@ -1,32 +1,41 @@
 ---
-version: '3.7'
+version: '3.8'
 
 services:
 
   elasticsearch:
-    image: "amazon/opendistro-for-elasticsearch:{{ opendistro_version }}"
-    entrypoint: >
-      sh -c '
-        /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro_security --purge &&
-        /usr/share/elasticsearch/bin/elasticsearch-plugin remove opendistro-performance-analyzer --purge &&
-        /usr/local/bin/docker-entrypoint.sh
-      '
-    ulimits:
-      nofile:
-        soft: {{ elastic_ulimits_files_soft }}
-        hard: {{ elastic_ulimits_files_hard }}
+    image: "opensearchproject/opensearch:{{ opensearch_version }}"
     environment:
-      - "ES_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
-      - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
+      - "OPENSEARCH_JAVA_OPTS=-Xms{{ elasticsearch_memory }}m -Xmx{{ elasticsearch_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
+      - "cluster.name=${ELASTIC_CLUSTER_NAME}"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_PLUGIN=true"
+    entrypoint: > # todo : remove temporary opensearch plugin installation due to  https://github.com/opensearch-project/anomaly-detection-dashboards-plugin/issues/156
+      sh -c '
+        cp -f /tmp/readonly/opensearch.yml /usr/share/opensearch/config/opensearch.yml &&
+        /usr/share/opensearch/bin/opensearch-plugin remove opensearch-anomaly-detection &&
+        /usr/share/opensearch/bin/opensearch-plugin install --batch https://github.com/opensearch-project/anomaly-detection/releases/download/1.2.0.1/opensearch-anomaly-detection-1.2.0.0.zip &&
+        /usr/share/opensearch/opensearch-docker-entrypoint.sh 
+      '
     configs:
-      - source: elasticsearch.yml
-        target: /usr/share/elasticsearch/config/elasticsearch.yml
+      - source: opensearch.yml
+        target: /tmp/readonly/opensearch.yml
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        hard: 65536
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elasticsearch_host == true
+        preferences:
+          - spread: node.id
+        max_replicas_per_node: 1
       restart_policy:
         condition: on-failure
         delay: 30s
@@ -39,103 +48,126 @@ services:
           memory: "{{ elasticsearch_memory_reservation }}M"
 {% if enable_elasticsearch_webui %}
       labels:
-        - "traefik.frontend.rule=Host:{{ elasticsearch_domain }}"
-        - traefik.enable=true
-        - traefik.port=9200
-        - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.docker.network={{ traefik_network }}"
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
+        caddy: "{{ elasticsearch_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
         # security labels
-        - traefik.frontend.headers.browserXSSFilter=true
-        - traefik.frontend.headers.frameDeny=true
-        - traefik.frontend.headers.contentTypeNosniff=true
-        # HSTS
-        - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ elasticsearch_domain }}"
-        - traefik.frontend.headers.STSSeconds=315360000
-        - traefik.frontend.headers.STSIncludeSubdomains=true
-        - traefik.frontend.headers.STSPreload=true
-        # Auth
-        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
-        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self'; img-src 'self'; style-src 'self'; font-src 'self'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ elastic_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in elastic_backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 9200}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_uri: "/"
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "`Origin not allowed` 403"
 {% endif %}
     networks:
       - stack
 {% if enable_elasticsearch_webui %}
-      - {{ traefik_network }}
+      - {{ caddy_network }}
 {% endif %}
     volumes:
-      - 'es_data:/usr/share/elasticsearch/data'
+      - 'es_data:/usr/share/opensearch/data'
     healthcheck:
       test: curl --silent --output --fail http://localhost:9200 || exit 1
       interval: 30s
       timeout: 10s
-      retries: {{ elastic_healthcheck_elastic_retries }}
-      start_period: "{{ elastic_healthcheck_elastic_start_period }}"
+      retries: 5
+      start_period: 600s
 
   kibana:
-    image: "amazon/opendistro-for-elasticsearch-kibana:{{ opendistro_version }}"
+    image: "opensearchproject/opensearch-dashboards:{{ opensearch_version }}"
     entrypoint: >
       sh -c '
-        /usr/share/kibana/bin/kibana-plugin remove opendistroSecurityKibana &&
-        /usr/local/bin/kibana-docker
-      '
+      cp -f /tmp/readonly/opensearch_dashboards.yml /usr/share/opensearch-dashboards/config/opensearch_dashboards.yml &&
+      /usr/share/opensearch-dashboards/opensearch-dashboards-docker-entrypoint.sh '
     configs:
-      - source: kibana.yml
-        target: /usr/share/kibana/config/kibana.yml
+      - source: opensearch_dashboards.yml
+        target: /tmp/readonly/opensearch_dashboards.yml
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.kibana_host == true
+        preferences:
+          - spread: node.id
+        max_replicas_per_node: 1
       restart_policy:
         condition: on-failure
         delay: 30s
         max_attempts: 0 # unlimited restarts
         window: 120s
       labels:
-        - "traefik.frontend.rule=Host:{{ kibana_domain }}"
-        - traefik.enable=true
-        - traefik.port=5601
-        - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.docker.network={{ traefik_network }}"
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
+        caddy: "{{ kibana_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
         # security labels
-        - "traefik.frontend.headers.customResponseHeaders=Server:||X-Powered-By:||Permissions-Policy:accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
-        - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
-        - traefik.frontend.headers.browserXSSFilter=true
-        - traefik.frontend.headers.frameDeny=true
-        # csp handled in kibana.yml
-        - traefik.frontend.headers.contentTypeNosniff=true
-        # HSTS
-        - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ kibana_domain }}"
-        - traefik.frontend.headers.STSSeconds=315360000
-        - traefik.frontend.headers.STSIncludeSubdomains=true
-        - traefik.frontend.headers.STSPreload=true
-        # Auth
-        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
-        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ elastic_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in elastic_backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 5601}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_uri: "/"
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "`Origin not allowed` 403"
     environment:
-      - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
+      - "cluster.name=${ELASTIC_CLUSTER_NAME}"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
     networks:
       - stack
-      - {{ traefik_network }}
+      - {{ caddy_network }}
     healthcheck:
-      test: curl --silent --output --fail http://localhost:5601 || exit 1
+      test: "curl --silent --output --fail http://localhost:5601 || exit 1"
       interval: 30s
       timeout: 30s
-      retries: {{ elastic_healthcheck_kibana_retries }}
-      start_period: "{{ elastic_healthcheck_kibana_start_period }}"
+      retries: 40
+      start_period: 1200s
 
 {% if enable_webhook_smtp_forwarder %}
   # forward kibana alerts using smtp
@@ -165,7 +197,7 @@ services:
 
   # process logs from everywhere
   logstash:
-    image: "docker.elastic.co/logstash/logstash-oss:{{ elastic_version }}"
+    image: "opensearchproject/logstash-oss-with-opensearch-output-plugin:{{ logstash_elastic_version }}"
     configs:
       - source: logstash.yml
         target: /usr/share/logstash/config/logstash.yml
@@ -189,22 +221,12 @@ services:
     environment:
       - "LS_JAVA_OPTS=-Xms{{ logstash_memory }}m -Xmx{{ logstash_memory }}m -Djdk.tls.disabledAlgorithms=\"{{ elastic_disabled_tls_protocols|join(',') }}\""
       - "ELASTIC_CLUSTER_NAME=${ELASTIC_CLUSTER_NAME}"
-    ports: # in order to receive logs from allowed origins, theses ports are opened, access are filtered using UFW
-      - target: 5000 # tcp
-        published: 5000
-        mode: host
-      - target: 5044 # beats
-        published: 5044
-        mode: host
-      - target: 5064 # external input
-        published: 5064
-        mode: host
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.logstash_host == true
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -215,43 +237,106 @@ services:
           memory: "{{ logstash_memory }}M"
         reservations:
           memory: "{{ logstash_memory_reservation }}M"
-{% if enable_logstash_webui %}
       labels:
-        - "traefik.frontend.rule=Host:{{ logstash_domain }}"
-        - traefik.enable=true
-        - traefik.port=8080
-        - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.docker.network={{ traefik_network }}"
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
+        # traefik (tcp)
+        traefik.enable: "true"
+        traefik.docker.network: "{{ traefik_public_network }}"
+
+        
+        traefik.tcp.routers.logstash-5000.entrypoints: "logstash5000"
+
+        traefik.tcp.routers.logstash-5000.rule: "HostSNI(`*`)"
+        traefik.tcp.routers.logstash-5000.tls.passthrough: "true"
+        traefik.tcp.routers.logstash-5000.service: "logstash-5000-proxy"
+        traefik.tcp.routers.logstash-5000.middlewares: "logstash-ipwhitelist@docker"
+        
+        traefik.tcp.services.logstash-5000-proxy.loadbalancer.server.port: "5000"
+        traefik.tcp.services.logstash-5000-proxy.loadbalancer.terminationDelay: "60000"
+
+
+        traefik.tcp.routers.logstash-5044.entrypoints: "logstash5044"
+
+        traefik.tcp.routers.logstash-5044.rule: "HostSNI(`*`)"
+        traefik.tcp.routers.logstash-5044.tls.passthrough: "true"
+        traefik.tcp.routers.logstash-5044.service: "logstash-5044-proxy"
+        traefik.tcp.routers.logstash-5044.middlewares: "logstash-ipwhitelist@docker"
+        
+        traefik.tcp.services.logstash-5044-proxy.loadbalancer.server.port: "5044"
+        traefik.tcp.services.logstash-5044-proxy.loadbalancer.terminationDelay: "60000"
+
+
+        traefik.tcp.routers.logstash-5064.entrypoints: "logstash5064"
+
+        traefik.tcp.routers.logstash-5064.rule: "HostSNI(`*`)"
+        traefik.tcp.routers.logstash-5064.tls.passthrough: "true"
+        traefik.tcp.routers.logstash-5064.service: "logstash-5064-proxy"
+        traefik.tcp.routers.logstash-5064.middlewares: "logstash-external-ipwhitelist@docker"
+        
+        traefik.tcp.services.logstash-5064-proxy.loadbalancer.server.port: "5064"
+        traefik.tcp.services.logstash-5064-proxy.loadbalancer.terminationDelay: "60000"
+        
+        traefik.tcp.middlewares.logstash-ipwhitelist.ipwhitelist.sourcerange: "{{ logstash_allowed_ips|join(', ') }}, 127.0.0.1/32" 
+        traefik.tcp.middlewares.logstash-external-ipwhitelist.ipwhitelist.sourcerange: "{{ logstash_external_allowed_ips|join(', ') }}, 127.0.0.1/32"
+
+        # todo : eventually enable TCP Keepalive when supported by traefik https://github.com/traefik/traefik/issues/1046
+
+# TODO: enable it when supported, actually not yet supported https://github.com/traefik/traefik/issues/5598
+#    
+#         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.path: "/health?ready=1"
+#         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.scheme: "http"
+#         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.port: "8080"
+#         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.interval: "10s"
+#         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.timeout: "3s"
+# 
+
+{% if enable_logstash_webui %}
+        caddy: "{{ logstash_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
         # security labels
-        - traefik.frontend.headers.browserXSSFilter=true
-        - traefik.frontend.headers.frameDeny=true
-        - traefik.frontend.headers.contentTypeNosniff=true
-        # HSTS
-        - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ logstash_domain }}"
-        - traefik.frontend.headers.STSSeconds=315360000
-        - traefik.frontend.headers.STSIncludeSubdomains=true
-        - traefik.frontend.headers.STSPreload=true
-        # Auth => here we can configure access for other clusters to submit logs
-        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
-        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self'; img-src 'self'; style-src 'self'; font-src 'self'; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ elastic_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in elastic_backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 8080}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_uri: "/"
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "`Origin not allowed` 403"
 {% endif %}
     networks:
       - stack
+      - {{ traefik_public_network }}
 {% if enable_logstash_webui %}
-      - {{ traefik_network }}
+      - {{ caddy_network }}
 {% endif %}
     healthcheck:
       test: curl --silent --output --fail http://localhost:9600 || exit 1
       interval: 30s
       timeout: 10s
-      retries: {{ elastic_healthcheck_logstash_retries }}
-      start_period: "{{ elastic_healthcheck_logstash_start_period }}"
+      retries: 5
+      start_period: 600s
 
   journalbeat-setup:
     image: "docker.elastic.co/beats/journalbeat-oss:{{ elastic_version }}"
@@ -267,7 +352,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elastic_host == true
       restart_policy:
         condition: on-failure
         delay: 30s
@@ -290,7 +375,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elastic_host == true
       restart_policy:
         condition: on-failure
         delay: 30s
@@ -313,7 +398,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elastic_host == true
       restart_policy:
         condition: on-failure
         delay: 30s
@@ -338,7 +423,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elastic_host == true
       restart_policy:
         condition: on-failure
         delay: 30s
@@ -375,7 +460,7 @@ services:
       replicas: 0
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elastic_host == true
       restart_policy:
         condition: none
       labels:
@@ -405,7 +490,7 @@ services:
       replicas: 0
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elastic_host == true
       restart_policy:
         condition: none
       labels:
@@ -428,7 +513,7 @@ services:
       replicas: 0
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elastic_host == true
       restart_policy:
         condition: none
     networks:
@@ -450,7 +535,7 @@ services:
       replicas: 0
       placement:
         constraints:
-          - node.role == manager
+          - node.labels.elastic_host == true
       restart_policy:
         condition: none
       labels:
@@ -463,9 +548,13 @@ services:
 networks:
   stack: # encrypted if Swarm want to split services on managers
     driver: overlay
+{% if elastic_internal_network_encryption_enabled %}
     driver_opts:
       encrypted: ""
-  {{ traefik_network }}:
+{% endif %}
+  {{ caddy_network }}:
+    external: true
+  {{ traefik_public_network }}:
     external: true
 
 # use docker volume to persist ES data outside of a container.
@@ -484,12 +573,12 @@ configs:
   pipelines.yml:
     name: "{{ docker_elastic_stack_name }}_pipelines.j2.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/logstash/pipelines.j2.yml
-  elasticsearch.yml:
-    name: "{{ docker_elastic_stack_name }}_elasticsearch.j2.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/elasticsearch/elasticsearch.j2.yml
-  kibana.yml:
-    name: "{{ docker_elastic_stack_name }}_kibana.j2.yml-${DEPLOY_TIMESTAMP}"
-    file: ./config/kibana/kibana.j2.yml
+  opensearch.yml:
+    name: "{{ docker_elastic_stack_name }}_opensearch.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/opensearch/opensearch.j2.yml
+  opensearch_dashboards.yml:
+    name: "{{ docker_elastic_stack_name }}_opensearch_dashboards.j2.yml-${DEPLOY_TIMESTAMP}"
+    file: ./config/opensearch_dashboards/opensearch_dashboards.j2.yml
   heartbeat.yml:
     name: "{{ docker_elastic_stack_name }}_heartbeat.j2.yml-${DEPLOY_TIMESTAMP}"
     file: ./config/heartbeat/heartbeat.j2.yml

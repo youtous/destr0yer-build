@@ -1,0 +1,17 @@
+# Default Kibana configuration from kibana-docker.
+server.name: kibana
+server.host: "0"
+server.ssl.enabled: false
+
+opensearch.hosts: ["http://elasticsearch:9200"]
+opensearch.requestHeadersWhitelist: [ ]
+
+#================================ Logging =====================================
+# only output errors
+logging.quiet: true
+
+# todo : fix this
+#compatibility.override_main_response_version: true
+
+## ! important, keep an empty line after this line!
+

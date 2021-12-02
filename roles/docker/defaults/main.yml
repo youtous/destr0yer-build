@@ -13,7 +13,7 @@ docker_group_name: docker
 docker_group_gid: 1099
 
 docker_install_compose: true
-docker_compose_version: "1.29.2"
+docker_compose_version: "2.2.1"
 docker_compose_path: /usr/local/bin/docker-compose
 
 # docker_apt_release_channel: stable

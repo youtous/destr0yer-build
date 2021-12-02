@@ -1,8 +1,8 @@
 ---
 # This role setup filebeat; a log exporter to elastic stack (using logstash receiver)
-
 - name: Install filebeat
   import_tasks: install.yml
+  when: filebeat_state == 'present'
 
 - name: Ensure filebeat is enabled and started
   become: yes
@@ -10,6 +10,16 @@
     name: filebeat
     enabled: yes
     state: started
+  when: filebeat_state == 'present'
+
+- name: Ensure filebeat is disabled and stopped
+  become: yes
+  service:
+    name: filebeat
+    enabled: False
+    state: stopped
+  ignore_errors: True
+  when: filebeat_state == 'absent'
 
 - name: Ensure filebeat configuration directory exists
   become: yes
@@ -19,9 +29,11 @@
     group: root
     path: "{{ filebeat_configuration_directory }}"
     mode: u=rwx,g=,o=
+  when: filebeat_state == 'present'
 
 - name: Configure TLS logstash/filebeat certificates
   import_tasks: certificates.yml
+  when: filebeat_state == 'present'
 
 - name: Copy filebeat configuration
   become: yes
@@ -33,4 +45,4 @@
     mode: u=rw,g=,o=
   notify:
     - restart filebeat
-...
+  when: filebeat_state == 'present'

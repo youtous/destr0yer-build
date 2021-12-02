@@ -114,19 +114,19 @@ local_docker_ips:
 
 # ips of the nodes of the swarm
 nodes_ip4s: "{{
-  groups['workers'] | map('extract', hostvars, ['swarm_node_ipv4']) | list | flatten | unique | default([]) +
-  groups['managers'] | map('extract', hostvars, ['swarm_node_ipv4'])  | list | flatten | unique  | default([])  +
-  groups['primary_manager'] | map('extract', hostvars, ['swarm_node_ipv4'])  | list | flatten | unique  | default([])
+  groups['swarm_workers'] | map('extract', hostvars, ['swarm_node_ipv4']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['swarm_node_ipv4'])  | list | flatten | unique  | default([])  +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['swarm_node_ipv4'])  | list | flatten | unique  | default([])
 }}"
 nodes_ip4s_without_current_host: "{{ nodes_ip4s | difference(swarm_node_ipv4) }}"
 nodes_ip6s: "{{
-  groups['workers'] | map('extract', hostvars, ['swarm_node_ipv6'])  | list | flatten | unique | default([]) +
-  groups['managers'] | map('extract', hostvars, ['swarm_node_ipv6'])   | list | flatten | unique  | default([]) +
-  groups['primary_manager'] | map('extract', hostvars, ['swarm_node_ipv6'])  | list | flatten | unique  | default([])
+  groups['swarm_workers'] | map('extract', hostvars, ['swarm_node_ipv6'])  | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['swarm_node_ipv6'])   | list | flatten | unique  | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['swarm_node_ipv6'])  | list | flatten | unique  | default([])
 }}"
 nodes_ip6s_without_current_host: "{{ nodes_ip6s | difference(swarm_node_ipv6) }}"
 # first manager ipv4
-primary_manager_ipv4: "{{ groups['primary_manager'] | map('extract', hostvars, ['swarm_node_ipv4']) | first | first }}"
+primary_manager_ipv4: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['swarm_node_ipv4']) | first | first }}"
 # for security reason, exclude current host
 nodes_ips_without_current_host: "{{ nodes_ip4s_without_current_host + nodes_ip6s_without_current_host  }}" # subtract current host
 nodes_ips: "{{ nodes_ips_without_current_host }}"
@@ -176,7 +176,7 @@ docker_swarm_CA_certificate: |
 
 # hostname of the elastic logstash node that will receive all docker logs
 # nodes must be allowed to reach it using TLS and the generated certificate
-logstash_receiver_server_address: "{{ groups['primary_manager'] | map('extract', hostvars, ['hostname']) | first }}"
+logstash_receiver_server_address: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['hostname']) | first }}"
 journalbeat_output_server_address: "{{ logstash_receiver_server_address }}"
 logspout_output_server_address: "{{ logstash_receiver_server_address }}"
 metricbeat_output_server_address: "{{ logstash_receiver_server_address }}"

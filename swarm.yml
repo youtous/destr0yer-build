@@ -1,0 +1,216 @@
+---
+# This play a docker swarm cluster.
+
+
+- name: Install docker on all systems
+  hosts: all
+  roles:
+    - docker
+    - monit-docker
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-setup", "docker-swarm-setup", "docker-swarm-init"]
+
+- name: Configure docker in swarm mode on all systems
+  hosts: all
+  serial: 1 # configure one by one each host in case of reboot
+  roles:
+    - docker-configure
+    - docker-prune-daily
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-setup", "docker-swarm-init"]
+
+
+- name: Initiate the primary manager
+  hosts: swarm_primary_manager
+  roles:
+    - docker-initiate-swarm
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-init"]
+
+- name: Initiate managers
+  hosts: swarm_managers
+  roles:
+    - docker-initiate-managers
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-init"]
+
+- name: Initiate workers
+  hosts: swarm_workers
+  roles:
+    - docker-initiate-workers
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-swarm-init"]
+
+- name: Cleanup swarm init
+  hosts: localhost
+  tasks:
+    - name: refresh inventory
+      meta: refresh_inventory
+  tags: ["docker-swarm-init", "docker-swarm-init-cleanup"]
+
+- name: Integrate fail2ban for docker (recidive)
+  hosts: all
+  roles:
+    - docker-fail2ban
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-fail2ban"]
+
+- name: Setup auto-restore DOCKER-USER chain
+  hosts: all
+  roles:
+    - docker-user-chain
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-user-chain"]
+
+- name: Setup docker common tools
+  hosts: all
+  roles:
+    - docker-ctop-cmd
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-common-tools"]
+
+- name: Setup docker backup tools
+  hosts: all
+  roles:
+    - docker-backup-mysql
+    - docker-backup-volumes
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["docker-backup-tools"]
+
+
+- name: Setup caddy reverse-proxy with consul
+  hosts: swarm_primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
+  roles:
+    - docker-caddy-consul # smart reverse proxy for docker swarm
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["caddy", "caddy-stack"]
+
+- name: Setup caddy additionals on managers | fail2ban, firewall
+  hosts: [swarm_managers, swarm_primary_manager]
+  tasks:
+    - include_role:
+        name: docker-caddy-consul
+        tasks_from: fail2ban
+    - include_role:
+        name: docker-caddy-consul
+        tasks_from: firewall
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["caddy", "caddy-f2b", "caddy-firewall"]
+
+- name: Setup traefik reverse-proxy
+  hosts: swarm_primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
+  roles:
+    - docker-traefik # L4 smart reverse proxy for docker swarm
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["traefik"]
+
+- name: Setup traefik additionals on managers | firewall
+  hosts: [swarm_managers, swarm_primary_manager]
+  tasks:
+    - include_role:
+        name: docker-traefik
+        tasks_from: firewall
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["traefik", "traefik-firewall"]
+
+- name: Setup swarm_cronjon
+  hosts: swarm_primary_manager
+  roles:
+    - docker-swarm-cronjob
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["cronjob"]
+
+- name: Setup docker-swarm portainer
+  hosts: swarm_primary_manager
+  roles:
+    - docker-portainer # web manager of the cluster
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["portainer"]
+
+- name: Setup promgraf stack
+  hosts: swarm_primary_manager
+  roles:
+    - docker-promgraf
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["metrics", "promgraf"]
+
+- name: Setup docker-swarm metrics
+  hosts: swarm_primary_manager
+  roles:
+    - docker-cadvisor
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["metrics", "cadvisor"]
+
+- name: Setup docker-swarm metrics
+  hosts: all
+  roles:
+    - docker-node-exporter
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["metrics", "node_exporter"]
+
+- name: Include elastic cluster setup
+  import_playbook: elastic.yml
+
+- name: Include mailserver deployment for regenerating firewall rules
+  import_playbook: mailserver.yml
+
+- name: Include nextcloud deployment (just in case :)) # ufw rules
+  import_playbook: nextcloud.yml
+
+- name: Include teamspeak deployment (just in case :)) # potential ufw rules (not yet used)
+  import_playbook: teamspeak.yml
+...

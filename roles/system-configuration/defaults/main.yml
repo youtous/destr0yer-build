@@ -14,3 +14,4 @@ system_folders_write_root_only:
   - /sbin
   - /srv
   - /var
+...

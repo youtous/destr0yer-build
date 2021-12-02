@@ -1,4 +1,6 @@
 ---
+filebeat_state: "present"
+
 # logstash server address (ip, port) receiving logs from filebeat
 # /!\ setup TLS in order to reach it, the certificate must be set accordingly the address
 filebeat_output_server_address: "localhost"
@@ -8,9 +10,9 @@ filebeat_output_server_port: "5044"
 # Provide X509 certificates for TLS
 # you can use pipe syntax
 
-# logstash_CA_certificate: | # usually logstash-rootCA.crt
-# filebeat_node_private_key: | # usually logstash-node-hostname.key
-# filebeat_node_certificate: | # usually logstash-node-hostname.crt
+logstash_CA_certificate: "" # usually logstash-rootCA.crt
+filebeat_node_private_key: "" # usually logstash-node-hostname.key
+filebeat_node_certificate: "" # usually logstash-node-hostname.crt
 
 # apt repository
 elastic_gpg_keyserver: "pgp.mit.edu"

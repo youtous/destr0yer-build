@@ -1,0 +1,68 @@
+---
+# tagging docker nodes strategy
+
+- name: Get docker info on all docker nodes
+  community.docker.docker_node_info:
+  register: result_docker_nodes
+
+- name: Tag elastic host node using docker label
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels:
+      elastic_host: "true"
+  with_items: "{{ elastic_hosts }}"
+
+- name: Remove elastic tagging labels from diff nodes
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels_to_remove:
+      - elastic_host
+  with_items: "{{ result_docker_nodes | community.general.json_query('nodes[*].Description.Hostname') | reject('in', elastic_hosts) }}"
+  no_log: true
+
+- name: Tag kibana host node using docker label
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels:
+      kibana_host: "true"
+  with_items: "{{ kibana_hosts }}"
+
+- name: Remove kibana tagging labels from diff nodes
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels_to_remove:
+      - kibana_host
+  with_items: "{{ result_docker_nodes | community.general.json_query('nodes[*].Description.Hostname') | reject('in', kibana_hosts) }}"
+  no_log: true
+
+- name: Tag elasticsearch host node using docker label
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels:
+      elasticsearch_host: "true"
+  with_items: "{{ elasticsearch_hosts }}"
+
+- name: Remove elasticsearch tagging labels from diff nodes
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels_to_remove:
+      - elasticsearch_host
+  with_items: "{{ result_docker_nodes | community.general.json_query('nodes[*].Description.Hostname') | reject('in', elasticsearch_hosts) }}"
+  no_log: true
+
+- name: Tag logstash host node using docker label
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels:
+      logstash_host: "true"
+  with_items: "{{ logstash_hosts }}"
+
+- name: Remove logstash tagging labels from diff nodes
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels_to_remove:
+      - logstash_host
+  with_items: "{{ result_docker_nodes | community.general.json_query('nodes[*].Description.Hostname') | reject('in', logstash_hosts) }}"
+  no_log: true
+
+...

@@ -1,3 +1,0 @@
-traefik_compose_file_dest_directory: ~/traefik
-traefik_compose_file_dest_name: docker-compose.traefik.yml
-traefik_compose_file_dest: "{{ traefik_compose_file_dest_directory }}/{{ traefik_compose_file_dest_name }}"

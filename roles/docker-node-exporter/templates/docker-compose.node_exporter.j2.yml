@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+
+  node_exporter:
+    image: "flaviostutz/docker-swarm-node-exporter:{{ node_exporter_version }}"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    environment:
+      NODE_ID: "{{ ansible_hostname }}"
+    network_mode: host
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /etc/hostname:/etc/nodename:ro
+    restart: always

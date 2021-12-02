@@ -1,0 +1,7 @@
+---
+docker_prune_opts: "--force"
+
+docker_path: /usr/bin/docker
+
+docker_prune_cronjob_special_time: daily
+...

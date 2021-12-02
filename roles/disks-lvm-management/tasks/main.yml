@@ -1,0 +1,25 @@
+---
+# configure the different partitions and associated file systems with LVM
+
+- name: Install parted and lvm2 and fs
+  become: yes
+  ansible.builtin.package:
+    name: 
+      - parted 
+      - lvm2
+      - xfsprogs
+    state: present
+
+
+- name: Partitioning setup
+  import_tasks: parted.yml
+
+- name: LVM setup
+  import_tasks: lvm.yml
+
+- name: Format setup
+  import_tasks: format.yml
+
+- name: Mount setup
+  import_tasks: mount.yml
+...

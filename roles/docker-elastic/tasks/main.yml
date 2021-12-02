@@ -22,8 +22,8 @@
     state: directory
     path: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}"
   with_items:
-    - elasticsearch
-    - kibana
+    - opensearch
+    - opensearch_dashboards
     - logstash
     - logstash/pipeline
     - logstash/pipeline/patterns.d
@@ -39,8 +39,8 @@
     dest: "{{ elastic_compose_file_dest_directory }}/config/{{ item.dir }}/{{ item.file }}"
     mode: u=rw,g=,o=
   with_items:
-    - { dir: elasticsearch, file: elasticsearch.j2.yml}
-    - { dir: kibana, file: kibana.j2.yml }
+    - { dir: opensearch, file: opensearch.j2.yml}
+    - { dir: opensearch_dashboards, file: opensearch_dashboards.j2.yml }
     - { dir: logstash, file: logstash.j2.yml }
     - { dir: logstash, file: pipelines.j2.yml }
     - { dir: heartbeat, file: heartbeat.j2.yml }
@@ -81,8 +81,8 @@
 - name: Configure additional parameters for logstash with docker
   import_tasks: docker-logstash.yml
 
-- name: Configure stack firewall
-  import_tasks: firewall.yml
+- name: Tag docker nodes
+  import_tasks: tag_hosts.yml
 
 - name: Deploy elastic
   docker_stack:

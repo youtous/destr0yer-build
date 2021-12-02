@@ -1,0 +1,36 @@
+---
+# handle lvm configuration
+- name: Volume groups deletion
+  become: yes
+  community.general.lvg:
+    state: absent
+    vg: "{{ item.vg }}"
+  with_items: "{{ volume_groups_to_delete }}"
+
+- name: Volume groups creation
+  become: yes
+  community.general.lvg:
+    pesize: "{{ item.pesize|default('4') }}"
+    pvresize: "{{ item.pvresize|default(False) }}"
+    pvs: "{{ item.pvs|default([]) }}"
+    state: present
+    vg: "{{ item.vg }}"
+    vg_options:  "{{ item.vg_options|default('') }}"
+  with_items: "{{ volume_groups_to_create }}"
+
+- name: Logical volumes creation
+  become: yes
+  community.general.lvol:
+      active: "{{ item.active|default(True) }}"
+      force:  "{{ item.force|default(False) }}"
+      shrink:  "{{ item.shrink|default(False) }}"
+      opts:  "{{ item.opts|default('') }}"
+      pvs:  "{{ item.pvs|default('') }}"
+      vg: "{{ item.vg }}"
+      lv:  "{{ item.lv }}"
+      size: "{{ item.size|default('') }}"
+      thinpool: "{{ item.thinpool|default('') }}"
+      resizefs: "{{ item.resizefs|default(False) }}"
+      state: present
+  with_items: "{{ logical_volume_groups_to_create }}"
+...

@@ -1,3 +1,5 @@
+---
 portainer_compose_file_dest_directory: ~/portainer
 portainer_compose_file_dest_name: docker-compose.portainer.yml
 portainer_compose_file_dest: "{{ portainer_compose_file_dest_directory }}/{{ portainer_compose_file_dest_name }}"
+...

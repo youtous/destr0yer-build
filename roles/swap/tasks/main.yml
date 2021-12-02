@@ -1,0 +1,16 @@
+---
+# Setup swap file 
+
+- name: Setup swap file
+  become: yes
+  import_role:
+    name: geerlingguy.swap
+  vars:
+    swap_file_path: "{{ fs_swap_file_path }}"
+    swap_file_size_mb: "{{ fs_swap_file_size_mb }}"
+    swap_swappiness: "{{ fs_swap_swappiness }}"
+    swap_file_state: "{{ fs_swap_file_state }}"
+    swap_file_create_command: "{{ fs_swap_file_create_command }}"
+
+    swap_test_mode: "{{ fs_swap_test_mode }}"
+...

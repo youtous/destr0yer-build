@@ -1,0 +1,42 @@
+---
+# version of traefik to use
+traefik_version: "v2.5"
+
+traefik_domain: "traefik.{{ hostname }}"
+
+# name of the traefik network
+traefik_network: "traefik-public"
+
+# caddy traefik-tag, this tag is used to mark a service as public
+traefik_public_tag: "traefik-public"
+
+traefik_backend_users: "{{ backend_users|default([]) }}"
+
+# ports to expose on traefik
+traefik_services: []
+#  - name: mariadb
+#    port: 3698
+#    type: tcp
+
+traefik_log_level: "INFO"
+traefik_log_format: "json"
+
+# list of ips allowed to retrieve caddy metrics
+traefik_metrics_allowed_ips: []
+
+traefik_allowed_ips: "{{ trusted_backend_ips|default([]) }}"
+
+# docker restart policies
+traefik_max_attempts: 0
+
+# configure sysctl to accept a given number of connections
+traefik_max_connections_sysctl: 4096
+
+# The encryption of the overlay networks has a bug that is  causing issues for one service to reach another over the overlay
+# network. See moby/moby#37115 - https://github.com/moby/moby/issues/37115
+# On some cloud provider, you might want to disable this encryption to get a working service
+traefik_internal_network_encryption_enabled: True
+
+# name of the caddy network
+caddy_network: "caddy-public"
+...

@@ -2,14 +2,15 @@
 # version of caddy to use
 caddy_version: "latest"
 
+# please define manually an acl token for consul (uuid-4)
+# > irb
+#  require 'securerandom'
+#
+#  uuid = SecureRandom.uuid
+consul_acl_master_token: ""
+
 # name of the caddy network
 caddy_network: "caddy-public"
-
-# domain used by caddy UI
-caddy_metrics_domain: "caddy.{{ hostname }}"
-
-# number of caddy replicas
-caddy_replicas: 3
 
 # caddy public-tag, this tag is used to mark a service as public
 caddy_public_tag: "caddy-public"
@@ -24,12 +25,17 @@ lets_encrypt_email: "{{ monitoring_email }}"
 consul_ui_domain: "consul.{{ hostname }}"
 
 
-# number of consul replicas (try to align with number of caddy replicas for HA)
-consul_replicas: 1
+# host port used to expose caddy metrics
+caddy_metrics_port: 9500
+# list of ips allowed to retrieve caddy metrics
+caddy_metrics_allowed_ips: []
 
-# docker restart policies
-caddy_max_attempts: 9
-consul_max_attempts: 9
+# number of consul replicas (try to align with number of caddy replicas for HA)
+consul_replicas: "{{ ( groups['swarm_managers'] | length ) + 1 }}"
+
+# docker restart policies (0 for unlimited)
+caddy_max_attempts: 0
+consul_max_attempts: 0
 
 # ports used by caddy
 caddy_http_port: 80
@@ -53,17 +59,27 @@ caddy_debug: false
 # Causes all certificates to be issued internally by default
 caddy_local_certs: false
 
+# configure sysctl to accept a given number of connections
+caddy_max_connections_sysctl: 4096
+
 # Caddyfile additional content
 caddy_caddyfile_content: ""
 # caddy_caddyfile_content: |
 
+
+# key used to encrypt tls certificates stored in consul, change it needed
+caddy_consul_certificates_aes_key: "consultls-1234567890-caddytls-32"
+
+# The encryption of the overlay networks has a bug that is  causing issues for one service to reach another over the overlay
+# network. See moby/moby#37115 - https://github.com/moby/moby/issues/37115
+# On some cloud provider, you might want to disable this encryption to get a working service
+caddy_internal_network_encryption_enabled: True
 
 # minimal TLS version
 # global TLS configuration is not supported (https://github.com/caddyserver/caddy/issues/3591), configure per site needs
 # UNSUPPORTED: caddy_min_tls_version: "VersionTLS12"
 
 # list of supported ciphers; the server will fail if one cipher is not valid
-# todo : configure per site
 # UNSUPPORTED: caddy_cipher_suites:
 #    # TLS 1.3
 #    - TLS_AES_128_GCM_SHA256

@@ -1,0 +1,71 @@
+---
+# handle partitions using parted
+
+- name: Delete partitions with parted
+  become: yes
+  community.general.parted:
+    device: "{{ item.device }}"
+    number: "{{ item.part_number }}"
+    state: absent
+  with_items: "{{ disk_partitions_to_delete }}"
+  register: gpt_deleted_partions
+
+- name: List file state of deleted partitions
+  find:
+    paths: "{{ disks_management_state_path }}/created"
+    patterns:
+      - "{{ item.device|replace('/', '-') }}{{ item.part_number }}-.*.exists"
+    use_regex: yes
+    recurse: no
+  register: gpt_file_state_deleted_partitions
+  with_items: "{{ disk_partitions_to_delete }}"
+
+- name: Delete file state of deleted partitions
+  become: yes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items: "{{ gpt_file_state_deleted_partitions.results  | community.general.json_query('[*].files[*].path') }}"
+
+- name: Check if partitions have been created
+  ansible.builtin.stat:
+    path: "{{ disks_management_state_path }}/created/{{ item.device|replace('/', '-') }}{{ item.part_number }}-{{ item.name|default('')|hash('md5') }}.exists"
+  register: stat_partion_to_create_status
+  with_items: "{{ disk_partitions_to_create }}"
+
+- name: Create GPT partitions with parted
+  become: yes
+  community.general.parted:
+    device: "{{ item.device }}"
+    number: "{{ item.part_number }}"
+    flags: "{{ item.flags|default([]) }}"
+    part_start: "{{ item.part_start|default('0%') }}"
+    part_end: "{{ item.part_end|default('100%') }}"
+    name: "{{ item.name|default('')|hash('md5') }}"
+    fs_type: "{{ item.fs_type|default('') }}"
+    label: gpt
+    state: present
+  when: stat_partion_to_create_status.results[ansible_loop.index0].stat.exists == False
+  loop: "{{ disk_partitions_to_create }}"
+  loop_control:
+    extended: yes
+  register: gpt_created_partions
+
+- name: Ensure partition state directory exists
+  become: yes
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item }}"
+  loop:
+    - "{{ disks_management_state_path }}"
+    - "{{ disks_management_state_path }}/created/"
+
+- name: Register file state of created partitions
+  become: yes
+  ansible.builtin.file:
+    path: "{{ disks_management_state_path }}/created/{{ item.disk.dev|replace('/', '-') }}{{ (item.partitions | first).num }}-{{ (item.partitions | first).name|default('') }}.exists"
+    state: touch
+    mode: u=rw,g=r,o=r
+  when: item.disk is defined
+  loop: "{{ gpt_created_partions.results }}"
+...

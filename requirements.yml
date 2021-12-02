@@ -1,68 +1,84 @@
+---
 # Install requirements for the playbook using
 # `ansible-galaxy install -r requirements.yml`
 
-# NTP
-- name: geerlingguy.ntp
-  src: https://github.com/geerlingguy/ansible-role-ntp.git
-  version: 99955a37a7856becf0a6eef249dba1bf60e3a09d
+collections:
+  - name: community.general
+  - name: ansible.posix
 
-# golang installer
-- name: fubarhouse.golang
-  src: https://github.com/fubarhouse/ansible-role-golang.git
-  version: e9989fa6a65053ae7c7364be20f652ad7c189e0f
+roles:
+  # NTP
+  - name: geerlingguy.ntp
+    src: https://github.com/geerlingguy/ansible-role-ntp.git
+    version: a56b794d81f090c2490cd2a5b2fb760baa67353c
 
-# user management
-- name: youtous.users
-  src: https://github.com/youtous/ansible-users.git
-  version: 79dbcbc58181580c1fc01e233d59ee6248267c3d
+  # swap
+  - name: geerlingguy.swap
+    src: https://github.com/geerlingguy/ansible-role-swap.git
+    version: 27d6d46f298d8f13e295acec5b65623c204bd49b
 
-# Resolv.conf
-- name: ahuffman.resolv
-  src: https://github.com/ahuffman/ansible-resolv.git
-  version: bf111291a0e0145bdb91b8fa00510bd826bb3c55
+  # user management
+  - name: youtous.users
+    src: https://github.com/youtous/ansible-users.git
+    version: 79dbcbc58181580c1fc01e233d59ee6248267c3d
 
-# Email notification on login
-- name: grzegorznowak.ansible_ssh_login_notifications
-  src: https://github.com/spottmedia/ansible-ssh-login-notifications.git
-  version: 9ba28df6612c7cabf43483206c3234a326720513
+  # Logrotate
+  - name: arillso.logrotate
+    src: https://github.com/arillso/ansible.logrotate.git
+    version: 0aced5bf8e938b8eee2d902bd3c9262c764c2e54
 
-# Logrotate
-- name: arillso.logrotate
-  src: https://github.com/arillso/ansible.logrotate.git
-  version: 0aced5bf8e938b8eee2d902bd3c9262c764c2e54
+  # Fail2ban
+  - name: oefenweb.fail2ban
+    src: https://github.com/Oefenweb/ansible-fail2ban.git
+    version: 4b02c28f346fddcd32f329ac1eacc5d420b35382
 
-# Logwatch
-- name: youtous.logwatch
-  src: https://github.com/youtous/ansible-logwatch.git
-  version: 09973157886f0568b8051b20c276fe9d50b13fed
+  # Docker
+  - name: geerlingguy.docker
+    src: https://github.com/geerlingguy/ansible-role-docker.git
+    version: c94e327a74a16a85f23d73be386c161a9cfe81d4
 
-# Fail2ban
-- name: oefenweb.fail2ban
-  src: https://github.com/Oefenweb/ansible-fail2ban.git
-  version: 4b02c28f346fddcd32f329ac1eacc5d420b35382
+  # Resolv.conf
+  - name: ahuffman.resolv
+    src: https://github.com/ahuffman/ansible-resolv.git
+    version: bf111291a0e0145bdb91b8fa00510bd826bb3c55
 
-# Duplicity backups
-- name: oefenweb.duply-backup
-  src: https://github.com/Oefenweb/ansible-duply-backup.git
-  version: bc8d65b7ff445e6aea3cedf5c8cd238d2c4f8820
+  # journald conf
+  - name: 0x0I.journald
+    src: https://github.com/0x0I/ansible-role-journald.git
+    version: 26a0b11533326a5779951090e7cc4b59d3962fb4
 
-# Network interfaces
-- name: MichaelRigart.interfaces
-  src: https://github.com/michaelrigart/ansible-role-interfaces.git
-  version: cd3bbd715c29276f642e0841e09eeb67d3a07e5a
+  # golang installer
+  - name: fubarhouse.golang
+    src: https://github.com/fubarhouse/ansible-role-golang.git
+    version: e9989fa6a65053ae7c7364be20f652ad7c189e0f
 
-# PostgreSQL
-- name: geerlingguy.postgresql
-  src: https://github.com/geerlingguy/ansible-role-postgresql.git
-  version: e61751f344dbd1fd05dc82311d88b1f2bc71d21f
+  # Email notification on login
+  - name: grzegorznowak.ansible_ssh_login_notifications
+    src: https://github.com/spottmedia/ansible-ssh-login-notifications.git
+    version: 9ba28df6612c7cabf43483206c3234a326720513
 
-# Mariadb
-- name: geerlingguy.mysql
-  src: https://github.com/youtous/ansible-role-mysql.git
-  version: 1c1bd8e47f252a25f9b9b5686bb1571df267ebe1
+  # Logwatch
+  - name: youtous.logwatch
+    src: https://github.com/youtous/ansible-logwatch.git
+    version: 09973157886f0568b8051b20c276fe9d50b13fed
 
-# Docker
-- name: geerlingguy.docker
-  src: https://github.com/geerlingguy/ansible-role-docker.git
-  version: c94e327a74a16a85f23d73be386c161a9cfe81d4
+  # Duplicity backups
+  - name: oefenweb.duply-backup
+    src: https://github.com/Oefenweb/ansible-duply-backup.git
+    version: bc8d65b7ff445e6aea3cedf5c8cd238d2c4f8820
 
+  # Network interfaces
+  - name: MichaelRigart.interfaces
+    src: https://github.com/michaelrigart/ansible-role-interfaces.git
+    version: cd3bbd715c29276f642e0841e09eeb67d3a07e5a
+
+  # PostgreSQL
+  - name: geerlingguy.postgresql
+    src: https://github.com/geerlingguy/ansible-role-postgresql.git
+    version: e61751f344dbd1fd05dc82311d88b1f2bc71d21f
+
+  # Mariadb
+  - name: geerlingguy.mysql
+    src: https://github.com/youtous/ansible-role-mysql.git
+    version: 1c1bd8e47f252a25f9b9b5686bb1571df267ebe1
+...

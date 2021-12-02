@@ -1,0 +1,20 @@
+---
+promgraf_stack_name: promgraf
+
+promgraf_compose_file_dest_directory: ~/promgraf
+promgraf_compose_file_dest_name: docker-compose.promgraf.yml
+promgraf_compose_file_dest: "{{ promgraf_compose_file_dest_directory }}/{{ promgraf_compose_file_dest_name }}"
+
+promgraf_files:
+  - {src: prometheus/rules/swarm_node.rules.yaml, dest: prometheus/rules/swarm_node.rules.yaml}
+  - {src: prometheus/rules/swarm_task.rules.yaml, dest: prometheus/rules/swarm_task.rules.yaml}
+  - {src: grafana/dashboards/swarmprom-nodes-dash.json, dest: grafana/dashboards/swarmprom-nodes-dash.json}
+  - {src: grafana/dashboards/swarmprom-prometheus-dash.json, dest: grafana/dashboards/swarmprom-prometheus-dash.json}
+  - {src: grafana/dashboards/swarmprom-services-dash.json, dest: grafana/dashboards/swarmprom-services-dash.json}
+  - {src: grafana/dashboards/node-exporter-full.json, dest: grafana/dashboards/node-exporter-full.json}
+  
+promgraf_templates:
+  - {src: grafana/datasources.yaml.j2, dest: grafana/datasources.yaml}
+  - {src: grafana/swarmprom_dashboards.yaml, dest: grafana/swarmprom_dashboards.yaml}
+  - {src: prometheus/prometheus.yaml.j2, dest: prometheus/prometheus.yaml}
+...

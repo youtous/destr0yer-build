@@ -1,0 +1,26 @@
+# https://wiki.debian.org/AptConfiguration
+# https://debian-facile.org/doc:systeme:apt:pinning
+
+# /!\ When this file is modified, use apt-get update
+
+Package: *
+Pin: release o=Debian,a=stable
+Pin-Priority: 500
+
+Package: *
+Pin: release o=Debian,a=stable-security
+Pin-Priority: 500
+
+Package: *
+Pin: release o=Debian,a=stable-updates
+Pin-Priority: 500
+
+Package: *
+Pin: release a=testing
+Pin-Priority: 250
+
+Package: *
+Pin: release o=Debian,a=bullseye-backports
+Pin-Priority: 100
+
+

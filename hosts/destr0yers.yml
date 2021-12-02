@@ -1,15 +1,15 @@
 # hosts that must receive a first configuration for server
-factoring_destroyers:
+factoring_systems:
   hosts:
 
 # destr0yers under a commander, they are accessible from ssh only from ssh_entrypoints
-base_destr0yers:
+base_systems:
   hosts:
     heaven-pascal.youtous.dv:
     heaven-roberval.youtous.dv:
 
 # destr0yers that are public exposed
-commander_destr0yers:
+commander_systems:
 
 # hosts that will be able to deliver mails using an smtp relay
 smtp_relays:

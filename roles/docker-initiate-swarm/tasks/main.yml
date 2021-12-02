@@ -19,3 +19,4 @@
   add_host:
     hostname: swarm_first_manager
     swarm_info: "{{ swarm_info }}"
+...

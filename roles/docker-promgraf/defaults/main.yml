@@ -1,0 +1,103 @@
+---
+# base domain of promgraf
+promgraf_domain: "promgraf.{{ hostname }}"
+promgraf_prometheus_domain: "prometheus.{{ promgraf_domain }}"
+promgraf_grafana_domain: "grafana.{{ promgraf_domain }}"
+promgraf_karma_domain: "karma.{{ promgraf_domain }}"
+promgraf_alertmanager_domain: "alertmanager.{{ promgraf_domain }}"
+
+# prometheus configuration
+promgraf_prometheus_retention: "72h"
+
+promgraf_prometheus_configuration: |
+  global:
+    scrape_interval:     15s
+    evaluation_interval: 15s
+
+    external_labels:
+      monitor: 'promswarm'
+
+  rule_files:
+    - "swarm_node.rules.yml"
+    - "swarm_task.rules.yml"
+
+  alerting:
+    alertmanagers:
+    - static_configs:
+      - targets:
+        - alertmanager:9093
+
+  scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+        - targets: ['localhost:9090']
+
+promgraf_alertmanager_configuration:
+  route:
+      receiver: 'slack'
+
+  receivers:
+      - name: 'slack'
+        slack_configs:
+            - send_resolved: true
+              text: "{{ .CommonAnnotations.description }}"
+              #username: <user>#
+              #channel: <channel>#
+              #api_url: <url>#
+
+# grafana configuration
+promgraf_grafana_admin_user: "admin"
+promgraf_grafana_admin_password: ""
+promgraf_grafana_allow_sign_up: False 
+promgraf_grafana_smtp_enabled: False 
+promgraf_grafana_smtp_from_address: "grafana@dev.dv" 
+promgraf_grafana_smtp_from_name: "Grafana" 
+promgraf_grafana_smtp_host: "localhost:25" 
+promgraf_grafana_smtp_user: "" 
+promgraf_grafana_smtp_password: "" 
+promgraf_grafana_smtp_starttls_policy: "" 
+
+promgraf_backend_users: "{{ backend_users|default([]) }}"
+
+# data source configuration
+promgraf_grafana_datasources:
+  apiVersion: 1
+
+  deleteDatasources:
+    - name: Prometheus
+
+  datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    version: 1
+    editable: true
+
+# node that will host the stack (prefer a single one)
+promgraf_hosts: "{{ groups['swarm_primary_manager'] }}"
+
+# max deploy tries (0 = unlimited)
+promgraf_grafana_max_attemps: 0
+promgraf_prometheus_max_attemps: 0
+promgraf_alertmanager_max_attemps: 0
+promgraf_unsee_max_attemps: 0
+
+# versions
+promgraf_grafana_version: "latest"
+promgraf_prometheus_version: "latest"
+promgraf_karma_version: "latest"
+promgraf_alertmanager_version: "latest"
+
+# allowed ips
+promgraf_allowed_ips: "{{ trusted_backend_ips }}"
+
+# The encryption of the overlay networks has a bug that is  causing issues for one service to reach another over the overlay
+# network. See moby/moby#37115 - https://github.com/moby/moby/issues/37115
+# On some cloud provider, you might want to disable this encryption to get a working service
+promgraf_internal_network_encryption_enabled: True
+
+# name of the traefik network
+caddy_network: "caddy-public"
+...

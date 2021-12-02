@@ -1,0 +1,19 @@
+---
+- name: restart rsyslog
+  become: yes
+  systemd:
+    name: rsyslog
+    state: restarted
+
+- name: daemon-reload systemd
+  become: yes
+  systemd:
+    daemon_reload: true
+
+- name: restart docker
+  throttle: 1 # docker should not be restarted globally
+  become: yes
+  systemd:
+    name: docker
+    state: restarted
+...

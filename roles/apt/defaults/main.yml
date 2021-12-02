@@ -2,9 +2,16 @@
 # list of files to remove from /etc/apt/sources.d/
 apt_remove_sourcesd: []
 
+# allow apt to perform reboots after important changes
+apt_allowed_to_reboot: True
+
 apt_directory: "/etc/apt"
 apt_sources_list_directory: "{{ apt_directory }}/sources.list.d"
 apt_buster_flag_path: "{{ apt_directory }}/buster_update_flag"
+apt_bullseye_flag_path: "{{ apt_directory }}/bullseye_update_flag"
+
+# by default, use the current distribution target, if enforced, you can upgrade the distribution, e.g. bullseye
+apt_distribution_version_target: "{{ ansible_distribution_release }}"
 
 # remove unwanted sources from cloud provider
 apt_unwanted_sources_patterns:
@@ -13,3 +20,4 @@ apt_unwanted_sources_patterns:
   - "*scw*"
   - "*ovh*"
   - "*digitalocean*"
+...

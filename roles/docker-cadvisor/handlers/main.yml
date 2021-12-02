@@ -1,0 +1,8 @@
+---
+- name: docker prune
+  docker_prune:
+    containers: yes
+    images: yes
+    networks: yes
+    builder_cache: yes
+...

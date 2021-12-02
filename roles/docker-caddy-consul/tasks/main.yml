@@ -1,9 +1,38 @@
 ---
 # This role setup a reverse-proxy/load balancer for the swarm using caddy and consul
+
+- name: Verify Consul ACL Token is defined and not empty
+  assert:
+    that: >
+      consul_acl_master_token is defined and consul_acl_master_token|length
+    msg: "consul_acl_master_token must be defined an not empty"
+
+- name: Verify Consul Caddy encryption key is defined and 32 caracters long
+  assert:
+    that: >
+      caddy_consul_certificates_aes_key is defined and (caddy_consul_certificates_aes_key|length == 32)
+    msg: "caddy_consul_certificates_aes_key must be defined an 32 caracters long (current size = caddy_consul_certificates_aes_key|length)"
+
+- name: Verify Consul replica count is compatible with the raft consensus algorithm
+  assert:
+    that: >
+      consul_replicas|int == 1 or consul_replicas|int == 3 or consul_replicas|int == 5 or consul_replicas|int == 7
+    msg: "consul_replicas must either be 1,3,5,7 to be compatible with the raft algorithm consensus (current value = {{ consul_replicas }})"
+
+
 - name: Create caddy-public network with encryption
   docker_network:
     name: "{{ caddy_network }}"
     driver: overlay
+    driver_options:
+      encrypted: ""
+  when: caddy_internal_network_encryption_enabled is true
+
+- name: Create caddy-public network without encryption
+  docker_network:
+    name: "{{ caddy_network }}"
+    driver: overlay
+  when: caddy_internal_network_encryption_enabled is false
 
 - name: Ensure caddy directories exists
   file:
@@ -30,6 +59,9 @@
 
 - name: Fail2ban for caddy
   import_tasks: fail2ban.yml
+
+- name: Configure stack firewall
+  import_tasks: firewall.yml
 
 # always redeploy permits to have always up to date
 - name: Deploy caddy

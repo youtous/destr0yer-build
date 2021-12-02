@@ -92,6 +92,12 @@ Simply mount the volume and the `kibana_index.ndjson` in.
 
 You can use the import/export function in kibana.
 
+Important change due to OpenSearch migration:
+Beats dashboards imports must be performed manually;
+https://www.electricbrain.com.au/pages/analytics/opensearch-vs-elasticsearch.php
+
+
+
 ### Alerts email
 
 1. Add the webhook:

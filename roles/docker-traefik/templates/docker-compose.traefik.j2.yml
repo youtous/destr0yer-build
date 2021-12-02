@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+
+  traefik:
+    image: "traefik:{{ traefik_version }}"
+    command:
+      - "--log.level={{ traefik_log_level }}"
+      - "--log.format={{ traefik_log_format }}"
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=tcp://docker-proxy:2375"
+      - "--providers.docker.swarmMode=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--global.sendAnonymousUsage=false"
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--ping=true"
+      - "--metrics.prometheus=true"
+{% for service in traefik_services %}
+      - "--entryPoints.{{ service.name }}.address=:{{ service.port }}/{{ service.type }}"
+{% endfor %}
+    healthcheck:
+      test: traefik healthcheck --ping
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 10s
+    sysctls:
+      net.core.somaxconn: {{ traefik_max_connections_sysctl }}
+{% if traefik_opened_ports|length %}
+    ports:
+{% for port in traefik_opened_ports %}
+      - target: {{ port }}
+        published: {{ port }}
+        mode: host
+{% endfor %}
+{% endif %}
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: any
+        delay: 15s
+        window: 30s
+{% if traefik_max_attempts > 0 %}
+        max_attempts: {{ traefik_max_attempts }}
+{% endif %}
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 200M
+      labels:
+        caddy: "{{ traefik_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
+        # security labels
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), interest-cohort=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ traefik_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in traefik_backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 8080}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+
+        # ip filter auth & reverse proxy conf
+        caddy.4_@ipfilter_metrics.1_path: "/metrics"
+        caddy.4_@ipfilter_metrics.2_remote_ip: "{{ traefik_metrics_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.5_handle: "@ipfilter_metrics"
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.5_handle.2_reverse_proxy: "{% raw %}{{upstreams 8080}}{% endraw %}"
+        caddy.5_handle.2_reverse_proxy.lb_policy: "round_robin"
+
+        # or reject
+        caddy.6_respond: "`Origin not allowed` 403"
+    logging:
+      options:
+        # this tag is used by fail2ban using `journalctl CONTAINER_TAG=caddy-consul`
+        tag: "traefik"
+    networks:
+      - internal
+      - "{{ traefik_network }}"
+      - "{{ caddy_network }}"
+
+  # do not expose docker socket directly
+  docker-proxy:
+    image: rancher/socat-docker
+    networks:
+      - internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      # replicas + 1 which is the leader
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: any
+        delay: 15s
+        window: 30s
+
+networks:
+  internal:
+    driver: overlay
+{% if traefik_internal_network_encryption_enabled %}
+    driver_opts:
+      encrypted: ""
+{% endif %}
+  {{ traefik_network }}:
+    external: true
+  {{ caddy_network }}:
+    external: true

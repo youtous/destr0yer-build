@@ -1,0 +1,36 @@
+---
+docker_enable_debug: false
+
+docker_enable_ipv6: false
+
+docker_fixed_cidr_ipv6: "2001:db8:1::/64"
+
+# use host docker0 ip as dns, it requires to have a dns server on the host
+docker_host_dns: false
+
+# use custom dns for docker, used only when docker_host_dns: false
+docker_dns: "{{ nameservers|default([]) }}"
+
+docker_swarm_certificates_directory: /var/docker-swarm/certs
+docker_swarm_root_CA_certificate_name: CA.crt
+docker_swarm_node_certificate_name: node
+
+# Provide X509 certificates for TLS
+# you can use pipe syntax
+
+# docker_swarm_CA_certificate: | # usually rootCA.crt
+# docker_swarm_node_private_key: | # usually node-hostname.key
+# docker_swarm_node_certificate: | # usually node-hostname.crt
+
+
+# log configuration
+# journald or rsyslog
+docker_log_backend: journald
+
+# data root 
+docker_data_root: "/var/lib/docker"
+
+# rsyslog only
+docker_log_file: /var/log/docker.log
+docker_log_max_size: 100M
+...

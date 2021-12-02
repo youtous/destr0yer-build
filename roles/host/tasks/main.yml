@@ -12,8 +12,6 @@
   file:
     path: /etc/hosts
     attributes: -i
-  # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
 
 - name: Setup hosts
   become: yes
@@ -24,8 +22,4 @@
     group: root
     attributes: i # ensure not writable
     mode: u=rwx,g=rx,o=rx
-  notify:
-    - restart network-manager
-  # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
 ...

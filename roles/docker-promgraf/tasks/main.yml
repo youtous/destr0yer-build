@@ -1,0 +1,82 @@
+---
+# This role setup a promtheus, grafana, alertmanager stack
+- name: Verify promgraf_grafana_admin_password is defined and not empty
+  assert:
+    that: >
+      promgraf_grafana_admin_password is defined and promgraf_grafana_admin_password|length
+    msg: "promgraf_grafana_admin_password must be defined an not empty"
+
+- name: Ensure promgraf directory exists
+  file:
+    state: directory
+    path: "{{ promgraf_compose_file_dest_directory }}"
+
+- name: Register deployment timestamp
+  set_fact:
+    promgraf_timestamp_deploy: "{{ ansible_date_time.epoch }}"
+
+# begin of tag strategy
+- name: Get docker info on all docker nodes
+  community.docker.docker_node_info:
+  register: result_docker_nodes
+
+- name: Tag promgraf host node using docker label
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels:
+      promgraf_host: "true"
+  with_items: "{{ promgraf_hosts }}"
+
+- name: Remove promgraf tagging labels from diff nodes
+  community.docker.docker_node:
+    hostname: "{{ item }}"
+    labels_to_remove:
+      - promgraf_host
+  with_items: "{{ result_docker_nodes | community.general.json_query('nodes[*].Description.Hostname') | reject('in', promgraf_hosts) }}"
+  no_log: true
+# end of tag strategy
+
+
+- name: Make sure destination dir exists
+  file:
+    path: "{{ (promgraf_compose_file_dest_directory ~ '/' ~ item.dest) | dirname }}"
+    state: directory
+    mode: u=rwx,g=,o=
+  with_items: "{{ promgraf_templates }}"
+
+- name: Copy promgraf templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ promgraf_compose_file_dest_directory }}/{{ item.dest }}"
+    mode: u=rw,g=,o=
+  with_items: "{{ promgraf_templates }}"
+
+- name: Make sure destination dir exists
+  file:
+    path: "{{ (promgraf_compose_file_dest_directory ~ '/' ~ item.dest) | dirname }}"
+    state: directory
+    mode: u=rwx,g=,o=
+  with_items: "{{ promgraf_files }}"
+
+- name: Copy promgraf files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ promgraf_compose_file_dest_directory }}/{{ item.dest }}"
+    mode: u=rw,g=,o=
+  with_items: "{{ promgraf_files }}"
+
+- name: Copy promgraf stack
+  template:
+    src: templates/docker-compose.promgraf.j2.yml
+    dest: "{{ promgraf_compose_file_dest }}"
+    mode: u=rw,g=,o=
+
+- name: Deploy promgraf
+  docker_stack:
+    state: present
+    prune: yes
+    name: promgraf
+    compose:
+      - "{{ promgraf_compose_file_dest }}"
+  notify: docker prune
+...

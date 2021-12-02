@@ -1,0 +1,13 @@
+---
+# handle file system formating
+- name: Format the filesystem
+  become: yes
+  community.general.filesystem:
+    fstype: "{{ item.fstype }}"
+    dev: "{{ item.dev }}"
+    opts: "{{ item.opts|default('') }}"
+    force: "{{ item.force|default(False) }}"
+    resizefs: "{{ item.resizefs|default(False) }}"
+    state: present
+  with_items: "{{ filesystems_to_create }}"
+...

@@ -14,8 +14,8 @@ system_packages:
   - screen
   - geoip-database
   - gnupg
+  - iperf3
   - rsync
-  - sqlite
   - sqlite3
   - tar
   - htop

@@ -21,10 +21,10 @@
     src: "{{ item }}"
   with_items: "{{ ssh_entrypoints_local_interfaces_ips }}"
 
-- name: UFW Allow ssh clients - LIMIT tcp/ssh
+- name: UFW Allow ssh clients - ALLOW tcp/ssh
   become: yes
   ufw:
-    rule: limit
+    rule: allow
     port: ssh
     proto: tcp
     src: "{{ item }}"

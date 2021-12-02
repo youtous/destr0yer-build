@@ -1,0 +1,4 @@
+---
+# address of the node docker (public by default)
+docker_swarm_node_advertise_addr: "{{ ipv4|first }}"
+...

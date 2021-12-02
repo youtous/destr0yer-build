@@ -1,21 +1,27 @@
 ---
-elastic_version: 7.10.2
-opendistro_version: 1.13.2
-
-docker_external_interfaces: [] # must be defined explicitly, this is the external interface, generally eth0.
-#       /!\ BE CAREFUL this interface is used for restricting exposed ports to specific ips /!\
+logstash_elastic_version: 7.13.4
+elastic_version: 7.12.1 # pin this version until migration to fluentd, see https://www.reddit.com/r/aws/comments/nn95aq/elastic_has_broken_filebeat_as_of_713_it_no/
+opensearch_version: 1.2.0
 
 # a list of allowed ips to access logstash thought socket
-logstash_allowed_ip6s: [] # requires docker ipv6 enabled! todo : when ipv6, add docker networks here
-logstash_allowed_ip4s:  # /!\ set only ipv4
+logstash_allowed_ips: 
   - '172.17.0.0/16' # docker0
   - '172.18.0.0/16' # docker_gwbridge
 
 # a list of allowed ips to access logstash thought beats, it's used for external cluster submitting data
-logstash_external_allowed_ip6s: []
-logstash_external_allowed_ip4s:
+logstash_external_allowed_ips:
   - '172.17.0.0/16' # docker0
   - '172.18.0.0/16' # docker_gwbridge
+
+
+elastic_backend_users: "{{ backend_users|default([]) }}"
+elastic_allowed_ips: "{{ trusted_backend_ips }}"
+
+
+# The encryption of the overlay networks has a bug that is  causing issues for one service to reach another over the overlay
+# network. See moby/moby#37115 - https://github.com/moby/moby/issues/37115
+# On some cloud provider, you might want to disable this encryption to get a working service
+elastic_internal_network_encryption_enabled: True
 
 # services to monitor
 #elastic_heartbeat_monitors:
@@ -48,10 +54,15 @@ curator_max_age_days_journalbeat: 90
 curator_max_size_metricbeat: 5
 curator_max_age_days_metricbeat: 15
 
-# name of the traefik network
-traefik_network: "traefik-public"
-# traefik public-tag
-traefik_public_tag: "traefik-public"
+# name of the traefik and caddy network
+caddy_network: "caddy-public"
+traefik_public_network: "traefik-public"
+
+# node that will host the stack
+elastic_hosts: "{{ groups['primary_manager_elastic'] }}"
+elasticsearch_hosts: "{{ groups['primary_manager_elastic'] }}"
+kibana_hosts: "{{ groups['primary_manager_elastic'] }}"
+logstash_hosts: "{{ groups['primary_manager_elastic'] }}"
 
 # cluster information, useful when data is aggregated in a separated cluster
 elastic_cluster_name: "{{ hostname }}"
@@ -73,32 +84,19 @@ elastic_alert_email_password: ""
 
 # domains
 kibana_domain: "kibana.{{ hostname }}"
-enable_elasticsearch_webui: false
 elasticsearch_domain: "elasticsearch.{{ hostname }}"
-enable_logstash_webui: false
 logstash_domain: "logstash.{{ hostname }}"
+enable_logstash_webui: false
+enable_elasticsearch_webui: false
 enable_webhook_smtp_forwarder: true
 
-# docker healthcheck
-elastic_healthcheck_elastic_start_period: "600s"
-elastic_healthcheck_elastic_retries: 5
-
-elastic_healthcheck_kibana_start_period: "1200s"
-elastic_healthcheck_kibana_retries: 40
-
-elastic_healthcheck_logstash_start_period: "600s"
-elastic_healthcheck_logstash_retries: 5
 
 # Provide X509 certificates for TLS
 # you can use pipe syntax
 
-# logstash_CA_certificate: | # usually logstash-rootCA.crt
-# logstash_node_private_key: | # usually logstash-node-hostname.key
-# logstash_node_certificate: | # usually logstash-node-hostname.crt
-
-# ulimits configuration
-elastic_ulimits_files_soft: 262144
-elastic_ulimits_files_hard: 262144
+logstash_CA_certificate: "" # usually logstash-rootCA.crt
+logstash_node_private_key: "" # usually logstash-node-hostname.key
+logstash_node_certificate:  # usually logstash-node-hostname.crt
 
 
 elastic_disabled_tls_protocols: # event with these parameters, use the elastic stack behind a VPN!

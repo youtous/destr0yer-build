@@ -3,6 +3,7 @@
 
 - name: Install journalbeat
   import_tasks: install.yml
+  when: journalbeat_state == 'present'
 
 - name: Ensure journalbeat is enabled and started
   become: yes
@@ -10,6 +11,16 @@
     name: journalbeat
     enabled: yes
     state: started
+  when: journalbeat_state == 'present'
+
+- name: Ensure journalbeat is disabled and stopped
+  become: yes
+  service:
+    name: journalbeat
+    enabled: False
+    state: stopped
+  when: journalbeat_state == 'absent'
+  ignore_errors: True
 
 - name: Ensure journalbeat configuration directory exists
   become: yes
@@ -19,9 +30,11 @@
     group: root
     path: "{{ journalbeat_configuration_directory }}"
     mode: u=rwx,g=,o=
+  when: journalbeat_state == 'present'
 
 - name: Configure TLS logstash/journalbeat certificates
   import_tasks: certificates.yml
+  when: journalbeat_state == 'present'
 
 - name: Copy journalbeat configuration
   become: yes
@@ -33,4 +46,4 @@
     mode: u=rw,g=,o=
   notify:
     - restart journalbeat
-...
+  when: journalbeat_state == 'present'

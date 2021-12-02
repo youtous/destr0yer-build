@@ -1,0 +1,11 @@
+---
+# base domain of node_exporter
+node_exporter_domain: "node_exporter.{{ hostname }}"
+
+node_exporter_version: "latest"
+
+# a list of allowed ips to access cadvisor
+node_exporter_external_allowed_ip4s:
+  - '172.17.0.0/16' # docker0
+  - '172.18.0.0/16' # docker_gwbridge
+...

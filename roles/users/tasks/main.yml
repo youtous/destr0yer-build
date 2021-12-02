@@ -14,8 +14,8 @@
     name: "{{ item }}"
     state: absent
     remove: yes
-  with_items:
-    - debian
+  with_items: "{{ default_users_to_delete }}"
+  when: ansible_user != "debian"
 
 - name: Unlock ~/.ssh/authorized_keys for all users
   become: yes

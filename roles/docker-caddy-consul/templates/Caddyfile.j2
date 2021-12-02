@@ -9,6 +9,10 @@
     email {{ lets_encrypt_email }}
     key_type {{ caddy_acme_keytype }}
 
+    # required for cache directive
+    order http_cache before reverse_proxy
+    order http_cache before rewrite
+
 {% if caddy_local_certs is sameas true %}
     local_certs
 {% endif %}
@@ -19,15 +23,36 @@
 
     # consul conf https://github.com/pteich/caddy-tlsconsul
     storage consul {
-        address      "consul-leader:8500"
+        address      "consul:8500"
         prefix       "caddytls"
         tls_enabled  "false"
         tls_insecure "true"
+        token "{{ consul_acl_master_token }}"
+        aes_key "{{ caddy_consul_certificates_aes_key }}"
     }
 
     {{ caddy_servers_directives }}
 }
 
-{{ caddy_caddyfile_content }}
+:{{ caddy_metrics_port }} {
+    header {
+            Server ""
+            X-Powered-By ""
+            Referrer-Policy "same-origin"
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+            X-XSS-Protection "1; mode=block"
+    }
 
-# todo : healthcheck
+    @ipfilter {
+        remote_ip {{ caddy_metrics_allowed_ips|join(' ') }} 127.0.0.1
+    }
+
+    handle @ipfilter {
+        metrics "/metrics"
+    }
+
+    respond "I'm awake!" 200
+}
+
+{{ caddy_caddyfile_content }}

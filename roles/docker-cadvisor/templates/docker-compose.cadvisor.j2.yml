@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  cadvisor:
+    image: "gcr.io/cadvisor/cadvisor:{{ cadvisor_version }}"
+    command: -logtostderr -docker_only
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - target: 8080 # tcp
+        published: 9200
+        mode: host
+    deploy:
+      mode: global
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 45s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.2'
+          memory: 64M

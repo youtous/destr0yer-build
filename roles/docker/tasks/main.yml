@@ -8,6 +8,27 @@
       - python3-jsondiff
       - python3-yaml
 
+- name: Install pass package required for docker-login
+  become: yes
+  apt:
+    name:
+      - pass
+
+- name: Ensure old docker-py pip module is absent
+  become: yes
+  pip:
+    executable: pip3
+    name: docker-py
+    state: absent
+
+- name: Ensure docker pip module is installed and updated
+  become: yes
+  pip:
+    executable: pip3
+    name: docker
+    state: latest
+    extra_args: --upgrade
+
 - name: Ensure docker group is present
   become: yes
   group:
@@ -37,7 +58,4 @@
 - name: Add fail2ban docker filters
   import_role:
     name: fail2ban-docker
-
-- name: Monit docker
-  import_role:
-    name: monit-docker
+...

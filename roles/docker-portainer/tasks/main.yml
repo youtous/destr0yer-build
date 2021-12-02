@@ -1,6 +1,11 @@
 ---
 # This role setup a portainer managing application for a docker swarm cluster
 # see https://portainer.io/ for more details
+- name: Verify portainer_admin_password is defined and not empty
+  assert:
+    that: >
+      portainer_admin_password is defined and portainer_admin_password|length
+    msg: "portainer_admin_password must be defined an not empty"
 
 - name: Ensure portainer directory exists
   file:

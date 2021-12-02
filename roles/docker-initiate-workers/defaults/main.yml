@@ -1,4 +1,0 @@
----
-# address of the node docker
-docker_swarm_node_advertise_addr: "{{ swarm_node_ipv4|first }}"
-...

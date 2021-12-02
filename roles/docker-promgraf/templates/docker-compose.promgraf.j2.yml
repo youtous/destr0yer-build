@@ -1,0 +1,339 @@
+version: "3.8"
+
+configs:
+  grafana-datasources.yaml:
+    name: "{{ promgraf_stack_name }}_grafana-datasources-{{ promgraf_timestamp_deploy }}"
+    file: "./grafana/datasources.yaml"
+  grafana-swarmprom_dashboards.yaml:
+    name: "{{ promgraf_stack_name }}_grafana-swarmprom_dashboard-{{ promgraf_timestamp_deploy }}"
+    file: "./grafana/swarmprom_dashboards.yaml"
+  grafana-swarmprom-nodes-dash.json:
+    name: "{{ promgraf_stack_name }}_grafana-swarmprom-nodes-dash-{{ promgraf_timestamp_deploy }}"
+    file: "./grafana/dashboards/swarmprom-nodes-dash.json"
+  grafana-swarmprom-prometheus-dash.json:
+    name: "{{ promgraf_stack_name }}_grafana-swarmprom-prometheus-dash-{{ promgraf_timestamp_deploy }}"
+    file: "./grafana/dashboards/swarmprom-prometheus-dash.json"
+  grafana-swarmprom-services-dash.json:
+    name: "{{ promgraf_stack_name }}_grafana-swarmprom-services-dash-{{ promgraf_timestamp_deploy }}"
+    file: "./grafana/dashboards/swarmprom-services-dash.json"
+  grafana-node-exporter-full.json:
+    name: "{{ promgraf_stack_name }}_grafananode-exporter-full-{{ promgraf_timestamp_deploy }}"
+    file: "./grafana/dashboards/node-exporter-full.json"
+
+  prometheus-prometheus.yaml:
+    name: "{{ promgraf_stack_name }}_prometheus-prometheus-{{ promgraf_timestamp_deploy }}"
+    file: "./prometheus/prometheus.yaml"
+  prometheus-swarm_node.rules.yaml:
+    name: "{{ promgraf_stack_name }}_prometheus-swarm_node-rule-{{ promgraf_timestamp_deploy }}"
+    file: "./prometheus/rules/swarm_node.rules.yaml"
+  prometheus-swarm_task.rules.yaml:
+    name: "{{ promgraf_stack_name }}_prometheus-swarm_task-rule-{{ promgraf_timestamp_deploy }}"
+    file: "./prometheus/rules/swarm_task.rules.yaml"
+
+services:
+
+  prometheus:
+    image: "prom/prometheus:{{ promgraf_prometheus_version }}"
+    networks:
+      - internal
+      - {{ caddy_network }}
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:9090/-/ready || exit 1"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention={{ promgraf_prometheus_retention }}'
+    configs:
+      - source: prometheus-prometheus.yaml
+        target: /etc/prometheus/prometheus.yml
+
+      - source: prometheus-swarm_node.rules.yaml
+        target: /etc/prometheus/swarm_node.rules.yml
+
+      - source: prometheus-swarm_task.rules.yaml
+        target: /etc/prometheus/swarm_task.rules.yml
+    volumes:
+      - prometheus-data:/prometheus
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+#          cpus: '0.2'
+          memory: 2048M
+        reservations:
+#          cpus: '0.1'
+          memory: 128M
+      placement:
+        constraints:
+          - node.labels.promgraf_host == true
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 45s
+{% if promgraf_prometheus_max_attemps > 0 %}
+        max_attempts: {{ promgraf_prometheus_max_attemps }}
+{% endif %}
+      labels:
+        caddy: "{{ promgraf_prometheus_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
+        # security labels
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self' data:; script-src 'self' 'unsafe-inline'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ promgraf_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in promgraf_backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 9090}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_uri: "/-/ready"
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "`Origin not allowed` 403"
+
+  alertmanager:
+    image: "prom/alertmanager:{{ promgraf_alertmanager_version }}"
+    networks:
+      - internal
+      - {{ caddy_network }}
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - alertmanager-data:/alertmanager
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.promgraf_host == true
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 45s
+      labels:
+        caddy: "{{ promgraf_alertmanager_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
+        # security labels
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self' data:; script-src 'self' 'unsafe-inline'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ promgraf_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in promgraf_backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 9093}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_uri: "/"
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "`Origin not allowed` 403"
+
+  karma:
+    image: "ghcr.io/prymitive/karma:{{ promgraf_karma_version }}"
+    command: "--alertmanager.proxy"
+    networks: 
+      - internal
+      - {{ caddy_network }}
+    environment:
+      ALERTMANAGER_URI: "http://alertmanager:9093"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.promgraf_host == true
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 45s
+      labels:
+        caddy: "{{ promgraf_karma_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
+        # security labels
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self' data:; script-src 'self' 'unsafe-inline'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ promgraf_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # basic auth
+        caddy.3_handle.1_basicauth: "/*" # route matcher to protect
+{% for authuser in promgraf_backend_users %}
+{% set user_loc = authuser.split(':') %}
+        caddy.3_handle.1_basicauth.{{ user_loc[0] }}: "{{ user_loc[1] | replace('$', '$$') }}" # because '$' is evaluated, remember to escape it
+{% endfor %}
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 8080}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_uri: "/"
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "`Origin not allowed` 403"
+
+
+  grafana:
+    image: "grafana/grafana:{{ promgraf_grafana_version }}"
+    networks:
+      - internal
+      - {{ caddy_network }}
+    environment:
+      GF_SERVER_ROOT_URL: "https://{{ promgraf_grafana_domain }}"
+      GF_SERVER_DOMAIN: "{{ promgraf_grafana_domain }}"
+      GF_SECURITY_ADMIN_USER: "{{ promgraf_grafana_admin_user }}"
+      GF_SECURITY_ADMIN_PASSWORD: "{{ promgraf_grafana_admin_password }}"
+      GF_USERS_ALLOW_SIGN_UP: "{{ 'true' if promgraf_grafana_admin_user else 'false' }}"
+      GF_SMTP_ENABLED: "{{ 'true' if promgraf_grafana_smtp_enabled else 'false' }}"
+      GF_SMTP_FROM_ADDRESS: "{{ promgraf_grafana_smtp_from_address }}"
+      GF_SMTP_FROM_NAME: "{{ promgraf_grafana_smtp_from_name }}"
+      GF_SMTP_HOST: "{{ promgraf_grafana_smtp_host }}"
+      GF_SMTP_USER: "{{ promgraf_grafana_smtp_user }}"
+      GF_SMTP_PASSWORD: "{{ promgraf_grafana_smtp_password }}"
+      GF_SMTP_STARTTLS_POLICY: "{{ promgraf_grafana_smtp_starttls_policy }}"
+    configs:
+      - source: grafana-datasources.yaml
+        target: /etc/grafana/provisioning/datasources/datasources.yaml
+     
+      - source: grafana-swarmprom_dashboards.yaml
+        target: /etc/grafana/provisioning/dashboards/swarmprom_dashboard.yaml
+  
+      - source: grafana-swarmprom-nodes-dash.json
+        target: /etc/grafana/dashboards/swarmprom-nodes-dash.json
+  
+      - source: grafana-swarmprom-services-dash.json
+        target: /etc/grafana/dashboards/swarmprom-services-dash.json
+  
+      - source: grafana-swarmprom-prometheus-dash.json
+        target: /etc/grafana/dashboards/swarmprom-prometheus-dash.json
+  
+      - source: grafana-node-exporter-full.json
+        target: /etc/grafana/dashboards/node-exporter-full.json
+    volumes:
+      - grafana-data:/var/lib/grafana
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+#          cpus: '0.2'
+          memory: 256M
+        reservations:
+#          cpus: '0.1'
+          memory: 128M
+      placement:
+        constraints:
+          - node.labels.promgraf_host == true
+        preferences:
+          - spread: node.id
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 45s
+{% if promgraf_grafana_max_attemps > 0 %}
+        max_attempts: {{ promgraf_grafana_max_attemps }}
+{% endif %}
+      labels:
+        caddy: "{{ promgraf_grafana_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
+        # security labels
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ promgraf_allowed_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 3000}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_uri: "/api/health"
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "`Origin not allowed` 403"
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+{% if promgraf_internal_network_encryption_enabled %}
+    driver_opts:
+      encrypted: ""
+{% endif %}
+  {{ caddy_network }}:
+    external: true
+
+volumes:
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  alertmanager-data:
+    driver: local

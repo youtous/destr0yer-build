@@ -1,0 +1,5 @@
+---
+sysctl_vm_overcommit_memory: '0'
+sysctl_net_core_somaxconn: '4096'
+sysctl_vm_max_map_count: '262144'
+...

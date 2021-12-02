@@ -1,0 +1,19 @@
+# vim: ts=2 sw=2 et
+---
+# Provision newly created servers, create a sudo user using root user
+
+- name: Prepare base system for new hosts
+  hosts: factoring_systems
+  vars:
+    apt_allowed_to_reboot: False # prevent reboot in this phase in order to preserve disk partition assigned
+  roles:
+    - resolv
+    - apt
+    - system-packages
+    - users
+  vars_files:
+    - secret_vars/all.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: ["new-systems"]
+...

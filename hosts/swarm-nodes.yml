@@ -2,20 +2,17 @@
 # https://docs.docker.com/engine/swarm/how-swarm-mode-works/nodes/
 
 # The first manager node is used by Ansible as an entry point
-primary_manager:
+swarm_primary_manager:
   hosts:
     heaven-pascal.youtous.dv:
 
-# Primary manager to setup an swarmprom on the cluster
-primary_manager_swarmprom:
-
 # Primary manager to setup an elastic cluster
-primary_manager_elastic:
+swarm_primary_manager_elastic:
   hosts:
     heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
 
 # redirect logs from docker using a docker container (logspout) to elastic cluster <not used anymore/deprcated>
-primary_manager_logging_elastic:
+swarm_primary_manager_logging_elastic:
 
 # redirect machine logs to elastic cluster (including docker)
 all_logging_elastic:
@@ -30,9 +27,9 @@ all_metric_elastic:
     heaven-roberval.youtous.dv:
 
 # Other manager nodes
-managers:
+swarm_managers:
 
-workers:
+swarm_workers:
   hosts:
     heaven-roberval.youtous.dv:
 

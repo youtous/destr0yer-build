@@ -1,0 +1,45 @@
+---
+- name: Create traefik-public network with encryption
+  docker_network:
+    name: "{{ traefik_network }}"
+    driver: overlay
+    driver_options:
+      encrypted: ""
+  when: traefik_internal_network_encryption_enabled is true
+
+- name: Create traefik-public network without encryption
+  docker_network:
+    name: "{{ traefik_network }}"
+    driver: overlay
+  when: traefik_internal_network_encryption_enabled is false
+
+- name: Ensure traefik directories exists
+  file:
+    state: directory
+    path: "{{ item }}"
+  with_items:
+    - "{{ traefik_compose_file_dest_directory }}"
+
+- name: Register deployment timestamp
+  set_fact:
+    traefik_timestamp_deploy: "{{ ansible_date_time.epoch }}"
+
+- name: Copy traefik stack
+  template:
+    src: templates/docker-compose.traefik.j2.yml
+    dest: "{{ traefik_compose_file_dest }}"
+    mode: u=rw,g=,o=
+
+- name: Configure stack firewall
+  import_tasks: firewall.yml
+
+# always redeploy permits to have always up to date
+- name: Deploy traefik
+  docker_stack:
+    state: present
+    prune: yes
+    name: "{{ traefik_stack_name }}"
+    compose:
+      - "{{ traefik_compose_file_dest }}"
+  notify: docker prune
+...

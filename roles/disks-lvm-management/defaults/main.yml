@@ -1,0 +1,39 @@
+---
+filesystems_to_create: []
+  # - dev: /dev/mapper/my-part
+  #   fstype: xfs
+  #   mount_path: /data1
+
+volume_groups_to_create: []
+  # -   pvs: "/dev/disk/by-partlabel/{{ 'my-name'|hash('md5') }}"
+  #     vg: "vg0"
+    
+volume_groups_to_delete: []
+
+logical_volume_groups_to_create: []
+  # - vg: "vg0"
+  #   lv:  "lv-docker-var"
+  #   size: "100%FREE"
+logical_volume_groups_to_delete: []
+
+# list of partitions to delete
+disk_partitions_to_delete: []
+  # - device: /dev/sdb
+  #   part_number: 1
+
+disk_partitions_to_create: []
+  # - device: /dev/sdb
+  #   part_number: 1
+  #   flags: [ lvm ]
+  #   part_start: "0%"
+  #   part_end: "100%"
+  #   part_name: "my_lvm_part"
+  # - device: /dev/sdc
+  #   part_number: 1
+  #   part_start: "0%"
+  #   part_end: "100%"
+  #   part_name: "my_lvm2_part"
+  #   fs_type: "xfs"
+
+disks_management_state_path: /etc/ansible_state_disks
+...

@@ -2,50 +2,57 @@ version: "3.7"
 
 services:
   portainer:
-    image: portainer/portainer:latest
-    command: -H tcp://tasks.agent:9001 --tlsskipverify --no-auth # disable auth, traefik will handle it
+    image: portainer/portainer-ce:latest
+    # see https://documentation.portainer.io/v2.0/deploy/initial/
+    command: -H tcp://tasks.agent:9001 --tlsskipverify --admin-password='{{ portainer_admin_password| replace('$', '$$') }}'
     volumes:
       - portainer-data:/data
     networks:
       - agent-network
-      - {{ traefik_network }}
+      - {{ caddy_network }}
     deploy:
       placement:
         constraints:
           - node.role == manager
           - node.labels.portainer.portainer-data == true
       restart_policy:
-        condition: on-failure
+        condition: any
         delay: 5s
         window: 45s
-        max_attempts: 5
+{% if portainer_max_attemps > 0 %}
+        max_attempts: {{ portainer_max_attemps }}
+{% endif %}
       labels:
-        - "traefik.frontend.rule=Host:{{ portainer_domain }}"
-        - traefik.enable=true
-        - traefik.port=9000
-        - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.docker.network={{ traefik_network }}"
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
+        caddy: "{{ portainer_domain }}"
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
         # security labels
-        - "traefik.frontend.headers.customResponseHeaders=Server:||X-Powered-By:||Permissions-Policy:accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
-        - traefik.frontend.headers.referrerPolicy=same-origin # can use same-origin for more privacy (https://web.dev/referrer-best-practices/)
-        - traefik.frontend.headers.browserXSSFilter=true
-        - traefik.frontend.headers.frameDeny=true
-        - "traefik.frontend.headers.contentSecurityPolicy=default-src 'self'; script-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';" # https://csp-evaluator.withgoogle.com/ content security policy
-        - traefik.frontend.headers.contentTypeNosniff=true
-        # HSTS
-        - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ portainer_domain }}"
-        - traefik.frontend.headers.STSSeconds=315360000
-        - traefik.frontend.headers.STSIncludeSubdomains=true
-        - traefik.frontend.headers.STSPreload=true
-        # Auth
-        - "traefik.frontend.auth.basic.users={{ backend_users|join(',') | replace('$', '$$') }}"
-        - "traefik.frontend.whiteList.sourceRange={{ trusted_backend_ips|join(',') }},127.0.0.1"
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self'; img-src 'self' data: {{ portainer_csp_img_src_additional }}; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # ip filter auth & reverse proxy conf
+        caddy.2_@ipfilter.remote_ip: "{{ trusted_backend_ips|join(' ') }} 127.0.0.1"
+
+        # apply ip filter
+        caddy.3_handle: "@ipfilter"
+
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.3_handle.2_reverse_proxy: "{% raw %}{{upstreams 9000}}{% endraw %}"
+        caddy.3_handle.2_reverse_proxy.lb_policy: "round_robin"
+        caddy.3_handle.2_reverse_proxy.health_uri: "/"
+        caddy.3_handle.2_reverse_proxy.health_interval: "5s"
+
+        # or reject
+        caddy.4_respond: "`Origin not allowed` 403"
+
       resources:
         limits:
           cpus: '0.2'
@@ -69,10 +76,9 @@ services:
         constraints:
           - node.platform.os == linux
       restart_policy:
-        condition: on-failure
+        condition: any
         delay: 5s
         window: 30s
-        max_attempts: 5
       resources:
         limits:
           cpus: '0.10'
@@ -85,9 +91,11 @@ networks:
   agent-network:
     driver: overlay
     attachable: true
+{% if portainer_internal_network_encryption_enabled %}
     driver_opts:
       encrypted: ""
-  {{ traefik_network }}:
+{% endif %}
+  {{ caddy_network }}:
     external: true
 
 volumes:

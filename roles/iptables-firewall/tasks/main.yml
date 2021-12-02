@@ -14,15 +14,11 @@
   with_items:
     - { direction: 'incoming', policy: 'deny' }
     - { direction: 'outgoing', policy: 'allow' }
-  notify:
-    - restart ufw
 
 - name: Define ufw logging policy
   become: yes
   ufw:
     logging: "{{ ufw_logging }}"
-  notify:
-    - restart ufw
 
 - name: Insert customs IPv4 rules in before.rules
   become: yes
@@ -50,8 +46,18 @@
     rule: limit
     port: ssh
     proto: tcp
-  notify:
-    - restart ufw
+
+- name: Add custom ufw firewall rules
+  become: yes
+  ufw:
+    comment: "{{ item.comment }}"
+    proto: "{{ item.proto }}"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    port: "{{ item.port }}"
+    rule: "{{ item.rule }}"
+    direction: "{{ item.direction }}"
+  with_items: "{{ ufw_additional_rules|default([]) }}"
 
 # IP forwarding is disabled by default
 - name: Set value IPv4 forwarding

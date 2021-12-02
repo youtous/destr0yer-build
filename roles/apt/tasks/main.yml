@@ -27,7 +27,7 @@
 - name: Copy sources.list
   become: yes
   copy:
-    src: "files/sources.list"
+    src: "files/{{ apt_distribution_version_target }}/sources.list"
     dest: "{{ apt_directory }}/sources.list"
     owner: root
     group: root
@@ -36,7 +36,7 @@
 - name: Copy apt preferences
   become: yes
   copy:
-    src: "files/{{ item }}"
+    src: "files/{{ apt_distribution_version_target }}/{{ item }}"
     dest: "{{ apt_directory }}/preferences.d/{{ item }}"
     owner: root
     group: root
@@ -59,15 +59,8 @@
   apt:
     name: unattended-upgrades
 
-- name: Checking if Buster update channel Done
-  stat:
-    path: "{{ apt_buster_flag_path }}"
-  register: buster_channel_flag
-
-- name: Update to Buster stable channel
-  become: yes
-  shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}"
-  when: buster_channel_flag.stat.exists == False
+- name: Check if distribution upgrade is required
+  import_tasks: upgrade_distribution.yml
 
 - name: Update and upgrade apt packages
   become: yes
@@ -83,19 +76,20 @@
     path: /var/run/reboot-required
     get_md5: no
 
-- name: Reboot the if kernel updated
+- name: Reboot if kernel updated
   become: yes
   reboot:
     msg: "Reboot initiated by Ansible for kernel updates"
     connect_timeout: 5
     reboot_timeout: 300
-    pre_reboot_delay: 0
+    pre_reboot_delay: 60 # we wait the previous host recovered
     post_reboot_delay: 30
     test_command: uptime
-  when: reboot_required_file.stat.exists
+  when: apt_allowed_to_reboot and reboot_required_file.stat.exists
 
 - name: Clean unwanted olderstuff apt
   become: yes
   apt:
     autoremove: yes
     purge: yes
+...

@@ -2,9 +2,11 @@ output.elasticsearch:
   hosts: ['elasticsearch:9200']
   protocol: "http"
 
+# disabled dashboard imports due to https://github.com/opensearch-project/OpenSearch-Dashboards/issues/656
+setup.dashboards.enabled: false
 setup.kibana:
-  host: "http://kibana:5601"
-  protocol: "http"
+   host: "http://kibana:5601"
+   protocol: "http"
 
 # enable data management
 setup.ilm:
@@ -21,6 +23,9 @@ setup.template:
 #    index.opendistro.index_state_management.rollover_alias: "metricbeat_rollover"
 
 # copy from elastic-metricbeat
+
+
+
 
 metricbeat.modules:
 - module: system

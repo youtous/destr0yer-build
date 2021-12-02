@@ -1,0 +1,293 @@
+---
+# Provision servers using a global policy
+
+- name: Configure systems | disk partitioning with LVM
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - disks-lvm-management
+    - swap
+    - mount
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "disk-partitioning",  "configure-systems", "swap" ]
+
+- name: Configure systems | resolv dns configuration
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - resolv
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "resolv","configure-systems" ]
+
+- name: Configure systems | apt packages configuration and update
+  hosts: [ base_systems, commander_systems ]
+  serial: 1 # configure one by one each host in case of docker update/kernel reboot
+  roles:
+    - apt
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "apt","configure-systems" ]
+
+- name: Configure systems | minimal requirements
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - system-packages # system packages (htop, curl etc)
+    - host # configure system host files
+    - system-configuration # configure the system (selinux, timezone...)
+    - system-tools # server cli tools (vim, ccat, etc)
+    - iptables-firewall # define firewall policy
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "system","configure-systems", "minimal" ]
+
+- name: Configure systems | configure kernel
+  hosts: [ base_systems, commander_systems ]
+  serial: 1 # configure one by one each host in case of reboot
+  roles:
+    - sysctl-configuration
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "sysctl",  "configure-systems" ]
+
+- name: Configure systems | manage users
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - users
+    - ssh-user-keys
+    - restrict-user-ssh-ips
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "users",  "configure-systems" ]
+
+- name: Configure systems | configure OpenSSH
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - ssh
+    - motd
+    - notify-login # notify when an user connects
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "ssh", "sshd",  "configure-systems" ]
+
+
+- name: Configure systems | configure log management
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - logrotate
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "log", "logrotate",  "configure-systems" ]
+
+- name: Configure systems | fail2ban
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - fail2ban
+    - monit-fail2ban
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "fail2ban",  "configure-systems" ]
+
+- name: Configure systems | filter ips for base systems (entrypoint required)
+  hosts: [ base_systems ]
+  roles:
+    - entrypoint-ssh
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "entrypoint-ssh", "ssh", "sshd", "configure-systems" ]
+
+
+- name: Configure systems | configure fish shell
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - oh-my-fish
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+    - "host_vars/generated/{{ inventory_hostname }}.yml"
+  tags: [ "fish",  "configure-systems" ]
+
+- name: Configure systems | glances
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - glances # boosted htop
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "configure-systems", "update-systems" ]
+
+- name: Configure systems | monit
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - monit
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "monit",  "configure-systems" ]
+
+- name: Configure systems | hardening
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - hardening # hardening systems
+    - scaleway-services # define services policy for scaleway
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "hardening",  "configure-systems" ]
+
+- name: Configure systems | sysstat
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - sysstat # resource monitoring
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "sysstat",  "configure-systems" ]
+
+- name: Configure systems | logwatch
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - logwatch # monitor server using emails
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "logwatch",  "configure-systems" ]
+
+- name: Configure DNSCrypt-proxy
+  hosts: [ base_systems, commander_systems ]
+  roles:
+    - dnscrypt-proxy # DNS with TLS
+    - monit-dnscrypt-proxy
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "dnscrypt-proxy" ]
+
+- name: Configure systems with specifics interfaces
+  hosts: interfaces
+  roles:
+    - network
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "interfaces" ]
+
+- name: Configure Postfix relay servers
+  hosts: smtp_relays
+  roles:
+    - postfix-relay
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "smtp-relay" ]
+
+- name: Configure backup storage systems
+  hosts: backup_storage
+  roles:
+    - backup-storage
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "backup-storage" ]
+
+- name: Configure backed-up systems
+  hosts: backed_up_hosts
+  roles:
+    - backup-strategy
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "backup-strategy" ]
+
+- name: Configure database servers
+  hosts: database_servers
+  roles:
+    - mariadb-server
+    - monit-mariadb
+    - backup-mariadb
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "database-servers", "database" ]
+
+- name: Configure database clients
+  hosts: database_clients
+  roles:
+    - mariadb-client
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "database-clients", "database" ]
+
+- name: Configure WireGuard peers
+  hosts: wireguard_peers
+  roles:
+    - wireguard-meta
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "wireguard" ]
+
+- name: Watch servers ips
+  hosts: watch_ip
+  roles:
+    - notify-ip-change
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "watch-ip" ]
+
+- name: Monitor ssl hosts
+  hosts: watch_ssl
+  roles:
+    - monitor-testssl
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: [ "watch-ssl" ]
+...
