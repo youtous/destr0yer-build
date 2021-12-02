@@ -1,5 +1,7 @@
 # Destr0yer playbooks
 
+# todo : update the guide
+
 ## Daily usage recommendations
 
  -  **When one of the host ip is changed**, playbook should be completely re-run.
