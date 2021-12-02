@@ -6,7 +6,7 @@
 # openssl passwd -6
 arbiter_password: ""
 arbiter_clear_password: ""
-
+# todo : update these examples
 root_password: ""
 
 # users vars
@@ -87,10 +87,6 @@ journalbeat_node_certificate: |
 journalbeat_node_private_key: |
   -----BEGIN OPENSSH PRIVATE KEY-----
   -----END OPENSSH PRIVATE KEY-----
-
-# logspout TLS (shared with journalbeat and metricbeat=
-logspout_node_certificate: "{{ journalbeat_node_certificate }}"
-logspout_node_private_key: "{{ journalbeat_node_private_key }}"
 
 # metricbeat TLS (share with journalbeat and logspout)
 metricbeat_node_certificate: "{{ journalbeat_node_certificate }}"

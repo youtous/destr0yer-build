@@ -11,6 +11,9 @@ base_systems:
 # destr0yers that are public exposed
 commander_systems:
 
+
+### Per host application ###
+
 # hosts that will be able to deliver mails using an smtp relay
 smtp_relays:
   hosts:

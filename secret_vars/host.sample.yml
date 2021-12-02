@@ -3,9 +3,15 @@
 # Variables listed here are not committed and are specific to a named host
 # rename the file using {$host}.yml format
 
-# generate password using  (change password, SALT)
-# openssl passwd -6
-arbiter_password: ""
-arbiter_clear_password: ""
+# it is advised to have an unique password per host
+# generate password using
+# `openssl passwd -6`
+sudo_user_password: ""
+sudo_user_clear_password: ""
 
 root_password: ""
+
+# docker swarm
+docker_swarm_node_private_key: | # usually node-hostname.key
+docker_swarm_node_certificate: | # usually node-hostname.crt
+...

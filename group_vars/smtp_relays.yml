@@ -1,3 +1,4 @@
+---
 # domain of the mail after @
 myhostname: "{{ hostname }}"
 
@@ -15,3 +16,4 @@ relayhost: "[{{ relay_server }}]:{{ relay_port }}"
 
 # change the default smtp port in order not to interfer with other mailserver
 postfix_smtp_port: "2525"
+...

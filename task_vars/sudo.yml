@@ -1,5 +1,6 @@
+# vim: ts=2 sw=2 et
 ---
 # set the target user used for sudo commands
-ansible_user: "{{ arbiter_username }}"
-ansible_become_pass: "{{ arbiter_clear_password }}"
+ansible_user: "{{ sudo_user_username }}"
+ansible_become_pass: "{{ sudo_user_clear_password }}"
 ...

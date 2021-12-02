@@ -6,31 +6,30 @@ swarm_primary_manager:
   hosts:
     heaven-pascal.youtous.dv:
 
-# Primary manager to setup an elastic cluster
-swarm_primary_manager_elastic:
-  hosts:
-    heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
-
-# redirect logs from docker using a docker container (logspout) to elastic cluster <not used anymore/deprcated>
-swarm_primary_manager_logging_elastic:
-
-# redirect machine logs to elastic cluster (including docker)
-all_logging_elastic:
-  hosts:
-    heaven-pascal.youtous.dv:
-    heaven-roberval.youtous.dv:
-
-# collect and send metrics of node, docker and processes to elastic cluster
-all_metric_elastic:
-  hosts:
-    heaven-pascal.youtous.dv:
-    heaven-roberval.youtous.dv:
-
 # Other manager nodes
 swarm_managers:
 
 swarm_workers:
   hosts:
+    heaven-roberval.youtous.dv:
+
+#### Elastic ####
+
+# Primary manager to setup an elastic cluster
+primary_manager_elastic:
+  hosts:
+    heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
+
+# redirect machine logs to elastic cluster (including docker)
+all_logging_elastic:
+  hosts: # enabled for all nodes by default
+    heaven-pascal.youtous.dv:
+    heaven-roberval.youtous.dv:
+
+# collect and send metrics of node, docker and processes to elastic cluster
+all_metric_elastic:
+  hosts: # enabled for all nodes by default
+    heaven-pascal.youtous.dv:
     heaven-roberval.youtous.dv:
 
 #### Applications ####

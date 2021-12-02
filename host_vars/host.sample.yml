@@ -1,0 +1,20 @@
+# vim: ts=2 sw=2 et
+---
+hostname: host.sample.dv
+ipv4:
+  - 192.168.100.10
+ipv6:
+  - fde4:8dba:82e1::c1
+
+host_users:
+  - username: specu
+    name: Specific user on host
+    groups: ['users', 'sshusers', 'docker']
+    uid: 10020
+    ssh_key: "{{ specu_ssh_keys }}"
+    password: "{{ specu_password }}"
+    update_password: "always"
+
+# enable swap!
+fs_swap_file_size_mb: "4096"
+...

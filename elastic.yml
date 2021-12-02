@@ -11,16 +11,6 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["elastic", "elastic-cluster"]
 
-- name: Setup docker-swarm docker logging tools
-  hosts: primary_manager_logging_elastic
-  roles:
-    - docker-logspout # output docker logs to elastic cluster
-  vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["elastic", "elastic-collector", "elastic-logspout-collector"]
-
 - name: Setup elastic for each node logging tools
   hosts: all_logging_elastic
   roles:
@@ -44,5 +34,4 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["elastic", "elastic-collector", "elastic-metric-collector"]
-
 ...

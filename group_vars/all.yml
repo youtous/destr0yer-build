@@ -46,6 +46,11 @@ common_groups_to_create:
   - name: sshusers
     gid: 20500
 
+# computed vars
+all_users: "{{ common_users | default([]) + host_users | default([]) }}"
+all_groups: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
+all_users_to_delete: "{{ common_users_to_delete | default([]) + host_users_to_delete | default([]) }}"
+
 # ips which should never be banned
 fail2ban_trusted_ips:
   - "163.172.154.21"
@@ -114,22 +119,25 @@ local_docker_ips:
 
 # ips of the nodes of the swarm
 nodes_ip4s: "{{
-  groups['swarm_workers'] | map('extract', hostvars, ['swarm_node_ipv4']) | list | flatten | unique | default([]) +
-  groups['swarm_managers'] | map('extract', hostvars, ['swarm_node_ipv4'])  | list | flatten | unique  | default([])  +
-  groups['swarm_primary_manager'] | map('extract', hostvars, ['swarm_node_ipv4'])  | list | flatten | unique  | default([])
+  groups['swarm_workers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])  +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])
 }}"
-nodes_ip4s_without_current_host: "{{ nodes_ip4s | difference(swarm_node_ipv4) }}"
 nodes_ip6s: "{{
-  groups['swarm_workers'] | map('extract', hostvars, ['swarm_node_ipv6'])  | list | flatten | unique | default([]) +
-  groups['swarm_managers'] | map('extract', hostvars, ['swarm_node_ipv6'])   | list | flatten | unique  | default([]) +
-  groups['swarm_primary_manager'] | map('extract', hostvars, ['swarm_node_ipv6'])  | list | flatten | unique  | default([])
+  groups['swarm_workers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([])
 }}"
+
+nodes_ip4s_without_current_host: "{{ nodes_ip4s | difference(swarm_node_ipv4) }}"
 nodes_ip6s_without_current_host: "{{ nodes_ip6s | difference(swarm_node_ipv6) }}"
-# first manager ipv4
-primary_manager_ipv4: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['swarm_node_ipv4']) | first | first }}"
-# for security reason, exclude current host
 nodes_ips_without_current_host: "{{ nodes_ip4s_without_current_host + nodes_ip6s_without_current_host  }}" # subtract current host
 nodes_ips: "{{ nodes_ips_without_current_host }}"
+
+# first manager ipv4
+primary_manager_ipv4: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private']) | first | first }}"
+# enforce docker nodes to use private ipv4
+docker_swarm_node_advertise_addr: "{{ ipv4_private|first }}"
 
 # when you delete a node from the cluster, add his ip here in order to revoke his access
 revoked_nodes_ips: [ ]
@@ -181,7 +189,16 @@ journalbeat_output_server_address: "{{ logstash_receiver_server_address }}"
 logspout_output_server_address: "{{ logstash_receiver_server_address }}"
 metricbeat_output_server_address: "{{ logstash_receiver_server_address }}"
 filebeat_output_server_address: "{{ logstash_receiver_server_address }}"
+
 elastic_cluster_name: "youtous.dv"
+
+logstash_cluster_public_ips: "{{ (groups['all'] | map('extract', hostvars, ['ipv4']) | list | default([])) + (groups['all'] | map('extract', hostvars, ['ipv6']) | list | default([])) }}"
+logstash_allowed_ips: "{{ (logstash_cluster_public_ips + local_docker_ips) | flatten }}"
+
+# domains
+kibana_domain: "kibana.elastic.swarm.cluster.dv"
+elasticsearch_domain: "elasticsearch.elastic.swarm.cluster.dv"
+logstash_domain: "logstash.elastic.swarm.cluster.dv"
 
 # CA cert issuer of the logstash/logspout certs
 logstash_CA_certificate: |
@@ -220,7 +237,83 @@ logstash_CA_certificate: |
   kNLYfAK0StW8JHRj8PeKoWejh6cj7WwX+nK7Cu2dQyxspj3i59VpoW0=
   -----END CERTIFICATE-----
 
+# docker services
+caddy_metrics_domain: "router.swarm.cluster.dv"
+consul_ui_domain: "consul.swarm.cluster.dv"
+portainer_domain: "portainer.swarm.cluster.dv"
+traefik_domain: "traefik.swarm.cluster.dv"
+promgraf_domain: "prom.swarm.cluster.dv"
+
+# l4 reverse proxy, list your services port here
+traefik_services:
+  - name: logstash5000
+    port: 5000
+    type: tcp
+  - name: logstash5044
+    port: 5044
+    type: tcp
+  - name: logstash5064
+    port: 5064
+    type: tcp
+
+# Promgraf configuration
+
+# ips allowed to access metrics
+trusted_metrics_ips_loc: "{{ groups['all'] | map('extract', hostvars, ['ipv4_private']) | list | default([]) }}" # allow all internal nodes to read the metrics
+
+# prometheus monitoring configuration
+promgraf_prometheus_configuration: |
+  global:
+    scrape_interval:     15s
+    evaluation_interval: 15s
+
+    external_labels:
+      monitor: 'promswarm'
+
+  rule_files:
+    - "swarm_node.rules.yml"
+    - "swarm_task.rules.yml"
+
+  alerting:
+    alertmanagers:
+    - static_configs:
+      - targets:
+        - alertmanager:9093
+
+  scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+        - targets: ['localhost:9090']
+
+    - job_name: 'cadvisor'
+      static_configs:
+  {% for instance in groups['all'] %}
+      - targets: ['{{ hostvars[instance]['ipv4_private'] | first }}:9200']
+        labels:
+          instance: "{{ hostvars[instance]['hostname'] }}"
+          node_id: "{{ hostvars[instance]['hostname'] }}"
+  {% endfor %}
+
+    - job_name: 'node-exporter'
+      static_configs:
+  {% for instance in groups['all'] %}
+      - targets: ['{{ hostvars[instance]['ipv4_private'] | first }}:9100']
+        labels:
+          instance: "{{ hostvars[instance]['hostname'] }}"
+          node_id: "{{ hostvars[instance]['hostname'] }}"
+  {% endfor %}
+
+trusted_metrics_ips: "{{ trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips}}"
+
+# cadvisor config:
+cadvisor_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
+# node exporter
+node_exporter_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
+# caddy metrics
+caddy_metrics_allowed_ips: "{{ trusted_metrics_ips }}"
+
 ###  End of The-Swarm vars  ###
 
 # Force python3 to be used with Ansible, do not edit!
 ansible_python_interpreter: /usr/bin/python3
+...
