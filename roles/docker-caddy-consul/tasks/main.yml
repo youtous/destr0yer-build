@@ -37,12 +37,13 @@
 - name: Ensure caddy directories exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=,o=
     path: "{{ item }}"
   with_items:
     - "{{ caddy_compose_file_dest_directory }}"
 
 - name: Register deployment timestamp
-  set_fact:
+  ansible.builtin.set_fact:
     caddy_consul_timestamp_deploy: "{{ ansible_date_time.epoch }}"
 
 - name: Copy Caddyfile config

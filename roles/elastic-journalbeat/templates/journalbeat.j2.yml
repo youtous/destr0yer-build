@@ -126,7 +126,7 @@ output.logstash:
 
   # Optional SSL. By default is off.
   # List of root certificates for HTTPS server verifications
-  ssl.certificate_authorities: ["{{ journalbeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"]
+  ssl.certificate_authorities: ["{{ journalbeat_certificates_directory }}/{{ logstash_root_ca_certificate_name }}"]
 
   # Certificate for SSL client authentication
   ssl.certificate: "{{ journalbeat_certificates_directory }}/{{ journalbeat_node_certificate_name }}.crt"

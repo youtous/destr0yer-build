@@ -3,15 +3,18 @@
 ## save rules across reboots
 - name: Export DOCKER-USER ip6tables chain
   become: true
-  ansible.builtin.shell: ip6tables -S DOCKER-USER
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    ip6tables -S DOCKER-USER
   register: ip6tables_docker_user_rules
   changed_when: false
 
 - name: Save DOCKER-USER ip6tables rules
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     create: true
     dest: "/etc/iptables.docker-user.rules.v6"
+    mode: u=rw,g=r,o=
     block: |
       *filter
 

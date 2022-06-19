@@ -26,7 +26,7 @@
 
 - name: Copy mariadb root CA
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ mariadb_ca_certificate }}"
     dest: "/etc/mysql/ca.pem"
     owner: root

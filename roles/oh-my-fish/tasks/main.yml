@@ -6,9 +6,9 @@
   changed_when: false
   ignore_errors: true
 
-- name: "Clone OMF from {{ omf_repo }}"
+- name: "Clone OMF from {{ omf_repo }}" # noqa git-latest
   become: true
-  git:
+  ansible.builtin.git:
     repo: "{{ omf_repo }}"
     dest: "{{ omf_installation_directory }}"
   when: omf_present is failed
@@ -30,20 +30,20 @@
 
 - name: "Clone OMF theme \"{{ omf_theme }}\" from {{ omf_theme_repo }}"
   become: true
-  git:
+  ansible.builtin.git: # noqa git-latest
     repo: "{{ omf_theme_repo }}"
     dest: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
   when: omf_theme_present is failed
 
 - name: Check if default theme already exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ omf_default_theme_directory }}"
   register: omf_default_link
 
 - name: Move default OMF theme
   become: true
   ansible.builtin.command: mv "{{ omf_default_theme_directory|quote }}" "{{ omf_default_theme_move_directory|quote }}"
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
   when: omf_default_link.stat.islnk is not defined or not omf_default_link.stat.islnk
 
 - name: Ensure theme {{ omf_theme }} is set as default
@@ -56,20 +56,20 @@
 
 - name: Copy theme overriding modifications
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/themes/{{ omf_theme }}/override-{{ item }}"
-    dest: "{{ omf_theme_directory}}/{{ item }}"
+    dest: "{{ omf_theme_directory }}/{{ item }}"
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
   with_items:
     - fish_prompt.fish
 
 - name: Install OMF plugins
   become: true
-  git:
-    repo: "{{ omf_plugin_repo_base }}{{item}}"
+  ansible.builtin.git: # noqa git-latest
+    repo: "{{ omf_plugin_repo_base }}{{ item }}"
     dest: "{{ omf_plugin_directory }}/{{ item }}"
   with_items: "{{ omf_plugins }}"
 ...

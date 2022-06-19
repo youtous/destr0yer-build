@@ -9,12 +9,12 @@
 # our ssh client needs to be upgraded in order to support secure cyphers
 - name: Install glances at latest version
   become: true
-  pip:
+  ansible.builtin.pip:
     executable: pip3
     name:
       - psutil
       - glances
       - py-cpuinfo
-    state: latest
+    state: latest # noqa package-latest
     extra_args: --upgrade
 ...

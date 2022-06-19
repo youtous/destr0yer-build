@@ -18,7 +18,7 @@
 - name: Ensure swarm root CA is defined
   ansible.builtin.fail:
     msg: root CA is empty or not defined.
-  when: docker_swarm_CA_certificate is not defined or docker_swarm_CA_certificate|length == 0
+  when: docker_swarm_ca_certificate is not defined or docker_swarm_ca_certificate|length == 0
 
 - name: Ensure swarm node crt is defined
   ansible.builtin.fail:
@@ -32,9 +32,9 @@
 
 - name: Copy RootCA certificate
   become: true
-  copy:
-    content: "{{ docker_swarm_CA_certificate }}"
-    dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_root_CA_certificate_name }}"
+  ansible.builtin.copy:
+    content: "{{ docker_swarm_ca_certificate }}"
+    dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_root_ca_certificate_name }}"
     owner: root
     group: root
     mode: u=rw,g=,o=
@@ -43,7 +43,7 @@
 
 - name: Copy node certificate
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ docker_swarm_node_certificate }}"
     dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_node_certificate_name }}.crt"
     owner: root
@@ -54,7 +54,7 @@
 
 - name: Copy node private key
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ docker_swarm_node_private_key }}"
     dest: "{{ docker_swarm_certificates_directory }}/{{ docker_swarm_node_certificate_name }}.key"
     owner: root
@@ -75,7 +75,7 @@
 
 - name: Override default systemd docker exec start
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/override.conf
     dest: /etc/systemd/system/docker.service.d/override.conf
     owner: root
@@ -111,13 +111,14 @@
   ansible.builtin.template:
     src: files/10-docker.conf.j2
     dest: /etc/rsyslog.d/10-docker.conf
+    mode: u=rw,g=r,o=
   notify:
     - restart rsyslog
   when: docker_log_backend == 'rsyslog'
 
 - name: Prevent duplicates from journald to rsyslog when using docker with journald
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: 0x0I.journald
   vars:
     journald_configs:
@@ -125,7 +126,7 @@
           ForwardToSyslog: false
 
 - name: Configure logrotate for docker rsyslog
-  import_role:
+  ansible.builtin.import_role:
     name: logrotate
   vars:
     logrotate_applications:

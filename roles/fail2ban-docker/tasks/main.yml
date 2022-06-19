@@ -3,7 +3,7 @@
 # resource : https://github.com/crazy-max/docker-fail2ban/
 - name: Add common-docker for fail2ban
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/filter.d/{{ item }}
     dest: /etc/fail2ban/filter.d/{{ item }}
     owner: root

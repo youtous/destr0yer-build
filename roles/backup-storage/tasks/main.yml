@@ -20,7 +20,7 @@
 
 - name: Configure sshd to use internal-sftp server
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/ssh/sshd_config"
     regexp: "^Subsystem"
     line: "Subsystem sftp internal-sftp"
@@ -30,7 +30,7 @@
 
 - name: Add sftp-backup group to allowed groups
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/ssh/sshd_config"
     block: "AllowGroups {{ backup_group_name }}"
     insertafter: "^AllowGroups .*$"
@@ -41,7 +41,7 @@
 
 - name: Configure sftp access with restricted ip
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/ssh/sshd_config"
     block: "{{ lookup('template', 'files/sshd_restrict_ip_config.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp restrict ips access ###"
@@ -55,7 +55,7 @@
 
 - name: Configure sftp group policy
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/ssh/sshd_config"
     block: "{{ lookup('template', 'files/sshd_sftp_config.j2') }}"
     # Match MUST BE SET at the end of the file... (https://unix.stackexchange.com/questions/67334/openssh-how-to-end-a-match-block)
@@ -66,7 +66,7 @@
 
 - name: Create backup group
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: youtous.users
   vars:
     groups_to_create:
@@ -79,7 +79,7 @@
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
     attributes: -i
   with_items: "{{ backup_users }}"
-  ignore_errors: true # if the directory is not yet created, ignore
+  ignore_errors: true # noqa ignore-errors if the directory is not yet created, ignore
 
 - name: Unlock .ssh/authorized_keys of backup users
   become: true
@@ -87,7 +87,7 @@
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
     attributes: -i
   with_items: "{{ backup_users }}"
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
 
 - name: Create backup accounts
   ansible.builtin.include_role:
@@ -104,7 +104,7 @@
       - username: "backup_{{ account.username }}"
         name: "backup_{{ account.username }}"
         home: "{{ backup_root_directory }}/backup_{{ account.username }}"
-        ssh_key: "{{ account.ssh_keys|default([]) }}"
+        ssh_key: "{{ account.ssh_keys | default([]) }}"
   with_items: "{{ backup_users }}"
   loop_control:
     loop_var: account
@@ -125,7 +125,7 @@
 
 - name: Fix sudoers admin group sudo with password
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     state: present
     regexp: '^%admin ALL='

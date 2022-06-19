@@ -10,7 +10,7 @@ traefik_network: "traefik-public"
 # caddy traefik-tag, this tag is used to mark a service as public
 traefik_public_tag: "traefik-public"
 
-traefik_backend_users: "{{ backend_users|default([]) }}"
+traefik_backend_users: "{{ backend_users | default([]) }}"
 
 # ports to expose on traefik
 traefik_services: []
@@ -24,7 +24,7 @@ traefik_log_format: "json"
 # list of ips allowed to retrieve caddy metrics
 traefik_metrics_allowed_ips: []
 
-traefik_allowed_ips: "{{ trusted_backend_ips|default([]) }}"
+traefik_allowed_ips: "{{ trusted_backend_ips | default([]) }}"
 
 # docker restart policies
 traefik_max_attempts: 0

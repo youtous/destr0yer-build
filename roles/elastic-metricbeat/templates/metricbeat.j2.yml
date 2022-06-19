@@ -65,7 +65,7 @@ output.logstash:
   ssl.supported_protocols: [TLSv1.2]
 
   # List of root certificates for HTTPS server verifications
-  ssl.certificate_authorities: ["{{ metricbeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"]
+  ssl.certificate_authorities: ["{{ metricbeat_certificates_directory }}/{{ logstash_root_ca_certificate_name }}"]
 
   # Certificate for SSL client authentication
   ssl.certificate: "{{ metricbeat_certificates_directory }}/{{ metricbeat_node_certificate_name }}.crt"

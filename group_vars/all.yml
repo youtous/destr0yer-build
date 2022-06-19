@@ -12,7 +12,7 @@ server_environment: "dev"
 
 # Network configuration
 domain_name: youtous.me
-domain_search: [ ]
+domain_search: []
 nameservers: # use DNSCrypt-proxy
   - '127.0.0.1'
   - '::1'
@@ -28,7 +28,7 @@ common_users:
   # arbiter is the only sudoer
   - username: "{{ sudo_user_username }}"
     name: System's Arbiter
-    groups: [ 'admin', 'sshusers', 'docker' ]
+    groups: ['admin', 'sshusers', 'docker']
     uid: 1006
     home: /home/dev-arbiter
     profile:
@@ -110,7 +110,7 @@ mariadb_ca_certificate: |
 trusted_backend_ips: "{{ ssh_entrypoints }}"
 
 # list of auth users for the backend user:bcrypt(pass):
-backend_users: "{{ backend_users|default([]) }}"
+backend_users: "{{ backend_users | default([]) }}"
 
 # local docker networks
 local_docker_ips:
@@ -137,15 +137,15 @@ nodes_ips: "{{ nodes_ips_without_current_host }}"
 # first manager ipv4
 primary_manager_ipv4: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private']) | first | first }}"
 # enforce docker nodes to use private ipv4
-docker_swarm_node_advertise_addr: "{{ ipv4_private|first }}"
+docker_swarm_node_advertise_addr: "{{ ipv4_private | first }}"
 
 # when you delete a node from the cluster, add his ip here in order to revoke his access
-revoked_nodes_ips: [ ]
+revoked_nodes_ips: []
 # list of node ids to remove from the cluster
-revoked_nodes_ids: [ ]
+revoked_nodes_ids: []
 
 # CA cert issuer of the node certs
-docker_swarm_CA_certificate: |
+docker_swarm_ca_certificate: |
   -----BEGIN CERTIFICATE-----
   MIIGDzCCA/egAwIBAgIUS2q8Bk6pUGB43j+2ysjI2yTH7aQwDQYJKoZIhvcNAQEL
   BQAwgZYxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIDAZGcmFuY2UxDjAMBgNVBAcMBVBh
@@ -249,7 +249,7 @@ promgraf_prometheus_configuration: |
           node_id: "{{ hostvars[instance]['hostname'] }}"
   {% endfor %}
 
-trusted_metrics_ips: "{{ trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips}}"
+trusted_metrics_ips: "{{ trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips }}"
 
 # cadvisor config:
 cadvisor_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
@@ -271,7 +271,9 @@ filebeat_output_server_address: "{{ logstash_domain }}"
 
 elastic_cluster_name: "youtous.dv"
 
-logstash_cluster_public_ips: "{{ (groups['all'] | map('extract', hostvars, ['ipv4']) | list | default([])) + (groups['all'] | map('extract', hostvars, ['ipv6']) | list | default([])) }}"
+logstash_cluster_public_ips: "{{ (groups['all'] | map('extract', hostvars, ['ipv4']) | list
+                              | default([])) + (groups['all'] | map('extract', hostvars, ['ipv6'])
+                              | list | default([])) }}"
 logstash_allowed_ips: "{{ (logstash_cluster_public_ips + local_docker_ips) | flatten }}"
 
 # domains
@@ -280,7 +282,7 @@ elasticsearch_domain: "elasticsearch.elastic.swarm.cluster.dv"
 logstash_domain: "logstash.elastic.swarm.cluster.dv"
 
 # CA cert issuer of the logstash/logspout certs
-logstash_CA_certificate: |
+logstash_ca_certificate: |
   -----BEGIN CERTIFICATE-----
   MIIF9TCCA92gAwIBAgIUNixpsUasTG8lHc0Nu0qun87k/tUwDQYJKoZIhvcNAQEL
   BQAwgYkxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIDAZGcmFuY2UxDjAMBgNVBAcMBVBh
@@ -316,8 +318,6 @@ logstash_CA_certificate: |
   kNLYfAK0StW8JHRj8PeKoWejh6cj7WwX+nK7Cu2dQyxspj3i59VpoW0=
   -----END CERTIFICATE-----
 ### End of Elastic vars ###
-
-
 
 # Force python3 to be used with Ansible, do not edit!
 ansible_python_interpreter: /usr/bin/python3

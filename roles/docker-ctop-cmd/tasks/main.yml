@@ -3,7 +3,7 @@
 
 - name: Copy ctop wrapper
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/ctop
     dest: "/usr/local/bin/ctop"
     owner: root

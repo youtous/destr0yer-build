@@ -93,11 +93,15 @@ wireguard_servers:
     post_up:
       - sysctl -w net.ipv4.ip_forward=1
       - sysctl -w net.ipv6.conf.all.forwarding=1
-      - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
-      - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT;
+        iptables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT;
+         ip6tables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
     post_down:
-      - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
-      - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT;
+         iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT;
+         ip6tables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
 
   - interface: wg-elastic
     addresses: # server address + network
@@ -167,15 +171,15 @@ teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
 
 ### End of Teamspeak parameters ###
 
-
-
 ### Begin of docker elastic parameters ###
 
 docker_external_interfaces: ["eth0", "eth1"]
 # list of nodes (ips) allowed to submit log data
 logstash_trough_vpn: ["10.101.101.2"] # vpn for logstash data exchange
 logstash_external_allowed_ip4s: "{{ local_docker_ips + logstash_trough_vpn }}"
-logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s_without_current_host }}" # allow docker + all nodes are allowed to send logs data, list can be completed
+
+# allow docker + all nodes are allowed to send logs data, list can be completed
+logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s_without_current_host }}"
 # ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it
 
 # elastic alert configuration
@@ -197,8 +201,8 @@ mailserver_ssl_type: ""
 mailserver_ssl_use_traefik: false
 mailserver_allowed_ips:
   port_465:
-      - "172.17.0.0/16" # allow docker0 containers to access smtps
-      - "172.18.0.0/16" # allow docker_gwbridge containers to access smtps
+    - "172.17.0.0/16" # allow docker0 containers to access smtps
+    - "172.18.0.0/16" # allow docker_gwbridge containers to access smtps
   port_993: []
 mailserver_domain: youtous.dv
 mailserver_hostname: mailing-heaven-pascal

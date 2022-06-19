@@ -22,7 +22,7 @@ wireguard_server:
       - fdc9:281f:04d7:9ee9::1/64
 
     # /!\ set these DNS on clients [Interface] and allow wireguard network for DNS queries using `dns_allowed_hosts`
-    #=> 10.99.99.1, fdc9:281f:04d7:9ee9::1
+    # => 10.99.99.1, fdc9:281f:04d7:9ee9::1
 
 
     # hook actions, details https://github.com/pirate/wireguard-docs/blob/master/example-lan-briding/montreal/wg0.conf
@@ -31,11 +31,15 @@ wireguard_server:
     post_up:
       - sysctl -w net.ipv4.ip_forward=1
       - sysctl -w net.ipv6.conf.all.forwarding=1
-      - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
-      - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT;
+         iptables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT;
+         ip6tables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
     post_down:
-      - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
-      - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT;
+         iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT;
+         ip6tables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
 
     # optional wireguard MTU
     mtu: ""

@@ -2,6 +2,7 @@
 - name: Ensure MTA-STS directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=,o=
     path: "{{ mailserver_compose_file_dest_directory }}/{{ item }}"
   with_items:
     - mta-nginx

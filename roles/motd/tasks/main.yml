@@ -1,7 +1,7 @@
 ---
 # This role contains oh-my-fish global installation
 - name: Find motd.d files
-  find:
+  ansible.builtin.find:
     paths: "{{ motd_directory }}"
     recurse: false
     excludes: "{{ motd_file }}"
@@ -45,7 +45,7 @@
 
 - name: Add dynamic motd loading to pam.d configuration
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/pam.d/sshd"
     regexp: "^session    optional     pam_motd.so  motd="
     line: "session    optional     pam_motd.so  motd=/run/motd.dynamic"

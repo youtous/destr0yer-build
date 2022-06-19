@@ -4,7 +4,7 @@
 - name: Ensure logstash client root CA is defined
   ansible.builtin.fail:
     msg: root client CA is empty or not defined.
-  when: logstash_client_forwarder_CA_certificate is not defined or logstash_client_forwarder_CA_certificate|length == 0
+  when: logstash_client_forwarder_ca_certificate is not defined or logstash_client_forwarder_ca_certificate|length == 0
 
 - name: Ensure logstash client node crt is defined
   ansible.builtin.fail:
@@ -18,13 +18,16 @@
 
 # Setup TLS using x509 certificates
 - name: Register logstash client secrets
-  docker_secret:
+  community.general.docker_secret:
     name: "{{ item.name }}"
     data: "{{ item.data }}"
     state: present
   with_items:
-    - {name: "{{ docker_elastic_stack_name }}_logstash-client-rootCA.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_client_forwarder_CA_certificate }}"}
-    - {name: "{{ docker_elastic_stack_name }}_logstash-client-certificate.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_client_forwarder_node_certificate }}"}
-    - {name: "{{ docker_elastic_stack_name }}_logstash-client-private-key.key-{{ elastic_deploy_timestamp }}", data: "{{ logstash_client_forwarder_node_private_key }}"}
+    - {name: "{{ docker_elastic_stack_name }}_logstash-client-rootCA.crt-{{ elastic_deploy_timestamp }}",
+       data: "{{ logstash_client_forwarder_ca_certificate }}"}
+    - {name: "{{ docker_elastic_stack_name }}_logstash-client-certificate.crt-{{ elastic_deploy_timestamp }}",
+       data: "{{ logstash_client_forwarder_node_certificate }}"}
+    - {name: "{{ docker_elastic_stack_name }}_logstash-client-private-key.key-{{ elastic_deploy_timestamp }}",
+       data: "{{ logstash_client_forwarder_node_private_key }}"}
   no_log: true
 ...

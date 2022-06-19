@@ -5,7 +5,7 @@
 
 - name: Add nextcloud filters to fail2ban
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/fail2ban/filter.d/{{ item }}
     dest: /etc/fail2ban/filter.d/{{ item }}
     owner: root

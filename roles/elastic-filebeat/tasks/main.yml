@@ -18,7 +18,7 @@
     name: filebeat
     enabled: false
     state: stopped
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
   when: filebeat_state == 'absent'
 
 - name: Ensure filebeat configuration directory exists

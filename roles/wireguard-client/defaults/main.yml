@@ -12,7 +12,7 @@ wireguard_client:
     #  - fdc9:281f:04d7:9ee9::2/64
 
     # /!\ set these DNS on clients [Interface] and allow wireguard network for DNS queries using `dns_allowed_hosts`
-    #=> 10.99.99.1, fdc9:281f:04d7:9ee9::1
+    # => 10.99.99.1, fdc9:281f:04d7:9ee9::1
     # use vpn dns
     dns: []
 

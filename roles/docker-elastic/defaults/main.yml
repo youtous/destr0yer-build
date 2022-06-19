@@ -2,7 +2,9 @@
 # TODO: logstash @depracted - logstash should be replaced by vector.d due to licence/version incompatibility
 
 logstash_elastic_version: 7.13.4
-elastic_version: 7.12.1 # pin this version until migration to fluentd, see https://www.reddit.com/r/aws/comments/nn95aq/elastic_has_broken_filebeat_as_of_713_it_no/
+elastic_version: 7.12.1 # pin this version until migration to fluentd,
+# see https://www.reddit.com/r/aws/comments/nn95aq/elastic_has_broken_filebeat_as_of_713_it_no/
+
 opensearch_version: 1.2.0
 
 # a list of allowed ips to access logstash thought socket
@@ -16,7 +18,7 @@ logstash_external_allowed_ips:
   - '172.18.0.0/16' # docker_gwbridge
 
 
-elastic_backend_users: "{{ backend_users|default([]) }}"
+elastic_backend_users: "{{ backend_users | default([]) }}"
 elastic_allowed_ips: "{{ trusted_backend_ips }}"
 
 
@@ -26,14 +28,14 @@ elastic_allowed_ips: "{{ trusted_backend_ips }}"
 elastic_internal_network_encryption_enabled: true
 
 # services to monitor
-#elastic_heartbeat_monitors:
-#  - type: http
-#    id: internal-stack
-#    name: My stack status
-#    schedule: '@every 30s'
-#    urls:
-#      - http://myurl:9200
-#      - http://other:5601
+# elastic_heartbeat_monitors:
+#   - type: http
+#     id: internal-stack
+#     name: My stack status
+#     schedule: '@every 30s'
+#     urls:
+#       - http://myurl:9200
+#       - http://other:5601
 
 # how much memory to allocate (in Mo)
 # /!\ less than 350 leads to startup issues
@@ -73,7 +75,10 @@ elastic_cluster_name: "{{ hostname }}"
 elastic_use_as_forwarder: false
 elastic_logstash_destination_host: "" # localhost address of logstash receiver
 elastic_logstash_destination_port: 5064 # port port of logstash receiver
-logstash_client_forwarder_CA_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
+
+# logstash_client_forwarder_CA_certificate is deprecatred use logstash_client_forwarder_ca_certificate instead
+# CA shared with the logstash receiver, this is required when used as a forwarder
+logstash_client_forwarder_ca_certificate: "{{ logstash_client_forwarder_CA_certificate | default('') }}"
 logstash_client_forwarder_node_certificate: ""
 logstash_client_forwarder_node_private_key: ""
 
@@ -96,7 +101,8 @@ enable_webhook_smtp_forwarder: true
 # Provide X509 certificates for TLS
 # you can use pipe syntax
 
-logstash_CA_certificate: "" # usually logstash-rootCA.crt
+# logstash_CA_certificate is deprecated
+logstash_ca_certificate: "{{ logstash_CA_certificate | default('') }}" # usually logstash-rootCA.crt # noqa var-naming
 logstash_node_private_key: "" # usually logstash-node-hostname.key
 logstash_node_certificate:  # usually logstash-node-hostname.crt
 

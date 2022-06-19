@@ -6,7 +6,7 @@
 - name: Ensure logstash root CA is defined
   ansible.builtin.fail:
     msg: root CA is empty or not defined.
-  when: logstash_CA_certificate is not defined or logstash_CA_certificate|length == 0
+  when: logstash_ca_certificate is not defined or logstash_ca_certificate|length == 0
 
 - name: Ensure logstash node crt is defined
   ansible.builtin.fail:
@@ -20,12 +20,12 @@
 
 # Setup TLS using x509 certificates
 - name: Register logstash secrets
-  docker_secret:
+  community.general.docker_secret:
     name: "{{ item.name }}"
     data: "{{ item.data }}"
     state: present
   with_items:
-    - {name: "{{ docker_elastic_stack_name }}_logstash-rootCA.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_CA_certificate }}"}
+    - {name: "{{ docker_elastic_stack_name }}_logstash-rootCA.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_ca_certificate }}"}
     - {name: "{{ docker_elastic_stack_name }}_logstash-certificate.crt-{{ elastic_deploy_timestamp }}", data: "{{ logstash_node_certificate }}"}
     - {name: "{{ docker_elastic_stack_name }}_logstash-private-key.key-{{ elastic_deploy_timestamp }}", data: "{{ logstash_node_private_key }}"}
   no_log: true

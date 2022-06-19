@@ -3,7 +3,7 @@
 
 - name: Remove frozen backup from cron
   become: true
-  cron:
+  ansible.builtin.cron:
     name: "frozen-backup"
     state: absent
 ...

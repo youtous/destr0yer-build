@@ -7,7 +7,7 @@
 
 - name: Configure vim
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/vimrc.local
     dest: /etc/vim/vimrc.local
     owner: root
@@ -26,12 +26,12 @@
   ignore_errors: true
 
 - name: Requires golang
-  import_role:
+  ansible.builtin.import_role:
     name: golang
 
 - name: Install ccat
   become: true
-  ansible.builtin.shell: |
+  ansible.builtin.shell: >
     cd /root &&
     /usr/local/go/bin/go get -u github.com/jingweno/ccat &&
     sudo mv go/bin/ccat /usr/local/bin/ &&
@@ -45,9 +45,9 @@
 
 - name: Update setuptools
   become: true
-  pip:
+  ansible.builtin.pip:
     executable: pip3
     name: setuptools
-    state: latest
+    state: latest # noqa package-latest
     extra_args: --upgrade
 ...

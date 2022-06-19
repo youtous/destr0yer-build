@@ -2,7 +2,7 @@
 # This role setup a daily docker prune on networks/images/containers
 
 - name: Ensure periodic task to cleanup unused docker networks/images/containers
-  cron:
+  ansible.builtin.cron:
     name: "prune all docker networks/images/containers"
     special_time: "{{ docker_prune_cronjob_special_time }}"
     job: "{{ docker_path }} prune {{ docker_prune_opts }} > /dev/null"

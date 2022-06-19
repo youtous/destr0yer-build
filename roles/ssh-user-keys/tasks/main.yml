@@ -3,9 +3,9 @@
 - name: Deploy public key for user
   become: true
   become_user: "{{ item.username }}" # keys are created using the specified user
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.public_key }}"
-    dest: "~/.ssh/id_{{ item.type|default('ed25519') }}.pub"
+    dest: "~/.ssh/id_{{ item.type | default('ed25519') }}.pub"
     mode: u=rw,g=r,o=r
   with_items: "{{ users_ssh_keys }}"
   no_log: true
@@ -13,9 +13,9 @@
 - name: Deploy private key for user
   become: true
   become_user: "{{ item.username }}" # keys are created using the specified user
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.private_key }}"
-    dest: "~/.ssh/id_{{ item.type|default('ed25519') }}"
+    dest: "~/.ssh/id_{{ item.type | default('ed25519') }}"
     mode: u=rw,g=,o=
   with_items: "{{ users_ssh_keys }}"
   no_log: true

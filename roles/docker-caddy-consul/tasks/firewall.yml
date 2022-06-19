@@ -1,61 +1,78 @@
 ---
-# We need to patch DOCKER firewall for hosted containers to access caddy services (see: https://forums.docker.com/t/no-route-to-host-network-request-from-container-to-host-ip-port-published-from-other-container/39063/16)
+# We need to patch DOCKER firewall for hosted containers to access caddy services
+# (see: https://forums.docker.com/t/no-route-to-host-network-request-from-container-to-host-ip-port-published-from-other-container/39063/16)
 
 ## Revoke all 443
 - name: List existing https UFW rules - tcp,udp/443
   become: true
   ansible.builtin.shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s443(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
+    set -o pipefail &&
+    ufw status numbered | grep -zoP '\[.*\]\s443(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'
+    | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_443_rules
 
 - name: UFW delete existing https rules - tcp,udp/443
   become: true
-  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_caddy_443_rules.stdout_lines }}"
+  when: ufw_caddy_443_rules.stdout_lines | length > 0
 
 ## Revoke all 80
 - name: List existing https UFW rules - tcp,udp/80
   become: true
   ansible.builtin.shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s80(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
+    set -o pipefail &&
+    ufw status numbered | grep -zoP '\[.*\]\s80(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'
+    | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_80_rules
 
 - name: UFW delete existing https rules - tcp,udp/80
   become: true
-  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_caddy_80_rules.stdout_lines }}"
+  when: ufw_caddy_80_rules.stdout_lines | length > 0
 
 ## Revoke all metrics
 - name: "List existing metrics UFW rules - tcp,udp/{{ caddy_metrics_port }}"
   become: true
   ansible.builtin.shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s{{ caddy_metrics_port }}(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
+    set -o pipefail &&
+    ufw status numbered | grep -zoP '\[.*\]\s{{ caddy_metrics_port }}(?!\\d).*\n'
+    | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g'
+    | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_metrics_rules
 
 - name: "UFW delete existing metrics rules - tcp,udp/{{ caddy_metrics_port }}"
   become: true
-  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_caddy_metrics_rules.stdout_lines }}"
+  when: ufw_caddy_metrics_rules.stdout_lines | length > 0
 
 ## End of revocation
 - name: Allow caddy https (including containers) to pass firewall - tcp/443
   become: true
-  ufw:
+  community.general.ufw:
     rule: allow
     port: "443"
 
 - name: Allow caddy http (including containers) to pass firewall - tcp/80
   become: true
-  ufw:
+  community.general.ufw:
     rule: allow
     port: "80"
 
 - name: "Allow caddy metrics (including containers) to pass firewall - tcp/{{ caddy_metrics_port }}"
   become: true
-  ufw:
+  community.general.ufw:
     rule: allow
     port: "{{ caddy_metrics_port }}"
 ...

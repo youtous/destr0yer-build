@@ -5,6 +5,7 @@
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
+    mode: u+rw,g-wx,o-rwx
   with_items: "{{ mount_devices }}"
 
 - name: Mount devices and save it permanantly

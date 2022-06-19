@@ -78,7 +78,8 @@ elastic_cluster_name: "roberval.dv"
 logstash_receiver_server_address: "10.101.101.1"
 logstash_receiver_server_port: "5064"
 elastic_logstash_destination: "{{ logstash_receiver_server_address }}:{{ logstash_receiver_server_port }}" # localhost:port address of logstash receiver
-logstash_client_forwarder_CA_certificate: "{{ logstash_CA_certificate }}" # CA shared with the logstash receiver, this is required when used as a forwarder
+# CA shared with the logstash receiver, this is required when used as a forwarder
+logstash_client_forwarder_ca_certificate: "{{ logstash_ca_certificate }}"
 logstash_client_forwarder_node_certificate: "{{ journalbeat_node_certificate }}"
 logstash_client_forwarder_node_private_key: "{{ journalbeat_node_private_key }}"
 

@@ -130,13 +130,13 @@ When wireguard tunnel is setup, elastic cluster must be configured:
 1. On the elastic master node: generate a client certificate and key used by the client node for submitting data to the elastic receiver.
 ```yaml
 # on the forwarder node
-logstash_client_forwarder_CA_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
+logstash_client_forwarder_ca_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
 logstash_client_forwarder_node_certificate: ""
 logstash_client_forwarder_node_private_key: ""
 ```
 2. On the elastic client node: generate a rootCA used for generating certificates in the swarm cluster.
 ```yaml
-logstash_CA_certificate: | # usually logstash-rootCA.crt
+logstash_ca_certificate: | # usually logstash-rootCA.crt
 logstash_node_private_key: | # usually logstash-node-hostname.key
 logstash_node_certificate: | # usually logstash-node-hostname.crt
 ```

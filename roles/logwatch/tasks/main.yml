@@ -5,7 +5,7 @@
 
 - name: Override logwatch conf service
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/services/{{ item }}"
     dest: "/etc/logwatch/conf/services/{{ item }}"
     owner: root
@@ -17,7 +17,7 @@
 
 - name: Override logwatch conf logfiles
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/logfiles/{{ item }}"
     dest: "/etc/logwatch/conf/logfiles/{{ item }}"
     owner: root
@@ -28,7 +28,7 @@
 
 - name: Create logwatch empty file (used when Journalctl)
   become: true
-  copy:
+  ansible.builtin.copy:
     dest: /etc/logwatch/empty
     content: |
       this file is containing
@@ -40,7 +40,7 @@
 
 - name: Setup Logwatch
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: youtous.logwatch
   vars:
     logwatch_email: "{{ logwatch_conf_email }}"

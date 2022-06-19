@@ -12,14 +12,14 @@ backup_jobs_additional: []
 # => if you do not want to load the global_backup_public_key you can override backup_gpg_public_keys directly
 # same for private and ownertrusts
 backup_gpg_additional_public_keys: []
-  #- name: keyID
-  #  key: the key value
+  # - name: keyID
+  #   key: the key value
 backup_gpg_additional_private_keys: []
-  #- name: keyID
-  #  key: the key value
+  # - name: keyID
+  #   key: the key value
 backup_gpg_additional_ownertrusts: []
-  #- name: keyID
-  #  value: the ownertrust value
+  # - name: keyID
+  #   value: the ownertrust value
 
 # a folder that will be used to store meta-data of previous backups,
 #  allowing incremental backups without providing decrypt key
@@ -130,11 +130,11 @@ global_backup_profiles:
     excludes: "{{ global_backup_excludes }}"
 
 # list of backup profiles
-backup_profiles: "{{ backup_profiles_additional|default({}) | combine(global_backup_profiles|default({})) }}"
+backup_profiles: "{{ backup_profiles_additional | default({}) | combine(global_backup_profiles | default({})) }}"
 # list of cron jobs
-backup_jobs: "{{ backup_jobs_additional|default([]) + global_backup_jobs|default([]) }}"
+backup_jobs: "{{ backup_jobs_additional | default([]) + global_backup_jobs | default([]) }}"
 
 # additional gpg keys to import
-backup_gpg_public_keys: "{{ backup_gpg_additional_public_keys|default([]) + [global_backup_gpg_public_key] }}"
-backup_gpg_private_keys: "{{ backup_gpg_additional_private_keys|default([]) + [global_backup_gpg_private_key] }}"
-backup_gpg_ownertrusts: "{{ backup_gpg_additional_ownertrusts|default([]) + [global_backup_gpg_ownertrust] }}"
+backup_gpg_public_keys: "{{ backup_gpg_additional_public_keys | default([]) + [global_backup_gpg_public_key] }}"
+backup_gpg_private_keys: "{{ backup_gpg_additional_private_keys | default([]) + [global_backup_gpg_private_key] }}"
+backup_gpg_ownertrusts: "{{ backup_gpg_additional_ownertrusts | default([]) + [global_backup_gpg_ownertrust] }}"

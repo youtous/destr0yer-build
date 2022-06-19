@@ -4,6 +4,7 @@
 - name: Ensure cadvisor directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=,o=
     path: "{{ cadvisor_compose_file_dest_directory }}"
 
 - name: Copy cadvisor stack

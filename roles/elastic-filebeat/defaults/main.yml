@@ -11,7 +11,9 @@ filebeat_output_server_port: "5044"
 # Provide X509 certificates for TLS
 # you can use pipe syntax
 
-logstash_CA_certificate: "" # usually logstash-rootCA.crt
+# logstash_CA_certificate is deprecated
+logstash_ca_certificate: "{{ logstash_CA_certificate | default('') }}" # usually logstash-rootCA.crt # noqa var-naming
+
 filebeat_node_private_key: "" # usually logstash-node-hostname.key
 filebeat_node_certificate: "" # usually logstash-node-hostname.crt
 

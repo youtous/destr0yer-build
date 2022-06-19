@@ -10,27 +10,27 @@
 - name: Volume groups creation
   become: true
   community.general.lvg:
-    pesize: "{{ item.pesize|default('4') }}"
-    pvresize: "{{ item.pvresize|default(False) }}"
-    pvs: "{{ item.pvs|default([]) }}"
+    pesize: "{{ item.pesize | default('4') }}"
+    pvresize: "{{ item.pvresize | default(False) }}"
+    pvs: "{{ item.pvs | default([]) }}"
     state: present
     vg: "{{ item.vg }}"
-    vg_options:  "{{ item.vg_options|default('') }}"
+    vg_options: "{{ item.vg_options | default('') }}"
   with_items: "{{ volume_groups_to_create }}"
 
 - name: Logical volumes creation
   become: true
   community.general.lvol:
-      active: "{{ item.active|default(True) }}"
-      force:  "{{ item.force|default(False) }}"
-      shrink:  "{{ item.shrink|default(False) }}"
-      opts:  "{{ item.opts|default('') }}"
-      pvs:  "{{ item.pvs|default('') }}"
-      vg: "{{ item.vg }}"
-      lv:  "{{ item.lv }}"
-      size: "{{ item.size|default('') }}"
-      thinpool: "{{ item.thinpool|default('') }}"
-      resizefs: "{{ item.resizefs|default(False) }}"
-      state: present
+    active: "{{ item.active | default(True) }}"
+    force: "{{ item.force | default(False) }}"
+    shrink: "{{ item.shrink | default(False) }}"
+    opts: "{{ item.opts | default('') }}"
+    pvs: "{{ item.pvs | default('') }}"
+    vg: "{{ item.vg }}"
+    lv: "{{ item.lv }}"
+    size: "{{ item.size | default('') }}"
+    thinpool: "{{ item.thinpool | default('') }}"
+    resizefs: "{{ item.resizefs | default(False) }}"
+    state: present
   with_items: "{{ logical_volume_groups_to_create }}"
 ...

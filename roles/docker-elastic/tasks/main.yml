@@ -11,15 +11,17 @@
 - name: Ensure elastic directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=,o=
     path: "{{ elastic_compose_file_dest_directory }}"
 
 - name: Register deployment timestamp
-  set_fact:
+  ansible.builtin.set_fact:
     elastic_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
 - name: Ensure elastic config directories exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=,o=
     path: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}"
   with_items:
     - opensearch
@@ -58,7 +60,7 @@
   with_items: "{{ logstash_pipeline_files }}"
 
 - name: Copy logstash pipeline patterns configurations
-  copy:
+  ansible.builtin.copy:
     src: "templates/config/logstash/pipeline/patterns.d/{{ item }}"
     dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/patterns.d/{{ item }}"
     mode: u=rw,g=,o=

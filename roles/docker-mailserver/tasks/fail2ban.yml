@@ -12,7 +12,7 @@
 
 - name: Add mailserver filters to fail2ban
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/fail2ban/filter.d/{{ item }}.conf
     dest: /etc/fail2ban/filter.d/{{ item }}-docker.conf
     owner: root
@@ -37,39 +37,39 @@
         port: smtp,pop3,pop3s,imap,imaps,submission,465,sieve
         mode: "{{ 'aggressive' if (mailserver_fail2ban_dovecot_mode_aggressive) else 'normal' }}"
         backend: systemd
-        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips | join(' ') }}"
         chain: DOCKER-USER
 
       - name: pam-generic-docker
         port: '%(banaction_allports)s'
         backend: systemd
-        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips | join(' ') }}"
         chain: DOCKER-USER
 
       - name: postfix-docker
         port: smtp,submission,465
         mode: "{{ mailserver_fail2ban_postfix_mode }}"
         backend: systemd
-        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips | join(' ') }}"
         chain: DOCKER-USER
 
       - name: postfix-sasl-docker # special fix from docker-mailserver
         port: smtp,submission,465
         mode: "{{ mailserver_fail2ban_postfix_mode }}"
         backend: systemd
-        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips | join(' ') }}"
         chain: DOCKER-USER
         ignoreregex: "{{ '' if (mailserver_fail2ban_postfix_mode == 'aggressive') else 'authentication failed: Connection lost to authentication server$' }}"
 
       - name: sieve-docker
         port: smtp,465,submission,sieve
         backend: systemd
-        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips|join(' ') }}"
+        ignoreip: "{{ mailserver_internal_fail2ban_ignoreips | join(' ') }}"
         chain: DOCKER-USER
 
 - name: Add rainloop filters to fail2ban
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/fail2ban/filter.d/{{ item }}
     dest: /etc/fail2ban/filter.d/{{ item }}
     owner: root
@@ -88,7 +88,7 @@
     fail2ban_services:
       - name: rainloop
         port: http,https
-        maxretry: "{{ rainloop_f2b_max_retries|default(6) }}"
+        maxretry: "{{ rainloop_f2b_max_retries | default(6) }}"
         backend: systemd
         chain: DOCKER-USER
   when: rainloop_enabled

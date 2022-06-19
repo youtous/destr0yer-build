@@ -3,7 +3,7 @@
   become: true
   ansible.builtin.apt:
     name: "sysstat"
-    state: latest
+    state: latest # noqa package-latest
 
 - name: Copy sysstat configuration
   become: true

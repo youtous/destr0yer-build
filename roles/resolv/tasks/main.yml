@@ -7,17 +7,17 @@
     path: /etc/resolv.conf
     attributes: -i
   # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
   changed_when: false
 
 - name: Configure network settings
-  import_role:
+  ansible.builtin.import_role:
     name: ahuffman.resolv
   vars:
     resolv_domain: "{{ domain_name }}"
     resolv_search: "{{ domain_search }}"
     resolv_nameservers: "{{ nameservers }}"
-    resolv_options: "{{ resolv_conf_options|default([]) }}"
+    resolv_options: "{{ resolv_conf_options | default([]) }}"
   notify:
     - restart network-manager
 
@@ -31,6 +31,6 @@
     attributes: i
     mode: u=rw,g=r,o=r
   # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
   changed_when: false
 ...

@@ -22,19 +22,19 @@ docker_partition_device: "/dev/device"
 
 
 disk_partitions_to_create:
-   - device: "{{ docker_partition_device }}"
-     part_number: 1
-     flags: [ lvm ]
-     name: "docker_partition-{{ docker_partition_volume_id }}"
+  - device: "{{ docker_partition_device }}"
+    part_number: 1
+    flags: [lvm]
+    name: "docker_partition-{{ docker_partition_volume_id }}"
 
 volume_groups_to_create:
-  -   pvs: "/dev/disk/by-partlabel/{{ ('docker_partition-'~docker_partition_volume_id)|hash('md5') }}"
-      vg: "vg0"
+  - pvs: "/dev/disk/by-partlabel/{{ ('docker_partition-'~docker_partition_volume_id) | hash('md5') }}"
+    vg: "vg0"
 
 logical_volume_groups_to_create:
-   - vg: "vg0"
-     lv:  "lv-docker-var"
-     size: "100%FREE"
+  - vg: "vg0"
+    lv: "lv-docker-var"
+    size: "100%FREE"
 
 filesystems_to_create:
   - dev: /dev/mapper/vg0-lv--docker--var
@@ -135,16 +135,16 @@ teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
 
 ### End of Teamspeak parameters ###
 
-
-
 ### Begin of docker elastic parameters ###
 
 docker_external_interfaces: ["eth0", "eth1"]
 # list of nodes (ips) allowed to submit log data
 logstash_trough_vpn: ["10.101.101.2"] # vpn for logstash data exchange
 logstash_external_allowed_ip4s: "{{ local_docker_ips + logstash_trough_vpn }}"
-logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s_without_current_host }}" # allow docker + all nodes are allowed to send logs data, list can be completed
-# ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it
+
+ # allow docker + all nodes are allowed to send logs data, list can be completed
+logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s_without_current_host }}"
+# TODO: ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it
 
 # elastic alert configuration
 elastic_alert_email_server: "{{ relay_server }}"

@@ -35,7 +35,7 @@
 
 - name: "Copy backup script to {{ docker_mysql_backup_script_directory }}"
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/backup-mysql-containers.rb"
     dest: "{{ docker_mysql_backup_script_directory }}/backup-mysql-containers.rb"
     owner: root
@@ -54,15 +54,16 @@
 
 - name: Add mysql docker containers to backup list
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ docker_mysql_backup_script_directory }}/{{ docker_mysql_containers_list_file }}"
     line: "{{ item.stack }}_{{ item.service }}"
     create: true
+    mode: u=rw,g=,o=
   with_items: "{{ docker_mysql_containers_backup }}"
 
 - name: Remove undesirable mysql docker containers from backup list
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ docker_mysql_backup_script_directory }}/{{ docker_mysql_containers_list_file }}"
     line: "{{ item.stack }}_{{ item.service }}"
     state: absent

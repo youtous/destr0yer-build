@@ -17,11 +17,12 @@
   ansible.builtin.file:
     state: directory
     path: "{{ item }}"
+    mode: u=rwx,g=rx,o=
   with_items:
     - "{{ traefik_compose_file_dest_directory }}"
 
 - name: Register deployment timestamp
-  set_fact:
+  ansible.builtin.set_fact:
     traefik_timestamp_deploy: "{{ ansible_date_time.epoch }}"
 
 - name: Copy traefik stack

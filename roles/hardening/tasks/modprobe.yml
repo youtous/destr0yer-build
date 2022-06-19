@@ -1,16 +1,16 @@
 ---
 - name: install modprobe to disable filesystems | os-10
-  package:
+  ansible.builtin.package:
     name: 'kmod'
     state: 'present'
 
 - name: check if efi is installed
-  stat:
+  ansible.builtin.stat:
     path: "/sys/firmware/efi"
   register: efi_installed
 
 - name: remove vfat from fs-list if efi is used
-  set_fact:
+  ansible.builtin.set_fact:
     os_unused_filesystems: "{{ os_unused_filesystems | difference('vfat') }}"
   when: efi_installed.stat.isdir is defined and efi_installed.stat.isdir
 

@@ -29,9 +29,9 @@
 
 - name: Copy logstash RootCA certificate
   become: true
-  copy:
-    content: "{{ logstash_CA_certificate }}"
-    dest: "{{ metricbeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
+  ansible.builtin.copy:
+    content: "{{ logstash_ca_certificate }}"
+    dest: "{{ metricbeat_certificates_directory }}/{{ logstash_root_ca_certificate_name }}"
     owner: root
     group: root
     mode: u=rw,g=,o=
@@ -40,7 +40,7 @@
 
 - name: Copy metricbeat node certificate
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ metricbeat_node_certificate }}"
     dest: "{{ metricbeat_certificates_directory }}/{{ metricbeat_node_certificate_name }}.crt"
     owner: root
@@ -51,7 +51,7 @@
 
 - name: Copy metricbeat node private key
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ metricbeat_node_private_key }}"
     dest: "{{ metricbeat_certificates_directory }}/{{ metricbeat_node_certificate_name }}.key"
     owner: root

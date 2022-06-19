@@ -8,7 +8,7 @@
 
 - name: Setup NTP
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: geerlingguy.ntp
   vars:
     ntp_timezone: "{{ timezone }}"
@@ -29,14 +29,14 @@
 
 - name: Register server environment in /etc/server_environment (dev,prod,test)
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ server_environment }}"
     dest: /etc/server_environment
     mode: u=rw,g=r,o=r
 
 - name: Add /usr/sbin to PATH bash
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/usr-sbin.sh
     dest: /etc/profile.d/usr-sbin.sh
     owner: root
@@ -45,7 +45,7 @@
 
 - name: Add /usr/sbin to PATH fish
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/usr-sbin.fish
     dest: /etc/fish/conf.d/usr-sbin.fish
     owner: root
@@ -60,7 +60,7 @@
 
 - name: Fix Scaleway reboot command fish
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/reboot.fish
     dest: /etc/fish/conf.d/reboot.fish
     owner: root
@@ -70,7 +70,7 @@
 
 - name: Fix Scaleway reboot command bash
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/reboot.sh
     dest: /etc/profile.d/reboot.sh
     owner: root

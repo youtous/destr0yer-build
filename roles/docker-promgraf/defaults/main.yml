@@ -34,16 +34,16 @@ promgraf_prometheus_configuration: |
 
 promgraf_alertmanager_configuration:
   route:
-      receiver: 'slack'
+    receiver: 'slack'
 
   receivers:
-      - name: 'slack'
-        slack_configs:
-            - send_resolved: true
-              text: "{{ .CommonAnnotations.description }}"
-              #username: <user>#
-              #channel: <channel>#
-              #api_url: <url>#
+    - name: 'slack'
+      slack_configs:
+        - send_resolved: true
+          text: "{{ .CommonAnnotations.description }}"
+          # username: <user>#
+          # channel: <channel>#
+          # api_url: <url>#
 
 # grafana configuration
 promgraf_grafana_admin_user: "admin"
@@ -57,7 +57,7 @@ promgraf_grafana_smtp_user: ""
 promgraf_grafana_smtp_password: ""
 promgraf_grafana_smtp_starttls_policy: ""
 
-promgraf_backend_users: "{{ backend_users|default([]) }}"
+promgraf_backend_users: "{{ backend_users | default([]) }}"
 
 # data source configuration
 promgraf_grafana_datasources:
@@ -67,13 +67,13 @@ promgraf_grafana_datasources:
     - name: Prometheus
 
   datasources:
-  - name: Prometheus
-    type: prometheus
-    access: proxy
-    url: http://prometheus:9090
-    isDefault: true
-    version: 1
-    editable: true
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus:9090
+      isDefault: true
+      version: 1
+      editable: true
 
 # node that will host the stack (prefer a single one)
 promgraf_hosts: "{{ groups['swarm_primary_manager'] }}"

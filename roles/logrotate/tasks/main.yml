@@ -2,7 +2,7 @@
 # This role contains the default policy for logrotate
 - name: Setup Logrotate
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: arillso.logrotate
 
 - name: Copy rsyslog logrotate policy

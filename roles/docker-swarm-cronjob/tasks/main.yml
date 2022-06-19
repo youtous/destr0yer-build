@@ -3,6 +3,7 @@
 - name: Ensure swarm_cronjob directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=,o=
     path: "{{ swarm_cronjob_compose_file_dest_directory }}"
 
 - name: Copy swarm_cronjob stack

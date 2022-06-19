@@ -3,14 +3,14 @@
 
 - name: Add password to root user
   become: true
-  user:
+  ansible.builtin.user:
     name: root
     password: "{{ root_password }}"
   no_log: true
 
 - name: Remove default users if exist
   become: true
-  user:
+  ansible.builtin.user:
     name: "{{ item }}"
     state: absent
     remove: true
@@ -26,11 +26,11 @@
     attributes: -i
   with_items: "{{ all_users }}"
   no_log: true
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
 
 - name: Setup users
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: youtous.users
   vars:
     # concatenate the common and the specific to host users list
@@ -59,13 +59,13 @@
     group: "{{ item.username }}"
     attributes: i
   with_items: "{{ all_users }}"
-  when: item.nolock_authorized_keys is undefined or item.nolock_authorized_keys != True
+  when: item.nolock_authorized_keys is undefined or (not item.nolock_authorized_keys)
   no_log: true
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
 
 - name: Allow admin group sudo with password
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     state: present
     regexp: '^%admin ALL='

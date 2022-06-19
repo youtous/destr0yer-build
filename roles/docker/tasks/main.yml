@@ -16,14 +16,14 @@
 
 - name: Ensure old docker-py pip module is absent
   become: true
-  pip:
+  ansible.builtin.pip:
     executable: pip3
     name: docker-py
     state: absent
 
 - name: Ensure docker pip module is installed and updated
   become: true
-  pip:
+  ansible.builtin.pip: # noqa package-latest
     executable: pip3
     name: docker
     state: latest
@@ -31,31 +31,33 @@
 
 - name: Ensure docker group is present
   become: true
-  group:
+  ansible.builtin.group:
     gid: "{{ docker_group_gid }}"
     name: "{{ docker_group_name }}"
 
 - name: Adding user '{{ ansible_user }}' to docker group
   become: true
   block:
-    - user:
+    - name: "Add docker group to ansible user"
+      ansible.builtin.user:
         name: "{{ ansible_user }}"
         groups: "{{ docker_group_name }}"
         append: true
-    - meta: reset_connection
+    - name: "Reset connection to apply new group"
+      ansible.builtin.meta: reset_connection
 
 - name: Setup docker
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: geerlingguy.docker
   vars:
     docker_apt_arch: "{{ 'arm64' if (ansible_architecture == 'aarch64') else 'amd64' }}"
 
 - name: Apply docker systemd fix
-  import_role:
+  ansible.builtin.import_role:
     name: docker-healthcheck-systemd
 
 - name: Add fail2ban docker filters
-  import_role:
+  ansible.builtin.import_role:
     name: fail2ban-docker
 ...

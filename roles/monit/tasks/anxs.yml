@@ -1,5 +1,6 @@
 ---
 # modified role from ANXS
+
 - name: Monit | Update the monit configuration (/etc/monit/monitrc)
   ansible.builtin.template:
     src: "etc/monit/monitrc.j2"
@@ -12,6 +13,7 @@
   ansible.builtin.template:
     src: "etc/monit/conf.d/{{ item }}.j2"
     dest: "/etc/monit/conf.d/{{ item }}"
+    mode: 0400
   with_items:
     - sshd
     - cron
@@ -32,7 +34,7 @@
     owner: root
     group: root
     mode: 0644
-  with_flattened:
+  with_community.general.flattened:
     - "{{ monit_process_list }}"
   when: item.pid is defined and item.pid
   notify:

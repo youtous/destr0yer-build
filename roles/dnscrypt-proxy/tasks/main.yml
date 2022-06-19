@@ -6,7 +6,7 @@
     name: "{{ item }}"
     state: stopped
     enabled: false
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
   with_items:
     - systemd-resolved
     - bind9
@@ -82,13 +82,17 @@
 - name: Install DNSCrypt-proxy latest
   import_tasks: install.yml
   # install when not present or local version and remote version are different
-  when: dnscrypt_proxy_version == "latest" and (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout))
+  when: >
+    dnscrypt_proxy_version == "latest" and
+    (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout))
   notify: restart DNSCrypt-proxy
 
 - name: Install DNSCrypt-proxy specific
   import_tasks: install.yml
   # install when not present or local version and remote version are different
-  when: dnscrypt_proxy_version != "latest" and (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version))
+  when: >
+    dnscrypt_proxy_version != "latest" and
+    (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version))
   notify: restart DNSCrypt-proxy
 
 - name: Configure NetworkManager for DNSCrypt-proxy

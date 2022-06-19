@@ -2,7 +2,7 @@
 # This role configures host configuration (hostname, /etc/hosts etc)
 - name: Define hostname
   become: true
-  hostname:
+  ansible.builtin.hostname:
     name: "{{ hostname }}"
   notify:
     - restart network-manager

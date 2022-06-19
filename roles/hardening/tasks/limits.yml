@@ -1,5 +1,6 @@
 ---
-- block:
+- name: Hardening limit group
+  block:
     - name: create limits.d-directory if it does not exist | sysctl-31a, sysctl-31b
       ansible.builtin.file:
         path: '/etc/security/limits.d'

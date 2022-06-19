@@ -11,7 +11,7 @@
       - dnscrypt-proxy
 
 - name: Create buid directory
-  tempfile:
+  ansible.builtin.tempfile:
     state: directory
     suffix: build
   register: tmp_dir_build
@@ -19,7 +19,9 @@
 - name: Retrieve latest DNSCrypt-proxy from repo
   ansible.builtin.shell: >
     set -o pipefail &&
-    curl -sL {{ dnscrypt_proxy_repo|quote }} | grep dnscrypt-proxy-{{ dnscrypt_proxy_platform|quote }}_{{ dnscrypt_proxy_cpu_platform|quote }}- | grep browser_download_url | head -1 | cut -d \" -f 4
+    curl -sL {{ dnscrypt_proxy_repo|quote }}
+    | grep dnscrypt-proxy-{{ dnscrypt_proxy_platform|quote }}_{{ dnscrypt_proxy_cpu_platform|quote }}-
+    | grep browser_download_url | head -1 | cut -d \" -f 4
   register: dnscrypt_remote_download
   changed_when: false
   when: dnscrypt_proxy_version == "latest"
@@ -28,20 +30,20 @@
     warn: false
 
 - name: Download latest DNSCrypt-proxy for local installation
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ item.url }}"
     dest: "{{ tmp_dir_build.path }}/{{ item.filename }}"
-    mode: u=rwx,g=,o=
+    mode: u=rw,g=,o=
   with_items:
     - { url: "{{ dnscrypt_remote_download.stdout }}", filename: "dnscrypt-proxy.tar.gz" }
     - { url: "{{ dnscrypt_remote_download.stdout }}.minisig", filename: "dnscrypt-proxy.tar.gz.minisig" }
   when: dnscrypt_proxy_version == "latest"
 
 - name: Download specific version of DNSCrypt-proxy for local installation
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ item.url }}"
     dest: "{{ tmp_dir_build.path }}/{{ item.filename }}"
-    mode: u=rwx,g=,o=
+    mode: u=rw,g=,o=
   with_items:
     - { url: "{{ dnscrypt_proxy_custom_version_download_url }}", filename: "dnscrypt-proxy.tar.gz" }
     - { url: "{{ dnscrypt_proxy_custom_version_download_url }}.minisig", filename: "dnscrypt-proxy.tar.gz.minisig" }
@@ -52,14 +54,14 @@
   ansible.builtin.command: "minisign -Vm '{{ tmp_dir_build.path|quote }}/dnscrypt-proxy.tar.gz' -P '{{ dnscrypt_proxy_public_key|quote }}'"
 
 - name: Extract downloaded files
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ tmp_dir_build.path }}/dnscrypt-proxy.tar.gz"
     dest: "{{ tmp_dir_build.path }}"
     remote_src: true
 
 - name: Copy DNSCrypt-proxy in system binaries
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "{{ tmp_dir_build.path }}/{{ dnscrypt_proxy_platform }}-{{ dnscrypt_proxy_cpu_platform }}/dnscrypt-proxy"
     dest: "{{ dnscrypt_binary_path }}"
     owner: root

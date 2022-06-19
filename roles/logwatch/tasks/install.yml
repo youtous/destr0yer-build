@@ -1,7 +1,7 @@
 ---
 - name: Copy apt preferences | logwatch # use testing version to fix systemd journal bug
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/apt/preferences.d/{{ item }}"
     dest: "{{ apt_directory }}/preferences.d/{{ item }}"
     owner: root
@@ -22,13 +22,12 @@
 
 - name: Install logwatch
   become: true
-  ansible.builtin.apt:
+  ansible.builtin.apt: # noqa package-latest
     update_cache: true
     name:
       - logwatch
       - cron
     state: latest
-
 
 - name: Enable cron
   become: true

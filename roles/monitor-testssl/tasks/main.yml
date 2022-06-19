@@ -26,7 +26,7 @@
 
 - name: Copy monitor-testssl script
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/monitor_testssl.rb
     dest: "{{ monitor_testssl_directory }}/monitor_testssl.rb"
     owner: root
@@ -44,7 +44,7 @@
 
 - name: Cron monitor-testssl every defined period
   become: true
-  cron:
+  ansible.builtin.cron:
     name: "monitor ssl/tls hosts and send a report"
     special_time: "{{ monitor_testsssl_cron_period }}"
     job: "{{ monitor_testssl_directory }}/monitor_testssl.rb '{{ monitor_testssl_image_name }}' '{{ monitor_testssl_report_email }}' > /dev/null"

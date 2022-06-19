@@ -4,7 +4,7 @@
 
 - name: Copy filter to rsyslog filters
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/01-block-systemd-mount-docker.conf
     dest: /etc/rsyslog.d/01-block-systemd-mount-docker.conf
     owner: root

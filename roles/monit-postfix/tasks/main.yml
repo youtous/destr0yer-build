@@ -3,8 +3,9 @@
 - name: Setup additional Monit configurations
   become: true
   ansible.builtin.template:
-    src: "templates/etc/monit/conf.d/{{item}}.j2"
-    dest: "/etc/monit/conf.d/{{item}}"
+    src: "templates/etc/monit/conf.d/{{ item }}.j2"
+    dest: "/etc/monit/conf.d/{{ item }}"
+    mode: u=rw,g=r,o=
   with_items:
     - postfix
   notify: reload monit

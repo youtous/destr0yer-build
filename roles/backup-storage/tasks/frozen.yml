@@ -23,7 +23,7 @@
 
 - name: Setup frozen backup job
   become: true
-  cron:
+  ansible.builtin.cron:
     name: "frozen-backup"
     minute: "{{ backup_frozen_cron.minute }}"
     hour: "{{ backup_frozen_cron.hour }}"

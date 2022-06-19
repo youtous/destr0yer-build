@@ -14,7 +14,7 @@
 - name: Ensure logstash root CA is defined
   ansible.builtin.fail:
     msg: root CA is empty or not defined.
-  when: logstash_CA_certificate is not defined or logstash_CA_certificate|length == 0
+  when: logstash_ca_certificate is not defined or logstash_ca_certificate|length == 0
 
 - name: Ensure logstash node crt is defined
   ansible.builtin.fail:
@@ -29,9 +29,9 @@
 
 - name: Copy logstash RootCA certificate
   become: true
-  copy:
-    content: "{{ logstash_CA_certificate }}"
-    dest: "{{ filebeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
+  ansible.builtin.copy:
+    content: "{{ logstash_ca_certificate }}"
+    dest: "{{ filebeat_certificates_directory }}/{{ logstash_root_ca_certificate_name }}"
     owner: root
     group: root
     mode: u=rw,g=,o=
@@ -40,7 +40,7 @@
 
 - name: Copy filebeat node certificate
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ filebeat_node_certificate }}"
     dest: "{{ filebeat_certificates_directory }}/{{ filebeat_node_certificate_name }}.crt"
     owner: root
@@ -51,7 +51,7 @@
 
 - name: Copy filebeat node private key
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ filebeat_node_private_key }}"
     dest: "{{ filebeat_certificates_directory }}/{{ filebeat_node_certificate_name }}.key"
     owner: root

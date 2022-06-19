@@ -20,7 +20,7 @@ logstash_pipeline_files:
   - 70-filter-export-external.j2.conf
   - 85-filter-remove-tags.j2.conf
   - 90-output.j2.conf
-  #- 399-output-debug.j2.conf
+# - 399-output-debug.j2.conf
 
 logstash_pipeline_patterns:
   - fail2ban.grok
@@ -43,5 +43,5 @@ elastic_heartbeat_default_monitors:
       - http://elasticsearch:9200
       - http://kibana:5601
       - http://logstash:8082
-elastic_combined_heartbeat_monitors: "{{ elastic_heartbeat_default_monitors|default([]) + elastic_heartbeat_monitors|default([]) }}"
+elastic_combined_heartbeat_monitors: "{{ elastic_heartbeat_default_monitors | default([]) + elastic_heartbeat_monitors | default([]) }}"
 ...

@@ -13,7 +13,7 @@
     name: wireguard-server
   vars:
     wireguard_server: "{{ wg_server }}"
-  loop:  "{{ wireguard_servers|flatten(levels=1) }}"
+  loop: "{{ wireguard_servers | flatten(levels=1) }}"
   loop_control:
     loop_var: wg_server
   no_log: true
@@ -23,7 +23,7 @@
     name: wireguard-client
   vars:
     wireguard_client: "{{ wg_client }}"
-  loop:  "{{ wireguard_clients|flatten(levels=1) }}"
+  loop: "{{ wireguard_clients | flatten(levels=1) }}"
   loop_control:
     loop_var: wg_client
   no_log: true

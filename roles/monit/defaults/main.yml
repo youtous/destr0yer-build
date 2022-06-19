@@ -13,23 +13,22 @@ monit_eventqueue_slots: 100
 monit_process_list: []
 
   # Example:
-  #monit_process_list:
 
   # The pid path is absolute, this is required.
-  #- pid: '/var/run/foo.pid'
+  # - pid: '/var/run/foo.pid'
 
   # The process is simply the process name, defaults to the pid's basename.
-  #process: 'foo'
+  # process: 'foo'
 
   # Set a timeout, defaults to 60 seconds.
-  #timeout: 60
+  # timeout: 60
 
   # The sysvinit style to start/stop a process, you can change this per process.
-  #start: '/etc/init.d/process start'
-  #stop: '/etc/init.d/process stop'
+  # start: '/etc/init.d/process start'
+  # stop: '/etc/init.d/process stop'
 
   # Append custom script logic, defaults to nothing.
-#script: |
+script: ""
 
 # monit_username:
 # monit_password:
@@ -50,12 +49,12 @@ monit_eventqueue_enable: true
 monit_eventqueue_directory: "/var/lib/monit/events"
 monit_eventque_slots: 100
 
-monit_mailformat_from: "monit@{{hostname}}"
+monit_mailformat_from: "monit@{{ hostname }}"
 monit_mailformat_subject: "$SERVICE $EVENT"
 monit_mailformat_message: "Monit $ACTION $SERVICE at $DATE on $HOST: $DESCRIPTION."
 
 monit_mailserver_host: "localhost" # configure the mailserver if using external solution
-monit_mailserver_port: "{{ postfix_smtp_port|default('25') }}"
+monit_mailserver_port: "{{ postfix_smtp_port | default('25') }}"
 monit_mailserver_username: ""
 monit_mailserver_password: ""
 monit_mailserver_encryption: "" # https://mmonit.com/monit/documentation/monit.html#SSL-OPTIONS
@@ -80,5 +79,5 @@ monit_allow: ["localhost"]
 # monit_ssl: false
 # monit_cert: "/etc/monit/monit.pem"
 
-monit_monitors_sshd_port: "{{ sshd_port|default(22) }}"
+monit_monitors_sshd_port: "{{ sshd_port | default(22) }}"
 ...

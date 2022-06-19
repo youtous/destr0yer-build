@@ -2,6 +2,6 @@
 # see https://github.com/michaelrigart/ansible-role-interfaces for details
 - name: Setup interfaces configuration
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: MichaelRigart.interfaces
 ...

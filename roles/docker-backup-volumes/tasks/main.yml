@@ -35,7 +35,7 @@
 
 - name: "Copy backup script to {{ docker_volumes_backup_script_directory }}"
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/backup-docker-volumes.rb"
     dest: "{{ docker_volumes_backup_script_directory }}/backup-docker-volumes.rb"
     owner: root
@@ -53,15 +53,16 @@
 
 - name: Add docker volumes to backup list
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ docker_volumes_backup_script_directory }}/{{ docker_volumes_list_file }}"
     line: "{{ item }}"
     create: true
+    mode: u=rw,g=,o=
   with_items: "{{ docker_volumes_backup }}"
 
 - name: Remove undesirable docker volumes from backup list
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ docker_volumes_backup_script_directory }}/{{ docker_volumes_list_file }}"
     line: "{{ item }}"
     state: absent

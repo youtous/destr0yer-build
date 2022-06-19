@@ -39,7 +39,9 @@ rainloop_mysql_database: rainloop
 rainloop_mysql_user: rainloop
 rainloop_mysql_password:
 # DNS resolution according deployment strategy
-rainloop_on_mysql_host: true # => use `mysql_server` for hostname if the rainloop container runs on the same host as the mysql server, set to true (permits localhost DNS resolution)
+rainloop_on_mysql_host: true # => use `mysql_server` for hostname if the rainloop container
+#                             runs on the same host as the mysql server,
+#                             set to true (permits localhost DNS resolution)
 
 # activate debug mode
 mailserver_debug: false

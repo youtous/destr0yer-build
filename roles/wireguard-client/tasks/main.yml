@@ -6,7 +6,9 @@
 - name: Ensure wireguard keys are defined
   ansible.builtin.fail:
     msg: Keys must be defined using wg genkey. No key provided.
-  when: (wireguard_client.public_key is not defined or wireguard_client.public_key|length == 0) or (wireguard_client.private_key is not defined or wireguard_client.private_key|length == 0)
+  when: >
+   (wireguard_client.public_key is not defined or wireguard_client.public_key|length == 0) or
+   (wireguard_client.private_key is not defined or wireguard_client.private_key|length == 0)
 
 - name: Ensure wireguard client preshared_key is defined
   ansible.builtin.fail:
@@ -44,7 +46,7 @@
     dest: "{{ wireguard_conf_directory }}/{{ item.dest }}"
     owner: root
     group: root
-    mode: u=rwx,g=,o=
+    mode: u=rw,g=,o=
   with_items:
     - { src: wg.conf.j2, dest: "{{ wireguard_client.interface }}.conf" }
   notify:

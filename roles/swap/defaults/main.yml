@@ -4,7 +4,7 @@
 fs_swap_file_path: /swapfile
 fs_swap_file_size_mb: '0' # disabled by default
 fs_swap_swappiness: '60'
-fs_swap_file_state: "{{ 'absent' if (swap_file_size_mb|int == 0) else 'present' }}"
+fs_swap_file_state: "{{ 'absent' if ( swap_file_size_mb | int == 0) else 'present' }}"
 fs_swap_file_create_command: "dd if=/dev/zero of={{ swap_file_path }} bs=1M count={{ swap_file_size_mb }}"
 
 fs_swap_test_mode: false

@@ -3,8 +3,9 @@
 - name: Setup additional Monit configurations
   become: true
   ansible.builtin.template:
-    src: "templates/etc/monit/conf.d/{{item}}.j2"
-    dest: "/etc/monit/conf.d/{{item}}"
+    src: "templates/etc/monit/conf.d/{{ item }}.j2"
+    dest: "/etc/monit/conf.d/{{ item }}"
+    mode: 0400
   with_items:
     - mariadb
   notify: reload monit

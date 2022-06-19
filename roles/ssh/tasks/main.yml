@@ -17,7 +17,7 @@
   with_items: "{{ algorithms_files_to_remove  }}"
 
 - name: Checking if keys has been regenerated
-  stat:
+  ansible.builtin.stat:
     path: "{{ key_generated_flag_file }}"
   register: flag_keys_generated
 
@@ -29,38 +29,38 @@
   with_items:
     - /etc/ssh/ssh_host_ed25519_key
     - /etc/ssh/ssh_host_rsa_key
-  when: flag_keys_generated.stat.exists == False
+  when: not flag_keys_generated.stat.exists
 
 - name: Generate ed25519 host key
   become: true
   ansible.builtin.command: ssh-keygen -q -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -C "" -N ""
-  when: flag_keys_generated.stat.exists == False
+  when: not flag_keys_generated.stat.exists
 
 - name: Generate rsa host key
   become: true
   ansible.builtin.command: ssh-keygen -q -t rsa -b "{{ rsa_key_size|quote }}" -f /etc/ssh/ssh_host_rsa_key -C "" -N ""
-  when: flag_keys_generated.stat.exists == False
+  when: not flag_keys_generated.stat.exists
 
 # Will be available in Ansible 2.8
-#- name: Generate ed25519 host key
-#  become: true
-#  openssh_keypair:
-#    path: /etc/ssh/ssh_host_ed25519_key
-#    type: ed25519
-#    force: true
-#  when: flag_keys_generated.stat.exists == False
+# - name: Generate ed25519 host key
+#   become: true
+#   openssh_keypair:
+#     path: /etc/ssh/ssh_host_ed25519_key
+#     type: ed25519
+#     force: true
+#   when: flag_keys_generated.stat.exists == False
 #
-#- name: Generate rsa host key
-#  become: true
-#  openssh_keypair:
-#    path: /etc/ssh/ssh_host_rsa_key
-#    size: "{{ rsa_key_size }}"
-#    force: true
-#  when: flag_keys_generated.stat.exists == False
+# - name: Generate rsa host key
+#   become: true
+#   openssh_keypair:
+#     path: /etc/ssh/ssh_host_rsa_key
+#     size: "{{ rsa_key_size }}"
+#     force: true
+#   when: flag_keys_generated.stat.exists == False
 
 - name: Lock host keys
   become: true
-  copy:
+  ansible.builtin.copy:
     content: ""
     dest: "{{ key_generated_flag_file }}"
     force: false
@@ -70,7 +70,7 @@
 
 - name: Copy issue banners
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: root
@@ -95,10 +95,10 @@
 
 - name: "Configure sshd port {{ sshd_port }} in /etc/services"
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/services"
     regexp: "^ssh"
-    line: "ssh		{{ sshd_port }}/tcp				# SSH Remote Login Protocol"
+    line: "ssh		{{ sshd_port }}/tcp				# SSH Remote Login Protocol" # noqa no-tabs
 
 - name: Enable OpenSSH server
   become: true

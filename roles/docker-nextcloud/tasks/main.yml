@@ -5,6 +5,7 @@
 - name: Ensure nextcloud directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=r,o=
     path: "{{ nextcloud_compose_file_dest_directory }}"
 
 - name: Tag current node as nextcloud origin
@@ -14,7 +15,7 @@
       nextcloud.nextcloud-data: "true"
 
 - name: Register deployment timestamp
-  set_fact:
+  ansible.builtin.set_fact:
     nextcloud_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
 - name: Copy Nextcloud stack
@@ -26,6 +27,7 @@
 - name: Ensure Nextcloud config directories exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=,o=
     path: "{{ nextcloud_compose_file_dest_directory }}/{{ item }}"
   with_items:
     - php-fpm.d

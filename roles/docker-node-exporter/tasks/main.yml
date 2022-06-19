@@ -4,6 +4,7 @@
 - name: Ensure node_exporter directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=,o=
     path: "{{ node_exporter_compose_file_dest_directory }}"
 
 - name: Copy node_exporter stack
@@ -16,7 +17,7 @@
   import_tasks: firewall.yml
 
 - name: Install docker-compose pip module
-  pip:
+  ansible.builtin.pip:
     name: docker-compose
 
 # docker-compose deployment per host is required in order to access full stats

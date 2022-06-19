@@ -60,7 +60,7 @@
   hosts: localhost
   tasks:
     - name: refresh inventory
-      meta: refresh_inventory
+      ansible.builtin.meta: refresh_inventory
   tags: ["docker-swarm-init", "docker-swarm-init-cleanup"]
 
 - name: Integrate fail2ban for docker (recidive)

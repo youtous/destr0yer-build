@@ -44,6 +44,6 @@ fail2ban_default_services:
 
   - name: pam-generic
 
-fail2ban_services: "{{ fail2ban_default_services|default([]) + fail2ban_additional_services|default([]) }}"
+fail2ban_services: "{{ fail2ban_default_services | default([]) + fail2ban_additional_services | default([]) }}"
 
 ...

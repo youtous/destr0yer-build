@@ -9,10 +9,11 @@
 - name: Ensure promgraf directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=rx,o=
     path: "{{ promgraf_compose_file_dest_directory }}"
 
 - name: Register deployment timestamp
-  set_fact:
+  ansible.builtin.set_fact:
     promgraf_timestamp_deploy: "{{ ansible_date_time.epoch }}"
 
 # begin of tag strategy
@@ -59,7 +60,7 @@
   with_items: "{{ promgraf_files }}"
 
 - name: Copy promgraf files
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ promgraf_compose_file_dest_directory }}/{{ item.dest }}"
     mode: u=rw,g=,o=

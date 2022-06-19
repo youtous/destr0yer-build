@@ -38,7 +38,7 @@ backed_up_hosts:
 
 # hosts where ip is monitored
 watch_ip:
-  #hosts:
+  # hosts:
   #  heaven-pascal.youtous.dv:
 
 # hosts which are monitoring ssl hosts, /!\ docker MUST be installed

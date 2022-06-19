@@ -9,7 +9,7 @@
     - restart DNSCrypt-proxy
 
 - name: make sure DNSCrypt-proxy service is running after restart
-  ansible.builtin.command: systemctl is-active dnscrypt-proxy
+  ansible.builtin.command: systemctl is-active dnscrypt-proxy # noqa command-instead-of-module
   changed_when: false
   listen:
     - restart dnscrypt-proxy
@@ -23,7 +23,7 @@
   notify: restart postfix
 
 - name: make sure NetworkManager service is running after restart
-  ansible.builtin.command: systemctl is-active networking
+  ansible.builtin.command: systemctl is-active networking # noqa command-instead-of-module
   changed_when: false
   listen: restart NetworkManager
 
@@ -36,7 +36,7 @@
     - restart NetworkManager
 
 - name: Populate service facts
-  service_facts:
+  ansible.builtin.service_facts:
   listen: restart postfix
 
 # postfix needs to be restarted in order to enable copy of the /etc/resolv.conf in chrooted environment
@@ -50,7 +50,7 @@
   when: '"postfix.service" in ansible_facts.services'
 
 - name: make sure postfix service is running after restart
-  ansible.builtin.command: systemctl is-active postfix
+  ansible.builtin.command: systemctl is-active postfix # noqa command-instead-of-module
   changed_when: false
   listen: restart postfix
   when: '"postfix.service" in ansible_facts.services'

@@ -1,7 +1,7 @@
 ---
 - name: Setup host.allow for DNS
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/hosts.allow"
     block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - DNS allowed ip whitelist ###"
@@ -9,7 +9,9 @@
 - name: List existing DNS UFW rules
   become: true
   ansible.builtin.shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s53(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
+    set -o pipefail &&
+    ufw status numbered | grep -zoP '\[.*\]\s53(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'
+    | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   args:
     executable: /bin/bash
   changed_when: false
@@ -17,12 +19,15 @@
 
 - name: UFW delete existing DNS rules - tcp,udp/53
   become: true
-  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_dns_rules.stdout_lines }}"
+  when: ufw_dns_rules.stdout_lines | length > 0
 
 - name: UFW Allow DNS clients - tcp,udp/53
   become: true
-  ufw:
+  community.general.ufw:
     rule: allow
     port: "53"
     src: "{{ item }}"

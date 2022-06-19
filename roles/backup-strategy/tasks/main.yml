@@ -11,30 +11,30 @@
 
 - name: Update python build tools
   become: true
-  pip:
+  ansible.builtin.pip:
     executable: pip3
     name:
       - setuptools
       - setuptools_scm
       - wheel
-    state: latest
+    state: latest # noqa package-latest
     extra_args: --upgrade
 
 # our ssh client needs to be upgraded in order to support secure cyphers
 - name: Install pexpect at latest version
   become: true
-  pip:
+  ansible.builtin.pip:
     executable: pip3
     name: pexpect
-    state: latest
+    state: latest # noqa package-latest
     extra_args: --upgrade
 
 - name: Install duplicity using pip3
   become: true
-  pip:
+  ansible.builtin.pip:
     executable: pip3
     name: duplicity
-    state: latest
+    state: latest # noqa package-latest
     extra_args: --upgrade
 
 - name: Install duply package
@@ -45,7 +45,7 @@
 
 - name: Install duply wrapper
   become: true
-  copy:
+  ansible.builtin.copy:
     src: files/duply
     dest: /usr/local/bin/duply
     owner: root
@@ -59,7 +59,7 @@
 
 - name: Setup Duplicity backup strategy
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: oefenweb.duply-backup
   vars:
     duply_backup_profiles: "{{ backup_profiles }}"

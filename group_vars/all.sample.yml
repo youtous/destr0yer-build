@@ -13,7 +13,7 @@ server_environment: "dev"
 
 # Network configuration
 domain_name: example.com
-domain_search: [ ]
+domain_search: []
 nameservers: # use DNSCrypt-proxy
   - '127.0.0.1'
   - '::1'
@@ -29,7 +29,7 @@ common_users:
   # create a sudouser globally
   - username: "{{ sudo_user_username }}"
     name: System's sudo user
-    groups: [ 'admin', 'sshusers', 'docker' ]
+    groups: ['admin', 'sshusers', 'docker']
     uid: 1006
     home: "/home/{{ sudo_user_username }}"
     profile:
@@ -71,7 +71,7 @@ dns_allowed_hosts: "{{ local_docker_ips }}"
 trusted_backend_ips: "{{ ssh_entrypoints }}"
 
 # list of auth users for the backend user:bcrypt(pass):
-backend_users: "{{ backend_users|default([]) }}"
+backend_users: "{{ backend_users | default([]) }}"
 
 # local docker networks
 local_docker_ips:
@@ -122,13 +122,13 @@ nodes_public_ips_without_current_host: "{{ nodes_public_ip4s_without_current_hos
 # first manager ipv4
 primary_manager_ipv4: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private']) | first | first }}"
 # enforce docker nodes to use private ipv4
-docker_swarm_node_advertise_addr: "{{ ipv4_private|first }}"
+docker_swarm_node_advertise_addr: "{{ ipv4_private | first }}"
 
 
 # when you delete a node from the cluster, add his ip here in order to revoke his access
-revoked_nodes_ips: [ ]
+revoked_nodes_ips: []
 # list of node ids to remove from the cluster
-revoked_nodes_ids: [ ]
+revoked_nodes_ids: []
 
 # docker services
 caddy_metrics_domain: "router.swarm.cluster.dv"
@@ -153,9 +153,10 @@ traefik_services:
 lets_encrypt_email: "lego@local.dv"
 
 # CA cert issuer of the node certs
-docker_swarm_CA_certificate: |
+docker_swarm_ca_certificate: |
   -----BEGIN CERTIFICATE-----
   -----END CERTIFICATE-----
+
 
 ###  End of The-Swarm vars  ###
 
@@ -209,7 +210,7 @@ promgraf_prometheus_configuration: |
           node_id: "{{ hostvars[instance]['hostname'] }}"
   {% endfor %}
 
-trusted_metrics_ips: "{{ trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips}}"
+trusted_metrics_ips: "{{ trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips }}"
 
 # cadvisor config:
 cadvisor_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
@@ -226,7 +227,8 @@ caddy_metrics_allowed_ips: "{{ trusted_metrics_ips }}"
 elastic_cluster_name: "youtous.dv"
 
 # allow cluster ips
-logstash_cluster_public_ips: "{{ (groups['all'] | map('extract', hostvars, ['ipv4']) | list | default([])) + (groups['all'] | map('extract', hostvars, ['ipv6']) | list | default([])) }}"
+logstash_cluster_public_ips: "{{ (groups['all'] | map('extract', hostvars, ['ipv4']) | list
+                                 | default([])) + (groups['all'] | map('extract', hostvars, ['ipv6']) | list | default([])) }}"
 logstash_allowed_ips: "{{ (logstash_cluster_public_ips + local_docker_ips) | flatten }}"
 
 kibana_domain: "kibana.elastic.swarm.cluster.dv"
@@ -240,7 +242,7 @@ journalbeat_output_server_address: "{{ logstash_domain }}"
 metricbeat_output_server_address: "{{ logstash_domain }}"
 
 # CA cert issuer of the logstash/logspout certs
-logstash_CA_certificate: |
+logstash_ca_certificate: |
   -----BEGIN CERTIFICATE-----
   -----END CERTIFICATE-----
 

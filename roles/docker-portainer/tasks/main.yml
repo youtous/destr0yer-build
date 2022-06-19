@@ -10,6 +10,7 @@
 - name: Ensure portainer directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=rx,o=
     path: "{{ portainer_compose_file_dest_directory }}"
 
 - name: Tag current node as portainer origin

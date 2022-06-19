@@ -14,15 +14,15 @@
   when: monit_present is failed
 
 - name: Download Monit archive
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ monit_download_uri }}"
     dest: "{{ monit_download_dest_directory }}/monit.tar.gz"
     checksum: "{{ monit_download_checksum }}"
-    mode: u=rwx,g=,o=
+    mode: u=rw,g=,o=
   when: monit_present is failed
 
 - name: Extract Monit archive
-  unarchive:
+  ansible.builtin.unarchive:
     remote_src: true
     src: "{{ monit_download_dest_directory }}/monit.tar.gz"
     dest: "{{ monit_download_dest_directory }}"
@@ -30,7 +30,7 @@
 
 - name: Copy Monit binary
   become: true
-  copy:
+  ansible.builtin.copy:
     remote_src: true
     src: "{{ monit_download_dest_directory }}/monit-{{ monit_version }}/bin/monit"
     dest: /usr/local/bin/monit
@@ -68,7 +68,7 @@
 
 - name: Copy Monit default configuration
   become: true
-  copy:
+  ansible.builtin.copy:
     remote_src: true
     src: "{{ monit_download_dest_directory }}/monit-{{ monit_version }}/conf/monitrc"
     dest: /etc/monit/monitrc
@@ -89,7 +89,7 @@
 # according https://mmonit.com/wiki/Monit/Systemd
 - name: Create systemd startup script for Monit
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/systemd/monit.service"
     dest: "/lib/systemd/system/monit.service"
     owner: root

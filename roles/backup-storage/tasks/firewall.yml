@@ -1,7 +1,7 @@
 ---
 - name: Whitelists allowed ips of accounts to access ssh
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/hosts.allow"
     block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
     insertbefore: BOF
@@ -11,18 +11,23 @@
 - name: List existing sftp backup UFW rules
   become: true
   ansible.builtin.shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port|quote }}(?!\\d).*\# backup client allowed\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
+    set -o pipefail &&
+    ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port|quote }}(?!\\d).*\# backup client allowed\n'
+    | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_ssh_backup_rules
 
 - name: UFW delete existing sftp backup rules - tcp,udp/ssh
   become: true
-  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_ssh_backup_rules.stdout_lines }}"
+  when: ufw_ssh_backup_rules.stdout_lines | length > 0
 
 - name: UFW Allow sftp backup clients - LIMIT tcp/ssh
   become: true
-  ufw:
+  community.general.ufw:
     rule: limit
     port: ssh
     proto: tcp

@@ -8,7 +8,7 @@
 
 - name: Configure ufw defaults
   become: true
-  ufw:
+  community.general.ufw:
     direction: "{{ item.direction }}"
     policy: "{{ item.policy }}"
   with_items:
@@ -17,12 +17,12 @@
 
 - name: Define ufw logging policy
   become: true
-  ufw:
+  community.general.ufw:
     logging: "{{ ufw_logging }}"
 
 - name: Insert customs IPv4 rules in before.rules
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/ufw/before.rules"
     block: "{{ lookup('file', 'files/before-ipv4.rules') }}"
     insertbefore: "^# don't delete the 'COMMIT'"
@@ -32,7 +32,7 @@
 
 - name: Insert customs IPv6 rules in before6.rules
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "/etc/ufw/before6.rules"
     block: "{{ lookup('file', 'files/before-ipv6.rules') }}"
     insertbefore: "^# don't delete the 'COMMIT'"
@@ -42,14 +42,14 @@
 
 - name: OpenSSH default policy limit
   become: true
-  ufw:
+  community.general.ufw:
     rule: limit
     port: ssh
     proto: tcp
 
 - name: Add custom ufw firewall rules
   become: true
-  ufw:
+  community.general.ufw:
     comment: "{{ item.comment }}"
     proto: "{{ item.proto }}"
     src: "{{ item.src }}"
@@ -57,7 +57,7 @@
     port: "{{ item.port }}"
     rule: "{{ item.rule }}"
     direction: "{{ item.direction }}"
-  with_items: "{{ ufw_additional_rules|default([]) }}"
+  with_items: "{{ ufw_additional_rules | default([]) }}"
 
 # IP forwarding is disabled by default
 - name: Set value IPv4 forwarding
@@ -80,6 +80,6 @@
 
 - name: Enable ufw
   become: true
-  ufw:
+  community.general.ufw:
     state: enabled
 ...

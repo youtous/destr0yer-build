@@ -16,7 +16,7 @@
   register: swarm_info
 
 - name: Register swarm_info in swarm_first_manager host
-  add_host:
+  ansible.builtin.add_host:
     hostname: swarm_first_manager
     swarm_info: "{{ swarm_info }}"
 ...

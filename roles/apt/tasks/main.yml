@@ -9,7 +9,7 @@
 
 - name: Remove patterns sources.d | listing
   become: true
-  find:
+  ansible.builtin.find:
     paths: "{{ apt_directory }}/sources.list.d"
     hidden: true
     recurse: true
@@ -26,7 +26,7 @@
 
 - name: Copy sources.list
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/{{ apt_distribution_version_target }}/sources.list"
     dest: "{{ apt_directory }}/sources.list"
     owner: root
@@ -35,7 +35,7 @@
 
 - name: Copy apt preferences
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/{{ apt_distribution_version_target }}/{{ item }}"
     dest: "{{ apt_directory }}/preferences.d/{{ item }}"
     owner: root
@@ -67,18 +67,18 @@
   ansible.builtin.apt:
     upgrade: "yes"
     update_cache: true
-    cache_valid_time: 86400 #One day
+    cache_valid_time: 86400 # One day
 
 - name: Check if a reboot is needed on all servers
   become: true
   register: reboot_required_file
-  stat:
+  ansible.builtin.stat:
     path: /var/run/reboot-required
     get_md5: false
 
 - name: Reboot if kernel updated
   become: true
-  reboot:
+  ansible.builtin.reboot:
     msg: "Reboot initiated by Ansible for kernel updates"
     connect_timeout: 5
     reboot_timeout: 300

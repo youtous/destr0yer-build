@@ -3,19 +3,22 @@
 - name: List existing wireguard UFW rules
   become: true
   ansible.builtin.shell: >
-    ufw status numbered | grep -zoP '\[.*\]\s{{ wireguard_server.port }}(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
+    set -o pipefail
+    ufw status numbered | grep -zoP '\[.*\]\s{{ wireguard_server.port }}(?!\\d).*\n'  |
+    sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' |
+    sort -rn | sed '/^s*$/d'
   changed_when: false
-  register: ufw_wirguard_rules
+  register: ufw_wireguard_rules
 
 - name: "UFW delete existing wireguard rules - tcp,udp/{{ wireguard_server.port }}"
   become: true
   ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}" # noqa risky-shell-pipe
-  with_items: "{{ ufw_wirguard_rules.stdout_lines }}"
-  when: ufw_wirguard_rules.stdout_lines | length > 0
+  with_items: "{{ ufw_wireguard_rules.stdout_lines }}"
+  when: ufw_wireguard_rules.stdout_lines | length > 0
 
 - name: "UFW Allow wireguard networks - tcp,udp/{{ wireguard_server.port }}"
   become: true
-  ufw:
+  community.general.ufw:
     rule: allow
     port: "{{ wireguard_server.port }}"
     src: "{{ item }}"

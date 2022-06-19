@@ -3,7 +3,7 @@
 
 - name: Setup swap file
   become: true
-  import_role:
+  ansible.builtin.import_role:
     name: geerlingguy.swap
   vars:
     swap_file_path: "{{ fs_swap_file_path }}"

@@ -6,10 +6,10 @@
   ansible.builtin.file:
     path: "{{ item.mount_path }}"
     state: directory
-    mode: "{{ item.mount_path_mode|default('0755') }}"
-    owner: "{{ item.mount_path_owner|default('root') }}"
-    group: "{{ item.mount_path_group|default('root') }}"
-  when: item.mount_path is defined and item.mount_path_create|default(True)
+    mode: "{{ item.mount_path_mode | default('0755') }}"
+    owner: "{{ item.mount_path_owner | default('root') }}"
+    group: "{{ item.mount_path_group | default('root') }}"
+  when: item.mount_path is defined and item.mount_path_create | default(True)
   with_items: "{{ filesystems_to_create }}"
 
 - name: Mount fs
@@ -18,9 +18,9 @@
     path: "{{ item.mount_path }}"
     src: "{{ item.dev }}"
     fstype: "{{ item.fstype }}"
-    boot: "{{ item.mount_boot|default(True) }}"
-    dump: "{{ item.mount_dump|default('0') }}"
-    opts: "{{ item.mount_opts|default('defaults') }}"
+    boot: "{{ item.mount_boot | default(True) }}"
+    dump: "{{ item.mount_dump | default('0') }}"
+    opts: "{{ item.mount_opts | default('defaults') }}"
     state: mounted
   with_items: "{{ filesystems_to_create }}"
 ...

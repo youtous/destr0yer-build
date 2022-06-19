@@ -12,5 +12,5 @@ monit_default_filesystems:
   - {mnt: "/var", usage_alerts: ["80%", "99%"]}
   - {mnt: "/data", usage_alerts: ["80%", "99%"]}
 
-monit_all_filesystems: "{{ monit_default_filesystems|default([]) + monit_filesystems|default([]) }}"
+monit_all_filesystems: "{{ monit_default_filesystems | default([]) + monit_filesystems | default([]) }}"
 ...

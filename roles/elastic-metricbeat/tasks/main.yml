@@ -20,7 +20,7 @@
     enabled: false
     state: stopped
   when: metricbeat_state == 'absent'
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
 
 - name: Ensure metricbeat configuration directory exists
   become: true

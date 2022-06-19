@@ -12,7 +12,5 @@ mariadb_config_include_dir: "/etc/mysql/my.extra.d"
 
 # trusted root CA certificate
 mariadb_ca_certificate: ""
-#mariadb_ca_certificate: |
-#  -----BEGIN CERTIFICATE-----
-#  -----END CERTIFICATE-----
+
 ...

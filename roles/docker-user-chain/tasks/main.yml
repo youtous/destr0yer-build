@@ -33,7 +33,7 @@
 
 - name: Copy Firewall DOCKER-USER Rules script
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/docker-user-rules.sh"
     dest: "/etc/network/firewall/docker-user-rules.sh"
     owner: root
@@ -42,7 +42,7 @@
 
 - name: Copy Firewall DOCKER-USER Rules service configuration
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "files/systemd/{{ item.src }}"
     dest: "/lib/systemd/system/{{ item.dest }}"
     owner: root

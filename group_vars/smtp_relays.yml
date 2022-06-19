@@ -7,9 +7,9 @@ postmaster_email: "{{ monitoring_email }}"
 
 # for each host, please provide login values :
 #
-#relay_email     - the email for the host
-#relay_user      - the user for the host
-#relay_password  - the password for the host
+# relay_email     - the email for the host
+# relay_user      - the user for the host
+# relay_password  - the password for the host
 
 # relay address and port used to deliver emails
 relayhost: "[{{ relay_server }}]:{{ relay_port }}"

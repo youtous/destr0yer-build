@@ -5,6 +5,7 @@
 - name: Ensure teamspeak directory exists
   ansible.builtin.file:
     state: directory
+    mode: u=rwx,g=rx,o=
     path: "{{ teamspeak_compose_file_dest_directory }}"
 
 - name: Tag current node as teamspeak origin
@@ -14,7 +15,7 @@
       teamspeak.teamspeak-data: "true"
 
 - name: Register deployment timestamp
-  set_fact:
+  ansible.builtin.set_fact:
     teamspeak_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
 - name: Copy teamspeak stack
@@ -24,7 +25,7 @@
     mode: u=rw,g=,o=
 
 - name: Register teamspeak secrets | licensekey.dat
-  docker_secret:
+  community.general.docker_secret:
     name: "{{ teamspeak_stack_name }}_licensekey.dat-{{ teamspeak_deploy_timestamp }}"
     data: "{{ teamspeak_license }}"
     state: present

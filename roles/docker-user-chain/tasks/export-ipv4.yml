@@ -2,15 +2,18 @@
 ## save rules across reboots
 - name: Export DOCKER-USER iptables chain
   become: true
-  ansible.builtin.shell: iptables -S DOCKER-USER
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    iptables -S DOCKER-USER
   register: iptables_docker_user_rules
   changed_when: false
 
 - name: Save DOCKER-USER iptables rules
   become: true
-  blockinfile:
+  ansible.builtin.blockinfile:
     create: true
     dest: "/etc/iptables.docker-user.rules.v4"
+    mode: u=rw,g=r,o=
     block: |
       *filter
 

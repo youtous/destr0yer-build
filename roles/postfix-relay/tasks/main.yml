@@ -20,7 +20,7 @@
 # http://postfix.state-of-mind.de/patrick.koetter/smtpauth/smtp_auth_mailservers.html
 - name: Define /etc/mailname with hostname
   become: true
-  copy:
+  ansible.builtin.copy:
     content: "{{ myhostname }}"
     dest: "/etc/mailname"
     group: root
@@ -69,7 +69,7 @@
 
 - name: Change inet smtp port
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/postfix/master.cf
     regex: '^\w+.*smtpd$'
     line: "{{ postfix_smtp_port }}      inet  n       -       y       -       -       smtpd"
@@ -90,7 +90,7 @@
     enabled: true
 
 - name: Monit postfix
-  import_role:
+  ansible.builtin.import_role:
     name: monit-postfix
 
 - name: Activate postfix-sasl and postfix jails using fail2ban
