@@ -9,7 +9,9 @@
 
 - name: Update to Buster stable channel # noqa command-instead-of-module
   become: true
-  ansible.builtin.shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}"
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}
   when: (ansible_distribution_release == "stretch" and (not buster_channel_flag.stat.exists))
 
 - name: Checking if Bullseye update channel Done
@@ -20,7 +22,9 @@
 
 - name: Update to Bullseye stable channel # noqa command-instead-of-module
   become: true
-  ansible.builtin.shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_bullseye_flag_path|quote }}"
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    apt-get --allow-releaseinfo-change update && touch {{ apt_bullseye_flag_path|quote }}
   when: (ansible_distribution_release == "buster" and (not bullseye_channel_flag.stat.exists)
 
 ...

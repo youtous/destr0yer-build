@@ -19,7 +19,9 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Check go version is {{ go_version }}
-  ansible.builtin.shell: "go version | grep {{ go_version|quote }}"
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    go version | grep {{ go_version|quote }}
   register: golang_present
   changed_when: false
   ignore_errors: true

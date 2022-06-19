@@ -12,7 +12,9 @@
 
 - name: "UFW delete existing wireguard rules - tcp,udp/{{ wireguard_server.port }}"
   become: true
-  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}" # noqa risky-shell-pipe
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_wireguard_rules.stdout_lines }}"
   when: ufw_wireguard_rules.stdout_lines | length > 0
 

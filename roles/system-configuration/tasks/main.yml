@@ -53,7 +53,9 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Check if host is a Scaleway aarch
-  ansible.builtin.shell: "scw-metadata | grep aarch"
+  ansible.builtin.shell:
+    set -o pipefail &&
+    scw-metadata | grep aarch
   changed_when: false
   register: host_scw_aarch64
   ignore_errors: true
