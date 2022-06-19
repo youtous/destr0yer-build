@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-echo "Cleanup postgresql backup in {{ postgresql_backup_output }}..."
-find {{ postgresql_backup_output }}/. -type f -delete
-echo "Postgresql databases backup has been removed!"
