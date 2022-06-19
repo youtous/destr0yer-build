@@ -1,0 +1,324 @@
+---
+# Variables listed here are applicable to all host groups
+
+###  Beginning of destr0yers vars  ###
+users_default_shell: "/usr/bin/fish"
+
+# Time configuration
+timezone: "Europe/Paris"
+
+# Environment : dev,test,prod
+server_environment: "dev"
+
+# Network configuration
+domain_name: youtous.me
+domain_search: [ ]
+nameservers: # use DNSCrypt-proxy
+  - '127.0.0.1'
+  - '::1'
+
+# Email that will receive all notifications, useful for monitoring
+monitoring_email: "monitoring@youtous.me"
+
+# email server used to deliver emails
+relay_server: "mailserver.youtous.me"
+relay_port: 465
+
+common_users:
+  # arbiter is the only sudoer
+  - username: "{{ sudo_user_username }}"
+    name: System's Arbiter
+    groups: [ 'admin', 'sshusers', 'docker' ]
+    uid: 1006
+    home: /home/dev-arbiter
+    profile:
+    ssh_key: "{{ sudo_ssh_keys }}"
+    password: "{{ sudo_password }}"
+    update_password: "always"
+
+common_groups_to_create:
+  - name: admin
+    gid: 10000
+  - name: docker
+    gid: 1099
+  - name: users
+    gid: 20000
+  - name: sshusers
+    gid: 20500
+
+# computed vars
+all_users: "{{ common_users | default([]) + host_users | default([]) }}"
+all_groups: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
+all_users_to_delete: "{{ common_users_to_delete | default([]) + host_users_to_delete | default([]) }}"
+
+# ips which should never be banned
+fail2ban_trusted_ips:
+  - "163.172.154.21"
+  - "192.168.100.1"
+
+# entrypoints ips from where we can access base_destr0yers
+ssh_entrypoints:
+  - "163.172.154.21"
+  - "192.168.100.1"
+
+# allow docker networks (and eventually other networks such as vpn) to query the local dns server
+dns_allowed_hosts: "{{ local_docker_ips }}"
+
+# mariadb root CA certificate, required when mariadb_ssl_enabled=true
+mariadb_ssl_enabled: true # consider using Wireguard instead
+mariadb_ca_certificate: |
+  -----BEGIN CERTIFICATE-----
+  MIIF6TCCA9GgAwIBAgIUQYB6TEX+OuGIaHMzQ0XFts4chJ0wDQYJKoZIhvcNAQEL
+  BQAwgYMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIDAZGcmFuY2UxDjAMBgNVBAcMBVBh
+  cmlzMRMwEQYDVQQKDAp5b3V0b3VzLmR2MRswGQYDVQQLDBJtYXJpYWRiLnlvdXRv
+  dXMuZHYxITAfBgNVBAMMGGhlYXZlbi1wYXNjYWwueW91dG91cy5kdjAeFw0xOTA3
+  MjIyMTEyMTNaFw0yNjA1MjYyMTEyMTNaMIGDMQswCQYDVQQGEwJGUjEPMA0GA1UE
+  CAwGRnJhbmNlMQ4wDAYDVQQHDAVQYXJpczETMBEGA1UECgwKeW91dG91cy5kdjEb
+  MBkGA1UECwwSbWFyaWFkYi55b3V0b3VzLmR2MSEwHwYDVQQDDBhoZWF2ZW4tcGFz
+  Y2FsLnlvdXRvdXMuZHYwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDW
+  5UHKPPF418MitiwwFKBgQmzl+8QH94+2GPEVtUXIpRiQ1QMAWnmQHQxnOLJDAdXY
+  XJzdZjpou7LZ9L6/ait+iWzHLj7QcLvnmAzQt60QpgoGFeD8rgkmTqrWhVZnnEHG
+  0mV1sZQdiak/R4zcL+5u76LU6UesqEQxATEmb5OKBifNNEeu5jmSLw9kZHZfiu77
+  JwhZxHQEEMvvnIG0nNCG0kP8k/bhObiwFvUoSVKppHx3Gau0SfGOYi3MRqwvfw/c
+  TZMgvmBZv0rYWVF2RvcahiQ15aOit+TOIa3eRsKV4Ssl2yWVeT019Z85Qb61nO5C
+  VJusSmm97tLKMIeCbR71CIaWWLrx9nEbOxPQ9zQnqPiVO2/QvVhNxRfvTTkTGHyc
+  Ei0r61Wt1kdXw4VFnrtxd7WD2T+dxTMUkRvWmrTyQL7+hJk62A2U48VB8UejgU7t
+  tsK/NKlpjdIM5e2OGADvLY+jept9J8ROkJH/RzEooEEETfcSFO4yWENn+8jJEwdi
+  TvHYsB5gYagIqwI26/FwSAUf2QzMui9S9AHwFAO1ANiMLkua2STWVwyimaUxZFl/
+  TS5mL8Xa53Z3OAJpN9tbksN7ZJ70rPV//D2dSUOVIC73wQrDBsXYk8qarNU38J55
+  q3GY4yayThAxuycdVLoh8iubH0wqbJwDRhSAyV+XvQIDAQABo1MwUTAdBgNVHQ4E
+  FgQUV4EYYR81YHT3XH7M/mc4nfT4Ug4wHwYDVR0jBBgwFoAUV4EYYR81YHT3XH7M
+  /mc4nfT4Ug4wDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAgEAduhY
+  ee6Fl9qIU/nQUhZNrt7iWzU+ioONHjmKlau8HtpYYyXM6uGxlxFaGjNzdRJmkBHl
+  zBylZVlXFuiN4rrsiVkvC89Zz4mJoAp3lFnRUrwAZXYpbcJpazmMRpknldFj55yv
+  RaK3NpHCyaxqCcCAzIcBhpqz8LrYylVVDTljJbWgbverA0xDWTc6XKx8YVG5PgB1
+  NsQANzfD3HYXNXte9dWLe5fJAQi0ysUJ7McOrmVhi4FiQ/ZjL40xczA6Nl56hBxz
+  nT3yirWgTC7mPKQeZ3HBH+7TWXHEqg2qL4SDqVzNeAHFY0O6RJSMXIUF9b+RRSLE
+  0MYW4ku/vb+bzX4VCf9Xvp597pH1V4AKCIZRj56DICRPufjOWOLhUmKfADRS6zPs
+  gZud5NZyD9Ia9jTNRuJBitH9WkBZ8MbveCmeLM9pItf0wfk6UcDqgzhofXUyVIi0
+  K3wAsomUD42GIqnNcm3Vrm4cCO+0gCY4l9VuYDJ0n6YYVIn1mzyS8bUX9pumOmRJ
+  HAMpjxmfMl9YSYbIjOzUUC8MlPGAUberyUvrgguSTkwQpOXvROHRvDuuHrzwiVv3
+  CydhBD97K0fXdcnqGbGV4OW/Xd2dQ1zm5SfsIqoU7WbvWq/WD7HMLLUVvnmu805X
+  MfYcOLBHVUocXPcq0kw0U8F3HFuWF7aORYXPdLI=
+  -----END CERTIFICATE-----
+
+###  End of destr0yers vars  ###
+
+### Begin of the-swarm global vars ###
+
+# ips that will be allowed to access the backend
+trusted_backend_ips: "{{ ssh_entrypoints }}"
+
+# list of auth users for the backend user:bcrypt(pass):
+backend_users: "{{ backend_users|default([]) }}"
+
+# local docker networks
+local_docker_ips:
+  - '172.17.0.0/16' # docker0
+  - '172.18.0.0/16' # docker_gwbridge
+
+# ips of the nodes of the swarm
+nodes_ip4s: "{{
+  groups['swarm_workers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])  +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])
+}}"
+nodes_ip6s: "{{
+  groups['swarm_workers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([])
+}}"
+
+nodes_ip4s_without_current_host: "{{ nodes_ip4s | difference(ipv4_private) }}"
+nodes_ip6s_without_current_host: "{{ nodes_ip6s | difference(ipv6_private) }}"
+nodes_ips_without_current_host: "{{ nodes_ip4s_without_current_host + nodes_ip6s_without_current_host  }}" # subtract current host
+nodes_ips: "{{ nodes_ips_without_current_host }}"
+
+# first manager ipv4
+primary_manager_ipv4: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private']) | first | first }}"
+# enforce docker nodes to use private ipv4
+docker_swarm_node_advertise_addr: "{{ ipv4_private|first }}"
+
+# when you delete a node from the cluster, add his ip here in order to revoke his access
+revoked_nodes_ips: [ ]
+# list of node ids to remove from the cluster
+revoked_nodes_ids: [ ]
+
+# CA cert issuer of the node certs
+docker_swarm_CA_certificate: |
+  -----BEGIN CERTIFICATE-----
+  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
+  tS9sqqee09FCbKoIHYDxErbK5Q==
+  -----END CERTIFICATE-----
+
+
+# docker services
+caddy_metrics_domain: "router.swarm.cluster.dv"
+consul_ui_domain: "consul.swarm.cluster.dv"
+portainer_domain: "portainer.swarm.cluster.dv"
+traefik_domain: "traefik.swarm.cluster.dv"
+promgraf_domain: "prom.swarm.cluster.dv"
+
+# l4 reverse proxy, list your services port here
+traefik_services:
+  - name: logstash5000
+    port: 5000
+    type: tcp
+  - name: logstash5044
+    port: 5044
+    type: tcp
+  - name: logstash5064
+    port: 5064
+    type: tcp
+
+# Promgraf configuration
+
+# ips allowed to access metrics
+trusted_metrics_ips_loc: "{{ groups['all'] | map('extract', hostvars, ['ipv4_private']) | list | default([]) }}" # allow all internal nodes to read the metrics
+
+# prometheus monitoring configuration
+promgraf_prometheus_configuration: |
+  global:
+    scrape_interval:     15s
+    evaluation_interval: 15s
+
+    external_labels:
+      monitor: 'promswarm'
+
+  rule_files:
+    - "swarm_node.rules.yml"
+    - "swarm_task.rules.yml"
+
+  alerting:
+    alertmanagers:
+    - static_configs:
+      - targets:
+        - alertmanager:9093
+
+  scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+        - targets: ['localhost:9090']
+
+    - job_name: 'cadvisor'
+      static_configs:
+  {% for instance in groups['all'] %}
+      - targets: ['{{ hostvars[instance]['ipv4_private'] | first }}:9200']
+        labels:
+          instance: "{{ hostvars[instance]['hostname'] }}"
+          node_id: "{{ hostvars[instance]['hostname'] }}"
+  {% endfor %}
+
+    - job_name: 'node-exporter'
+      static_configs:
+  {% for instance in groups['all'] %}
+      - targets: ['{{ hostvars[instance]['ipv4_private'] | first }}:9100']
+        labels:
+          instance: "{{ hostvars[instance]['hostname'] }}"
+          node_id: "{{ hostvars[instance]['hostname'] }}"
+  {% endfor %}
+
+trusted_metrics_ips: "{{ trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips}}"
+
+# cadvisor config:
+cadvisor_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
+# node exporter
+node_exporter_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
+# caddy metrics
+caddy_metrics_allowed_ips: "{{ trusted_metrics_ips }}"
+
+###  End of The-Swarm vars  ###
+
+### Beginning of Elastic vars ###
+
+
+# hostname of the elastic logstash node that will receive all docker logs
+# nodes must be allowed to reach it using TLS and the generated certificate
+journalbeat_output_server_address: "{{ logstash_domain }}"
+metricbeat_output_server_address: "{{ logstash_domain }}"
+filebeat_output_server_address: "{{ logstash_domain }}"
+
+elastic_cluster_name: "youtous.dv"
+
+logstash_cluster_public_ips: "{{ (groups['all'] | map('extract', hostvars, ['ipv4']) | list | default([])) + (groups['all'] | map('extract', hostvars, ['ipv6']) | list | default([])) }}"
+logstash_allowed_ips: "{{ (logstash_cluster_public_ips + local_docker_ips) | flatten }}"
+
+# domains
+kibana_domain: "kibana.elastic.swarm.cluster.dv"
+elasticsearch_domain: "elasticsearch.elastic.swarm.cluster.dv"
+logstash_domain: "logstash.elastic.swarm.cluster.dv"
+
+# CA cert issuer of the logstash/logspout certs
+logstash_CA_certificate: |
+  -----BEGIN CERTIFICATE-----
+  MIIF9TCCA92gAwIBAgIUNixpsUasTG8lHc0Nu0qun87k/tUwDQYJKoZIhvcNAQEL
+  BQAwgYkxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIDAZGcmFuY2UxDjAMBgNVBAcMBVBh
+  cmlzMRMwEQYDVQQKDAp5b3V0b3VzLm1lMSEwHwYDVQQLDBhoZWF2ZW4tcGFzY2Fs
+  LnlvdXRvdXMuZHYxITAfBgNVBAMMGGhlYXZlbi1wYXNjYWwueW91dG91cy5kdjAe
+  Fw0xOTA3MTMyMzIyNDJaFw0yNjA1MTcyMzIyNDJaMIGJMQswCQYDVQQGEwJGUjEP
+  MA0GA1UECAwGRnJhbmNlMQ4wDAYDVQQHDAVQYXJpczETMBEGA1UECgwKeW91dG91
+  cy5tZTEhMB8GA1UECwwYaGVhdmVuLXBhc2NhbC55b3V0b3VzLmR2MSEwHwYDVQQD
+  DBhoZWF2ZW4tcGFzY2FsLnlvdXRvdXMuZHYwggIiMA0GCSqGSIb3DQEBAQUAA4IC
+  DwAwggIKAoICAQDIecmAA6ncZfWu+AKB77nUe+/fStAe5A2/31NVTsiOOsxL+dXQ
+  8WSBoopzE2DUi3qvMDUyYm3HiZ3aerUI3OA/zIj5OifGdGw+wALsw/PLYPwzF8kU
+  qO+3HOoWgBgka36JkNchqzZq4zqdlsbhwT6AitWvIY3sYkHvXvXRMsojUzEne2vN
+  82nnUGkHik6XpNQyZMhOt4nC6AY/I1vMulLQIF10uxdNzI8Ofa6k6mzH7s5sz2VU
+  62b2LMOcbbU2lPG8ejx4UXwWgakObdUfglntaudLBiQVY7fgj8G242IOV6mLK7gW
+  DoK4xozhBH6I3+gnscoadexzXGx2lKjtk2aNI/6Q8gVI+ZkuBSCkyENfTkwQdKhs
+  3UDLDkuF9nPcA9X8izkumCnABdtynDplHA6/h2iQ8XfjyMKcO10iBa1by/mPnWeE
+  r20Dksgv06DbRd/pUkH72gmRsPVxpcrpFyMJKYoA7tQOBgHlu1gYHHmilMLGMVTZ
+  pdKjRu11VYApIYvw58h+ka8pYJ/lyuqBDxKWVn4+jniCSLIr/9O1ydORkVbUJacS
+  LazUsHDq6WWVAHAahyN5GYjGnRCUItWsf18w0eeKi98tNY/EXW+gJYVFWRlyT9gE
+  6VExh7751U2TooUjLI0PrJJMkt/xvjOPFA+kPT9Cc4vLLW9kz4qzJodn7QIDAQAB
+  o1MwUTAdBgNVHQ4EFgQUH8dpArXXeoyydlWV81LM1qTgqhEwHwYDVR0jBBgwFoAU
+  H8dpArXXeoyydlWV81LM1qTgqhEwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0B
+  AQsFAAOCAgEARERnUAi4qs4h+SRX2RZp0wo79+D3LdCd4nmfvduvX31yg0gGqupL
+  hiUa6dAK/J6+RnyE0BohD4VH1/kxJtKK7/szm5r7InhX71IqKKWi+t9Xhr+AoyuP
+  EjP35ivApeJi8iFXIiV7HfbCepYjXiS0tqcrWv4lTHXflIybG2oS4uA4s9RJRqZ6
+  sNfRthBZE8K8ORAQfGdjtbPkeN5I9vX5DLGSyxcHAGRE70mjmMGkZ4Y/ovka2nGT
+  O1rAArH9sR4NulSzUUpsroy1WlIn8C6yAbpkEXivhf0ERCVCtfUlHLH4FGpg/JvO
+  56PpCK9E6usPI1xWhM509oTk0xF/0va2aLpoHVLbVQSllr1POLFNX2rj0yxgfhkW
+  yPRmWZSSX9ksa2KVIWYlG3Yfv3t5Xm4ccWIQghFzKspGE0/rTmpBUnpK1OAHcoun
+  aAGc7pfXR0SJLW9pUlZOYSO8mIXiI2m/ZivAO/l/hcBwa/ygeWZRdWBscpGC1+X6
+  CXGFNejDsdY7y7PAmrCBc5sv1fE4AbBbr1ZSwNPVRmvYOuN4awoOOKzuvj9aBomP
+  y3krEksO4ywieXgi/0FXOkJQk7bHvCR29UKNbPz1eo0JX7Q2UuvxhCAR5IgdCjL2
+  kNLYfAK0StW8JHRj8PeKoWejh6cj7WwX+nK7Cu2dQyxspj3i59VpoW0=
+  -----END CERTIFICATE-----
+### End of Elastic vars ###
+
+
+
+# Force python3 to be used with Ansible, do not edit!
+ansible_python_interpreter: /usr/bin/python3
+...
