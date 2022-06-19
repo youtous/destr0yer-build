@@ -1,6 +1,8 @@
 # Destr0yer playbooks
 
+[![pipeline status](https://gitlab.com/youtous/destr0yer-build/badges/master/pipeline.svg)](https://gitlab.com/youtous/destr0yer-build/-/commits/master)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
 # todo : update the guide
 
