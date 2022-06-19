@@ -38,7 +38,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 	servers.each do |machine|
 		config.vm.define machine[:hostname] do |node|
-			
+
 			# define the VM
 			node.vm.box = machine[:box]
 			#node.vm.box_version = machine[:box_version]
@@ -57,8 +57,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
    				vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
    				vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
 			end
-		
-			# register ssh keys	
+
+			# register ssh keys
 			node.vm.provision "shell" do |s|
     				ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_ed25519.pub").first.strip
     				s.inline = <<-SHELL
@@ -70,5 +70,3 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		end
     end
 end
-
- 
