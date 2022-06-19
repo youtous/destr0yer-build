@@ -1,4 +1,6 @@
 ---
+# TODO: logstash @depracted - logstash should be replaced by vector.d due to licence/version incompatibility
+
 logstash_elastic_version: 7.13.4
 elastic_version: 7.12.1 # pin this version until migration to fluentd, see https://www.reddit.com/r/aws/comments/nn95aq/elastic_has_broken_filebeat_as_of_713_it_no/
 opensearch_version: 1.2.0

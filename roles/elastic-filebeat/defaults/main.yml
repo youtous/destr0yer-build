@@ -1,4 +1,5 @@
 ---
+# TODO: @depracted - this role should be replaced by vector.d due to licence/version incompatibility
 filebeat_state: "present"
 
 # logstash server address (ip, port) receiving logs from filebeat
