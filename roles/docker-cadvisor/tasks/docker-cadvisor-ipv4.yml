@@ -20,6 +20,7 @@
   become: true
   ansible.builtin.command: "iptables -D DOCKER-USER {{ item|quote }}"
   with_items: "{{ ufw_cadvisor_9200_rules.stdout_lines }}"
+  when: ufw_cadvisor_9200_rules.stdout_lines | length > 0
 
 - name: Drop other ips firewall - tcp/9200 (cadvisor external) # noqa no-changed-when
   become: true
