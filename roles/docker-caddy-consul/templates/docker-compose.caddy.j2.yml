@@ -9,7 +9,7 @@ configs:
     file: "./Caddyfile"
 
 services:
-
+# todo : check how an external service such as a mailserver can access consul storage
   consul:
     image: consul
     hostname: "{% raw %}{{ .Node.Hostname }}{% endraw %}"

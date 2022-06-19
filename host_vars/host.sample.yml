@@ -1,20 +1,162 @@
 # vim: ts=2 sw=2 et
 ---
+# This file describes specific host vars
 hostname: host.sample.dv
-ipv4:
+ipv4: # /!\ When one of the host ip is changed, playbook should be completely re-run
   - 192.168.100.10
 ipv6:
   - fde4:8dba:82e1::c1
 
+ipv4_private: 
+  - "192.168.100.10"
+ipv6_private: []
+
+
+### Beginning of partition management 
+# enable swap!
+fs_swap_file_size_mb: "4096"
+
+# docker partition formating (retrieved from openstack)
+docker_partition_volume_id: "YOURVOLUMEID"
+docker_partition_device: "/dev/device"
+
+
+disk_partitions_to_create:
+   - device: "{{ docker_partition_device }}"
+     part_number: 1
+     flags: [ lvm ]
+     name: "docker_partition-{{ docker_partition_volume_id }}"
+
+volume_groups_to_create: 
+  -   pvs: "/dev/disk/by-partlabel/{{ ('docker_partition-'~docker_partition_volume_id)|hash('md5') }}"
+      vg: "vg0"
+
+logical_volume_groups_to_create:
+   - vg: "vg0"
+     lv:  "lv-docker-var"
+     size: "100%FREE"
+
+filesystems_to_create:
+  - dev: /dev/mapper/vg0-lv--docker--var
+    fstype: xfs
+    mount_path: /docker
+
+# use the created partition to host docker data
+docker_data_root: "/docker"
+
+### End of partition management 
+
 host_users:
   - username: specu
-    name: Specific user on host
+    name: Specific user on heaven
     groups: ['users', 'sshusers', 'docker']
     uid: 10020
     ssh_key: "{{ specu_ssh_keys }}"
     password: "{{ specu_password }}"
     update_password: "always"
+    restrict_ips: ['192.168.100.1']
 
-# enable swap!
-fs_swap_file_size_mb: "4096"
+### Begin of relay-smtp parameters ###
+
+# smtp relay parameters
+relay_email: monitoring-heaven-pascal@youtous.me
+relay_user: "{{ relay_email }}"
+relay_password: "{{ secret_relay_password }}"
+
+### End of relay-smtp parameters ###
+
+
+### Begin of database parameters ###
+
+# mariadb client ip to use (always prefer private network)
+mariadb_client_ipv4: "{{ ipv4_private }}"
+mariadb_client_ipv6: "{{ ipv6_private }}"
+
+# list of mariadb users
+mariadb_users:
+  - name: youtous
+    host: localhost
+    password: "{{ mariadb_user_youtous_passwd }}"
+    # Example privileges string format
+    # mydb.*:INSERT,UPDATE/anotherdb.*:SELECT/yetanotherdb.*:ALL
+    priv: 'youtous.*:ALL'
+    tls_requires: true # requires an SSL connection, not useful in local but useful for externals connections | or rely on wireguard
+    state: present # default value
+  - name: dev-arb1t3r
+    host: "%" # allows connection from any host (filtered later by UFW)
+    password: "poney"
+    priv: 'dev-arb1t3r.*:ALL'
+  - name: nextcloud
+    host: "%" # allows connection from any host (filtered later by UFW)
+    password: "nextcloud"
+    priv: 'nextcloud.*:ALL'
+  - name: teamspeak
+    host: "%" # allows connection from any host (filtered later by UFW)
+    password: "teamspeak"
+    priv: 'teamspeak.*:ALL'
+
+# list of databases
+mariadb_databases:
+  - name: youtous
+  - name: dev-arb1t3r
+  - name: nextcloud
+  - name: teamspeak
+
+### End of database parameters ###
+
+
+### Begin of Nextcloud parameters ###
+nextcloud_db_name: "nextcloud"
+nextcloud_db_user: "nextcloud"
+nextcloud_db_password: "nextcloud"
+nextcloud_db_host: "172.18.0.1" # db on docker_gwbridge host
+
+# Nextcloud user conf
+nextcloud_admin_user: "nextcloud-admin"
+nextcloud_admin_password: "set a super secure password !"
+
+# Nextcloud smtp configuration
+nextcloud_smtp_host: "localhost"
+nextcloud_smtp_secure: "tls"
+nextcloud_smtp_port: "587"
+nextcloud_smtp_authtype: "LOGIN"
+nextcloud_smtp_username: ""
+nextcloud_smtp_password: ""
+nextcloud_smtp_from: "nextcloud@localhost"
+nextcloud_smtp_domain_from: "{{ nextcloud_domain }}"
+### End of Nextcloud parameters ###
+
+### Begin of Teamspeak parameters ###
+
+teamspeak_db_name: "teamspeak"
+teamspeak_db_user: "teamspeak"
+teamspeak_db_password: "teamspeak"
+teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
+
+### End of Teamspeak parameters ###
+
+
+
+### Begin of docker elastic parameters ###
+
+docker_external_interfaces: ["eth0", "eth1"]
+# list of nodes (ips) allowed to submit log data
+logstash_trough_vpn: ["10.101.101.2"] # vpn for logstash data exchange
+logstash_external_allowed_ip4s: "{{ local_docker_ips + logstash_trough_vpn }}"
+logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s_without_current_host }}" # allow docker + all nodes are allowed to send logs data, list can be completed
+# ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it
+
+# elastic alert configuration
+elastic_alert_email_server: "{{ relay_server }}"
+elastic_alert_email_port: "{{ relay_port }}"
+elastic_alert_email_from: "{{ relay_user }}"
+elastic_alert_email_user: "{{ relay_user }}"
+elastic_alert_email_password: "{{ relay_password }}"
+
+metricbeats_modules:
+  - system
+  - docker
+  - mysql # enable metrics for mysql
+
+### End of docker elastic parameters ###
 ...

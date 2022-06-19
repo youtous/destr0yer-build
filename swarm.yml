@@ -104,7 +104,6 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["docker-backup-tools"]
 
-
 - name: Setup caddy reverse-proxy with consul
   hosts: swarm_primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
   roles:

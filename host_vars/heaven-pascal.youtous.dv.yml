@@ -1,14 +1,15 @@
+# vim: ts=2 sw=2 et
+---
 # This file describes specific host vars
 hostname: heaven-pascal.youtous.dv
 ipv4: # /!\ When one of the host ip is changed, playbook should be completely re-run
   - 192.168.100.10
 ipv6:
   - fde4:8dba:82e1::c1
-# docker swarm node ip to use (always prefer private network)
-swarm_node_ipv4: "{{ ipv4 }}"
-swarm_node_ipv6: "{{ ipv6 }}"
-
-# todo : update these examples with new mode
+ipv4_private: 
+  - "192.168.100.10"
+ipv6_private:
+  - fde4:8dba:82e1::c1
 
 host_users:
   - username: specu
@@ -29,25 +30,12 @@ relay_password: "{{ secret_relay_password }}"
 
 ### End of relay-smtp parameters ###
 
-### Begin of docker Traefik parameters ###
-
-# let's encrypt email for certificates
-lets_encrypt_email: "admin+heaven-pascal@youtous.me"
-# number of traefik replicas
-traefik_replicas: 0
-# number of consul replicas => see Consul documentation
-consul_replicas: 0
-
-# consul external network enabled for mailserver, disable if no mailserver
-consul_external_network_enabled: true
-
-### End of docker Traefik parameters ###
 
 ### Begin of database parameters ###
 
 # mariadb client ip to use (always prefer private network)
-mariadb_client_ipv4: "{{ ipv4 }}"
-mariadb_client_ipv6: "{{ ipv6 }}"
+mariadb_client_ipv4: "{{ ipv4_private }}"
+mariadb_client_ipv6: "{{ ipv6_private }}"
 
 # list of mariadb users
 mariadb_users:
@@ -310,4 +298,4 @@ global_backup_excludes:
   - "+ /var/lib/docker/swarm"
   - "- **" # only keep home folder and swarm
 ### End of Backup strategy parameters ###
-
+...

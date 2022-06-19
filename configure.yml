@@ -11,7 +11,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "disk-partitioning",  "configure-systems", "swap" ]
 
 - name: Configure systems | resolv dns configuration
@@ -22,7 +21,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "resolv","configure-systems" ]
 
 - name: Configure systems | apt packages configuration and update
@@ -34,7 +32,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "apt","configure-systems" ]
 
 - name: Configure systems | minimal requirements
@@ -49,7 +46,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "system","configure-systems", "minimal" ]
 
 - name: Configure systems | configure kernel
@@ -61,7 +57,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "sysctl",  "configure-systems" ]
 
 - name: Configure systems | manage users
@@ -74,7 +69,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "users",  "configure-systems" ]
 
 - name: Configure systems | configure OpenSSH
@@ -87,7 +81,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "ssh", "sshd",  "configure-systems" ]
 
 
@@ -99,7 +92,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "log", "logrotate",  "configure-systems" ]
 
 - name: Configure systems | fail2ban
@@ -111,7 +103,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "fail2ban",  "configure-systems" ]
 
 - name: Configure systems | filter ips for base systems (entrypoint required)
@@ -122,7 +113,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "entrypoint-ssh", "ssh", "sshd", "configure-systems" ]
 
 
@@ -134,7 +124,6 @@
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: [ "fish",  "configure-systems" ]
 
 - name: Configure systems | glances

@@ -1,0 +1,252 @@
+# vim: ts=2 sw=2 et
+---
+# Variables listed here are applicable to all host groups
+
+###  Beginning of destr0yers vars  ###
+users_default_shell: "/usr/bin/fish"
+
+# Time configuration
+timezone: "Europe/Paris"
+
+# Environment : dev,test,prod
+server_environment: "dev"
+
+# Network configuration
+domain_name: example.com
+domain_search: [ ]
+nameservers: # use DNSCrypt-proxy
+  - '127.0.0.1'
+  - '::1'
+
+# Email that will receive all notifications, useful for monitoring
+monitoring_email: "monitoring@example.com"
+
+# email server used to deliver emails
+relay_server: "mailserver.example.com"
+relay_port: 465
+
+common_users:
+  # create a sudouser globally
+  - username: "{{ sudo_user_username }}"
+    name: System's sudo user
+    groups: [ 'admin', 'sshusers', 'docker' ]
+    uid: 1006
+    home: "/home/{{ sudo_user_username }}"
+    profile:
+    ssh_key: "{{ sudo_user_ssh_keys }}"
+    password: "{{ sudo_user_password }}"
+    update_password: "always"
+
+common_groups_to_create:
+  - name: admin
+    gid: 10000
+  - name: docker
+    gid: 1099
+  - name: users
+    gid: 20000
+  - name: sshusers
+    gid: 20500
+
+# computed vars
+all_users: "{{ common_users | default([]) + host_users | default([]) }}"
+all_groups: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
+all_users_to_delete: "{{ common_users_to_delete | default([]) + host_users_to_delete | default([]) }}"
+
+# ips which should never be banned
+fail2ban_trusted_ips:
+  - "192.168.100.1"
+
+# ips that will be allowed to access the backend and ssh
+ssh_entrypoints:
+  - "192.168.100.1"
+
+# allow docker networks (and eventually other networks such as vpn) to query the local dns server
+dns_allowed_hosts: "{{ local_docker_ips }}"
+
+###  End of destr0yers vars  ###
+
+### Begin of the-swarm global vars ###
+
+# list of ips allowed to access the backend http (docker swarm)
+trusted_backend_ips: "{{ ssh_entrypoints }}"
+
+# list of auth users for the backend user:bcrypt(pass):
+backend_users: "{{ backend_users|default([]) }}"
+
+# local docker networks
+local_docker_ips:
+  - '172.17.0.0/16' # docker0
+  - '172.18.0.0/16' # docker_gwbridge
+
+# The encryption of the overlay networks has a bug that is  causing issues for one service to reach another over the overlay
+# network. See moby/moby#37115 - https://github.com/moby/moby/issues/37115
+# On some cloud provider, you might want to disable this encryption to get a working service
+traefik_internal_network_encryption_enabled: False
+caddy_internal_network_encryption_enabled: False
+portainer_internal_network_encryption_enabled: False
+elastic_internal_network_encryption_enabled: False
+
+# ips of the nodes of the swarm
+nodes_ip4s: "{{
+  groups['swarm_workers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])  +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])
+}}"
+nodes_ip6s: "{{
+  groups['swarm_workers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([])
+}}"
+
+nodes_ip4s_without_current_host: "{{ nodes_ip4s | difference(ipv4_private) }}"
+nodes_ip6s_without_current_host: "{{ nodes_ip6s | difference(ipv6_private) }}"
+nodes_ips_without_current_host: "{{ nodes_ip4s_without_current_host + nodes_ip6s_without_current_host  }}" # subtract current host
+nodes_ips: "{{ nodes_ips_without_current_host }}"
+
+nodes_public_ip4s: "{{
+  groups['swarm_workers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])
+}}" 
+nodes_public_ip6s: "{{
+  groups['swarm_workers'] | map('extract', hostvars, ['ipv6']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])  +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])
+}}" 
+nodes_public_ips: "{{ nodes_public_ip4s + nodes_public_ip6s }}"
+
+nodes_public_ip4s_without_current_host: "{{ nodes_public_ip4s | difference(ipv4) }}"
+nodes_public_ip6s_without_current_host: "{{ nodes_public_ip6s | difference(ipv6) }}"
+nodes_public_ips_without_current_host: "{{ nodes_public_ip4s_without_current_host + nodes_public_ip6s_without_current_host  }}" # subtract current host
+
+# first manager ipv4
+primary_manager_ipv4: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private']) | first | first }}"
+# enforce docker nodes to use private ipv4
+docker_swarm_node_advertise_addr: "{{ ipv4_private|first }}"
+
+
+# when you delete a node from the cluster, add his ip here in order to revoke his access
+revoked_nodes_ips: [ ]
+# list of node ids to remove from the cluster
+revoked_nodes_ids: [ ]
+
+# docker services
+caddy_metrics_domain: "router.swarm.cluster.dv"
+consul_ui_domain: "consul.swarm.cluster.dv"
+portainer_domain: "portainer.swarm.cluster.dv"
+traefik_domain: "traefik.swarm.cluster.dv"
+
+# l4 reverse proxy, list your services port here
+traefik_services:
+  - name: logstash5000
+    port: 5000
+    type: tcp
+  - name: logstash5044
+    port: 5044
+    type: tcp
+  - name: logstash5064
+    port: 5064
+    type: tcp
+
+# caddy_custom_acme_ca: "https://acme-staging-v02.api.letsencrypt.org/directory"
+# acme
+lets_encrypt_email: "lego@local.dv"
+
+# CA cert issuer of the node certs
+docker_swarm_CA_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+###  End of The-Swarm vars  ###
+
+### Beginning of Metrics vars ###
+
+# Promgraf configuration
+promgraf_domain: "prom.swarm.cluster.dv"
+
+# ips allowed to access metrics
+trusted_metrics_ips_loc: "{{ groups['all'] | map('extract', hostvars, ['ipv4_private']) | list | default([]) }}" # allow all internal nodes to read the metrics
+
+# prometheus monitoring configuration
+promgraf_prometheus_configuration: |
+  global:
+    scrape_interval:     15s
+    evaluation_interval: 15s
+
+    external_labels:
+      monitor: 'promswarm'
+
+  rule_files:
+    - "swarm_node.rules.yml"
+    - "swarm_task.rules.yml"
+
+  alerting:
+    alertmanagers:
+    - static_configs:
+      - targets:
+        - alertmanager:9093
+
+  scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+        - targets: ['localhost:9090']
+
+    - job_name: 'cadvisor'
+      static_configs:
+  {% for instance in groups['all'] %}
+      - targets: ['{{ hostvars[instance]['ipv4_private'] | first }}:9200']
+        labels:
+          instance: "{{ hostvars[instance]['hostname'] }}"
+          node_id: "{{ hostvars[instance]['hostname'] }}"
+  {% endfor %}
+
+    - job_name: 'node-exporter'
+      static_configs:
+  {% for instance in groups['all'] %}
+      - targets: ['{{ hostvars[instance]['ipv4_private'] | first }}:9100']
+        labels:
+          instance: "{{ hostvars[instance]['hostname'] }}"
+          node_id: "{{ hostvars[instance]['hostname'] }}"
+  {% endfor %}
+
+trusted_metrics_ips: "{{ trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips}}"
+
+# cadvisor config:
+cadvisor_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
+# node exporter
+node_exporter_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
+# caddy metrics
+caddy_metrics_allowed_ips: "{{ trusted_metrics_ips }}"
+
+### End of Metrics vars ###
+
+### Beginning of Elastic vars ###
+
+# domains
+elastic_cluster_name: "youtous.dv"
+
+# allow cluster ips
+logstash_cluster_public_ips: "{{ (groups['all'] | map('extract', hostvars, ['ipv4']) | list | default([])) + (groups['all'] | map('extract', hostvars, ['ipv6']) | list | default([])) }}"
+logstash_allowed_ips: "{{ (logstash_cluster_public_ips + local_docker_ips) | flatten }}"
+
+kibana_domain: "kibana.elastic.swarm.cluster.dv"
+elasticsearch_domain: "elasticsearch.elastic.swarm.cluster.dv"
+logstash_domain: "logstash.elastic.swarm.cluster.dv"
+
+# hostname of the elastic logstash node that will receive all docker logs
+# nodes must be allowed to reach it using TLS and the generated certificate
+filebeat_output_server_address: "{{ logstash_domain }}"
+journalbeat_output_server_address: "{{ logstash_domain }}"
+metricbeat_output_server_address: "{{ logstash_domain }}"
+
+# CA cert issuer of the logstash/logspout certs
+logstash_CA_certificate: |
+  -----BEGIN CERTIFICATE-----
+  -----END CERTIFICATE-----
+
+### End of Elastic vars ###
+
+
+# Force python3 to be used with Ansible, do not edit!
+ansible_python_interpreter: /usr/bin/python3
+...
