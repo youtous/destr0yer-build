@@ -5,3 +5,4 @@ duply_postscript_folder: "/etc/duply/global/post.d"
 
 # path where backup sql dump will be output
 mariadb_backup_output: "/home/mariadb-backup"
+...
