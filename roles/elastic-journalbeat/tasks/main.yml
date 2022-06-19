@@ -47,3 +47,4 @@
   notify:
     - restart journalbeat
   when: journalbeat_state == 'present'
+...

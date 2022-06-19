@@ -103,3 +103,4 @@
     SMTP_PASSWORD: "{{ elastic_alert_email_password }}"
     SMTP_FROM: "{{ elastic_alert_email_from }}"
   notify: docker prune
+...

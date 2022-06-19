@@ -45,3 +45,4 @@
   vars:
     logwatch_email: "{{ logwatch_conf_email }}"
     logwatch_detail: "{{ logwatch_conf_detail }}"
+...

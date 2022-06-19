@@ -17,3 +17,4 @@ docker_mysql_backup_output: "/home/docker-volumes-backup/mysqldump"
 
 # path where the backup script will reside
 docker_mysql_backup_script_directory: "/etc/docker-volumes-backup"
+...

@@ -1,3 +1,4 @@
+---
 version: "3.7"
 
 {% if teamspeak_license is defined and (teamspeak_license|length>0) %}
@@ -72,3 +73,4 @@ networks:
 volumes:
   teamspeak-data:
     driver: local
+...

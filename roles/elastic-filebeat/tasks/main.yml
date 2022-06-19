@@ -46,3 +46,4 @@
   notify:
     - restart filebeat
   when: filebeat_state == 'present'
+...

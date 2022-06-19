@@ -138,3 +138,4 @@ backup_jobs: "{{ backup_jobs_additional | default([]) + global_backup_jobs | def
 backup_gpg_public_keys: "{{ backup_gpg_additional_public_keys | default([]) + [global_backup_gpg_public_key] }}"
 backup_gpg_private_keys: "{{ backup_gpg_additional_private_keys | default([]) + [global_backup_gpg_private_key] }}"
 backup_gpg_ownertrusts: "{{ backup_gpg_additional_ownertrusts | default([]) + [global_backup_gpg_ownertrust] }}"
+...

@@ -47,3 +47,4 @@
   notify:
     - restart metricbeat
   when: metricbeat_state == 'present'
+...

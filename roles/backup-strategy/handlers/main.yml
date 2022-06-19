@@ -3,3 +3,4 @@
   become: true
   become_user: root
   ansible.builtin.command: gpg --update-trustdb
+...

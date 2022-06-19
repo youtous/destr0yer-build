@@ -14,3 +14,4 @@ docker_volumes_backup_output: "/home/docker-volumes-backup"
 
 # path where the backup script will reside
 docker_volumes_backup_script_directory: "/etc/docker-volumes-backup"
+...

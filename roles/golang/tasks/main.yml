@@ -40,3 +40,4 @@
     go_checksum: "{{ go_arm64_checksum if (ansible_architecture == 'aarch64') else go_amd64_checksum }}"
     go_get: # we want a clean install
   when: golang_present is failed
+...
