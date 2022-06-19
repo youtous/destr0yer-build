@@ -9,24 +9,24 @@
 ## beginning of rules 9200 (external)
 
 - name: List existing cadvisor tcp/9200 iptables rules
-  become: True
+  become: true
   shell: >
     iptables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 9200 .*\n' |  cut -d' ' -f1 | tr -d '\000' | sort -rn | sed '/^s*$/d'
   register: ufw_cadvisor_9200_rules
   changed_when: false
 
 - name: iptables delete existing cadvisor rules - tcp/9200
-  become: True
+  become: true
   command: "iptables -D DOCKER-USER {{ item|quote }}"
   with_items: "{{ ufw_cadvisor_9200_rules.stdout_lines }}"
 
 - name: Drop other ips firewall - tcp/9200 (cadvisor external)
-  become: True
+  become: true
   command: "iptables -I DOCKER-USER -i {{ item|quote }} -p tcp -m conntrack --ctorigdstport 9200 --ctdir ORIGINAL -j DROP"
   with_items: "{{ docker_external_interfaces }}"
 
 - name: Allow nodes firewall - tcp/9200 (cadvisor external)
-  become: True
+  become: true
   command: "iptables -I DOCKER-USER -i {{ item|quote }} -s {{ cadvisor_external_allowed_ip4s|join(',') }} -p tcp -m conntrack --ctorigdstport 9200 --ctdir ORIGINAL -j ACCEPT"
   with_items: "{{ docker_external_interfaces }}"
 
@@ -34,15 +34,15 @@
 
 ## save rules across reboots
 - name: Export DOCKER-USER iptables chain
-  become: True
+  become: true
   shell: iptables -S DOCKER-USER
   register: iptables_docker_user_rules
   changed_when: false
 
 - name: Save DOCKER-USER iptables rules
-  become: True
+  become: true
   blockinfile:
-    create: yes
+    create: true
     dest: "/etc/iptables.docker-user.rules.v4"
     block: |
       *filter

@@ -1,11 +1,11 @@
 ---
 # This role install DNSCrypt-proxy from upstream
 - name: Ensure any local other DNS local service is stopped and disabled
-  become: True
+  become: true
   service:
     name: "{{ item }}"
     state: stopped
-    enabled: no
+    enabled: false
   ignore_errors: true
   with_items:
     - systemd-resolved
@@ -15,10 +15,10 @@
   command: "{{ dnscrypt_binary_path|quote }} -version"
   changed_when: false
   register: dnscrypt_proxy_present
-  ignore_errors: True
+  ignore_errors: true
 
 - name: Ensure DNSCrypt-proxy configuration directories exist
-  become: True
+  become: true
   file:
     state: directory
     path: "{{ item }}"
@@ -30,7 +30,7 @@
     - "{{ dnscrypt_configuration_path }}/db"
 
 - name: Configure DNSCrypt-proxy
-  become: True
+  become: true
   template:
     src: "templates/config/{{ item.src }}"
     dest: "{{ dnscrypt_configuration_path }}/{{ item.dest }}"
@@ -95,7 +95,7 @@
   import_tasks: network-manager.yml
 
 - name: Copy DNSCrypt-proxy systemd service configuration
-  become: True
+  become: true
   template:
     src: "templates/systemd/{{ item.src }}"
     dest: "/lib/systemd/system/{{ item.dest }}"
@@ -111,10 +111,10 @@
   import_tasks: firewall.yml
 
 - name: Enable DNSCrypt-proxy
-  become: True
+  become: true
   systemd:
     name: dnscrypt-proxy
-    enabled: yes
+    enabled: true
     state: started
-    masked: no
+    masked: false
 ...

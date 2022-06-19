@@ -2,15 +2,15 @@
 
 ## save rules across reboots
 - name: Export DOCKER-USER ip6tables chain
-  become: True
+  become: true
   shell: ip6tables -S DOCKER-USER
   register: ip6tables_docker_user_rules
   changed_when: false
 
 - name: Save DOCKER-USER ip6tables rules
-  become: True
+  become: true
   blockinfile:
-    create: yes
+    create: true
     dest: "/etc/iptables.docker-user.rules.v6"
     block: |
       *filter

@@ -2,12 +2,12 @@
 # This role configures the /etc/resolv.conf to use specific configuration
 
 - name: Unlock /etc/resolv.conf
-  become: True
+  become: true
   file:
     path: /etc/resolv.conf
     attributes: -i
   # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
+  ignore_errors: true
   changed_when: false
 
 - name: Configure network settings
@@ -23,7 +23,7 @@
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable
-  become: True
+  become: true
   file:
     path: /etc/resolv.conf
     owner: root
@@ -31,6 +31,6 @@
     attributes: i
     mode: u=rw,g=r,o=r
   # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
+  ignore_errors: true
   changed_when: false
 ...

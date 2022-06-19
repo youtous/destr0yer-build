@@ -1,5 +1,5 @@
 - name: Reboot if kernel configuration updated
-  become: True
+  become: true
   reboot:
     msg: "Reboot initiated by Ansible for kernel updates"
     connect_timeout: 5

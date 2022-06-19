@@ -1,7 +1,7 @@
 ---
 # This role contains dynamic ip updating setup
 - name: Install cron
-  become: True
+  become: true
   apt:
     name:
       - cron
@@ -10,10 +10,10 @@
   service:
     name: cron
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Creates update-ip directory
-  become: True
+  become: true
   file:
     path: "{{ update_ip_directory }}"
     state: directory
@@ -23,7 +23,7 @@
 
 # todo: in order to use this script in production, we need API with scope & restrictions
 - name: Copy update-ip script
-  become: True
+  become: true
   template:
     src: files/update-ip-cloudflare.j2.sh
     dest: "{{ update_ip_directory }}/update-ip-cloudflare.sh"
@@ -33,14 +33,14 @@
   no_log: true
 
 - name: Cron update-ip every 5mins
-  become: True
+  become: true
   cron:
     name: "update host ip records"
     minute: "*/5"
     job: "{{ update_ip_directory }}/update-ip-cloudflare.sh"
 
 - name: Configure logrotate for update-ip
-  become: True
+  become: true
   import_role:
     name: logrotate
   vars:

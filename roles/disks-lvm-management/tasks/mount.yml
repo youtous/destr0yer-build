@@ -2,7 +2,7 @@
 # mount the formated filesystems and save it in fstab
 
 - name: Create the mount directory
-  become: True
+  become: true
   ansible.builtin.file:
     path: "{{ item.mount_path }}"
     state: directory
@@ -13,7 +13,7 @@
   with_items: "{{ filesystems_to_create }}"
 
 - name: Mount fs
-  become: True
+  become: true
   ansible.posix.mount:
     path: "{{ item.mount_path }}"
     src: "{{ item.dev }}"

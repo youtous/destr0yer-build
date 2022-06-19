@@ -4,7 +4,7 @@
   include_vars: default.yml
 
 - name: Add golang to PATH bash
-  become: True
+  become: true
   template:
     src: files/golang.sh.j2
     dest: /etc/profile.d/golang.sh
@@ -13,7 +13,7 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Add /usr/sbin to PATH fish
-  become: True
+  become: true
   template:
     src: files/golang.fish.j2
     dest: /etc/fish/conf.d/golang.fish
@@ -25,12 +25,12 @@
   shell: "go version | grep {{ go_version|quote }}"
   register: golang_present
   changed_when: false
-  ignore_errors: True
+  ignore_errors: true
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ GOROOT }}/bin"
 
 - name: Install golang
-  become: True
+  become: true
   import_role:
     name: fubarhouse.golang
   vars:

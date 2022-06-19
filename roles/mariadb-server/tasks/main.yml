@@ -2,7 +2,7 @@
 # This role installs Mariadb-server on the system. It allows connections from database_clients hosts (group).
 
 - name: Setup mariadb-server
-  become: True
+  become: true
   import_role:
     name: geerlingguy.mysql
   vars:
@@ -34,7 +34,7 @@
     # mysql_table_open_cache: "256"
 
 - name: Configure systemd.service for mariadb (logging)
-  become: True
+  become: true
   copy:
     src: files/systemd/mysqld.service.d
     dest: /etc/systemd/system
@@ -49,7 +49,7 @@
   when: mariadb_ssl_enabled == True
 
 - name: Disable SSL on mariadb
-  become: True
+  become: true
   copy:
     content: "# disabled in Ansible"
     dest: "{{ mariadb_config_include_dir }}/50-ssl.j2.cnf"
@@ -59,26 +59,26 @@
   when: mariadb_ssl_enabled == False
 
 - name: Setup host.allow for mariadb
-  become: True
+  become: true
   blockinfile:
     dest: "/etc/hosts.allow"
     block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - mariadb allowed ip whitelist ###"
 
 - name: List existing mariadb UFW rules
-  become: True
+  become: true
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s3306(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_mariadb_rules
 
 - name: UFW delete existing mariadb rules - tcp,udp/3306
-  become: True
+  become: true
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_mariadb_rules.stdout_lines }}"
 
 - name: UFW Allow mariadb clients - tcp,udp/3306
-  become: True
+  become: true
   ufw:
     rule: allow
     port: "3306"

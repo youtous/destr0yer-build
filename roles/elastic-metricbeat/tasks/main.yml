@@ -6,24 +6,24 @@
   when: metricbeat_state == 'present'
 
 - name: Ensure metricbeat is enabled and started
-  become: True
+  become: true
   service:
     name: metricbeat
-    enabled: yes
+    enabled: true
     state: started
   when: metricbeat_state == 'present'
 
 - name: Ensure metricbeat is disabled and stopped
-  become: True
+  become: true
   service:
     name: metricbeat
     enabled: false
     state: stopped
   when: metricbeat_state == 'absent'
-  ignore_errors: True
+  ignore_errors: true
 
 - name: Ensure metricbeat configuration directory exists
-  become: True
+  become: true
   file:
     state: directory
     owner: root
@@ -37,7 +37,7 @@
   when: metricbeat_state == 'present'
 
 - name: Copy metricbeat configuration
-  become: True
+  become: true
   template:
     src: templates/metricbeat.j2.yml
     dest: "{{ metricbeat_configuration_directory }}/metricbeat.yml"

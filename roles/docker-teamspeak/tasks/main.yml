@@ -34,7 +34,7 @@
 - name: Deploy Teamspeak Server
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: "{{ teamspeak_stack_name }}"
     compose:
       - "{{ teamspeak_compose_file_dest }}"

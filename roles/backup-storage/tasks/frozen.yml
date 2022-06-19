@@ -10,10 +10,10 @@
   service:
     name: cron
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Ensure frozen backup directory present and owned by root
-  become: True
+  become: true
   file:
     state: directory
     path: "{{ backup_frozen_directory }}"
@@ -22,7 +22,7 @@
     mode: u=rwx,g=,o=
 
 - name: Setup frozen backup job
-  become: True
+  become: true
   cron:
     name: "frozen-backup"
     minute: "{{ backup_frozen_cron.minute }}"

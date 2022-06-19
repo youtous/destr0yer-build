@@ -1,4 +1,4 @@
 ---
 # generate an associative hostname ip list in the hosts file using private ips
-generate_static_host_mapping: True
+generate_static_host_mapping: true
 ...

@@ -1,24 +1,24 @@
 ---
 # This role contains default services settings
 - name: List enabled Scaleway services
-  become: True
+  become: true
   shell: systemctl list-unit-files --state=enabled | grep -o -P "scw(\-|\w|\d)*"
   changed_when: false
   register: scw_services_enabled
-  ignore_errors: True
+  ignore_errors: true
 
 - name: List running Scaleway services
-  become: True
+  become: true
   shell: systemctl --state=running | grep -o -P "scw(\-|\w|\d)*"
   changed_when: false
   register: scw_services_running
-  ignore_errors: True
+  ignore_errors: true
 
 - name: Stop Scaleway services
-  become: True
+  become: true
   service:
     name: "{{ item }}"
     state: stopped
-    enabled: no
+    enabled: false
   with_items: "{{ scw_services_running.stdout_lines | default([]) + scw_services_enabled.stdout_lines | default([])  }}"
 ...

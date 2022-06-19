@@ -7,11 +7,11 @@
   import_tasks: install.yml
 
 - name: Setup Monit
-  become: True
+  become: true
   import_tasks: anxs.yml
 
 - name: Setup additional Monit configurations
-  become: True
+  become: true
   template:
     src: "templates/etc/monit/conf.d/{{item}}.j2"
     dest: "/etc/monit/conf.d/{{item}}"
@@ -21,8 +21,8 @@
     - reload monit
 
 - name: Enable Monit
-  become: True
+  become: true
   service:
     name: monit
-    enabled: yes
+    enabled: true
 ...

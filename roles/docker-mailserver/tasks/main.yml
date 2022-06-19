@@ -114,7 +114,7 @@
 - name: Deploy mailserver
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: "{{ docker_mailserver_stack_name }}"
     compose:
       - "{{ mailserver_compose_file_dest }}"

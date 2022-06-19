@@ -1,6 +1,6 @@
 ---
 - name: restart fail2ban
-  become: True
+  become: true
   systemd:
     name: fail2ban
     state: restarted

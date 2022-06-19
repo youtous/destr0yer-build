@@ -1,7 +1,7 @@
 ---
 # This role contains docker installation
 - name: Install python docker modules
-  become: True
+  become: true
   apt:
     name:
       - python3-docker
@@ -9,20 +9,20 @@
       - python3-yaml
 
 - name: Install pass package required for docker-login
-  become: True
+  become: true
   apt:
     name:
       - pass
 
 - name: Ensure old docker-py pip module is absent
-  become: True
+  become: true
   pip:
     executable: pip3
     name: docker-py
     state: absent
 
 - name: Ensure docker pip module is installed and updated
-  become: True
+  become: true
   pip:
     executable: pip3
     name: docker
@@ -30,13 +30,13 @@
     extra_args: --upgrade
 
 - name: Ensure docker group is present
-  become: True
+  become: true
   group:
     gid: "{{ docker_group_gid }}"
     name: "{{ docker_group_name }}"
 
 - name: Adding user '{{ ansible_user }}' to docker group
-  become: True
+  become: true
   block:
     - user:
         name: "{{ ansible_user }}"
@@ -45,7 +45,7 @@
     - meta: reset_connection
 
 - name: Setup docker
-  become: True
+  become: true
   import_role:
     name: geerlingguy.docker
   vars:

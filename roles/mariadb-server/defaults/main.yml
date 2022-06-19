@@ -14,14 +14,14 @@ mariadb_databases: []
 # The MySQL users and their privileges. A user has the values:
 #    name
 #    host (defaults to localhost)
-#    password (can be plaintext or encrypted—if encrypted, set encrypted: yes)
+#    password (can be plaintext or encrypted—if encrypted, set encrypted: true)
 #    encrypted (defaults to no)
 #    priv (defaults to *.*:USAGE)
 #    append_privs (defaults to no)
 #    state (defaults to present)
 #
 # Special note about requiring SSL for some users (outside of the server)
-#    append_privs: yes
+#    append_privs: true
 #    priv: '*.*:REQUIRESSL'
 # (https://docs.ansible.com/ansible/latest/modules/mysql_user_module.html)
 mariadb_users: []

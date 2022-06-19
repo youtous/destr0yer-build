@@ -15,7 +15,7 @@ portainer_max_attemps: 0
 # The encryption of the overlay networks has a bug that is  causing issues for one service to reach another over the overlay
 # network. See moby/moby#37115 - https://github.com/moby/moby/issues/37115
 # On some cloud provider, you might want to disable this encryption to get a working service
-portainer_internal_network_encryption_enabled: True
+portainer_internal_network_encryption_enabled: true
 
 # name of the traefik network
 caddy_network: "caddy-public"

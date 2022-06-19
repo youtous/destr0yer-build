@@ -14,7 +14,7 @@
 - name: Deploy swarm_cronjob
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: swarm_cronjob
     compose:
       - "{{ swarm_cronjob_compose_file_dest }}"

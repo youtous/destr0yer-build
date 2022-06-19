@@ -74,7 +74,7 @@
 - name: Deploy promgraf
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: promgraf
     compose:
       - "{{ promgraf_compose_file_dest }}"

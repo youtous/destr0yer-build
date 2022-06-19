@@ -2,7 +2,7 @@
 # handle partitions using parted
 
 - name: Delete partitions with parted
-  become: True
+  become: true
   community.general.parted:
     device: "{{ item.device }}"
     number: "{{ item.part_number }}"
@@ -15,13 +15,13 @@
     paths: "{{ disks_management_state_path }}/created"
     patterns:
       - "{{ item.device|replace('/', '-') }}{{ item.part_number }}-.*.exists"
-    use_regex: yes
-    recurse: no
+    use_regex: true
+    recurse: false
   register: gpt_file_state_deleted_partitions
   with_items: "{{ disk_partitions_to_delete }}"
 
 - name: Delete file state of deleted partitions
-  become: True
+  become: true
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
@@ -34,7 +34,7 @@
   with_items: "{{ disk_partitions_to_create }}"
 
 - name: Create GPT partitions with parted
-  become: True
+  become: true
   community.general.parted:
     device: "{{ item.device }}"
     number: "{{ item.part_number }}"
@@ -48,11 +48,11 @@
   when: stat_partion_to_create_status.results[ansible_loop.index0].stat.exists == False
   loop: "{{ disk_partitions_to_create }}"
   loop_control:
-    extended: yes
+    extended: true
   register: gpt_created_partions
 
 - name: Ensure partition state directory exists
-  become: True
+  become: true
   ansible.builtin.file:
     state: directory
     path: "{{ item }}"
@@ -61,7 +61,7 @@
     - "{{ disks_management_state_path }}/created/"
 
 - name: Register file state of created partitions
-  become: True
+  become: true
   ansible.builtin.file:
     path: "{{ disks_management_state_path }}/created/{{ item.disk.dev|replace('/', '-') }}{{ (item.partitions | first).num }}-{{ (item.partitions | first).name|default('') }}.exists"
     state: touch

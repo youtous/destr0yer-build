@@ -5,7 +5,7 @@
 # It's the duty of the client to verify the server identity using the CA.certificate
 
 - name: Install required packages
-  become: True
+  become: true
   apt:
     name:
       - openssl
@@ -27,7 +27,7 @@
 
 
 - name: Copy mariadb root CA
-  become: True
+  become: true
   copy:
     content: "{{ mariadb_ca_certificate }}"
     dest: "/etc/mysql/ca.pem"
@@ -38,7 +38,7 @@
     - restart mariadb
 
 - name: Copy mariadb server certificate
-  become: True
+  become: true
   copy:
     content: "{{ mariadb_server_certificate }}"
     dest: "/etc/mysql/server-cert.pem"
@@ -49,7 +49,7 @@
     - restart mariadb
 
 - name: Copy mariadb server private key
-  become: True
+  become: true
   copy:
     content: "{{ mariadb_server_key }}"
     dest: "/etc/mysql/server-key.pem"

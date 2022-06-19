@@ -1,7 +1,7 @@
 ---
 
 - name: Setup additional Monit configurations
-  become: True
+  become: true
   template:
     src: "templates/etc/monit/conf.d/metricbeat.j2"
     dest: "/etc/monit/conf.d/metricbeat"

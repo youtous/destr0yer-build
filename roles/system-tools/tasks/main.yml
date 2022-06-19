@@ -1,12 +1,12 @@
 ---
 # This role contains CLI tools installation and configuration, CLI tools are for user not for the system
 - name: Install CLI Tools
-  become: True
+  become: true
   apt:
     name: "{{ cli_packages }}"
 
 - name: Configure vim
-  become: True
+  become: true
   copy:
     src: files/vimrc.local
     dest: /etc/vim/vimrc.local
@@ -15,7 +15,7 @@
     mode: u=rw,g=r,o=r
 
 - name: Install ruby
-  become: True
+  become: true
   apt:
     name: "{{ ruby_packages }}"
 
@@ -23,14 +23,14 @@
   command: /usr/local/bin/ccat /dev/null
   register: ccat_present
   changed_when: false
-  ignore_errors: True
+  ignore_errors: true
 
 - name: Requires golang
   import_role:
     name: golang
 
 - name: Install ccat
-  become: True
+  become: true
   shell: |
     cd /root &&
     /usr/local/go/bin/go get -u github.com/jingweno/ccat &&
@@ -39,12 +39,12 @@
   when: ccat_present is failed
 
 - name: Requires python
-  become: True
+  become: true
   apt:
     name: "{{ python_packages }}"
 
 - name: Update setuptools
-  become: True
+  become: true
   pip:
     executable: pip3
     name: setuptools

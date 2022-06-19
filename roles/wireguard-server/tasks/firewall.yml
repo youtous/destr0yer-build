@@ -1,19 +1,19 @@
 ---
 # For the moment, /etc/hosts.allow restriction is not used, only firewall restriction is used
 - name: List existing wireguard UFW rules
-  become: True
+  become: true
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s{{ wireguard_server.port }}(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_wirguard_rules
 
 - name: "UFW delete existing wireguard rules - tcp,udp/{{ wireguard_server.port }}"
-  become: True
+  become: true
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_wirguard_rules.stdout_lines }}"
 
 - name: "UFW Allow wireguard networks - tcp,udp/{{ wireguard_server.port }}"
-  become: True
+  become: true
   ufw:
     rule: allow
     port: "{{ wireguard_server.port }}"

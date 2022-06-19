@@ -3,58 +3,58 @@
 
 ## Revoke all 443
 - name: List existing https UFW rules - tcp,udp/443
-  become: True
+  become: true
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s443(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_443_rules
 
 - name: UFW delete existing https rules - tcp,udp/443
-  become: True
+  become: true
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_caddy_443_rules.stdout_lines }}"
 
 ## Revoke all 80
 - name: List existing https UFW rules - tcp,udp/80
-  become: True
+  become: true
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s80(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_80_rules
 
 - name: UFW delete existing https rules - tcp,udp/80
-  become: True
+  become: true
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_caddy_80_rules.stdout_lines }}"
 
 ## Revoke all metrics
 - name: "List existing metrics UFW rules - tcp,udp/{{ caddy_metrics_port }}"
-  become: True
+  become: true
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s{{ caddy_metrics_port }}(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_metrics_rules
 
 - name: "UFW delete existing metrics rules - tcp,udp/{{ caddy_metrics_port }}"
-  become: True
+  become: true
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_caddy_metrics_rules.stdout_lines }}"
 
 ## End of revocation
 - name: Allow caddy https (including containers) to pass firewall - tcp/443
-  become: True
+  become: true
   ufw:
     rule: allow
     port: "443"
 
 - name: Allow caddy http (including containers) to pass firewall - tcp/80
-  become: True
+  become: true
   ufw:
     rule: allow
     port: "80"
 
 - name: "Allow caddy metrics (including containers) to pass firewall - tcp/{{ caddy_metrics_port }}"
-  become: True
+  become: true
   ufw:
     rule: allow
     port: "{{ caddy_metrics_port }}"

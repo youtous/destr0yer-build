@@ -18,7 +18,7 @@
 - name: Deploy cadvisor
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: cadvisor
     compose:
       - "{{ cadvisor_compose_file_dest }}"

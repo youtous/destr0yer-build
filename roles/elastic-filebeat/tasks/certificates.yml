@@ -3,7 +3,7 @@
 
 # Setup TLS using x509 certificates
 - name: Setup filebeat certificates folder
-  become: True
+  become: true
   file:
     path: "{{ filebeat_certificates_directory }}"
     owner: root
@@ -28,7 +28,7 @@
 
 
 - name: Copy logstash RootCA certificate
-  become: True
+  become: true
   copy:
     content: "{{ logstash_CA_certificate }}"
     dest: "{{ filebeat_certificates_directory }}/{{ logstash_root_CA_certificate_name }}"
@@ -39,7 +39,7 @@
     - restart filebeat
 
 - name: Copy filebeat node certificate
-  become: True
+  become: true
   copy:
     content: "{{ filebeat_node_certificate }}"
     dest: "{{ filebeat_certificates_directory }}/{{ filebeat_node_certificate_name }}.crt"
@@ -50,7 +50,7 @@
     - restart filebeat
 
 - name: Copy filebeat node private key
-  become: True
+  become: true
   copy:
     content: "{{ filebeat_node_private_key }}"
     dest: "{{ filebeat_certificates_directory }}/{{ filebeat_node_certificate_name }}.key"

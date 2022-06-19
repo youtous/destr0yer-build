@@ -6,24 +6,24 @@
   when: journalbeat_state == 'present'
 
 - name: Ensure journalbeat is enabled and started
-  become: True
+  become: true
   service:
     name: journalbeat
-    enabled: yes
+    enabled: true
     state: started
   when: journalbeat_state == 'present'
 
 - name: Ensure journalbeat is disabled and stopped
-  become: True
+  become: true
   service:
     name: journalbeat
-    enabled: False
+    enabled: false
     state: stopped
   when: journalbeat_state == 'absent'
-  ignore_errors: True
+  ignore_errors: true
 
 - name: Ensure journalbeat configuration directory exists
-  become: True
+  become: true
   file:
     state: directory
     owner: root
@@ -37,7 +37,7 @@
   when: journalbeat_state == 'present'
 
 - name: Copy journalbeat configuration
-  become: True
+  become: true
   template:
     src: templates/journalbeat.j2.yml
     dest: "{{ journalbeat_configuration_directory }}/journalbeat.yml"

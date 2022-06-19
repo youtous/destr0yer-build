@@ -1,6 +1,6 @@
 ---
 - name: restart metricbeat
-  become: True
+  become: true
   systemd:
     name: metricbeat
     state: restarted

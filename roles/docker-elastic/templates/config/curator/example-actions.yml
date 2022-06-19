@@ -5,10 +5,10 @@
     indices. Ignore the error if the filter does not result in an
     actionable list of indices (ignore_empty_list) and exit cleanly.
   options:
-    ignore_empty_list: True
+    ignore_empty_list: true
     timeout_override:
-    continue_if_exception: False
-    disable_action: False
+    continue_if_exception: false
+    disable_action: false
   filters:
     - filtertype: age
       source: name
@@ -24,10 +24,10 @@
       indices. Ignore the error if the filter does not result in an
       actionable list of indices (ignore_empty_list) and exit cleanly.
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       timeout_override:
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: age
         source: name
@@ -42,16 +42,16 @@
       Delete 'daily-' prefixed snapshots from the selected repository older
       than 30 days (based on creation_date)
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       repository: Untergeek
       timeout_override:
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: prefix
         value: 'daily-'
-        exclude: True
+        exclude: true
       - filtertype: age
         source: creation_date
         direction: older
@@ -64,11 +64,11 @@
       Delete 'monthlyinc-' prefixed snapshots from the selected repository older
       than 32 days (based on creation_date)
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       repository: Untergeek
       timeout_override:
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: prefix
@@ -86,11 +86,11 @@
       Delete 'monthly-' prefixed snapshots from the selected repository older
       than 7 months (based on creation_date)
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       repository: Untergeek
       timeout_override:
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: prefix
@@ -111,17 +111,17 @@
       This action will ignore indices already forceMerged to the same or fewer
       number of segments per shard, so the 'forcemerged' filter is unneeded.
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       max_num_segments: 1
       delay: 120
       timeout_override: 7200
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: timestring
         value: '%Y.%m.%d'
-        exclude: False
+        exclude: false
       - filtertype: age
         source: creation_date
         direction: older
@@ -138,21 +138,21 @@
       This action will ignore indices already forceMerged to the same or fewer
       number of segments per shard, so the 'forcemerged' filter is unneeded.
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       max_num_segments: 1
       delay: 120
       timeout_override: 7200
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: timestring
         value: '%Y.%m.%d'
-        exclude: True
+        exclude: true
       - filtertype: pattern
         kind: timestring
         value: '%Y.%m'
-        exclude: False
+        exclude: false
       - filtertype: age
         source: creation_date
         direction: older
@@ -168,23 +168,23 @@
       the repository filesystem access check.  Use the other options to create
       the snapshot.
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       repository: Untergeek
       # Leaving name blank will result in the default 'curator-%Y%m%d%H%M%S'
       name: 'daily-%Y%m%d%H%M%S'
-      ignore_unavailable: False
-      include_global_state: True
-      partial: False
-      wait_for_completion: True
-      skip_repo_fs_check: False
+      ignore_unavailable: false
+      include_global_state: true
+      partial: false
+      wait_for_completion: true
+      skip_repo_fs_check: false
       timeout_override: 7200
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: timestring
         value: '%Y.%m.%d'
-        exclude: False
+        exclude: false
       - filtertype: age
         source: creation_date
         direction: older

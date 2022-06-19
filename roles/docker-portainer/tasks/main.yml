@@ -27,7 +27,7 @@
 - name: Deploy portainer
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: portainer
     compose:
       - "{{ portainer_compose_file_dest }}"

@@ -3,7 +3,7 @@
 apt_remove_sourcesd: []
 
 # allow apt to perform reboots after important changes
-apt_allowed_to_reboot: True
+apt_allowed_to_reboot: true
 
 apt_directory: "/etc/apt"
 apt_sources_list_directory: "{{ apt_directory }}/sources.list.d"

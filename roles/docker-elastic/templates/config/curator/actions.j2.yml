@@ -15,15 +15,15 @@ actions:
       Delete docker indices when {{ curator_max_size_docker }}G reached
     options:
       allow_ilm_indices: true # eventually change this
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
         value: docker-
       - filtertype: space
         disk_space: {{ curator_max_size_docker }}
-        use_age: True
+        use_age: true
         source: creation_date
   2:
     action: delete_indices
@@ -31,8 +31,8 @@ actions:
       Delete docker indices when {{ curator_max_age_days_docker }} days passed
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
@@ -49,15 +49,15 @@ actions:
       Delete filebeat indices when {{ curator_max_size_filebeat }}G reached
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
         value: filebeat-
       - filtertype: space
         disk_space: {{ curator_max_size_filebeat }}
-        use_age: True
+        use_age: true
         source: creation_date
   4:
     action: delete_indices
@@ -65,8 +65,8 @@ actions:
       Delete filebeat indices when {{ curator_max_age_days_filebeat }} days passed
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
@@ -83,15 +83,15 @@ actions:
       Delete heartbeat indices when {{ curator_max_size_heartbeat }}G reached
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
         value: heartbeat-
       - filtertype: space
         disk_space: {{ curator_max_size_heartbeat }}
-        use_age: True
+        use_age: true
         source: creation_date
   6:
     action: delete_indices
@@ -99,8 +99,8 @@ actions:
       Delete heartbeat indices when {{ curator_max_age_days_heartbeat }} days passed
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
@@ -117,15 +117,15 @@ actions:
       Delete journalbeat indices when {{ curator_max_size_journalbeat }}G reached
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
         value: journalbeat-
       - filtertype: space
         disk_space: {{ curator_max_size_journalbeat }}
-        use_age: True
+        use_age: true
         source: creation_date
   8:
     action: delete_indices
@@ -133,8 +133,8 @@ actions:
       Delete journalbeat indices when {{ curator_max_age_days_journalbeat }} days passed
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
@@ -151,15 +151,15 @@ actions:
       Delete metricbeat indices when {{ curator_max_size_metricbeat }}G reached
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
         value: metricbeat-
       - filtertype: space
         disk_space: {{ curator_max_size_metricbeat }}
-        use_age: True
+        use_age: true
         source: creation_date
 #      - filtertype: age
 #        source: creation_date
@@ -173,8 +173,8 @@ actions:
       Delete metricbeat indices when {{ curator_max_age_days_metricbeat }} days passed
     options:
       allow_ilm_indices: true
-      continue_if_exception: False
-      ignore_empty_list: True
+      continue_if_exception: false
+      ignore_empty_list: true
     filters:
       - filtertype: pattern
         kind: prefix
@@ -195,17 +195,17 @@ actions:
       This action will ignore indices already forceMerged to the same or fewer
       number of segments per shard, so the 'forcemerged' filter is unneeded.
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       max_num_segments: 1
       delay: 120
       timeout_override: 7200
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: timestring
         value: '%Y.%m.%d'
-        exclude: False
+        exclude: false
       - filtertype: age
         source: creation_date
         direction: older
@@ -223,21 +223,21 @@ actions:
       This action will ignore indices already forceMerged to the same or fewer
       number of segments per shard, so the 'forcemerged' filter is unneeded.
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       max_num_segments: 1
       delay: 120
       timeout_override: 7200
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: timestring
         value: '%Y.%m.%d'
-        exclude: True
+        exclude: true
       - filtertype: pattern
         kind: timestring
         value: '%Y.%m'
-        exclude: False
+        exclude: false
       - filtertype: age
         source: creation_date
         direction: older
@@ -254,17 +254,17 @@ actions:
       This action will ignore indices already forceMerged to the same or fewer
       number of segments per shard, so the 'forcemerged' filter is unneeded.
     options:
-      ignore_empty_list: True
+      ignore_empty_list: true
       max_num_segments: 1
       delay: 120
       timeout_override: 7200
-      continue_if_exception: False
-      disable_action: False
+      continue_if_exception: false
+      disable_action: false
     filters:
       - filtertype: pattern
         kind: timestring
         value: '%G.%W'
-        exclude: False
+        exclude: false
       - filtertype: age
         source: creation_date
         direction: older

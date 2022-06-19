@@ -1,7 +1,7 @@
 ---
 # This role setup a script called by duply before backup. The script will save all docker volumes listed.
 - name: Ensure backup script directory is present
-  become: True
+  become: true
   file:
     state: directory
     path: "{{ docker_volumes_backup_script_directory }}"
@@ -10,7 +10,7 @@
     mode: u=rwx,g=x,o=x
 
 - name: Ensure backup additional list directory is present (writable for docker users)
-  become: True
+  become: true
   file:
     state: directory
     path: "{{ docker_volumes_backup_script_directory }}/backup.d"
@@ -19,7 +19,7 @@
     mode: u=rwx,g=rwx,o=
 
 - name: Ensure backup directory is present
-  become: True
+  become: true
   file:
     state: directory
     path: "{{ docker_volumes_backup_output }}"
@@ -28,13 +28,13 @@
     mode: u=rwx,g=,o=
 
 - name: Ensure ruby is installed
-  become: True
+  become: true
   apt:
     name: ruby
     state: present
 
 - name: "Copy backup script to {{ docker_volumes_backup_script_directory }}"
-  become: True
+  become: true
   copy:
     src: "files/backup-docker-volumes.rb"
     dest: "{{ docker_volumes_backup_script_directory }}/backup-docker-volumes.rb"
@@ -43,7 +43,7 @@
     mode: u=rwx,g=,o=
 
 - name: Ensure docker volumes backup list exists
-  become: True
+  become: true
   file:
     path: "{{ docker_volumes_backup_script_directory }}/{{ docker_volumes_list_file }}"
     owner: root
@@ -52,15 +52,15 @@
     state: touch
 
 - name: Add docker volumes to backup list
-  become: True
+  become: true
   lineinfile:
     path: "{{ docker_volumes_backup_script_directory }}/{{ docker_volumes_list_file }}"
     line: "{{ item }}"
-    create: yes
+    create: true
   with_items: "{{ docker_volumes_backup }}"
 
 - name: Remove undesirable docker volumes from backup list
-  become: True
+  become: true
   lineinfile:
     path: "{{ docker_volumes_backup_script_directory }}/{{ docker_volumes_list_file }}"
     line: "{{ item }}"
@@ -68,7 +68,7 @@
   with_items: "{{ docker_volumes_backup_to_remove }}"
 
 - name: Add backup script to Duply pre scripts
-  become: True
+  become: true
   template:
     src: "templates/register-backup-script.sh.j2"
     dest: "{{ duply_prescript_folder }}/10-docker-volumes.sh"
@@ -77,7 +77,7 @@
     mode: u=rwx,g=,o=
 
 - name: Add cleanup script to Duply post scripts
-  become: True
+  become: true
   template:
     src: "templates/register-cleanup-backup-script.sh.j2"
     dest: "{{ duply_postscript_folder }}/10-docker-volumes-cleanup.sh"

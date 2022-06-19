@@ -67,7 +67,7 @@
 - name: Deploy caddy
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: caddy-consul
     compose:
       - "{{ caddy_compose_file_dest }}"

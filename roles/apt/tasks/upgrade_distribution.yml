@@ -8,7 +8,7 @@
   when: ansible_distribution_release == "stretch"
 
 - name: Update to Buster stable channel
-  become: True
+  become: true
   shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}"
   when: (ansible_distribution_release == "stretch" and buster_channel_flag.stat.exists == False)
 
@@ -19,7 +19,7 @@
   when: ansible_distribution_release == "buster"
 
 - name: Update to Bullseye stable channel
-  become: True
+  become: true
   shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_bullseye_flag_path|quote }}"
   when: (ansible_distribution_release == "buster" and bullseye_channel_flag.stat.exists == False)
 

@@ -1,7 +1,7 @@
 ---
 # handle file system formating
 - name: Format the filesystem
-  become: True
+  become: true
   community.general.filesystem:
     fstype: "{{ item.fstype }}"
     dev: "{{ item.dev }}"

@@ -5,24 +5,24 @@
   when: filebeat_state == 'present'
 
 - name: Ensure filebeat is enabled and started
-  become: True
+  become: true
   service:
     name: filebeat
-    enabled: yes
+    enabled: true
     state: started
   when: filebeat_state == 'present'
 
 - name: Ensure filebeat is disabled and stopped
-  become: True
+  become: true
   service:
     name: filebeat
-    enabled: False
+    enabled: false
     state: stopped
-  ignore_errors: True
+  ignore_errors: true
   when: filebeat_state == 'absent'
 
 - name: Ensure filebeat configuration directory exists
-  become: True
+  become: true
   file:
     state: directory
     owner: root
@@ -36,7 +36,7 @@
   when: filebeat_state == 'present'
 
 - name: Copy filebeat configuration
-  become: True
+  become: true
   template:
     src: templates/filebeat.j2.yml
     dest: "{{ filebeat_configuration_directory }}/filebeat.yml"

@@ -53,7 +53,7 @@
 - name: Deploy Nextcloud
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: "{{ nextcloud_stack_name }}"
     compose:
       - "{{ nextcloud_compose_file_dest }}"

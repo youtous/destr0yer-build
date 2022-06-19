@@ -1,13 +1,13 @@
 ---
 # This role contains base rules of the firewall
 - name: Install ufw package
-  become: True
+  become: true
   apt:
     name:
       - ufw
 
 - name: Configure ufw defaults
-  become: True
+  become: true
   ufw:
     direction: "{{ item.direction }}"
     policy: "{{ item.policy }}"
@@ -16,12 +16,12 @@
     - { direction: 'outgoing', policy: 'allow' }
 
 - name: Define ufw logging policy
-  become: True
+  become: true
   ufw:
     logging: "{{ ufw_logging }}"
 
 - name: Insert customs IPv4 rules in before.rules
-  become: True
+  become: true
   blockinfile:
     dest: "/etc/ufw/before.rules"
     block: "{{ lookup('file', 'files/before-ipv4.rules') }}"
@@ -31,7 +31,7 @@
     - restart ufw
 
 - name: Insert customs IPv6 rules in before6.rules
-  become: True
+  become: true
   blockinfile:
     dest: "/etc/ufw/before6.rules"
     block: "{{ lookup('file', 'files/before-ipv6.rules') }}"
@@ -41,14 +41,14 @@
     - restart ufw
 
 - name: OpenSSH default policy limit
-  become: True
+  become: true
   ufw:
     rule: limit
     port: ssh
     proto: tcp
 
 - name: Add custom ufw firewall rules
-  become: True
+  become: true
   ufw:
     comment: "{{ item.comment }}"
     proto: "{{ item.proto }}"
@@ -61,25 +61,25 @@
 
 # IP forwarding is disabled by default
 - name: Set value IPv4 forwarding
-  become: True
+  become: true
   sysctl:
     name: net.ipv4.ip_forward
     value: "{{ ipv4_ip_forwarding }}"
-    sysctl_set: yes
+    sysctl_set: true
     state: present
-    reload: yes
+    reload: true
 
 - name: Set value IPv6 forwarding
-  become: True
+  become: true
   sysctl:
     name: net.ipv6.conf.all.forwarding
     value: "{{ ipv6_ip_forwarding }}"
-    sysctl_set: yes
+    sysctl_set: true
     state: present
-    reload: yes
+    reload: true
 
 - name: Enable ufw
-  become: True
+  become: true
   ufw:
     state: enabled
 ...

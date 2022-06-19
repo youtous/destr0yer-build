@@ -8,7 +8,7 @@
     loop_var: service
 
 - name: Removing listed fail2ban jails
-  become: True
+  become: true
   file:
     path: "/etc/fail2ban/jail.d/{{ service.name }}.conf"
     state: absent
@@ -21,7 +21,7 @@
 # This role permits to append additional services to the fail2ban jail
 # see https://github.com/Oefenweb/ansible-fail2ban for naming details
 - name: Updating fail2ban jail configuration with additional services
-  become: True
+  become: true
   template:
     src: files/additional-services.j2.conf
     dest: "/etc/fail2ban/jail.d/{{ service.name }}.conf"

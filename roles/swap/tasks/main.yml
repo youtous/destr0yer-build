@@ -2,7 +2,7 @@
 # Setup swap file
 
 - name: Setup swap file
-  become: True
+  become: true
   import_role:
     name: geerlingguy.swap
   vars:

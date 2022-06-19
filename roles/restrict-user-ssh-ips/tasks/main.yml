@@ -1,7 +1,7 @@
 ---
 # This role permits to restrict ssh login from a list of ips per user
 - name: Configure ssh access with restricted ip
-  become: True
+  become: true
   blockinfile:
     dest: "/etc/ssh/sshd_config"
     block: "{{ lookup('template', 'files/sshd_restrict_ip_config.j2') }}"

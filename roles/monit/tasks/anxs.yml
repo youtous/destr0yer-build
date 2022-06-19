@@ -23,7 +23,7 @@
   service:
     name: cron
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Create configs
   template:
@@ -42,7 +42,7 @@
   command: "ls -1 {{ monit_eventqueue_directory|quote }}/"
   register: monit_queued_messages
   when: not monit_email_enable or not monit_eventqueue_enable
-  changed_when: False
+  changed_when: false
 
 - name: Monit | Remove queued messages
   file:

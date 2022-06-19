@@ -33,12 +33,12 @@ monit_process_list: []
 
 # monit_username:
 # monit_password:
-monit_ssl: no
+monit_ssl: false
 monit_cert: "/etc/monit/monit.pem"
 
 monit_net_retry: 3
 
-monit_email_enable: yes
+monit_email_enable: true
 monit_notify_email: "{{ monitoring_email }}"
 
 monit_logfile: "syslog facility log_daemon"
@@ -46,7 +46,7 @@ monit_logfile: "syslog facility log_daemon"
 monit_poll_period: 60
 monit_poll_start_delay: 120
 
-monit_eventqueue_enable: yes
+monit_eventqueue_enable: true
 monit_eventqueue_directory: "/var/lib/monit/events"
 monit_eventque_slots: 100
 
@@ -77,7 +77,7 @@ monit_address: localhost
 monit_allow: ["localhost"]
 # monit_username:
 # monit_password:
-# monit_ssl: no
+# monit_ssl: false
 # monit_cert: "/etc/monit/monit.pem"
 
 monit_monitors_sshd_port: "{{ sshd_port|default(22) }}"

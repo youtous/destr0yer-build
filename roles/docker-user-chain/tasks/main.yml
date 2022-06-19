@@ -1,10 +1,10 @@
 ---
 # this role saves the docker-user chain accross reboots
 - name: Check if docker ipv4 iptables is enabled
-  become: True
+  become: true
   command: iptables -L DOCKER-USER
   register: docker_ipv4
-  ignore_errors: True
+  ignore_errors: true
   changed_when: false
 
 - name: Configure docker logstash firewall ipv4
@@ -12,10 +12,10 @@
   when: docker_ipv4 is not failed
 
 - name: Check if docker ipv6 iptables is enabled
-  become: True
+  become: true
   command: ip6tables -L DOCKER-USER
   register: docker_ipv6
-  ignore_errors: True
+  ignore_errors: true
   changed_when: false
 
 - name: Configure docker logstash firewall ipv6
@@ -23,7 +23,7 @@
   when: docker_ipv6 is not failed
 
 - name: Ensure network firewall directory exists
-  become: True
+  become: true
   file:
     path: "/etc/network/firewall"
     state: directory
@@ -32,7 +32,7 @@
     mode: u=rwx,g=rx,o=rx
 
 - name: Copy Firewall DOCKER-USER Rules script
-  become: True
+  become: true
   copy:
     src: "files/docker-user-rules.sh"
     dest: "/etc/network/firewall/docker-user-rules.sh"
@@ -41,7 +41,7 @@
     mode: u=rwx,g=rx,o=rx
 
 - name: Copy Firewall DOCKER-USER Rules service configuration
-  become: True
+  become: true
   copy:
     src: "files/systemd/{{ item.src }}"
     dest: "/lib/systemd/system/{{ item.dest }}"
@@ -53,10 +53,10 @@
       dest: firewall-docker-user.service
 
 - name: Enable Firewall DOCKER-USER Rules service
-  become: True
+  become: true
   systemd:
     name: firewall-docker-user
-    enabled: yes
-    masked: no
+    enabled: true
+    masked: false
 
 ...

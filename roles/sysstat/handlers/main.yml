@@ -1,6 +1,6 @@
 ---
 - name: restart sysstat
-  become: True
+  become: true
   systemd:
     state: restarted
     name: sysstat

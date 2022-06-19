@@ -1,25 +1,25 @@
 ---
 # This role contains base system configuration
 - name: Install ntp related packages
-  become: True
+  become: true
   apt:
     name: systemd-timesyncd
     state: present
 
 - name: Setup NTP
-  become: True
+  become: true
   import_role:
     name: geerlingguy.ntp
   vars:
     ntp_timezone: "{{ timezone }}"
 
 - name: "Set timezone to {{ timezone }}"
-  become: True
+  become: true
   timezone:
     name: "{{ timezone }}"
 
 - name: Ensure system folder permissions are correct
-  become: True
+  become: true
   file:
     path: "{{ item }}"
     owner: root
@@ -28,14 +28,14 @@
   with_items: "{{ system_folders_write_root_only }}"
 
 - name: Register server environment in /etc/server_environment (dev,prod,test)
-  become: True
+  become: true
   copy:
     content: "{{ server_environment }}"
     dest: /etc/server_environment
     mode: u=rw,g=r,o=r
 
 - name: Add /usr/sbin to PATH bash
-  become: True
+  become: true
   copy:
     src: files/usr-sbin.sh
     dest: /etc/profile.d/usr-sbin.sh
@@ -44,7 +44,7 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Add /usr/sbin to PATH fish
-  become: True
+  become: true
   copy:
     src: files/usr-sbin.fish
     dest: /etc/fish/conf.d/usr-sbin.fish
@@ -56,10 +56,10 @@
   shell: "scw-metadata | grep aarch"
   changed_when: false
   register: host_scw_aarch64
-  ignore_errors: True
+  ignore_errors: true
 
 - name: Fix Scaleway reboot command fish
-  become: True
+  become: true
   copy:
     src: files/reboot.fish
     dest: /etc/fish/conf.d/reboot.fish
@@ -69,7 +69,7 @@
   when: host_scw_aarch64 is not failed
 
 - name: Fix Scaleway reboot command bash
-  become: True
+  become: true
   copy:
     src: files/reboot.sh
     dest: /etc/profile.d/reboot.sh

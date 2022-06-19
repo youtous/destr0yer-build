@@ -202,7 +202,7 @@ mailserver_allowed_ips:
   port_993: []
 mailserver_domain: youtous.dv
 mailserver_hostname: mailing-heaven-pascal
-mailserver_debug: yes
+mailserver_debug: true
 # domains configuration
 mailserver_domains:
   # Generate DKIM using : https://dkimcore.org/specification.html

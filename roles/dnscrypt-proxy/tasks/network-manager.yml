@@ -6,7 +6,7 @@
   ignore_errors: true
 
 - name: Create /etc/NetworkManager/NetworkManager.conf
-  become: True
+  become: true
   copy:
     src: "files/NetworkManager.conf"
     dest: "/etc/NetworkManager/NetworkManager.conf"
@@ -17,7 +17,7 @@
   notify: restart NetworkManager
 
 - name: Disable NetworkManager auto-update /etc/resolv.conf
-  become: True
+  become: true
   lineinfile:
     path: /etc/NetworkManager/NetworkManager.conf
     regexp: '^dns='
@@ -27,16 +27,16 @@
   notify: restart NetworkManager
 
 - name: Unlock /etc/resolv.conf
-  become: True
+  become: true
   file:
     path: /etc/resolv.conf
     attributes: -i
   # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
+  ignore_errors: true
   changed_when: false
 
 - name: Configure /etc/resolv.conf for DNSCrypt-proxy
-  become: True
+  become: true
   template:
     src: "templates/resolv.conf.j2"
     dest: "/etc/resolv.conf"
@@ -47,7 +47,7 @@
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable
-  become: True
+  become: true
   file:
     path: /etc/resolv.conf
     owner: root
@@ -55,6 +55,6 @@
     attributes: i
     mode: u=rw,g=r,o=r
   # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
+  ignore_errors: true
   changed_when: false
 ...

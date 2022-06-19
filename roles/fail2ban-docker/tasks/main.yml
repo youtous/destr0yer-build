@@ -2,7 +2,7 @@
 # fail2ban for traefik
 # resource : https://github.com/crazy-max/docker-fail2ban/
 - name: Add common-docker for fail2ban
-  become: True
+  become: true
   copy:
     src: files/filter.d/{{ item }}
     dest: /etc/fail2ban/filter.d/{{ item }}

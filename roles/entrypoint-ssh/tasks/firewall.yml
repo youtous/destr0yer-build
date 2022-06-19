@@ -1,19 +1,19 @@
 ---
 # firewall rules for ssh
 - name: List existing ssh UFW rules
-  become: True
+  become: true
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port|quote }}(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_ssh_rules
 
 - name: UFW delete existing ssh rules - tcp,udp/ssh
-  become: True
+  become: true
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_ssh_rules.stdout_lines }}"
 
 - name: UFW Allow ssh local clients - ALLOW tcp/ssh
-  become: True
+  become: true
   ufw:
     rule: allow
     port: ssh
@@ -22,7 +22,7 @@
   with_items: "{{ ssh_entrypoints_local_interfaces_ips }}"
 
 - name: UFW Allow ssh clients - ALLOW tcp/ssh
-  become: True
+  become: true
   ufw:
     rule: allow
     port: ssh

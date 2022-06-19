@@ -1,12 +1,12 @@
 ---
 - name: Install sysstat
-  become: True
+  become: true
   apt:
     name: "sysstat"
     state: latest
 
 - name: Copy sysstat configuration
-  become: True
+  become: true
   template:
     src: templates/sysstat.j2
     dest: /etc/default/sysstat
@@ -17,7 +17,7 @@
   notify: restart sysstat
 
 - name: Enable sysstat service
-  become: True
+  become: true
   service:
     name: "sysstat"
     enabled:
@@ -25,10 +25,10 @@
   when: sysstat_enabled
 
 - name: Disable sysstat service
-  become: True
+  become: true
   service:
     name: "sysstat"
-    enabled: no
+    enabled: false
     state: stopped
   when: not sysstat_enabled
 ...

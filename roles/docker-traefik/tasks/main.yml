@@ -37,7 +37,7 @@
 - name: Deploy traefik
   docker_stack:
     state: present
-    prune: yes
+    prune: true
     name: "{{ traefik_stack_name }}"
     compose:
       - "{{ traefik_compose_file_dest }}"

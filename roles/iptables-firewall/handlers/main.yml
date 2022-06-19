@@ -1,6 +1,6 @@
 ---
 - name: restart ufw
-  become: True
+  become: true
   service:
     name: ufw
     state: restarted

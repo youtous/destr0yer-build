@@ -4,7 +4,7 @@
   import_tasks: install.yml
 
 - name: Override logwatch conf service
-  become: True
+  become: true
   copy:
     src: "files/services/{{ item }}"
     dest: "/etc/logwatch/conf/services/{{ item }}"
@@ -16,7 +16,7 @@
     - fail2ban.conf
 
 - name: Override logwatch conf logfiles
-  become: True
+  become: true
   copy:
     src: "files/logfiles/{{ item }}"
     dest: "/etc/logwatch/conf/logfiles/{{ item }}"
@@ -27,7 +27,7 @@
     - fail2ban.conf
 
 - name: Create logwatch empty file (used when Journalctl)
-  become: True
+  become: true
   copy:
     dest: /etc/logwatch/empty
     content: |
@@ -39,7 +39,7 @@
     mode: u=rw,g=r,o=r
 
 - name: Setup Logwatch
-  become: True
+  become: true
   import_role:
     name: youtous.logwatch
   vars:

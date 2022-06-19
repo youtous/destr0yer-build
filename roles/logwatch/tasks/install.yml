@@ -1,6 +1,6 @@
 ---
 - name: Copy apt preferences | logwatch # use testing version to fix systemd journal bug
-  become: True
+  become: true
   copy:
     src: "files/apt/preferences.d/{{ item }}"
     dest: "{{ apt_directory }}/preferences.d/{{ item }}"
@@ -12,7 +12,7 @@
   when: ansible_os_family == "Debian" and ansible_lsb.major_release|int < 11
 
 - name: Remove speficics pinning preferences
-  become: True
+  become: true
   file:
     path: "{{ apt_directory }}/preferences.d/{{ item }}"
     state: absent
@@ -21,9 +21,9 @@
   when: ansible_os_family == "Debian" and ansible_lsb.major_release|int >= 11
 
 - name: Install logwatch
-  become: True
+  become: true
   apt:
-    update_cache: yes
+    update_cache: true
     name:
       - logwatch
       - cron
@@ -31,9 +31,9 @@
 
 
 - name: Enable cron
-  become: True
+  become: true
   service:
     name: cron
     state: started
-    enabled: yes
+    enabled: true
 ...

@@ -1,31 +1,31 @@
 ---
 # This role contains apt settings
 - name: Remove unwanted sources.d
-  become: True
+  become: true
   file:
     path: "{{ apt_directory }}/sources.list.d/{{ item }}"
     state: absent
   with_items: "{{ apt_remove_sourcesd }}"
 
 - name: Remove patterns sources.d | listing
-  become: True
+  become: true
   find:
     paths: "{{ apt_directory }}/sources.list.d"
-    hidden: yes
-    recurse: yes
+    hidden: true
+    recurse: true
     file_type: any
     patterns: "{{ apt_unwanted_sources_patterns }}"
   register: sources_unwanted_apt_found
 
 - name: Remove unwanted sources.d | removing
-  become: True
+  become: true
   file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ sources_unwanted_apt_found.files }}"
 
 - name: Copy sources.list
-  become: True
+  become: true
   copy:
     src: "files/{{ apt_distribution_version_target }}/sources.list"
     dest: "{{ apt_directory }}/sources.list"
@@ -34,7 +34,7 @@
     mode: u=rw,g=r,o=r
 
 - name: Copy apt preferences
-  become: True
+  become: true
   copy:
     src: "files/{{ apt_distribution_version_target }}/{{ item }}"
     dest: "{{ apt_directory }}/preferences.d/{{ item }}"
@@ -45,17 +45,17 @@
     - 5-preferences
 
 - name: Update apt-cache
-  become: True
+  become: true
   apt:
-    update_cache: yes
+    update_cache: true
 
 - name: Install debsums
-  become: True
+  become: true
   apt:
     name: debsums
 
 - name: Install unattended-upgrades package to flag updates requiring reboot
-  become: True
+  become: true
   apt:
     name: unattended-upgrades
 
@@ -63,21 +63,21 @@
   import_tasks: upgrade_distribution.yml
 
 - name: Update and upgrade apt packages
-  become: True
+  become: true
   apt:
     upgrade: "yes"
-    update_cache: yes
+    update_cache: true
     cache_valid_time: 86400 #One day
 
 - name: Check if a reboot is needed on all servers
-  become: True
+  become: true
   register: reboot_required_file
   stat:
     path: /var/run/reboot-required
-    get_md5: no
+    get_md5: false
 
 - name: Reboot if kernel updated
-  become: True
+  become: true
   reboot:
     msg: "Reboot initiated by Ansible for kernel updates"
     connect_timeout: 5
@@ -88,8 +88,8 @@
   when: apt_allowed_to_reboot and reboot_required_file.stat.exists
 
 - name: Clean unwanted olderstuff apt
-  become: True
+  become: true
   apt:
-    autoremove: yes
-    purge: yes
+    autoremove: true
+    purge: true
 ...

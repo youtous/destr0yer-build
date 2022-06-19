@@ -5,13 +5,13 @@
 # It's the duty of the client to verify the server identity using the CA.certificate
 
 - name: Install required packages
-  become: True
+  become: true
   apt:
     name:
       - openssl
 
 - name: Copy client conf mariadb
-  become: True
+  become: true
   template:
     src: "templates/50-ssl-clients.cnf.j2"
     dest: "{{ mariadb_config_include_dir }}/50-ssl-clients.cnf"
@@ -25,7 +25,7 @@
   when: mariadb_ca_certificate is not defined or mariadb_ca_certificate|length == 0
 
 - name: Copy mariadb root CA
-  become: True
+  become: true
   copy:
     content: "{{ mariadb_ca_certificate }}"
     dest: "/etc/mysql/ca.pem"

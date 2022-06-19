@@ -1,20 +1,20 @@
 ---
 # This role configures host configuration (hostname, /etc/hosts etc)
 - name: Define hostname
-  become: True
+  become: true
   hostname:
     name: "{{ hostname }}"
   notify:
     - restart network-manager
 
 - name: Unlock /etc/hosts
-  become: True
+  become: true
   file:
     path: /etc/hosts
     attributes: -i
 
 - name: Setup hosts
-  become: True
+  become: true
   template:
     src: files/hosts.j2
     dest: /etc/hosts

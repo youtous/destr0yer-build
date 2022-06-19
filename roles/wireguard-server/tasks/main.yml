@@ -9,7 +9,7 @@
   when: (wireguard_server.public_key is not defined or wireguard_server.public_key|length == 0) or (wireguard_server.private_key is not defined or wireguard_server.private_key|length == 0)
 
 - name: Ensure wireguard configuration directory exists
-  become: True
+  become: true
   file:
     state: directory
     path: "{{ wireguard_conf_directory }}"
@@ -18,7 +18,7 @@
     mode: u=rwx,g=,o=
 
 - name: Configure wireguard
-  become: True
+  become: true
   template:
     src: "templates/{{ item.src }}"
     dest: "{{ wireguard_conf_directory }}/{{ item.dest }}"
@@ -34,9 +34,9 @@
   import_tasks: firewall.yml
 
 - name: Start and enable wireguard
-  become: True
+  become: true
   service:
     name: "{{ wireguard_service_name }}"
     state: started
-    enabled: yes
+    enabled: true
 ...
