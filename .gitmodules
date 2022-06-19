@@ -1,4 +1,4 @@
 [submodule "roles/docker-configs-secrets-cleaner"]
-	url = git@gitlab.com:youtous/ansible-docker-configs-secrets-cleaner.git
+	url = https://gitlab.com/youtous/ansible-docker-configs-secrets-cleaner.git
 [submodule "roles/minisign"]
-	url = git@gitlab.com:youtous/ansible-minisign.git
+	url = https://gitlab.com/youtous/ansible-minisign.git
