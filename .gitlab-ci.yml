@@ -11,8 +11,6 @@ services:
 test:
   image: python:latest
   stage: test
-  variables:
-    GIT_SUBMODULE_STRATEGY: recursive
   before_script:
     - pip install pre-commit ansible
   script:
