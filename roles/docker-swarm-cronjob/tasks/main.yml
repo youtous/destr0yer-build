@@ -13,7 +13,7 @@
     mode: u=rw,g=,o=
 
 - name: Deploy swarm_cronjob
-  docker_stack:
+  community.general.docker_stack:
     state: present
     prune: true
     name: swarm_cronjob

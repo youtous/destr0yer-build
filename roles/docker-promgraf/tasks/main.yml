@@ -73,7 +73,7 @@
     mode: u=rw,g=,o=
 
 - name: Deploy promgraf
-  docker_stack:
+  community.general.docker_stack:
     state: present
     prune: true
     name: promgraf

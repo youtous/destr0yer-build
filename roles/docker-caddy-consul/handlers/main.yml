@@ -3,7 +3,7 @@
   import_tasks: docker-config-secrets.yml
 
 - name: docker prune
-  docker_prune:
+  community.general.docker_prune:
     containers: true
     images: true
     networks: true

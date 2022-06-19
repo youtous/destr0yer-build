@@ -9,7 +9,7 @@
     path: "{{ nextcloud_compose_file_dest_directory }}"
 
 - name: Tag current node as nextcloud origin
-  docker_node:
+  community.general.docker_node:
     hostname: "{{ hostname }}"
     labels:
       nextcloud.nextcloud-data: "true"
@@ -53,7 +53,7 @@
   import_tasks: fail2ban.yml
 
 - name: Deploy Nextcloud
-  docker_stack:
+  community.general.docker_stack:
     state: present
     prune: true
     name: "{{ nextcloud_stack_name }}"

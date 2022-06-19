@@ -22,13 +22,13 @@
     mailserver_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
 - name: Tag current node as mailserver origin
-  docker_node:
+  community.general.docker_node:
     hostname: "{{ hostname }}"
     labels:
       mailserver.mailserver-data: "true"
 
 - name: Tag current node as rainloop origin
-  docker_node:
+  community.general.docker_node:
     hostname: "{{ hostname }}"
     labels:
       mailserver.rainloop-data: "true"
@@ -114,7 +114,7 @@
   import_tasks: fail2ban.yml
 
 - name: Deploy mailserver
-  docker_stack:
+  community.general.docker_stack:
     state: present
     prune: true
     name: "{{ docker_mailserver_stack_name }}"

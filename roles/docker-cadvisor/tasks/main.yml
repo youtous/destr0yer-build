@@ -17,7 +17,7 @@
   import_tasks: firewall.yml
 
 - name: Deploy cadvisor
-  docker_stack:
+  community.general.docker_stack:
     state: present
     prune: true
     name: cadvisor

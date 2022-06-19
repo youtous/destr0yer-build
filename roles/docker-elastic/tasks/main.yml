@@ -87,7 +87,7 @@
   import_tasks: tag_hosts.yml
 
 - name: Deploy elastic
-  docker_stack:
+  community.general.docker_stack:
     state: present
     prune: true
     name: "{{ docker_elastic_stack_name }}"

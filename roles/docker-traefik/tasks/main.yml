@@ -1,6 +1,6 @@
 ---
 - name: Create traefik-public network with encryption
-  docker_network:
+  community.general.docker_network:
     name: "{{ traefik_network }}"
     driver: overlay
     driver_options:
@@ -8,7 +8,7 @@
   when: traefik_internal_network_encryption_enabled is true
 
 - name: Create traefik-public network without encryption
-  docker_network:
+  community.general.docker_network:
     name: "{{ traefik_network }}"
     driver: overlay
   when: traefik_internal_network_encryption_enabled is false
@@ -36,7 +36,7 @@
 
 # always redeploy permits to have always up to date
 - name: Deploy traefik
-  docker_stack:
+  community.general.docker_stack:
     state: present
     prune: true
     name: "{{ traefik_stack_name }}"

@@ -9,7 +9,7 @@
     path: "{{ teamspeak_compose_file_dest_directory }}"
 
 - name: Tag current node as teamspeak origin
-  docker_node:
+  community.general.docker_node:
     hostname: "{{ hostname }}"
     labels:
       teamspeak.teamspeak-data: "true"
@@ -33,7 +33,7 @@
   no_log: true
 
 - name: Deploy Teamspeak Server
-  docker_stack:
+  community.general.docker_stack:
     state: present
     prune: true
     name: "{{ teamspeak_stack_name }}"
