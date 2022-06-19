@@ -2,7 +2,7 @@
 ## save rules across reboots
 - name: Export DOCKER-USER iptables chain
   become: true
-  shell: iptables -S DOCKER-USER
+  ansible.builtin.shell: iptables -S DOCKER-USER
   register: iptables_docker_user_rules
   changed_when: false
 

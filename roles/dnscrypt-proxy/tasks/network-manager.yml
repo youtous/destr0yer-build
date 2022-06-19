@@ -1,6 +1,6 @@
 ---
 - name: Check if /etc/NetworkManager/NetworkManager.conf exists
-  command: "ls /etc/NetworkManager/NetworkManager.conf"
+  ansible.builtin.command: "ls /etc/NetworkManager/NetworkManager.conf"
   register: network_manager_conf_present
   changed_when: false
   ignore_errors: true

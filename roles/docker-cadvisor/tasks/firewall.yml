@@ -4,7 +4,7 @@
 
 - name: Check if docker ipv4 iptables is enabled
   become: true
-  command: iptables -L DOCKER-USER
+  ansible.builtin.command: iptables -L DOCKER-USER
   register: docker_ipv4
   ignore_errors: true
   changed_when: false

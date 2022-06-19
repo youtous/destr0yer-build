@@ -87,7 +87,7 @@
 
 # Docker DNS configuration
 - name: Register docker0 host ip
-  shell: >
+  ansible.builtin.shell: >
     set -o pipefail &&
     ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+'
   args:
@@ -96,7 +96,7 @@
   register: docker_host_docker0_ip_register
 
 - name: Register docker_gwbridge host ip
-  shell: >
+  ansible.builtin.shell: >
     set -o pipefail &&
     ip -4 addr show docker_gwbridge | grep -Po 'inet \K[\d.]+'
   args:

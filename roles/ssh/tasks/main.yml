@@ -33,12 +33,12 @@
 
 - name: Generate ed25519 host key
   become: true
-  command: ssh-keygen -q -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -C "" -N ""
+  ansible.builtin.command: ssh-keygen -q -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -C "" -N ""
   when: flag_keys_generated.stat.exists == False
 
 - name: Generate rsa host key
   become: true
-  command: ssh-keygen -q -t rsa -b "{{ rsa_key_size|quote }}" -f /etc/ssh/ssh_host_rsa_key -C "" -N ""
+  ansible.builtin.command: ssh-keygen -q -t rsa -b "{{ rsa_key_size|quote }}" -f /etc/ssh/ssh_host_rsa_key -C "" -N ""
   when: flag_keys_generated.stat.exists == False
 
 # Will be available in Ansible 2.8

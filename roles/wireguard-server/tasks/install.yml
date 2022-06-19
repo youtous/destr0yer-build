@@ -7,7 +7,7 @@
 
 
 - name: Get architecture
-  shell: dpkg --print-architecture
+  ansible.builtin.command: dpkg --print-architecture
   register: dpkg_arch
   changed_when: false
 
@@ -23,7 +23,7 @@
   become: true
   ansible.builtin.apt:
     name: "{{ wireguard_packages }}"
-    state: latest
+    state: latest # noqa package-latest
     default_release: buster-backports
     update_cache: true
   notify:
@@ -34,7 +34,7 @@
   become: true
   ansible.builtin.apt:
     name: "{{ wireguard_packages }}"
-    state: latest
+    state: latest # noqa package-latest
     update_cache: true
   notify:
     - restart wireguard

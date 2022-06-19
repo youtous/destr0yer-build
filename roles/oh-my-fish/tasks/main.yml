@@ -1,7 +1,7 @@
 ---
 # This role contains oh-my-fish global installation
 - name: Check if OMF is installed
-  command: "ls {{ omf_installation_directory|quote }}"
+  ansible.builtin.command: "ls {{ omf_installation_directory|quote }}"
   register: omf_present
   changed_when: false
   ignore_errors: true
@@ -23,7 +23,7 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Check if OMF theme "{{ omf_theme }}" is installed
-  command: "ls {{ omf_installation_directory|quote }}/themes/{{ omf_theme|quote }}"
+  ansible.builtin.command: "ls {{ omf_installation_directory|quote }}/themes/{{ omf_theme|quote }}"
   changed_when: false
   register: omf_theme_present
   ignore_errors: true
@@ -42,7 +42,7 @@
 
 - name: Move default OMF theme
   become: true
-  command: mv "{{ omf_default_theme_directory|quote }}" "{{ omf_default_theme_move_directory|quote }}"
+  ansible.builtin.command: mv "{{ omf_default_theme_directory|quote }}" "{{ omf_default_theme_move_directory|quote }}"
   ignore_errors: true
   when: omf_default_link.stat.islnk is not defined or not omf_default_link.stat.islnk
 

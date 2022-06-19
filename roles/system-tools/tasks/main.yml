@@ -20,7 +20,7 @@
     name: "{{ ruby_packages }}"
 
 - name: Test ccat presence
-  command: /usr/local/bin/ccat /dev/null
+  ansible.builtin.command: /usr/local/bin/ccat /dev/null
   register: ccat_present
   changed_when: false
   ignore_errors: true
@@ -31,7 +31,7 @@
 
 - name: Install ccat
   become: true
-  shell: |
+  ansible.builtin.shell: |
     cd /root &&
     /usr/local/go/bin/go get -u github.com/jingweno/ccat &&
     sudo mv go/bin/ccat /usr/local/bin/ &&

@@ -17,7 +17,7 @@
   register: tmp_dir_build
 
 - name: Retrieve latest DNSCrypt-proxy from repo
-  shell: >
+  ansible.builtin.shell: >
     set -o pipefail &&
     curl -sL {{ dnscrypt_proxy_repo|quote }} | grep dnscrypt-proxy-{{ dnscrypt_proxy_platform|quote }}_{{ dnscrypt_proxy_cpu_platform|quote }}- | grep browser_download_url | head -1 | cut -d \" -f 4
   register: dnscrypt_remote_download
@@ -49,7 +49,7 @@
 
 - name: Verify downloaded files
   changed_when: false
-  command: "minisign -Vm '{{ tmp_dir_build.path|quote }}/dnscrypt-proxy.tar.gz' -P '{{ dnscrypt_proxy_public_key|quote }}'"
+  ansible.builtin.command: "minisign -Vm '{{ tmp_dir_build.path|quote }}/dnscrypt-proxy.tar.gz' -P '{{ dnscrypt_proxy_public_key|quote }}'"
 
 - name: Extract downloaded files
   unarchive:

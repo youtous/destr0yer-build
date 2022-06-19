@@ -6,7 +6,7 @@
     state: present
 
 - name: Get architecture
-  shell: dpkg --print-architecture
+  ansible.builtin.shell: dpkg --print-architecture
   register: dpkg_arch
   changed_when: false
 

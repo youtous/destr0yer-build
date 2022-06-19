@@ -8,7 +8,7 @@
 
 - name: List existing DNS UFW rules
   become: true
-  shell: >
+  ansible.builtin.shell: >
     ufw status numbered | grep -zoP '\[.*\]\s53(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   args:
     executable: /bin/bash
@@ -17,7 +17,7 @@
 
 - name: UFW delete existing DNS rules - tcp,udp/53
   become: true
-  shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_dns_rules.stdout_lines }}"
 
 - name: UFW Allow DNS clients - tcp,udp/53

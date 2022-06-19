@@ -10,14 +10,14 @@
 ## Revoke all traefik rules
 - name: "List existing traefik UFW rules - any/{{ item }}"
   become: true
-  shell: >
+  ansible.builtin.shell: >
     ufw status numbered | grep -zoP '{% for port in traefik_opened_ports %}\[.*\]\s{{ port }}(?!\\d).*\n|{% endfor %}'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_traefik_rules
 
 - name: UFW delete existing traefik rules - tcp,udp
   become: true
-  shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_traefik_rules.stdout_lines }}"
 
 ## End of revocation

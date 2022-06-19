@@ -7,14 +7,14 @@
 
 - name: List existing docker-mailserver:465 UFW rules
   become: true
-  shell: >
+  ansible.builtin.shell: >
     ufw status numbered | grep -zoP '\[.*\]\s465(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_mailserver_465_rules
 
 - name: UFW delete existing docker-mailserver:465 rules - tcp,udp/465
   become: true
-  shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_mailserver_465_rules.stdout_lines }}"
 
 - name: UFW Allow docker-mailserver:465 networks - tcp/465
@@ -30,14 +30,14 @@
 
 - name: List existing docker-mailserver:993 UFW rules
   become: true
-  shell: >
+  ansible.builtin.shell: >
     ufw status numbered | grep -zoP '\[.*\]\s993(?!\\d).*\n' | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_mailserver_993_rules
 
 - name: UFW delete existing docker-mailserver:993 rules - tcp,udp/993
   become: true
-  shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_mailserver_993_rules.stdout_lines }}"
 
 - name: UFW Allow docker-mailserver:993 networks - tcp/993

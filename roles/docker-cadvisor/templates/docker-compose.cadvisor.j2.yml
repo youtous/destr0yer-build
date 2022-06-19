@@ -3,7 +3,7 @@ version: "3.8"
 services:
   cadvisor:
     image: "gcr.io/cadvisor/cadvisor:{{ cadvisor_version }}"
-    command: -logtostderr -docker_only
+    ansible.builtin.command: -logtostderr -docker_only
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /:/rootfs:ro

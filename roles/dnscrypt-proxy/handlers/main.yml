@@ -9,7 +9,7 @@
     - restart DNSCrypt-proxy
 
 - name: make sure DNSCrypt-proxy service is running after restart
-  command: systemctl is-active dnscrypt-proxy
+  ansible.builtin.command: systemctl is-active dnscrypt-proxy
   changed_when: false
   listen:
     - restart dnscrypt-proxy
@@ -23,12 +23,12 @@
   notify: restart postfix
 
 - name: make sure NetworkManager service is running after restart
-  command: systemctl is-active networking
+  ansible.builtin.command: systemctl is-active networking
   changed_when: false
   listen: restart NetworkManager
 
 - name: make sure DNS are available after restart
-  command: dig A youtous.me
+  ansible.builtin.command: dig A youtous.me
   changed_when: false
   listen:
     - restart dnscrypt-proxy
@@ -50,7 +50,7 @@
   when: '"postfix.service" in ansible_facts.services'
 
 - name: make sure postfix service is running after restart
-  command: systemctl is-active postfix
+  ansible.builtin.command: systemctl is-active postfix
   changed_when: false
   listen: restart postfix
   when: '"postfix.service" in ansible_facts.services'

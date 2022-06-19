@@ -13,9 +13,9 @@
 
 - name: hash sasl passwd
   become: true
-  command: "postmap hash:{{ postfix_sasl_file|quote }}"
+  ansible.builtin.command: "postmap hash:{{ postfix_sasl_file|quote }}"
 
 - name: newaliases
   become: true
-  command: "newaliases"
+  ansible.builtin.command: "newaliases"
 ...

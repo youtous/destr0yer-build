@@ -12,7 +12,7 @@
 - name: import public keys
   become: true
   become_user: root
-  shell: >
+  ansible.builtin.shell: >
     set -o pipefail &&
     echo '{{ item.key }}' | gpg --import && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:
@@ -23,7 +23,7 @@
 - name: import ownertrusts
   become: true
   become_user: root
-  shell: >
+  ansible.builtin.shell: >
     set -o pipefail &&
     echo '{{ item.value }}' | gpg --import-ownertrust && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:
@@ -35,7 +35,7 @@
 - name: import private keys
   become: true
   become_user: root
-  shell: >
+  ansible.builtin.shell: >
     set -o pipefail &&
     echo '{{ item.key }}' | gpg --allow-secret-key-import --batch --import && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
   args:

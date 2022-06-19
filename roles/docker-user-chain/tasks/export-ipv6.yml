@@ -3,7 +3,7 @@
 ## save rules across reboots
 - name: Export DOCKER-USER ip6tables chain
   become: true
-  shell: ip6tables -S DOCKER-USER
+  ansible.builtin.shell: ip6tables -S DOCKER-USER
   register: ip6tables_docker_user_rules
   changed_when: false
 

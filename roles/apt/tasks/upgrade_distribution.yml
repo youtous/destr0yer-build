@@ -9,7 +9,7 @@
 
 - name: Update to Buster stable channel
   become: true
-  shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}"
+  ansible.builtin.shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}"
   when: (ansible_distribution_release == "stretch" and buster_channel_flag.stat.exists == False)
 
 - name: Checking if Bullseye update channel Done
@@ -20,7 +20,7 @@
 
 - name: Update to Bullseye stable channel
   become: true
-  shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_bullseye_flag_path|quote }}"
+  ansible.builtin.shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_bullseye_flag_path|quote }}"
   when: (ansible_distribution_release == "buster" and bullseye_channel_flag.stat.exists == False)
 
 ...

@@ -2,14 +2,14 @@
 # This role contains default services settings
 - name: List enabled Scaleway services
   become: true
-  shell: systemctl list-unit-files --state=enabled | grep -o -P "scw(\-|\w|\d)*"
+  ansible.builtin.shell: systemctl list-unit-files --state=enabled | grep -o -P "scw(\-|\w|\d)*"
   changed_when: false
   register: scw_services_enabled
   ignore_errors: true
 
 - name: List running Scaleway services
   become: true
-  shell: systemctl --state=running | grep -o -P "scw(\-|\w|\d)*"
+  ansible.builtin.shell: systemctl --state=running | grep -o -P "scw(\-|\w|\d)*"
   changed_when: false
   register: scw_services_running
   ignore_errors: true

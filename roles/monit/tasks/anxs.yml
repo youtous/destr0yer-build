@@ -39,7 +39,7 @@
     - reload monit
 
 - name: Monit | Determine queued messages
-  command: "ls -1 {{ monit_eventqueue_directory|quote }}/"
+  ansible.builtin.command: "ls -1 {{ monit_eventqueue_directory|quote }}/"
   register: monit_queued_messages
   when: not monit_email_enable or not monit_eventqueue_enable
   changed_when: false

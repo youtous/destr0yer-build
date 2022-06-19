@@ -5,53 +5,53 @@
 ## Revoke all 2376
 - name: List existing docker-swarm UFW rules - tcp,udp/2376
   become: true
-  shell: >
+  ansible.builtin.shell: >
     ufw status numbered | grep -zoP '\[.*\]\s2376(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_swarm_2376_rules
 
 - name: UFW delete existing docker-swarm rules - tcp,udp/2376
   become: true
-  shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_2376_rules.stdout_lines }}"
 
 ## Revoke all 2377
 - name: List existing docker-swarm UFW rules - tcp,udp/2377
   become: true
-  shell: >
+  ansible.builtin.shell: >
     ufw status numbered | grep -zoP '\[.*\]\s2377(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_swarm_2377_rules
 
 - name: UFW delete existing docker-swarm rules - tcp,udp/2377
   become: true
-  shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_2377_rules.stdout_lines }}"
 
 ## Revoke all 7946
 - name: List existing docker-swarm UFW rules - tcp,udp/7946
   become: true
-  shell: >
+  ansible.builtin.shell: >
     ufw status numbered | grep -zoP '\[.*\]\s7946(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_swarm_7946_rules
 
 - name: UFW delete existing docker-swarm rules - tcp/7946
   become: true
-  shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_7946_rules.stdout_lines }}"
 
 ## Revoke all 4789
 - name: List existing docker-swarm UFW rules - tcp,udp/4789
   become: true
-  shell: >
+  ansible.builtin.shell: >
     ufw status numbered | grep -zoP '\[.*\]\s4789(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_swarm_4789_rules
 
 - name: UFW delete existing docker-swarm rules - tcp/4789
   become: true
-  shell: "yes y | ufw delete {{ item|quote }}"
+  ansible.builtin.shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_4789_rules.stdout_lines }}"
 
 ## End of revocation
