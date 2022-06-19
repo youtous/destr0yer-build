@@ -2,7 +2,7 @@
 # This role contains OpenSSH settings
 - name: Install openssh packages
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - openssh-client
       - openssh-server

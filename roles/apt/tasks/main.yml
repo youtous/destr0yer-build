@@ -46,17 +46,17 @@
 
 - name: Update apt-cache
   become: true
-  apt:
+  ansible.builtin.apt:
     update_cache: true
 
 - name: Install debsums
   become: true
-  apt:
+  ansible.builtin.apt:
     name: debsums
 
 - name: Install unattended-upgrades package to flag updates requiring reboot
   become: true
-  apt:
+  ansible.builtin.apt:
     name: unattended-upgrades
 
 - name: Check if distribution upgrade is required
@@ -64,7 +64,7 @@
 
 - name: Update and upgrade apt packages
   become: true
-  apt:
+  ansible.builtin.apt:
     upgrade: "yes"
     update_cache: true
     cache_valid_time: 86400 #One day
@@ -89,7 +89,7 @@
 
 - name: Clean unwanted olderstuff apt
   become: true
-  apt:
+  ansible.builtin.apt:
     autoremove: true
     purge: true
 ...

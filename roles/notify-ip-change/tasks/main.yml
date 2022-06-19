@@ -2,7 +2,7 @@
 # This role contains a a notifier of ip changes
 - name: Install required packages
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - cron
       - ruby

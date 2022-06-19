@@ -2,7 +2,7 @@
 # This role contains base system configuration
 - name: Install ntp related packages
   become: true
-  apt:
+  ansible.builtin.apt:
     name: systemd-timesyncd
     state: present
 

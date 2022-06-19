@@ -3,7 +3,7 @@
 # ssh role must be used in order to have a properly configured server
 - name: Install build requierements
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - gettext
       - librsync-dev
@@ -39,7 +39,7 @@
 
 - name: Install duply package
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - duply
 

@@ -5,7 +5,7 @@
 
 - name: Install fail2ban backend packages
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - python3-systemd
   notify:

@@ -2,7 +2,7 @@
 # This role contains base rules of the firewall
 - name: Install ufw package
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - ufw
 

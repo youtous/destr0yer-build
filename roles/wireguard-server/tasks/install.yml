@@ -1,7 +1,7 @@
 ---
 - name: Install GPG - required to add wireguard key
   become: true
-  apt:
+  ansible.builtin.apt:
     name: gnupg2
     state: present
 
@@ -13,7 +13,7 @@
 
 - name: Install kernel headers to compile wireguard with DKMS
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - "linux-headers-{{ dpkg_arch.stdout }}"
     state: present
@@ -21,7 +21,7 @@
 
 - name: Install wiregard using latest version from buster-backport
   become: true
-  apt:
+  ansible.builtin.apt:
     name: "{{ wireguard_packages }}"
     state: latest
     default_release: buster-backports
@@ -32,7 +32,7 @@
 
 - name: Install wiregard using latest version from stable
   become: true
-  apt:
+  ansible.builtin.apt:
     name: "{{ wireguard_packages }}"
     state: latest
     update_cache: true
@@ -46,7 +46,7 @@
     name: wireguard
     state: present
   register: wireguard_module_enabled
-  until:  wireguard_module_enabled is succeeded
+  until: wireguard_module_enabled is succeeded
   retries: 10
   delay: 10
   notify:

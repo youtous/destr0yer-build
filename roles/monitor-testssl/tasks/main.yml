@@ -2,7 +2,7 @@
 # This role is monitoring ssl/tls hosts on protocols, it assumes docker is installed on the system
 - name: Install required packages
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - cron
       - ruby

@@ -29,7 +29,7 @@
 
 - name: Ensure ruby is installed
   become: true
-  apt:
+  ansible.builtin.apt:
     name: ruby
     state: present
 

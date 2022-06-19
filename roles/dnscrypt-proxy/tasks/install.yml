@@ -5,7 +5,7 @@
 
 - name: Ensure any existing DNSCrypt-proxy vestige is removed
   become: true
-  apt:
+  ansible.builtin.apt:
     state: absent
     name:
       - dnscrypt-proxy

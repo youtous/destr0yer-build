@@ -2,7 +2,7 @@
 # This role contains CLI tools installation and configuration, CLI tools are for user not for the system
 - name: Install CLI Tools
   become: true
-  apt:
+  ansible.builtin.apt:
     name: "{{ cli_packages }}"
 
 - name: Configure vim
@@ -16,7 +16,7 @@
 
 - name: Install ruby
   become: true
-  apt:
+  ansible.builtin.apt:
     name: "{{ ruby_packages }}"
 
 - name: Test ccat presence
@@ -40,7 +40,7 @@
 
 - name: Requires python
   become: true
-  apt:
+  ansible.builtin.apt:
     name: "{{ python_packages }}"
 
 - name: Update setuptools

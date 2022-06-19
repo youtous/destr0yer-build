@@ -3,7 +3,7 @@
 # ssh role must be used in order to have a properly configured server
 - name: Install openssh-server package
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - openssh-server
 

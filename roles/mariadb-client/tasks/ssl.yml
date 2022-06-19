@@ -6,7 +6,7 @@
 
 - name: Install required packages
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - openssl
 

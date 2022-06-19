@@ -2,7 +2,7 @@
 # This role contains dynamic ip updating setup
 - name: Install cron
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - cron
 

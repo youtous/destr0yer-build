@@ -3,7 +3,7 @@
 
 - name: Install mariadb-client
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - mariadb-client
 

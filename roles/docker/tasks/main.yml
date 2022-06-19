@@ -2,7 +2,7 @@
 # This role contains docker installation
 - name: Install python docker modules
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - python3-docker
       - python3-jsondiff
@@ -10,7 +10,7 @@
 
 - name: Install pass package required for docker-login
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - pass
 

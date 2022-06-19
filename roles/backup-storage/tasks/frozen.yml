@@ -2,7 +2,7 @@
 # Setup a strategy of retention of the backups.
 # Each day, the backup directory will be copied in a given directory.
 - name: Install cron
-  apt:
+  ansible.builtin.apt:
     pkg: cron
     state: present
 

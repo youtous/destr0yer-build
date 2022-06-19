@@ -2,7 +2,7 @@
 # This role contains postfix settings for relay usage
 - name: Uninstall other mailserver packages
   become: true
-  apt:
+  ansible.builtin.apt:
     pkg:
       - exim4
       - sendmail
@@ -11,7 +11,7 @@
 
 - name: Install postfix package
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - mailutils
       - libsasl2-modules
