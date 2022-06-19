@@ -1,13 +1,13 @@
 ---
 - name: restart postfix
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: postfix
     state: restarted
 
 - name: reload postfix
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: postfix
     state: reloaded
 

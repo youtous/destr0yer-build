@@ -1,7 +1,7 @@
 ---
 - name: restart DNSCrypt-proxy
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: dnscrypt-proxy
     state: restarted
   listen:
@@ -17,7 +17,7 @@
 
 - name: restart NetworkManager
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: networking
     state: restarted
   notify: restart postfix
@@ -43,7 +43,7 @@
 # https://serverfault.com/questions/661621/why-do-i-have-to-manually-copy-etc-services-and-etc-resolv-conf-into-var-spoo
 - name: restart postfix if it exists
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: postfix
     state: restarted
   listen: restart postfix

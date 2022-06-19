@@ -1,6 +1,6 @@
 ---
 - name: Install building requirements
-  include_role:
+  ansible.builtin.include_role:
     name: minisign
 
 - name: Ensure any existing DNSCrypt-proxy vestige is removed

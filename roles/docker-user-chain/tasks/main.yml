@@ -54,7 +54,7 @@
 
 - name: Enable Firewall DOCKER-USER Rules service
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: firewall-docker-user
     enabled: true
     masked: false

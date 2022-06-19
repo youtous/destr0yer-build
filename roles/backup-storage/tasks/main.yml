@@ -90,7 +90,7 @@
   ignore_errors: true
 
 - name: Create backup accounts
-  include_role:
+  ansible.builtin.include_role:
     name: youtous.users
   vars:
     # pass sudo vars which are passed when using include_role (https://github.com/ansible/ansible/issues/29159#issuecomment-380800491)

@@ -1,7 +1,7 @@
 ---
 - name: restart sysstat
   become: true
-  systemd:
+  ansible.builtin.systemd:
     state: restarted
     name: sysstat
 ...

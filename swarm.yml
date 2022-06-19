@@ -117,10 +117,10 @@
 - name: Setup caddy additionals on managers | fail2ban, firewall
   hosts: [swarm_managers, swarm_primary_manager]
   tasks:
-    - include_role:
+    - ansible.builtin.include_role:
         name: docker-caddy-consul
         tasks_from: fail2ban
-    - include_role:
+    - ansible.builtin.include_role:
         name: docker-caddy-consul
         tasks_from: firewall
   vars_files:
@@ -142,7 +142,7 @@
 - name: Setup traefik additionals on managers | firewall
   hosts: [swarm_managers, swarm_primary_manager]
   tasks:
-    - include_role:
+    - ansible.builtin.include_role:
         name: docker-traefik
         tasks_from: firewall
   vars_files:

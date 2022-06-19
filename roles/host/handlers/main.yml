@@ -1,7 +1,7 @@
 ---
 - name: restart network-manager
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: networking
     state: restarted
 ...

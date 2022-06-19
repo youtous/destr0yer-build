@@ -9,7 +9,7 @@
     msg: "wireguard interfaces must not contain duplicates"
 
 - name: Setup wireguard servers
-  include_role:
+  ansible.builtin.include_role:
     name: wireguard-server
   vars:
     wireguard_server: "{{ wg_server }}"
@@ -19,7 +19,7 @@
   no_log: true
 
 - name: Setup wireguard clients
-  include_role:
+  ansible.builtin.include_role:
     name: wireguard-client
   vars:
     wireguard_client: "{{ wg_client }}"
@@ -29,7 +29,7 @@
   no_log: true
 
 - name: Setup monit wireguard
-  include_role:
+  ansible.builtin.include_role:
     name: monit-wireguard
   vars:
     monit_wireguard_interfaces: "{{ wireguard_monit_interfaces }}"

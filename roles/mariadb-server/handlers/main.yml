@@ -1,13 +1,13 @@
 ---
 - name: restart mariadb
   become: true
-  systemd:
+  ansible.builtin.systemd:
     state: restarted
     name: mariadb
 
 - name: systemd daemon reload
   become: true
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: true
 
 ...

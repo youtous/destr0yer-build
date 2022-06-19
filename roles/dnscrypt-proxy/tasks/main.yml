@@ -112,7 +112,7 @@
 
 - name: Enable DNSCrypt-proxy
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: dnscrypt-proxy
     enabled: true
     state: started
