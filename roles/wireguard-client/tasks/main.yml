@@ -4,27 +4,27 @@
   import_tasks: install.yml
 
 - name: Ensure wireguard keys are defined
-  fail:
+  ansible.builtin.fail:
     msg: Keys must be defined using wg genkey. No key provided.
   when: (wireguard_client.public_key is not defined or wireguard_client.public_key|length == 0) or (wireguard_client.private_key is not defined or wireguard_client.private_key|length == 0)
 
 - name: Ensure wireguard client preshared_key is defined
-  fail:
+  ansible.builtin.fail:
     msg: Wireguard client preshared_key is not defined.
   when: wireguard_client.preshared_key is not defined or wireguard_client.preshared_key|length == 0
 
 - name: Ensure wireguard server public_key is defined
-  fail:
+  ansible.builtin.fail:
     msg: Wireguard server public key is not defined.
   when: wireguard_client.server_public_key is not defined or wireguard_client.server_public_key|length == 0
 
 - name: Ensure wireguard client address is defined
-  fail:
+  ansible.builtin.fail:
     msg: Wireguard client address is not defined.
   when: wireguard_client.addresses is not defined or wireguard_client.addresses|length == 0
 
 - name: Ensure wireguard server endpoint is defined
-  fail:
+  ansible.builtin.fail:
     msg: Wireguard client endpoint address is not defined.
   when: wireguard_client.endpoint is not defined or wireguard_client.endpoint|length == 0
 

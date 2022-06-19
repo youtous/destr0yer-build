@@ -4,9 +4,11 @@
   import_tasks: install.yml
 
 - name: Ensure wireguard keys are defined
-  fail:
+  ansible.builtin.fail:
     msg: Keys must be defined using wg genkey. No key provided.
-  when: (wireguard_server.public_key is not defined or wireguard_server.public_key|length == 0) or (wireguard_server.private_key is not defined or wireguard_server.private_key|length == 0)
+  when: >
+    (wireguard_server.public_key is not defined or wireguard_server.public_key|length == 0) or
+    (wireguard_server.private_key is not defined or wireguard_server.private_key|length == 0)
 
 - name: Ensure wireguard configuration directory exists
   become: true

@@ -2,17 +2,17 @@
 # Setup certificates used by logstash client (acting as a forwarder)
 
 - name: Ensure logstash client root CA is defined
-  fail:
+  ansible.builtin.fail:
     msg: root client CA is empty or not defined.
   when: logstash_client_forwarder_CA_certificate is not defined or logstash_client_forwarder_CA_certificate|length == 0
 
 - name: Ensure logstash client node crt is defined
-  fail:
+  ansible.builtin.fail:
     msg: crt is empty or not defined.
   when: logstash_client_forwarder_node_certificate is not defined or logstash_client_forwarder_node_certificate|length == 0
 
 - name: Ensure logstash client node key is defined
-  fail:
+  ansible.builtin.fail:
     msg: key is empty or not defined.
   when: logstash_client_forwarder_node_private_key is not defined or logstash_client_forwarder_node_private_key|length == 0
 

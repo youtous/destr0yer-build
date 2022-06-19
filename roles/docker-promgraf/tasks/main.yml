@@ -1,7 +1,7 @@
 ---
 # This role setup a promtheus, grafana, alertmanager stack
 - name: Verify promgraf_grafana_admin_password is defined and not empty
-  assert:
+  ansible.builtin.assert:
     that: >
       promgraf_grafana_admin_password is defined and promgraf_grafana_admin_password|length
     msg: "promgraf_grafana_admin_password must be defined an not empty"

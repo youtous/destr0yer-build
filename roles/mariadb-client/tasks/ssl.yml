@@ -20,7 +20,7 @@
     mode: u=rw,g=r,o=r
 
 - name: Ensure root CA is defined
-  fail:
+  ansible.builtin.fail:
     msg: mariadb root CA is empty or not defined.
   when: mariadb_ca_certificate is not defined or mariadb_ca_certificate|length == 0
 

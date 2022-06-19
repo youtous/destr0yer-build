@@ -1,6 +1,6 @@
 ---
 - name: Checking maximum length of jails
-  fail:
+  ansible.builtin.fail:
     msg: Maximum length for fail2ban jail name is 20.
   when: service.name|length > 20
   with_items: "{{ fail2ban_services }}"

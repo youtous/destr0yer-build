@@ -12,17 +12,17 @@
     mode: u=rwx,g=,o=
 
 - name: Ensure logstash root CA is defined
-  fail:
+  ansible.builtin.fail:
     msg: root CA is empty or not defined.
   when: logstash_CA_certificate is not defined or logstash_CA_certificate|length == 0
 
 - name: Ensure logstash node crt is defined
-  fail:
+  ansible.builtin.fail:
     msg: crt is empty or not defined.
   when: metricbeat_node_certificate is not defined or metricbeat_node_certificate|length == 0
 
 - name: Ensure logstash node key is defined
-  fail:
+  ansible.builtin.fail:
     msg: key is empty or not defined.
   when: metricbeat_node_private_key is not defined or metricbeat_node_private_key|length == 0
 

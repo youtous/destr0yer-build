@@ -2,19 +2,19 @@
 # This role setup a reverse-proxy/load balancer for the swarm using caddy and consul
 
 - name: Verify Consul ACL Token is defined and not empty
-  assert:
+  ansible.builtin.assert:
     that: >
       consul_acl_master_token is defined and consul_acl_master_token|length
     msg: "consul_acl_master_token must be defined an not empty"
 
 - name: Verify Consul Caddy encryption key is defined and 32 caracters long
-  assert:
+  ansible.builtin.assert:
     that: >
       caddy_consul_certificates_aes_key is defined and (caddy_consul_certificates_aes_key|length == 32)
     msg: "caddy_consul_certificates_aes_key must be defined an 32 caracters long (current size = caddy_consul_certificates_aes_key|length)"
 
 - name: Verify Consul replica count is compatible with the raft consensus algorithm
-  assert:
+  ansible.builtin.assert:
     that: >
       consul_replicas|int == 1 or consul_replicas|int == 3 or consul_replicas|int == 5 or consul_replicas|int == 7
     msg: "consul_replicas must either be 1,3,5,7 to be compatible with the raft algorithm consensus (current value = {{ consul_replicas }})"

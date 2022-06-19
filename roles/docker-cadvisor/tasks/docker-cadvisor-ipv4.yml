@@ -2,7 +2,7 @@
 # ipv4 firewall rules
 
 - name: Ensure docker external interfaces defined
-  fail:
+  ansible.builtin.fail:
     msg: docker_external_interfaces not defined.
   when: docker_external_interfaces is not defined
 

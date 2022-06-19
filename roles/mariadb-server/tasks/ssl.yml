@@ -11,17 +11,17 @@
       - openssl
 
 - name: Ensure root CA is defined
-  fail:
+  ansible.builtin.fail:
     msg: mariadb root CA is empty or not defined.
   when: mariadb_ca_certificate is not defined or mariadb_ca_certificate|length == 0
 
 - name: Ensure server crt is defined
-  fail:
+  ansible.builtin.fail:
     msg: mariadb server crt is empty or not defined.
   when: mariadb_server_certificate is not defined or mariadb_server_certificate|length == 0
 
 - name: Ensure server key is defined
-  fail:
+  ansible.builtin.fail:
     msg: mariadb server key is empty or not defined.
   when: mariadb_server_key is not defined or mariadb_server_key|length == 0
 

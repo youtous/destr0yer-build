@@ -5,7 +5,7 @@
 # sudo fail2ban-regex systemd-journal  /etc/fail2ban/filter.d/dovecot-docker.conf   -v --print-all-matched
 
 - name: Verify fail2ban postfix mode
-  assert:
+  ansible.builtin.assert:
     that: >
       mailserver_fail2ban_postfix_mode in ['normal','more','extra','aggressive']
     msg: "fail2ban postfix modes (mailserver_fail2ban_postfix_mode): normal, more, extra, aggressive"

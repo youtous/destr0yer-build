@@ -2,7 +2,7 @@
 # We need to patch DOCKER firewall for hosted containers to access caddy services (see: https://forums.docker.com/t/no-route-to-host-network-request-from-container-to-host-ip-port-published-from-other-container/39063/16)
 
 - name: Verify traefik_opened_ports is defined
-  assert:
+  ansible.builtin.assert:
     that: >
       traefik_opened_ports is defined
     msg: "traefik_opened_ports must be defined"

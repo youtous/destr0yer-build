@@ -2,7 +2,7 @@
 # This role setup a Mailserver in a docker swarm cluster
 # see https://github.com/tomav/docker-mailserver for more details
 - name: Verify no duplicates in mailserver accounts
-  assert:
+  ansible.builtin.assert:
     that: >
       item.accounts | map(attribute='username') | list | count
       ==

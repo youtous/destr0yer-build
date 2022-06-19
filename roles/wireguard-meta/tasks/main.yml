@@ -1,7 +1,7 @@
 ---
 # This role configures multiple wireguard clients / server on the same host
 - name: Verify no duplicates in wireguard interfaces
-  assert:
+  ansible.builtin.assert:
     that: >
       wireguard_combined_interfaces | count
       ==
