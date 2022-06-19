@@ -98,7 +98,7 @@ mailserver_domains:
   #    - username:
   #      bcrypt_password: "" # use bcrypt-passwd.sh script to generate password
   #      quota_mb: 16 # optional : specific quota in MB
-  #  mta_sts: # ref 
+  #  mta_sts: # ref
   #    version: # define mts-sts policy version (only one, don't define and use default value)
   #    # policy lifetime positive integer up to 31557600.
   #    # recommended is 604800

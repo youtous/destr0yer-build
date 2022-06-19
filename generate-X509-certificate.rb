@@ -89,4 +89,3 @@ unless system "openssl x509 -req -in #{SAVE_PATH}#{name}.csr -CA #{SAVE_PATH}#{r
   raise "Could not sign client certificate."
 end
 puts "Client public certificate (.crt) has been signed by RootCA using x509 standard (hashed with sha256). Certificate is valid for #{CLIENT_VALIDITY} days. [#{name}.crt]"
-

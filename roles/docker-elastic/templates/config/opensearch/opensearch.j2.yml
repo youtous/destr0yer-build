@@ -11,9 +11,8 @@ http.port: 9200
 # allow regex for painless scripts
 script.painless.regex.enabled: true
 
-plugins.security.disabled: true 
+plugins.security.disabled: true
 
 compatibility.override_main_response_version: true
 
 ## ! important, keep an empty line after this line!
-

@@ -7,4 +7,3 @@ ssl = on
 ssl-ca = /etc/mysql/ca.pem
 ssl-cert = /etc/mysql/server-cert.pem
 ssl-key = /etc/mysql/server-key.pem
-

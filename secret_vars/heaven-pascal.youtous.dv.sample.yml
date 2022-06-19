@@ -39,13 +39,9 @@ mailserver_heaven_pascal_dkim_public: |
 # generated keys for root
 # use `ssh-keygen -q -t ed25519 -C "" -N ""`
 root_public_key: ""
-root_private_key: |
-  -----BEGIN OPENSSH PRIVATE KEY-----
-  -----END RSA PRIVATE KEY-----
+root_private_key: ""
 
-docker_swarm_node_private_key: |
-  -----BEGIN OPENSSH PRIVATE KEY-----
-  -----END OPENSSH PRIVATE KEY-----
+docker_swarm_node_private_key: ""
 
 docker_swarm_node_certificate: |
   -----BEGIN CERTIFICATE-----
@@ -55,9 +51,7 @@ secret_backup_gpg_public_key: |
   -----BEGIN PGP PUBLIC KEY BLOCK-----
   -----END PGP PUBLIC KEY BLOCK-----
 
-secret_backup_gpg_private_key: |
-  -----BEGIN PGP PRIVATE KEY BLOCK-----
-  -----END PGP PRIVATE KEY BLOCK-----
+secret_backup_gpg_private_key: ""
 
 secret_backup_gpg_key_passphrase: ''
 
@@ -66,27 +60,21 @@ mariadb_server_certificate: |
   -----BEGIN CERTIFICATE-----
   -----END CERTIFICATE-----
 
-mariadb_server_key: |
-  -----BEGIN RSA PRIVATE KEY-----
-  -----END RSA PRIVATE KEY-----
+mariadb_server_key: ""
 
 # logstash TLS
 logstash_node_certificate: |
   -----BEGIN CERTIFICATE-----
   -----END CERTIFICATE-----
 
-logstash_node_private_key: |
-  -----BEGIN OPENSSH PRIVATE KEY-----
-  -----END OPENSSH PRIVATE KEY-----
+logstash_node_private_key: ""
 
 # journalbeat TLS
 journalbeat_node_certificate: |
   -----BEGIN CERTIFICATE-----
   -----END CERTIFICATE-----
 
-journalbeat_node_private_key: |
-  -----BEGIN OPENSSH PRIVATE KEY-----
-  -----END OPENSSH PRIVATE KEY-----
+journalbeat_node_private_key: ""
 
 # metricbeat TLS (share with journalbeat and logspout)
 metricbeat_node_certificate: "{{ journalbeat_node_certificate }}"

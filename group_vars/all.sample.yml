@@ -107,12 +107,12 @@ nodes_public_ip4s: "{{
   groups['swarm_workers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
   groups['swarm_managers'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
   groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])
-}}" 
+}}"
 nodes_public_ip6s: "{{
   groups['swarm_workers'] | map('extract', hostvars, ['ipv6']) | list | flatten | unique | default([]) +
   groups['swarm_managers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])  +
   groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])
-}}" 
+}}"
 nodes_public_ips: "{{ nodes_public_ip4s + nodes_public_ip6s }}"
 
 nodes_public_ip4s_without_current_host: "{{ nodes_public_ip4s | difference(ipv4) }}"

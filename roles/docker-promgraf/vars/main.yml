@@ -12,7 +12,7 @@ promgraf_files:
   - {src: grafana/dashboards/swarmprom-prometheus-dash.json, dest: grafana/dashboards/swarmprom-prometheus-dash.json}
   - {src: grafana/dashboards/swarmprom-services-dash.json, dest: grafana/dashboards/swarmprom-services-dash.json}
   - {src: grafana/dashboards/node-exporter-full.json, dest: grafana/dashboards/node-exporter-full.json}
-  
+
 promgraf_templates:
   - {src: grafana/datasources.yaml.j2, dest: grafana/datasources.yaml}
   - {src: grafana/swarmprom_dashboards.yaml, dest: grafana/swarmprom_dashboards.yaml}

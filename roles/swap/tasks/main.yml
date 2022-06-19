@@ -1,5 +1,5 @@
 ---
-# Setup swap file 
+# Setup swap file
 
 - name: Setup swap file
   become: True

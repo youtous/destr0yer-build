@@ -21,7 +21,7 @@ Use a VPN for `receiver <<----[VPN]--- forwarder`
 ### Define index-patterns
 
 _delete can be done in settings > saved objects > filter by pattern_
-In elastic console, add: 
+In elastic console, add:
 ```http request
 # delete existing indices
 DELETE /docker-*
@@ -111,7 +111,7 @@ POST _opendistro/_alerting/destinations
     "url": "http://alerts-smtp-forwarder:8080/email"
   }
 }
-``` 
+```
 
 2. Generate a monitor and alert triggers.
 
@@ -147,7 +147,7 @@ PUT _template/metricbeat-
 
 Update existing **indices** using :
 ```http request
-PUT metricbeat*/_settings 
+PUT metricbeat*/_settings
 {
         "opendistro.index_state_management.policy_id": "metricbeat_policy_workflow",
         "opendistro.index_state_management.rollover_alias": "metricbeat_rollover"

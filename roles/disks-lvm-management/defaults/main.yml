@@ -7,7 +7,7 @@ filesystems_to_create: []
 volume_groups_to_create: []
   # -   pvs: "/dev/disk/by-partlabel/{{ 'my-name'|hash('md5') }}"
   #     vg: "vg0"
-    
+
 volume_groups_to_delete: []
 
 logical_volume_groups_to_create: []

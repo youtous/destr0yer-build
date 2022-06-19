@@ -4,8 +4,8 @@
 - name: Install parted and lvm2 and fs
   become: True
   ansible.builtin.package:
-    name: 
-      - parted 
+    name:
+      - parted
       - lvm2
       - xfsprogs
     state: present

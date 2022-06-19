@@ -21,4 +21,3 @@ setup.template:
 #  settings:
 #    index.opendistro.index_state_management.policy_id: "journalbeat_policy_workflow"
 #    index.opendistro.index_state_management.rollover_alias: "journalbeat_rollover"
-

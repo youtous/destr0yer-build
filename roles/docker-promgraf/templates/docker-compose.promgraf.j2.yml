@@ -173,7 +173,7 @@ services:
   karma:
     image: "ghcr.io/prymitive/karma:{{ promgraf_karma_version }}"
     command: "--alertmanager.proxy"
-    networks: 
+    networks:
       - internal
       - {{ caddy_network }}
     environment:
@@ -248,19 +248,19 @@ services:
     configs:
       - source: grafana-datasources.yaml
         target: /etc/grafana/provisioning/datasources/datasources.yaml
-     
+
       - source: grafana-swarmprom_dashboards.yaml
         target: /etc/grafana/provisioning/dashboards/swarmprom_dashboard.yaml
-  
+
       - source: grafana-swarmprom-nodes-dash.json
         target: /etc/grafana/dashboards/swarmprom-nodes-dash.json
-  
+
       - source: grafana-swarmprom-services-dash.json
         target: /etc/grafana/dashboards/swarmprom-services-dash.json
-  
+
       - source: grafana-swarmprom-prometheus-dash.json
         target: /etc/grafana/dashboards/swarmprom-prometheus-dash.json
-  
+
       - source: grafana-node-exporter-full.json
         target: /etc/grafana/dashboards/node-exporter-full.json
     volumes:

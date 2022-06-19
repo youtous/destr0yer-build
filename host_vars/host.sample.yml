@@ -7,12 +7,12 @@ ipv4: # /!\ When one of the host ip is changed, playbook should be completely re
 ipv6:
   - fde4:8dba:82e1::c1
 
-ipv4_private: 
+ipv4_private:
   - "192.168.100.10"
 ipv6_private: []
 
 
-### Beginning of partition management 
+### Beginning of partition management
 # enable swap!
 fs_swap_file_size_mb: "4096"
 
@@ -27,7 +27,7 @@ disk_partitions_to_create:
      flags: [ lvm ]
      name: "docker_partition-{{ docker_partition_volume_id }}"
 
-volume_groups_to_create: 
+volume_groups_to_create:
   -   pvs: "/dev/disk/by-partlabel/{{ ('docker_partition-'~docker_partition_volume_id)|hash('md5') }}"
       vg: "vg0"
 
@@ -44,7 +44,7 @@ filesystems_to_create:
 # use the created partition to host docker data
 docker_data_root: "/docker"
 
-### End of partition management 
+### End of partition management
 
 host_users:
   - username: specu

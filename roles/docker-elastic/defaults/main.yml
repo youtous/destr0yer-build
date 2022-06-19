@@ -6,7 +6,7 @@ elastic_version: 7.12.1 # pin this version until migration to fluentd, see https
 opensearch_version: 1.2.0
 
 # a list of allowed ips to access logstash thought socket
-logstash_allowed_ips: 
+logstash_allowed_ips:
   - '172.17.0.0/16' # docker0
   - '172.18.0.0/16' # docker_gwbridge
 

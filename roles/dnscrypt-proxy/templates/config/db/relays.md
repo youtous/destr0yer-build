@@ -330,4 +330,3 @@ sdns://gRMxODUuMTkzLjEyNy4yNDQ6NDQz
 Anonymized DNS relay hosted in Sweden and maintained by yofiji.
 
 sdns://gSlbMmEwYTozODQwOjEzMzc6MTI3OjA6YjljMTo3ZmY0OjEzMzddOjQ0Mw
-

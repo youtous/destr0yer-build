@@ -6,7 +6,7 @@ ipv4: # /!\ When one of the host ip is changed, playbook should be completely re
   - 192.168.100.10
 ipv6:
   - fde4:8dba:82e1::c1
-ipv4_private: 
+ipv4_private:
   - "192.168.100.10"
 ipv6_private:
   - fde4:8dba:82e1::c1

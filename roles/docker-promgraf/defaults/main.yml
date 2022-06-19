@@ -48,14 +48,14 @@ promgraf_alertmanager_configuration:
 # grafana configuration
 promgraf_grafana_admin_user: "admin"
 promgraf_grafana_admin_password: ""
-promgraf_grafana_allow_sign_up: False 
-promgraf_grafana_smtp_enabled: False 
-promgraf_grafana_smtp_from_address: "grafana@dev.dv" 
-promgraf_grafana_smtp_from_name: "Grafana" 
-promgraf_grafana_smtp_host: "localhost:25" 
-promgraf_grafana_smtp_user: "" 
-promgraf_grafana_smtp_password: "" 
-promgraf_grafana_smtp_starttls_policy: "" 
+promgraf_grafana_allow_sign_up: False
+promgraf_grafana_smtp_enabled: False
+promgraf_grafana_smtp_from_address: "grafana@dev.dv"
+promgraf_grafana_smtp_from_name: "Grafana"
+promgraf_grafana_smtp_host: "localhost:25"
+promgraf_grafana_smtp_user: ""
+promgraf_grafana_smtp_password: ""
+promgraf_grafana_smtp_starttls_policy: ""
 
 promgraf_backend_users: "{{ backend_users|default([]) }}"
 

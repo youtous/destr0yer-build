@@ -17,7 +17,7 @@ Please fork this repo for each different server configuration.
 - python-jmespath
 
 #### VM only
- _*Commands :*_ 
+ _*Commands :*_
 - Start machines using `vagrant up`.
 - Stop machines using `vagrant halt`.
 - Update /etc/hosts using `vagrant hostmanager`
@@ -38,7 +38,7 @@ Use it for Docker infrastructures.
 1. First configuration a new hosts: `ansible-playbook -i hosts/destr0yers.yml  destr0yers.yml --vault-password-file ./.vault_password --tag="new-systems"`
 2. Launch the recipe using: `ansible-playbook -i hosts/destr0yers.yml destr0yers.yml --vault-password-file ./.vault_password`
 3. Launch the docker recipe using: `ansible-playbook -i hosts/swarm-nodes.yml the-swarm.yml --vault-password-file ./.vault_password`
- 
+
 ### Save `secrets` and `certs`
 Using `make` and the **Makefile** you can easily save secrets and certs in a safe place. For instance a private _Nextcloud_.
 - `make push` - save secrets and certs
@@ -64,7 +64,7 @@ _We follow this guide: https://github.com/Oefenweb/ansible-duply-backup#advance-
 3. Export the private key using: `gpg --output {private key name}.sec.asc --armor --export-secret-key {the name you entered previously}`
 4. Save the public and the private key in the host secret vault.
 5. Define this key as encryption key for the backup in `host_vars`. **/!\\** don't forget to set the names and the ownertrust.
-6. Save the _ownertrust_, the _both keys_ and the _passphrase_ in a **safe place**. 
+6. Save the _ownertrust_, the _both keys_ and the _passphrase_ in a **safe place**.
 7. When the export is completed, **delete the GPG key from the host machine**.
 
 
@@ -80,7 +80,7 @@ Details of the procedure are available on : https://gist.github.com/fntlnz/cf14f
 **Important :** use a secure encryption for root CA using `openssl genrsa -chacha20...`
 
 To sum up :
-- Root CA 
+- Root CA
     1. RootCA (private ! and encrypted using chacha20) : `openssl genrsa -chacha20 -out certs/heaven.youtous.me-rootCA.key 4096`
     2. Root CERTIFICATE (crt) (to be shared and renewed in 2500 days) : `openssl req -x509 -new -nodes -key certs/heaven.youtous.me-rootCA.key -sha256 -days 2500 -out certs/heaven.youtous.me-rootCA.crt`
 - For each server :
@@ -92,7 +92,7 @@ To sum up :
 
 *Notes :*
  - chacha20 is currently secured enough and resists against timing guess attacks
- - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121) 
+ - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121)
 
 ### Use elastic for logging
 
@@ -185,4 +185,4 @@ Install requirements using
 `ansible-galaxy install -r requirements.yml`
 
 *See requirements.yml*
-*Ansible version:* _2.8_ 
+*Ansible version:* _2.8_

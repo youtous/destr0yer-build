@@ -61,14 +61,14 @@ services:
         traefik.enable: "true"
         traefik.docker.network: "{{ traefik_public_network }}"
 
-        
+
         traefik.tcp.routers.logstash-5000.entrypoints: "logstash5000"
 
         traefik.tcp.routers.logstash-5000.rule: "HostSNI(`*`)"
         traefik.tcp.routers.logstash-5000.tls.passthrough: "true"
         traefik.tcp.routers.logstash-5000.service: "logstash-5000-proxy"
         traefik.tcp.routers.logstash-5000.middlewares: "logstash-ipwhitelist@docker"
-        
+
         traefik.tcp.services.logstash-5000-proxy.loadbalancer.server.port: "5000"
         traefik.tcp.services.logstash-5000-proxy.loadbalancer.terminationDelay: "60000"
 
@@ -79,7 +79,7 @@ services:
         traefik.tcp.routers.logstash-5044.tls.passthrough: "true"
         traefik.tcp.routers.logstash-5044.service: "logstash-5044-proxy"
         traefik.tcp.routers.logstash-5044.middlewares: "logstash-ipwhitelist@docker"
-        
+
         traefik.tcp.services.logstash-5044-proxy.loadbalancer.server.port: "5044"
         traefik.tcp.services.logstash-5044-proxy.loadbalancer.terminationDelay: "60000"
 
@@ -90,23 +90,23 @@ services:
         traefik.tcp.routers.logstash-5064.tls.passthrough: "true"
         traefik.tcp.routers.logstash-5064.service: "logstash-5064-proxy"
         traefik.tcp.routers.logstash-5064.middlewares: "logstash-external-ipwhitelist@docker"
-        
+
         traefik.tcp.services.logstash-5064-proxy.loadbalancer.server.port: "5064"
         traefik.tcp.services.logstash-5064-proxy.loadbalancer.terminationDelay: "60000"
-        
-        traefik.tcp.middlewares.logstash-ipwhitelist.ipwhitelist.sourcerange: "{{ logstash_allowed_ips|join(', ') }}, 127.0.0.1/32" 
+
+        traefik.tcp.middlewares.logstash-ipwhitelist.ipwhitelist.sourcerange: "{{ logstash_allowed_ips|join(', ') }}, 127.0.0.1/32"
         traefik.tcp.middlewares.logstash-external-ipwhitelist.ipwhitelist.sourcerange: "{{ logstash_external_allowed_ips|join(', ') }}, 127.0.0.1/32"
 
         # todo : eventually enable TCP Keepalive when supported by traefik https://github.com/traefik/traefik/issues/1046
 
 # TODO: enable it when supported, actually not yet supported https://github.com/traefik/traefik/issues/5598
-#   
+#
 #         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.path: "/health?ready=1"
 #         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.scheme: "http"
 #         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.port: "8080"
 #         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.interval: "10s"
 #         traefik.tcp.services.logstashproxy.loadbalancer.healthCheck.timeout: "3s"
-# 
+#
 
 {% if enable_logstash_webui %}
 

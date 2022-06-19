@@ -1943,4 +1943,3 @@ Uncensored, DNSSEC, no logging DNSCrypt server (IPv6) hosted in Sweden
 Maintained by yofiji
 
 sdns://AQcAAAAAAAAAKVsyYTBhOjM4NDA6MTMzNzoxMjc6MDpiOWMxOjdmZjQ6MTMzN106NDQzILGmWU23O2i2Y0EOnbb5JHuJpmEUuPa8ua5NbHUlftXWGTIuZG5zY3J5cHQtY2VydC55b2Zpamktc2U
-
