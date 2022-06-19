@@ -1,0 +1,19 @@
+image: docker:latest
+# ref https://docs.gitlab.com/ee/user/packages/container_registry/#build-and-push-images-using-gitlab-cicd
+
+stages:
+  - test
+
+services:
+  - name: docker:dind
+    alias: localhost # https://stackoverflow.com/questions/57059851/gitlab-ci-gives-curl-7-failed-to-connect-to-localhost-port-8090-connection-r
+
+test:
+  image: python:latest
+  stage: test
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - pip install pre-commit ansible
+  script:
+    - pre-commit run --all-files
