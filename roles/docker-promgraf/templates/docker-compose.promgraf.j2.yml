@@ -1,3 +1,4 @@
+---
 version: "3.8"
 
 configs:
@@ -337,3 +338,4 @@ volumes:
     driver: local
   alertmanager-data:
     driver: local
+...
