@@ -29,7 +29,7 @@
   when: monit_present is failed
 
 - name: Copy Monit binary
-  become: yes
+  become: True
   copy:
     remote_src: yes
     src: "{{ monit_download_dest_directory }}/monit-{{ monit_version }}/bin/monit"
@@ -40,7 +40,7 @@
   when: monit_present is failed
 
 - name: Create Monit configuration directory
-  become: yes
+  become: True
   file:
     path: /etc/monit
     state: directory
@@ -49,7 +49,7 @@
     mode: u=rwx,g=rx,o=rx
 
 - name: Create Monit additional configuration directory
-  become: yes
+  become: True
   file:
     path: /etc/monit/conf.d
     state: directory
@@ -58,7 +58,7 @@
     mode: u=rwx,g=rx,o=rx
 
 - name: Create Monit var directory
-  become: yes
+  become: True
   file:
     path: "{{ monit_var_directory }}"
     state: directory
@@ -67,7 +67,7 @@
     mode: u=rwx,g=rx,o=rx
 
 - name: Copy Monit default configuration
-  become: yes
+  become: True
   copy:
     remote_src: yes
     src: "{{ monit_download_dest_directory }}/monit-{{ monit_version }}/conf/monitrc"
@@ -78,7 +78,7 @@
   when: monit_present is failed
 
 - name: Create a symbolic link for monitrc
-  become: yes
+  become: True
   file:
     src: /etc/monit/monitrc
     dest: /etc/monitrc
@@ -88,7 +88,7 @@
 
 # according https://mmonit.com/wiki/Monit/Systemd
 - name: Create systemd startup script for Monit
-  become: yes
+  become: True
   copy:
     src: "files/systemd/monit.service"
     dest: "/lib/systemd/system/monit.service"
@@ -97,7 +97,7 @@
     mode: u=rw,g=r,o=r
 
 - name: Clean temporary directory
-  become: yes
+  become: True
   file:
     state: absent
     path: "/tmp/monit"

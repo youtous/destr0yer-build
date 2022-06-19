@@ -2,7 +2,7 @@
 # Install filebeat on debian like systems
 
 - name: "Import elastic GPG key from {{ elastic_gpg_keyserver }}"
-  become: yes
+  become: True
   apt_key:
     keyserver: "{{ elastic_gpg_keyserver }}"
     id: "{{ elastic_gpg_key }}"
@@ -10,14 +10,14 @@
 
 
 - name: Add elastic repository to apt-repositories
-  become: yes
+  become: True
   apt_repository:
     repo: "deb {{ elastic_deb_repository }} stable main"
     state: present
     filename: elastic
 
 - name: Install filebeat
-  become: yes
+  become: True
   apt:
     name:
       - filebeat

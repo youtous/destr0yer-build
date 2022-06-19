@@ -1,6 +1,6 @@
 ---
 - name: Whitelists allowed ips of accounts to access ssh
-  become: yes
+  become: True
   blockinfile:
     dest: "/etc/hosts.allow"
     block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
@@ -9,19 +9,19 @@
 
 ## same with firewall rules
 - name: List existing sftp backup UFW rules
-  become: yes
+  become: True
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port|quote }}(?!\\d).*\# backup client allowed\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_ssh_backup_rules
 
 - name: UFW delete existing sftp backup rules - tcp,udp/ssh
-  become: yes
+  become: True
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_ssh_backup_rules.stdout_lines }}"
 
 - name: UFW Allow sftp backup clients - LIMIT tcp/ssh
-  become: yes
+  become: True
   ufw:
     rule: limit
     port: ssh

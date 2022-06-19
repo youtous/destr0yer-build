@@ -1,12 +1,12 @@
 ---
 - name: restart monit
-  become: yes
+  become: True
   service:
     name: monit
     state: restarted
 
 - name: reload monit
-  become: yes
+  become: True
   service:
     name: monit
     state: reloaded

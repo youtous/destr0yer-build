@@ -2,7 +2,7 @@
 # This role configures the /etc/resolv.conf to use specific configuration
 
 - name: Unlock /etc/resolv.conf
-  become: yes
+  become: True
   file:
     path: /etc/resolv.conf
     attributes: -i
@@ -23,7 +23,7 @@
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable
-  become: yes
+  become: True
   file:
     path: /etc/resolv.conf
     owner: root

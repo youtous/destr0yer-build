@@ -2,7 +2,7 @@
 # fail2ban for caddy
 # resource : https://github.com/crazy-max/docker-fail2ban/
 - name: Add caddy filters to fail2ban
-  become: yes
+  become: True
   copy:
     src: files/filter.d/{{ item }}
     dest: /etc/fail2ban/filter.d/{{ item }}

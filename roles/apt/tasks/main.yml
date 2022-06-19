@@ -1,14 +1,14 @@
 ---
 # This role contains apt settings
 - name: Remove unwanted sources.d
-  become: yes
+  become: True
   file:
     path: "{{ apt_directory }}/sources.list.d/{{ item }}"
     state: absent
   with_items: "{{ apt_remove_sourcesd }}"
 
 - name: Remove patterns sources.d | listing
-  become: yes
+  become: True
   find:
     paths: "{{ apt_directory }}/sources.list.d"
     hidden: yes
@@ -18,14 +18,14 @@
   register: sources_unwanted_apt_found
 
 - name: Remove unwanted sources.d | removing
-  become: yes
+  become: True
   file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ sources_unwanted_apt_found.files }}"
 
 - name: Copy sources.list
-  become: yes
+  become: True
   copy:
     src: "files/{{ apt_distribution_version_target }}/sources.list"
     dest: "{{ apt_directory }}/sources.list"
@@ -34,7 +34,7 @@
     mode: u=rw,g=r,o=r
 
 - name: Copy apt preferences
-  become: yes
+  become: True
   copy:
     src: "files/{{ apt_distribution_version_target }}/{{ item }}"
     dest: "{{ apt_directory }}/preferences.d/{{ item }}"
@@ -45,17 +45,17 @@
     - 5-preferences
 
 - name: Update apt-cache
-  become: yes
+  become: True
   apt:
     update_cache: yes
 
 - name: Install debsums
-  become: yes
+  become: True
   apt:
     name: debsums
 
 - name: Install unattended-upgrades package to flag updates requiring reboot
-  become: yes
+  become: True
   apt:
     name: unattended-upgrades
 
@@ -63,21 +63,21 @@
   import_tasks: upgrade_distribution.yml
 
 - name: Update and upgrade apt packages
-  become: yes
+  become: True
   apt:
     upgrade: "yes"
     update_cache: yes
     cache_valid_time: 86400 #One day
 
 - name: Check if a reboot is needed on all servers
-  become: yes
+  become: True
   register: reboot_required_file
   stat:
     path: /var/run/reboot-required
     get_md5: no
 
 - name: Reboot if kernel updated
-  become: yes
+  become: True
   reboot:
     msg: "Reboot initiated by Ansible for kernel updates"
     connect_timeout: 5
@@ -88,7 +88,7 @@
   when: apt_allowed_to_reboot and reboot_required_file.stat.exists
 
 - name: Clean unwanted olderstuff apt
-  become: yes
+  become: True
   apt:
     autoremove: yes
     purge: yes

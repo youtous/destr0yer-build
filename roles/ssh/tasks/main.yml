@@ -1,7 +1,7 @@
 ---
 # This role contains OpenSSH settings
 - name: Install openssh packages
-  become: yes
+  become: True
   apt:
     name:
       - openssh-client
@@ -10,7 +10,7 @@
 # Use https://cryptcheck.fr/ to check ssh
 # Use https://sshcheck.com to check ssh
 - name: Ensure files for weak algorithms are not present
-  become: yes
+  become: True
   file:
     path: "{{ item }}"
     state: absent
@@ -22,7 +22,7 @@
   register: flag_keys_generated
 
 - name: Remove old host keys
-  become: yes
+  become: True
   file:
     path: "{{ item }}"
     state: absent
@@ -32,18 +32,18 @@
   when: flag_keys_generated.stat.exists == False
 
 - name: Generate ed25519 host key
-  become: yes
+  become: True
   command: ssh-keygen -q -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -C "" -N ""
   when: flag_keys_generated.stat.exists == False
 
 - name: Generate rsa host key
-  become: yes
+  become: True
   command: ssh-keygen -q -t rsa -b "{{ rsa_key_size|quote }}" -f /etc/ssh/ssh_host_rsa_key -C "" -N ""
   when: flag_keys_generated.stat.exists == False
 
 # Will be available in Ansible 2.8
 #- name: Generate ed25519 host key
-#  become: yes
+#  become: True
 #  openssh_keypair:
 #    path: /etc/ssh/ssh_host_ed25519_key
 #    type: ed25519
@@ -51,7 +51,7 @@
 #  when: flag_keys_generated.stat.exists == False
 #
 #- name: Generate rsa host key
-#  become: yes
+#  become: True
 #  openssh_keypair:
 #    path: /etc/ssh/ssh_host_rsa_key
 #    size: "{{ rsa_key_size }}"
@@ -59,7 +59,7 @@
 #  when: flag_keys_generated.stat.exists == False
 
 - name: Lock host keys
-  become: yes
+  become: True
   copy:
     content: ""
     dest: "{{ key_generated_flag_file }}"
@@ -69,7 +69,7 @@
     mode: u=rw,g=rw,o=r
 
 - name: Copy issue banners
-  become: yes
+  become: True
   copy:
     src: "files/{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -83,7 +83,7 @@
     - { src: issue, dest: /etc/issue.net }
 
 - name: Copy sshd server configuration
-  become: yes
+  become: True
   template:
     src: templates/sshd_config.j2
     dest: /etc/ssh/sshd_config
@@ -94,21 +94,21 @@
     - restart sshd
 
 - name: "Configure sshd port {{ sshd_port }} in /etc/services"
-  become: yes
+  become: True
   lineinfile:
     dest: "/etc/services"
     regexp: "^ssh"
     line: "ssh		{{ sshd_port }}/tcp				# SSH Remote Login Protocol"
 
 - name: Enable OpenSSH server
-  become: yes
+  become: True
   service:
     name: sshd
     state: started
     enabled: yes
 
 - name: Copy ssh client configuration
-  become: yes
+  become: True
   template:
     src: templates/ssh_config.j2
     dest: /etc/ssh/ssh_config
@@ -117,7 +117,7 @@
     mode: u=rw,g=rw,o=r
 
 - name: Enable OpenSSH client
-  become: yes
+  become: True
   service:
     name: ssh
     enabled: yes

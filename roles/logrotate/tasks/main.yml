@@ -1,12 +1,12 @@
 ---
 # This role contains the default policy for logrotate
 - name: Setup Logrotate
-  become: yes
+  become: True
   import_role:
     name: arillso.logrotate
 
 - name: Copy rsyslog logrotate policy
-  become: yes
+  become: True
   template:
     src: templates/rsyslog.j2
     dest: /etc/logrotate.d/rsyslog

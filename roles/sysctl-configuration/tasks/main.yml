@@ -2,7 +2,7 @@
 # Configure sysctl on the host with various optimizations
 
 - name: Increase max connections
-  become: yes
+  become: True
   throttle: 1
   ansible.posix.sysctl:
     name: net.core.somaxconn
@@ -13,7 +13,7 @@
   notify: reboot
 
 - name: Configure overcommit memory
-  become: yes
+  become: True
   throttle: 1
   ansible.posix.sysctl:
     name: vm.overcommit_memory
@@ -24,7 +24,7 @@
   notify: reboot
 
 - name: Increase mmap map count
-  become: yes
+  become: True
   throttle: 1
   ansible.posix.sysctl:
     name: vm.max_map_count

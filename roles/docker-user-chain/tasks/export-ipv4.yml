@@ -1,13 +1,13 @@
 ---
 ## save rules across reboots
 - name: Export DOCKER-USER iptables chain
-  become: yes
+  become: True
   shell: iptables -S DOCKER-USER
   register: iptables_docker_user_rules
   changed_when: false
 
 - name: Save DOCKER-USER iptables rules
-  become: yes
+  become: True
   blockinfile:
     create: yes
     dest: "/etc/iptables.docker-user.rules.v4"

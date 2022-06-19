@@ -1,6 +1,6 @@
 ---
 - name: restart filebeat
-  become: yes
+  become: True
   systemd:
     name: filebeat
     state: restarted

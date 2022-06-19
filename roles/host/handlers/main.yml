@@ -1,6 +1,6 @@
 ---
 - name: restart network-manager
-  become: yes
+  become: True
   systemd:
     name: networking
     state: restarted

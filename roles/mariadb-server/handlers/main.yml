@@ -1,12 +1,12 @@
 ---
 - name: restart mariadb
-  become: yes
+  become: True
   systemd:
     state: restarted
     name: mariadb
 
 - name: systemd daemon reload
-  become: yes
+  become: True
   systemd:
     daemon_reload: yes
 

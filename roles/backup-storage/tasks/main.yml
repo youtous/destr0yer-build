@@ -2,13 +2,13 @@
 # This role setup a backup server using sftp and chroot
 # ssh role must be used in order to have a properly configured server
 - name: Install openssh-server package
-  become: yes
+  become: True
   apt:
     name:
       - openssh-server
 
 - name: Create root backup directory
-  become: yes
+  become: True
   file:
     path: "{{ backup_root_directory }}"
     state: directory
@@ -19,7 +19,7 @@
     mode: u=rwx,g=rx,o=x
 
 - name: Configure sshd to use internal-sftp server
-  become: yes
+  become: True
   lineinfile:
     dest: "/etc/ssh/sshd_config"
     regexp: "^Subsystem"
@@ -29,7 +29,7 @@
     - restart sshd
 
 - name: Add sftp-backup group to allowed groups
-  become: yes
+  become: True
   blockinfile:
     dest: "/etc/ssh/sshd_config"
     block: "AllowGroups {{ backup_group_name }}"
@@ -40,7 +40,7 @@
     - restart sshd
 
 - name: Configure sftp access with restricted ip
-  become: yes
+  become: True
   blockinfile:
     dest: "/etc/ssh/sshd_config"
     block: "{{ lookup('template', 'files/sshd_restrict_ip_config.j2') }}"
@@ -54,7 +54,7 @@
   import_tasks: firewall.yml
 
 - name: Configure sftp group policy
-  become: yes
+  become: True
   blockinfile:
     dest: "/etc/ssh/sshd_config"
     block: "{{ lookup('template', 'files/sshd_sftp_config.j2') }}"
@@ -65,7 +65,7 @@
     - restart sshd
 
 - name: Create backup group
-  become: yes
+  become: True
   import_role:
     name: youtous.users
   vars:
@@ -74,7 +74,7 @@
         gid: "{{ backup_group_gid }}"
 
 - name: Unlock .ssh folder of backup users
-  become: yes
+  become: True
   file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
     attributes: -i
@@ -82,7 +82,7 @@
   ignore_errors: yes # if the directory is not yet created, ignore
 
 - name: Unlock .ssh/authorized_keys of backup users
-  become: yes
+  become: True
   file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
     attributes: -i
@@ -94,7 +94,7 @@
     name: youtous.users
   vars:
     # pass sudo vars which are passed when using include_role (https://github.com/ansible/ansible/issues/29159#issuecomment-380800491)
-    ansible_become: yes
+    ansible_become: True
 
     users_create_per_user_group: false # don't create group for these accounts
     users_create_homedirs: true # home folder must be present, it's the root of the sftp server
@@ -110,21 +110,21 @@
     loop_var: account
 
 - name: Lock .ssh folder of backup users
-  become: yes
+  become: True
   file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
     attributes: i
   with_items: "{{ backup_users }}"
 
 - name: Lock .ssh/authorized_keys of backup users
-  become: yes
+  become: True
   file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
     attributes: i
   with_items: "{{ backup_users }}"
 
 - name: Fix sudoers admin group sudo with password
-  become: yes
+  become: True
   lineinfile:
     path: /etc/sudoers
     state: present
@@ -134,7 +134,7 @@
   tags: ["users", "groups", "configuration"]
 
 - name: Ensure backup folders permissions
-  become: yes
+  become: True
   file:
     state: directory
     path: "{{ backup_root_directory }}/backup_{{ item.username }}"
@@ -144,7 +144,7 @@
   with_items: "{{ backup_users }}"
 
 - name: Ensure backup folders permissions
-  become: yes
+  become: True
   file:
     state: directory
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/home"

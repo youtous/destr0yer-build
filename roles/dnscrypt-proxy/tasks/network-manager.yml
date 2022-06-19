@@ -6,7 +6,7 @@
   ignore_errors: true
 
 - name: Create /etc/NetworkManager/NetworkManager.conf
-  become: yes
+  become: True
   copy:
     src: "files/NetworkManager.conf"
     dest: "/etc/NetworkManager/NetworkManager.conf"
@@ -17,7 +17,7 @@
   notify: restart NetworkManager
 
 - name: Disable NetworkManager auto-update /etc/resolv.conf
-  become: yes
+  become: True
   lineinfile:
     path: /etc/NetworkManager/NetworkManager.conf
     regexp: '^dns='
@@ -27,7 +27,7 @@
   notify: restart NetworkManager
 
 - name: Unlock /etc/resolv.conf
-  become: yes
+  become: True
   file:
     path: /etc/resolv.conf
     attributes: -i
@@ -36,7 +36,7 @@
   changed_when: false
 
 - name: Configure /etc/resolv.conf for DNSCrypt-proxy
-  become: yes
+  become: True
   template:
     src: "templates/resolv.conf.j2"
     dest: "/etc/resolv.conf"
@@ -47,7 +47,7 @@
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable
-  become: yes
+  become: True
   file:
     path: /etc/resolv.conf
     owner: root

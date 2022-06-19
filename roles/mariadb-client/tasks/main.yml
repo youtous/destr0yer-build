@@ -2,13 +2,13 @@
 # This role installs Mariadb-client on the system. It allows connections to database_servers hosts using ssl.
 
 - name: Install mariadb-client
-  become: yes
+  become: True
   apt:
     name:
       - mariadb-client
 
 - name: Ensure mariadb extra conf directory exists
-  become: yes
+  become: True
   file:
     state: directory
     path: "{{ mariadb_config_include_dir }}"
@@ -21,7 +21,7 @@
   when: mariadb_ssl_enabled == True
 
 - name: Disable SSL on mariadb
-  become: yes
+  become: True
   copy:
     content: "# disabled in Ansible"
     dest: "{{ mariadb_config_include_dir }}/50-ssl-clients.cnf"

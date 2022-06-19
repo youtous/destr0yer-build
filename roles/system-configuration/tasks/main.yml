@@ -1,25 +1,25 @@
 ---
 # This role contains base system configuration
 - name: Install ntp related packages
-  become: yes
+  become: True
   apt:
     name: systemd-timesyncd
     state: present
 
 - name: Setup NTP
-  become: yes
+  become: True
   import_role:
     name: geerlingguy.ntp
   vars:
     ntp_timezone: "{{ timezone }}"
 
 - name: "Set timezone to {{ timezone }}"
-  become: yes
+  become: True
   timezone:
     name: "{{ timezone }}"
 
 - name: Ensure system folder permissions are correct
-  become: yes
+  become: True
   file:
     path: "{{ item }}"
     owner: root
@@ -28,14 +28,14 @@
   with_items: "{{ system_folders_write_root_only }}"
 
 - name: Register server environment in /etc/server_environment (dev,prod,test)
-  become: yes
+  become: True
   copy:
     content: "{{ server_environment }}"
     dest: /etc/server_environment
     mode: u=rw,g=r,o=r
 
 - name: Add /usr/sbin to PATH bash
-  become: yes
+  become: True
   copy:
     src: files/usr-sbin.sh
     dest: /etc/profile.d/usr-sbin.sh
@@ -44,7 +44,7 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Add /usr/sbin to PATH fish
-  become: yes
+  become: True
   copy:
     src: files/usr-sbin.fish
     dest: /etc/fish/conf.d/usr-sbin.fish
@@ -59,7 +59,7 @@
   ignore_errors: True
 
 - name: Fix Scaleway reboot command fish
-  become: yes
+  become: True
   copy:
     src: files/reboot.fish
     dest: /etc/fish/conf.d/reboot.fish
@@ -69,7 +69,7 @@
   when: host_scw_aarch64 is not failed
 
 - name: Fix Scaleway reboot command bash
-  become: yes
+  become: True
   copy:
     src: files/reboot.sh
     dest: /etc/profile.d/reboot.sh

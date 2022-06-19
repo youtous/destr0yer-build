@@ -1,7 +1,7 @@
 ---
 # This role contains a a notifier of ip changes
 - name: Install required packages
-  become: yes
+  become: True
   apt:
     name:
       - cron
@@ -15,7 +15,7 @@
     enabled: yes
 
 - name: Creates changed-ip directory
-  become: yes
+  become: True
   file:
     path: "{{ notify_change_ip_directory }}"
     state: directory
@@ -24,7 +24,7 @@
     mode: u=rwx,g=rx,o=
 
 - name: Copy changed-ip script
-  become: yes
+  become: True
   template:
     src: files/notify-ip-change.rb
     dest: "{{ notify_change_ip_directory }}/notify-ip-change.rb"
@@ -33,14 +33,14 @@
     mode: u=rwx,g=,o=
 
 - name: Cron changed-ip every 5mins
-  become: yes
+  become: True
   cron:
     name: "check and notify ip changes"
     minute: "*/5"
     job: "{{ notify_change_ip_directory }}/notify-ip-change.rb {{ notify_change_ip_email }} > {{ notify_change_ip_log_file }}"
 
 - name: Configure logrotate for changed-ip
-  become: yes
+  become: True
   import_role:
     name: logrotate
   vars:

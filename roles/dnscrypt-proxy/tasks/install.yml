@@ -4,7 +4,7 @@
     name: minisign
 
 - name: Ensure any existing DNSCrypt-proxy vestige is removed
-  become: yes
+  become: True
   apt:
     state: absent
     name:
@@ -58,7 +58,7 @@
     remote_src: yes
 
 - name: Copy DNSCrypt-proxy in system binaries
-  become: yes
+  become: True
   copy:
     src: "{{ tmp_dir_build.path }}/{{ dnscrypt_proxy_platform }}-{{ dnscrypt_proxy_cpu_platform }}/dnscrypt-proxy"
     dest: "{{ dnscrypt_binary_path }}"
@@ -69,7 +69,7 @@
   notify: restart dnscrypt-proxy
 
 - name: Cleanup build directory
-  become: yes
+  become: True
   file:
     state: absent
     path: "{{ tmp_dir_build.path }}"

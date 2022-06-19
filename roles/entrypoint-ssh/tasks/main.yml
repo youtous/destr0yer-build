@@ -2,7 +2,7 @@
 # This role contains settings that will only allow SSH connections from
 # a specific authoritative server
 - name: Generate list of allowed ssh entrypoints
-  become: yes
+  become: True
   blockinfile:
     dest: "/etc/hosts.allow"
     block: "{{ lookup('template', 'files/hosts.allow.j2') }}"

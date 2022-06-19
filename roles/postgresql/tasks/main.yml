@@ -6,7 +6,7 @@
 #    /!\ THIS ROLE IS NOT COMPLETE, SSL IS ENABLED BUT NOT CONFIGURED /!\    #
 ##############################################################################
 - name: Setup postgresql
-  become: yes
+  become: True
   import_role:
     name: geerlingguy.postgresql
   vars:
@@ -18,26 +18,26 @@
         value: verify-full
 
 - name: Setup host.allow for postgresql
-  become: yes
+  become: True
   blockinfile:
     dest: "/etc/hosts.allow"
     block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - postgresql allowed ip whitelist ###"
 
 - name: List existing postgresql UFW rules
-  become: yes
+  become: True
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s5432(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_postgresql_rules
 
 - name: UFW delete existing postgresql rules - tcp,udp/5432
-  become: yes
+  become: True
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_postgresql_rules.stdout_lines }}"
 
 - name: UFW Allow postgresql clients - tcp,udp/5432
-  become: yes
+  become: True
   ufw:
     rule: allow
     port: "5432"

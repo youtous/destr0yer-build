@@ -1,6 +1,6 @@
 ---
 - name: restart journalbeat
-  become: yes
+  become: True
   systemd:
     name: journalbeat
     state: restarted

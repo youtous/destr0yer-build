@@ -1,6 +1,6 @@
 ---
 - name: restart wireguard
-  become: yes
+  become: True
   systemd:
     name: "{{ wireguard_service_name }}"
     state: restarted

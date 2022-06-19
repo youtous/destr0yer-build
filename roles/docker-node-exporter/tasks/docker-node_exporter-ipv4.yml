@@ -2,20 +2,20 @@
 
 ## Revoke all 9100
 - name: List existing node_exporter UFW rules - tcp,udp/9100
-  become: yes
+  become: True
   shell: >
     ufw status numbered | grep -zoP '\[.*\]\s9100(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_swarm_9100_rules
 
 - name: UFW delete existing node_exporter rules - tcp/9100
-  become: yes
+  become: True
   shell: "yes y | ufw delete {{ item|quote }}"
   with_items: "{{ ufw_docker_swarm_9100_rules.stdout_lines }}"
 
 ## End of revocation
 - name: Allow metrics ips to pass firewall - tcp/9100
-  become: yes
+  become: True
   ufw:
     rule: allow
     port: "9100"

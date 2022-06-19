@@ -2,14 +2,14 @@
 # see https://github.com/youtous/ansible-users
 
 - name: Add password to root user
-  become: yes
+  become: True
   user:
     name: root
     password: "{{ root_password }}"
   no_log: true
 
 - name: Remove default users if exist
-  become: yes
+  become: True
   user:
     name: "{{ item }}"
     state: absent
@@ -18,7 +18,7 @@
   when: ansible_user != "debian"
 
 - name: Unlock ~/.ssh/authorized_keys for all users
-  become: yes
+  become: True
   file:
     path: "{{ item.home | default('/home/' + item.username)  }}/.ssh/authorized_keys"
     owner: "{{ item.username }}"
@@ -29,7 +29,7 @@
   ignore_errors: yes
 
 - name: Setup users
-  become: yes
+  become: True
   import_role:
     name: youtous.users
   vars:
@@ -40,7 +40,7 @@
   no_log: true
 
 - name: Set permissions on home folder
-  become: yes
+  become: True
   file:
     state: directory
     path: "{{ item.home | default('/home/' + item.username)  }}"
@@ -52,7 +52,7 @@
 
 # If you do not want to have authorized_keys locked, specify nolock_authorized_keys: True for the user
 - name: Lock ~/.ssh/authorized_keys for specified users
-  become: yes
+  become: True
   file:
     path: "{{ item.home | default('/home/' + item.username)  }}/.ssh/authorized_keys"
     owner: "{{ item.username }}"
@@ -64,7 +64,7 @@
   ignore_errors: yes
 
 - name: Allow admin group sudo with password
-  become: yes
+  become: True
   lineinfile:
     path: /etc/sudoers
     state: present

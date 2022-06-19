@@ -3,7 +3,7 @@
 
 
 - name: Check if docker ipv4 iptables is enabled
-  become: yes
+  become: True
   command: iptables -L DOCKER-USER
   register: docker_ipv4
   ignore_errors: True

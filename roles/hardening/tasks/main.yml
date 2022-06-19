@@ -2,14 +2,14 @@
 # This role is hardening linux kernel values. Based on https://github.com/dev-sec/ansible-os-hardening
 
 - import_tasks: limits.yml
-  become: yes
+  become: True
 
 - import_tasks: login_defs.yml
-  become: yes
+  become: True
 
 - import_tasks: apt.yml
-  become: yes
+  become: True
 
 - import_tasks: modprobe.yml
-  become: yes
+  become: True
 ...

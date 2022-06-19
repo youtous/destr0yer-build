@@ -4,7 +4,7 @@
   include_vars: default.yml
 
 - name: Install fail2ban backend packages
-  become: yes
+  become: True
   apt:
     name:
       - python3-systemd
@@ -12,7 +12,7 @@
     - restart fail2ban
 
 - name: Setup fail2ban
-  become: yes
+  become: True
   import_role:
     name: oefenweb.fail2ban
   vars:
@@ -21,7 +21,7 @@
     fail2ban_services: "{{ fail2ban_services }}"
 
 - name: Copy fail2ban configurations files
-  become: yes
+  become: True
   copy:
     src: "files/{{ item.src }}"
     dest: "/etc/fail2ban/{{ item.dest }}"

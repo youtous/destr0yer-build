@@ -2,7 +2,7 @@
 # handle partitions using parted
 
 - name: Delete partitions with parted
-  become: yes
+  become: True
   community.general.parted:
     device: "{{ item.device }}"
     number: "{{ item.part_number }}"
@@ -21,7 +21,7 @@
   with_items: "{{ disk_partitions_to_delete }}"
 
 - name: Delete file state of deleted partitions
-  become: yes
+  become: True
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
@@ -34,7 +34,7 @@
   with_items: "{{ disk_partitions_to_create }}"
 
 - name: Create GPT partitions with parted
-  become: yes
+  become: True
   community.general.parted:
     device: "{{ item.device }}"
     number: "{{ item.part_number }}"
@@ -52,7 +52,7 @@
   register: gpt_created_partions
 
 - name: Ensure partition state directory exists
-  become: yes
+  become: True
   ansible.builtin.file:
     state: directory
     path: "{{ item }}"
@@ -61,7 +61,7 @@
     - "{{ disks_management_state_path }}/created/"
 
 - name: Register file state of created partitions
-  become: yes
+  become: True
   ansible.builtin.file:
     path: "{{ disks_management_state_path }}/created/{{ item.disk.dev|replace('/', '-') }}{{ (item.partitions | first).num }}-{{ (item.partitions | first).name|default('') }}.exists"
     state: touch

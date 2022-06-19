@@ -1,7 +1,7 @@
 ---
 # This role contains postfix settings for relay usage
 - name: Uninstall other mailserver packages
-  become: yes
+  become: True
   apt:
     pkg:
       - exim4
@@ -10,7 +10,7 @@
     autoremove: yes
 
 - name: Install postfix package
-  become: yes
+  become: True
   apt:
     name:
       - mailutils
@@ -19,7 +19,7 @@
 
 # http://postfix.state-of-mind.de/patrick.koetter/smtpauth/smtp_auth_mailservers.html
 - name: Define /etc/mailname with hostname
-  become: yes
+  become: True
   copy:
     content: "{{ myhostname }}"
     dest: "/etc/mailname"
@@ -30,7 +30,7 @@
     - reload postfix
 
 - name: Copy aliases
-  become: yes
+  become: True
   template:
     src: files/aliases.j2
     dest: /etc/aliases
@@ -41,7 +41,7 @@
     - newaliases
 
 - name: Copy sasl_passwd
-  become: yes
+  become: True
   template:
     src: files/sasl_passwd.j2
     dest: "{{ postfix_sasl_file }}"
@@ -53,7 +53,7 @@
   no_log: true
 
 - name: Copy postfix configurations
-  become: yes
+  become: True
   template:
     src: "files/{{ item.src }}"
     dest: "/etc/postfix/{{ item.dest }}"
@@ -68,7 +68,7 @@
     - { src: sender_canonical_maps.j2, dest: sender_canonical_maps }
 
 - name: Change inet smtp port
-  become: yes
+  become: True
   lineinfile:
     path: /etc/postfix/master.cf
     regex: '^\w+.*smtpd$'
@@ -78,13 +78,13 @@
     - restart postfix
 
 - name: Secure SASL password file
-  become: yes
+  become: True
   file:
     path: "{{ postfix_sasl_file }}"
     mode: u=rw,g=,o=
 
 - name: Enable postfix
-  become: yes
+  become: True
   service:
     name: postfix
     enabled: yes

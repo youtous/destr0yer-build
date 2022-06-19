@@ -2,7 +2,7 @@
 # This role setup a backup server using sftp and chroot
 # ssh role must be used in order to have a properly configured server
 - name: Install build requierements
-  become: yes
+  become: True
   apt:
     name:
       - gettext
@@ -10,7 +10,7 @@
       - python3-dev
 
 - name: Update python build tools
-  become: yes
+  become: True
   pip:
     executable: pip3
     name:
@@ -22,7 +22,7 @@
 
 # our ssh client needs to be upgraded in order to support secure cyphers
 - name: Install pexpect at latest version
-  become: yes
+  become: True
   pip:
     executable: pip3
     name: pexpect
@@ -30,7 +30,7 @@
     extra_args: --upgrade
 
 - name: Install duplicity using pip3
-  become: yes
+  become: True
   pip:
     executable: pip3
     name: duplicity
@@ -38,13 +38,13 @@
     extra_args: --upgrade
 
 - name: Install duply package
-  become: yes
+  become: True
   apt:
     name:
       - duply
 
 - name: Install duply wrapper
-  become: yes
+  become: True
   copy:
     src: files/duply
     dest: /usr/local/bin/duply
@@ -58,7 +58,7 @@
   import_tasks: gpg.yml
 
 - name: Setup Duplicity backup strategy
-  become: yes
+  become: True
   import_role:
     name: oefenweb.duply-backup
   vars:
@@ -67,7 +67,7 @@
   no_log: true
 
 - name: Ensure pre.d and post.d directories are present
-  become: yes
+  become: True
   file:
     state: directory
     path: "{{ duply_backup_profile_directory }}/global/{{ item }}"
@@ -79,7 +79,7 @@
     - "post.d"
 
 - name: Ensure cache backup directory is present
-  become: yes
+  become: True
   file:
     state: directory
     path: "{{ backup_cache_directory }}"

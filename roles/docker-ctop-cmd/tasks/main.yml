@@ -2,7 +2,7 @@
 # This role adds https://github.com/bcicen/ctop, a top moniroting CLI tool used for containers
 
 - name: Copy ctop wrapper
-  become: yes
+  become: True
   copy:
     src: files/ctop
     dest: "/usr/local/bin/ctop"

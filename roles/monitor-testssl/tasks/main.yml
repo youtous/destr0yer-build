@@ -1,7 +1,7 @@
 ---
 # This role is monitoring ssl/tls hosts on protocols, it assumes docker is installed on the system
 - name: Install required packages
-  become: yes
+  become: True
   apt:
     name:
       - cron
@@ -16,7 +16,7 @@
     enabled: yes
 
 - name: Creates monitor-testssl directory
-  become: yes
+  become: True
   file:
     path: "{{ monitor_testssl_directory }}"
     state: directory
@@ -25,7 +25,7 @@
     mode: u=rwx,g=rx,o=
 
 - name: Copy monitor-testssl script
-  become: yes
+  become: True
   copy:
     src: files/monitor_testssl.rb
     dest: "{{ monitor_testssl_directory }}/monitor_testssl.rb"
@@ -34,7 +34,7 @@
     mode: u=rwx,g=,o=
 
 - name: Copy monitor-testssl hosts list
-  become: yes
+  become: True
   template:
     src: templates/hosts_list.json.j2
     dest: "{{ monitor_testssl_directory }}/hosts_list.json"
@@ -43,7 +43,7 @@
     mode: u=rw,g=r,o=
 
 - name: Cron monitor-testssl every defined period
-  become: yes
+  become: True
   cron:
     name: "monitor ssl/tls hosts and send a report"
     special_time: "{{ monitor_testsssl_cron_period }}"

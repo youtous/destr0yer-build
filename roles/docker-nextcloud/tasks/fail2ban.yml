@@ -4,7 +4,7 @@
 # test command : sudo fail2ban-regex systemd-journal  /etc/fail2ban/filter.d/nextcloud.conf --print-all-matched -v
 
 - name: Add nextcloud filters to fail2ban
-  become: yes
+  become: True
   copy:
     src: files/fail2ban/filter.d/{{ item }}
     dest: /etc/fail2ban/filter.d/{{ item }}

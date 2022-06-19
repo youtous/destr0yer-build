@@ -11,7 +11,7 @@
     msg: "fail2ban postfix modes (mailserver_fail2ban_postfix_mode): normal, more, extra, aggressive"
 
 - name: Add mailserver filters to fail2ban
-  become: yes
+  become: True
   copy:
     src: files/fail2ban/filter.d/{{ item }}.conf
     dest: /etc/fail2ban/filter.d/{{ item }}-docker.conf
@@ -68,7 +68,7 @@
         chain: DOCKER-USER
 
 - name: Add rainloop filters to fail2ban
-  become: yes
+  become: True
   copy:
     src: files/fail2ban/filter.d/{{ item }}
     dest: /etc/fail2ban/filter.d/{{ item }}

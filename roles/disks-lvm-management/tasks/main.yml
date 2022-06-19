@@ -2,7 +2,7 @@
 # configure the different partitions and associated file systems with LVM
 
 - name: Install parted and lvm2 and fs
-  become: yes
+  become: True
   ansible.builtin.package:
     name: 
       - parted 

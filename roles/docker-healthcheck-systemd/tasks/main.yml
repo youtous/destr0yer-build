@@ -3,7 +3,7 @@
 # see https://github.com/docker/for-linux/issues/679
 
 - name: Copy filter to rsyslog filters
-  become: yes
+  become: True
   copy:
     src: files/01-block-systemd-mount-docker.conf
     dest: /etc/rsyslog.d/01-block-systemd-mount-docker.conf

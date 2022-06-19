@@ -1,13 +1,13 @@
 ---
 # This role contains system packages installation
 - name: Install system packages
-  become: yes
+  become: True
   apt:
     update_cache: yes
     name: "{{ system_packages }}"
 
 - name: Enable default services
-  become: yes
+  become: True
   service:
     name: "{{ item }}"
     state: started

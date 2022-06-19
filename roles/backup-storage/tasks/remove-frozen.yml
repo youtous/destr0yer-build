@@ -2,7 +2,7 @@
 # Remove frozen backup strategy
 
 - name: Remove frozen backup from cron
-  become: yes
+  become: True
   cron:
     name: "frozen-backup"
     state: absent

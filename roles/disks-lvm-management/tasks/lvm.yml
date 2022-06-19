@@ -1,14 +1,14 @@
 ---
 # handle lvm configuration
 - name: Volume groups deletion
-  become: yes
+  become: True
   community.general.lvg:
     state: absent
     vg: "{{ item.vg }}"
   with_items: "{{ volume_groups_to_delete }}"
 
 - name: Volume groups creation
-  become: yes
+  become: True
   community.general.lvg:
     pesize: "{{ item.pesize|default('4') }}"
     pvresize: "{{ item.pvresize|default(False) }}"
@@ -19,7 +19,7 @@
   with_items: "{{ volume_groups_to_create }}"
 
 - name: Logical volumes creation
-  become: yes
+  become: True
   community.general.lvol:
       active: "{{ item.active|default(True) }}"
       force:  "{{ item.force|default(False) }}"

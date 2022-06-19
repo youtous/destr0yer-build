@@ -1,6 +1,6 @@
 ---
 - name: restart DNSCrypt-proxy
-  become: yes
+  become: True
   systemd:
     name: dnscrypt-proxy
     state: restarted
@@ -16,7 +16,7 @@
     - restart DNSCrypt-proxy
 
 - name: restart NetworkManager
-  become: yes
+  become: True
   systemd:
     name: networking
     state: restarted
@@ -42,7 +42,7 @@
 # postfix needs to be restarted in order to enable copy of the /etc/resolv.conf in chrooted environment
 # https://serverfault.com/questions/661621/why-do-i-have-to-manually-copy-etc-services-and-etc-resolv-conf-into-var-spoo
 - name: restart postfix if it exists
-  become: yes
+  become: True
   systemd:
     name: postfix
     state: restarted

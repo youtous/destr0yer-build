@@ -8,7 +8,7 @@
   register: files_motd
 
 - name: Disable unwanted motd.d
-  become: yes
+  become: True
   file:
     path: "{{ item.path }}"
     owner: root
@@ -17,7 +17,7 @@
   with_list: "{{ files_motd.files }}"
 
 - name: Copy motd.d script
-  become: yes
+  become: True
   template:
     src: templates/60-motd.j2.sh
     dest: "{{ motd_directory }}/{{ motd_file }}"
@@ -26,7 +26,7 @@
     mode: u=rwx,g=rx,o=rx-
 
 - name: Copy motd.d head
-  become: yes
+  become: True
   template:
     src: templates/motd.head.j2
     dest: "/etc/motd.head"
@@ -35,7 +35,7 @@
     mode: u=rw,g=rw,o=r
 
 - name: Update static motd
-  become: yes
+  become: True
   template:
     src: templates/motd.j2
     dest: "/etc/motd"
@@ -44,7 +44,7 @@
     mode: u=rw,g=r,o=r
 
 - name: Add dynamic motd loading to pam.d configuration
-  become: yes
+  become: True
   lineinfile:
     dest: "/etc/pam.d/sshd"
     regexp: "^session    optional     pam_motd.so  motd="

@@ -1,7 +1,7 @@
 ---
 
 - name: Setup additional Monit configurations
-  become: yes
+  become: True
   template:
     src: "templates/etc/monit/conf.d/journalbeat.j2"
     dest: "/etc/monit/conf.d/journalbeat"

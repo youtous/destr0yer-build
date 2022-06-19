@@ -10,7 +10,7 @@
     builder_cache: yes
 
 - name: restart fail2ban
-  become: yes
+  become: True
   systemd:
     name: fail2ban
     state: restarted
