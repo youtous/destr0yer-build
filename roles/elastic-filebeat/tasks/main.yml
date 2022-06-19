@@ -6,7 +6,7 @@
 
 - name: Ensure filebeat is enabled and started
   become: true
-  service:
+  ansible.builtin.service:
     name: filebeat
     enabled: true
     state: started
@@ -14,7 +14,7 @@
 
 - name: Ensure filebeat is disabled and stopped
   become: true
-  service:
+  ansible.builtin.service:
     name: filebeat
     enabled: false
     state: stopped
@@ -23,7 +23,7 @@
 
 - name: Ensure filebeat configuration directory exists
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     owner: root
     group: root
@@ -37,7 +37,7 @@
 
 - name: Copy filebeat configuration
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/filebeat.j2.yml
     dest: "{{ filebeat_configuration_directory }}/filebeat.yml"
     owner: root

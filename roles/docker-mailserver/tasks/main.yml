@@ -12,7 +12,7 @@
   no_log: true
 
 - name: Ensure mailserver directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ mailserver_compose_file_dest_directory }}"
 
@@ -34,14 +34,14 @@
   when: rainloop_enabled
 
 - name: Copy mailserver stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.mailserver.j2.yml
     dest: "{{ mailserver_compose_file_dest }}"
     mode: u=rw,g=,o=
   no_log: true
 
 - name: Ensure mailserver config directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ mailserver_compose_file_dest_directory }}/{{ item }}"
   with_items:
@@ -51,7 +51,7 @@
     - files
 
 - name: Copy mailserver config
-  template:
+  ansible.builtin.template:
     src: "templates/config/{{ item.src }}"
     dest: "{{ mailserver_compose_file_dest_directory }}/config/{{ item.dest }}"
     mode: u=rw,g=,o=

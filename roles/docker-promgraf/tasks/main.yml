@@ -7,7 +7,7 @@
     msg: "promgraf_grafana_admin_password must be defined an not empty"
 
 - name: Ensure promgraf directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ promgraf_compose_file_dest_directory }}"
 
@@ -38,21 +38,21 @@
 
 
 - name: Make sure destination dir exists
-  file:
+  ansible.builtin.file:
     path: "{{ (promgraf_compose_file_dest_directory ~ '/' ~ item.dest) | dirname }}"
     state: directory
     mode: u=rwx,g=,o=
   with_items: "{{ promgraf_templates }}"
 
 - name: Copy promgraf templates
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ promgraf_compose_file_dest_directory }}/{{ item.dest }}"
     mode: u=rw,g=,o=
   with_items: "{{ promgraf_templates }}"
 
 - name: Make sure destination dir exists
-  file:
+  ansible.builtin.file:
     path: "{{ (promgraf_compose_file_dest_directory ~ '/' ~ item.dest) | dirname }}"
     state: directory
     mode: u=rwx,g=,o=
@@ -66,7 +66,7 @@
   with_items: "{{ promgraf_files }}"
 
 - name: Copy promgraf stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.promgraf.j2.yml
     dest: "{{ promgraf_compose_file_dest }}"
     mode: u=rw,g=,o=

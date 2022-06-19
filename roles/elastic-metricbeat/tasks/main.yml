@@ -7,7 +7,7 @@
 
 - name: Ensure metricbeat is enabled and started
   become: true
-  service:
+  ansible.builtin.service:
     name: metricbeat
     enabled: true
     state: started
@@ -15,7 +15,7 @@
 
 - name: Ensure metricbeat is disabled and stopped
   become: true
-  service:
+  ansible.builtin.service:
     name: metricbeat
     enabled: false
     state: stopped
@@ -24,7 +24,7 @@
 
 - name: Ensure metricbeat configuration directory exists
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     owner: root
     group: root
@@ -38,7 +38,7 @@
 
 - name: Copy metricbeat configuration
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/metricbeat.j2.yml
     dest: "{{ metricbeat_configuration_directory }}/metricbeat.yml"
     owner: root

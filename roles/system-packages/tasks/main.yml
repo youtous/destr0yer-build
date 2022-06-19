@@ -8,7 +8,7 @@
 
 - name: Enable default services
   become: true
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: started
     enabled: true

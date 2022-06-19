@@ -3,19 +3,19 @@ version: "3.7"
 configs:
   nginx.conf:
     name: "{{ nextcloud_stack_name }}_nginx.conf-${DEPLOY_TIMESTAMP}"
-    file: "./nginx.conf"
+    ansible.builtin.file: "./nginx.conf"
   logs.config.php:
     name: "{{ nextcloud_stack_name }}_logs.config.php-${DEPLOY_TIMESTAMP}"
-    file: "./logs.config.php"
+    ansible.builtin.file: "./logs.config.php"
   url-cli.config.php:
     name: "{{ nextcloud_stack_name }}_url-cli.config.php-${DEPLOY_TIMESTAMP}"
-    file: "./url-cli.config.php"
+    ansible.builtin.file: "./url-cli.config.php"
   old-encryption.config.php:
     name: "{{ nextcloud_stack_name }}_old-encryption.config.php-${DEPLOY_TIMESTAMP}"
-    file: "./old-encryption.config.php"
+    ansible.builtin.file: "./old-encryption.config.php"
   www2.conf:
     name: "{{ nextcloud_stack_name }}_www2.conf-${DEPLOY_TIMESTAMP}"
-    file: "./php-fpm.d/www2.conf"
+    ansible.builtin.file: "./php-fpm.d/www2.conf"
 
 services:
   nextcloud: &nextcloud

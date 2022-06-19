@@ -12,7 +12,7 @@
 
 - name: Setup additional Monit configurations
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/etc/monit/conf.d/{{item}}.j2"
     dest: "/etc/monit/conf.d/{{item}}"
   with_items:
@@ -22,7 +22,7 @@
 
 - name: Enable Monit
   become: true
-  service:
+  ansible.builtin.service:
     name: monit
     enabled: true
 ...

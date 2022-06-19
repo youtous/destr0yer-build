@@ -3,7 +3,7 @@
 # see https://github.com/TeamSpeak-Systems/teamspeak-linux-docker-images for more details
 
 - name: Ensure teamspeak directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ teamspeak_compose_file_dest_directory }}"
 
@@ -18,7 +18,7 @@
     teamspeak_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
 - name: Copy teamspeak stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.teamspeak.j2.yml
     dest: "{{ teamspeak_compose_file_dest }}"
     mode: u=rw,g=,o=

@@ -11,7 +11,7 @@
 # Use https://sshcheck.com to check ssh
 - name: Ensure files for weak algorithms are not present
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items: "{{ algorithms_files_to_remove  }}"
@@ -23,7 +23,7 @@
 
 - name: Remove old host keys
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:
@@ -84,7 +84,7 @@
 
 - name: Copy sshd server configuration
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/sshd_config.j2
     dest: /etc/ssh/sshd_config
     owner: root
@@ -102,14 +102,14 @@
 
 - name: Enable OpenSSH server
   become: true
-  service:
+  ansible.builtin.service:
     name: sshd
     state: started
     enabled: true
 
 - name: Copy ssh client configuration
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/ssh_config.j2
     dest: /etc/ssh/ssh_config
     owner: root
@@ -118,7 +118,7 @@
 
 - name: Enable OpenSSH client
   become: true
-  service:
+  ansible.builtin.service:
     name: ssh
     enabled: true
 ...

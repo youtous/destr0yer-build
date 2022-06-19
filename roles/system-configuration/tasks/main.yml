@@ -20,7 +20,7 @@
 
 - name: Ensure system folder permissions are correct
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     owner: root
     group: root

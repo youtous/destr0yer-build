@@ -35,7 +35,7 @@
   when: caddy_internal_network_encryption_enabled is false
 
 - name: Ensure caddy directories exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ item }}"
   with_items:
@@ -46,13 +46,13 @@
     caddy_consul_timestamp_deploy: "{{ ansible_date_time.epoch }}"
 
 - name: Copy Caddyfile config
-  template:
+  ansible.builtin.template:
     src: templates/Caddyfile.j2
     dest: "{{ caddy_config_file_dest }}"
     mode: u=rw,g=,o=
 
 - name: Copy caddy-Consul stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.caddy.j2.yml
     dest: "{{ caddy_compose_file_dest }}"
     mode: u=rw,g=,o=

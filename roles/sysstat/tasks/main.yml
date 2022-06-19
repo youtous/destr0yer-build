@@ -7,7 +7,7 @@
 
 - name: Copy sysstat configuration
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/sysstat.j2
     dest: /etc/default/sysstat
     owner: root
@@ -18,7 +18,7 @@
 
 - name: Enable sysstat service
   become: true
-  service:
+  ansible.builtin.service:
     name: "sysstat"
     enabled:
     state: started
@@ -26,7 +26,7 @@
 
 - name: Disable sysstat service
   become: true
-  service:
+  ansible.builtin.service:
     name: "sysstat"
     enabled: false
     state: stopped

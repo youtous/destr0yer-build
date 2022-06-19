@@ -4,7 +4,7 @@
 # Setup TLS using x509 certificates
 - name: Setup metricbeat certificates folder
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ metricbeat_certificates_directory }}"
     owner: root
     group: root

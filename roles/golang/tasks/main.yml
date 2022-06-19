@@ -5,7 +5,7 @@
 
 - name: Add golang to PATH bash
   become: true
-  template:
+  ansible.builtin.template:
     src: files/golang.sh.j2
     dest: /etc/profile.d/golang.sh
     owner: root
@@ -14,7 +14,7 @@
 
 - name: Add /usr/sbin to PATH fish
   become: true
-  template:
+  ansible.builtin.template:
     src: files/golang.fish.j2
     dest: /etc/fish/conf.d/golang.fish
     owner: root

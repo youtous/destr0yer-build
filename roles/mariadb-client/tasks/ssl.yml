@@ -12,7 +12,7 @@
 
 - name: Copy client conf mariadb
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/50-ssl-clients.cnf.j2"
     dest: "{{ mariadb_config_include_dir }}/50-ssl-clients.cnf"
     owner: root

@@ -6,7 +6,7 @@
 
 - name: Setup docker certificates folder
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ docker_swarm_certificates_directory }}"
     state: directory
     owner: root
@@ -66,7 +66,7 @@
 
 - name: Create systemd docker.service.d directory
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/docker.service.d
     state: directory
     owner: root
@@ -108,7 +108,7 @@
 # Configure docker logging system
 - name: Setup docker rsyslog config
   become: true
-  template:
+  ansible.builtin.template:
     src: files/10-docker.conf.j2
     dest: /etc/rsyslog.d/10-docker.conf
   notify:
@@ -146,7 +146,7 @@
 
 - name: Copy docker daemon configuration
   become: true
-  template:
+  ansible.builtin.template:
     src: files/daemon.json.j2
     # host is used to listen orders from a specific ip,
     # in this configuration, we assume that all of our docker nodes can send an order to other docker nodes.

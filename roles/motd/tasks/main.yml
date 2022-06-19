@@ -9,7 +9,7 @@
 
 - name: Disable unwanted motd.d
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     owner: root
     group: root
@@ -18,7 +18,7 @@
 
 - name: Copy motd.d script
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/60-motd.j2.sh
     dest: "{{ motd_directory }}/{{ motd_file }}"
     owner: root
@@ -27,7 +27,7 @@
 
 - name: Copy motd.d head
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/motd.head.j2
     dest: "/etc/motd.head"
     owner: root
@@ -36,7 +36,7 @@
 
 - name: Update static motd
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/motd.j2
     dest: "/etc/motd"
     owner: root

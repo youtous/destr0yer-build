@@ -2,12 +2,12 @@
 # This role setup a cadvisor export
 
 - name: Ensure cadvisor directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ cadvisor_compose_file_dest_directory }}"
 
 - name: Copy cadvisor stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.cadvisor.j2.yml
     dest: "{{ cadvisor_compose_file_dest }}"
     mode: u=rw,g=,o=

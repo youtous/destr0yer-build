@@ -1,7 +1,7 @@
 ---
 - name: restart ufw
   become: true
-  service:
+  ansible.builtin.service:
     name: ufw
     state: restarted
 ...

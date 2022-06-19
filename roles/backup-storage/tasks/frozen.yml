@@ -7,14 +7,14 @@
     state: present
 
 - name: Enable cron
-  service:
+  ansible.builtin.service:
     name: cron
     state: started
     enabled: true
 
 - name: Ensure frozen backup directory present and owned by root
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ backup_frozen_directory }}"
     owner: root

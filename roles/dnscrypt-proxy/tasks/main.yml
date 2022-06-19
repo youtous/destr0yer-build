@@ -2,7 +2,7 @@
 # This role install DNSCrypt-proxy from upstream
 - name: Ensure any local other DNS local service is stopped and disabled
   become: true
-  service:
+  ansible.builtin.service:
     name: "{{ item }}"
     state: stopped
     enabled: false
@@ -19,7 +19,7 @@
 
 - name: Ensure DNSCrypt-proxy configuration directories exist
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ item }}"
     owner: root
@@ -31,7 +31,7 @@
 
 - name: Configure DNSCrypt-proxy
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/config/{{ item.src }}"
     dest: "{{ dnscrypt_configuration_path }}/{{ item.dest }}"
     owner: root
@@ -96,7 +96,7 @@
 
 - name: Copy DNSCrypt-proxy systemd service configuration
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/systemd/{{ item.src }}"
     dest: "/lib/systemd/system/{{ item.dest }}"
     owner: root

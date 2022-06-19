@@ -1,13 +1,13 @@
 ---
 - name: Ensure MTA-STS directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ mailserver_compose_file_dest_directory }}/{{ item }}"
   with_items:
     - mta-nginx
 
 - name: Generate MTA-STS policies
-  template:
+  ansible.builtin.template:
     src: "templates/mta-nginx/mta-sts.txt.j2"
     dest: "{{ mailserver_compose_file_dest_directory }}/mta-nginx/{{ domain.domain }}_mta_sts.txt"
     mode: u=rw,g=,o=
@@ -18,7 +18,7 @@
   no_log: true
 
 - name: Generate nginx MTA-STS configuration
-  template:
+  ansible.builtin.template:
     src: "templates/mta-nginx/nginx.conf.j2"
     dest: "{{ mailserver_compose_file_dest_directory }}/mta-nginx/nginx.conf"
     mode: u=rw,g=,o=

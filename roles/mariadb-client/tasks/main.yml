@@ -9,7 +9,7 @@
 
 - name: Ensure mariadb extra conf directory exists
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ mariadb_config_include_dir }}"
     owner: root

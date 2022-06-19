@@ -2,7 +2,7 @@
 # This role setup a script called by duply before backup. The script will save all databases present in the mysql docker containers
 - name: Ensure backup script directory is present
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ docker_mysql_backup_script_directory }}"
     owner: root
@@ -11,7 +11,7 @@
 
 - name: Ensure backup additional list directory is present (writable for docker users)
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ docker_mysql_backup_script_directory }}/backup.d"
     owner: root
@@ -20,7 +20,7 @@
 
 - name: Ensure backup directory is present
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ docker_mysql_backup_output }}"
     owner: root
@@ -45,7 +45,7 @@
 
 - name: Ensure docker mysql backup list exists
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ docker_mysql_backup_script_directory }}/{{ docker_mysql_containers_list_file }}"
     owner: root
     group: root
@@ -70,7 +70,7 @@
 
 - name: Add backup script to Duply pre scripts
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/register-backup-script.sh.j2"
     dest: "{{ duply_prescript_folder }}/10-mysql-docker-containers.sh"
     owner: root
@@ -79,7 +79,7 @@
 
 - name: Add cleanup script to Duply post scripts
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/register-cleanup-backup-script.sh.j2"
     dest: "{{ duply_postscript_folder }}/10-mysql-backup-cleanup.sh"
     owner: root

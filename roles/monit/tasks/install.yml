@@ -7,7 +7,7 @@
   ignore_errors: true
 
 - name: Create temporary download directory
-  file:
+  ansible.builtin.file:
     path: /tmp/monit
     state: directory
     mode: u=rwx,g=rx,o=rx
@@ -41,7 +41,7 @@
 
 - name: Create Monit configuration directory
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/monit
     state: directory
     owner: root
@@ -50,7 +50,7 @@
 
 - name: Create Monit additional configuration directory
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/monit/conf.d
     state: directory
     owner: root
@@ -59,7 +59,7 @@
 
 - name: Create Monit var directory
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ monit_var_directory }}"
     state: directory
     owner: root
@@ -79,7 +79,7 @@
 
 - name: Create a symbolic link for monitrc
   become: true
-  file:
+  ansible.builtin.file:
     src: /etc/monit/monitrc
     dest: /etc/monitrc
     owner: root
@@ -98,7 +98,7 @@
 
 - name: Clean temporary directory
   become: true
-  file:
+  ansible.builtin.file:
     state: absent
     path: "/tmp/monit"
   when: monit_present is failed

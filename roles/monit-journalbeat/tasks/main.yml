@@ -2,7 +2,7 @@
 
 - name: Setup additional Monit configurations
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/etc/monit/conf.d/journalbeat.j2"
     dest: "/etc/monit/conf.d/journalbeat"
   notify: reload monit

@@ -2,7 +2,7 @@
 ---
 - name: Create (lock) directory which will contain flags
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ duply_backup_lock_directory }}"
     state: directory
     owner: root

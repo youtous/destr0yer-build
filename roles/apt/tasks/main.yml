@@ -2,7 +2,7 @@
 # This role contains apt settings
 - name: Remove unwanted sources.d
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ apt_directory }}/sources.list.d/{{ item }}"
     state: absent
   with_items: "{{ apt_remove_sourcesd }}"
@@ -19,7 +19,7 @@
 
 - name: Remove unwanted sources.d | removing
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ sources_unwanted_apt_found.files }}"

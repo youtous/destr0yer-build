@@ -9,7 +9,7 @@
 
 - name: Create root backup directory
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ backup_root_directory }}"
     state: directory
     owner: root
@@ -75,7 +75,7 @@
 
 - name: Unlock .ssh folder of backup users
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
     attributes: -i
   with_items: "{{ backup_users }}"
@@ -83,7 +83,7 @@
 
 - name: Unlock .ssh/authorized_keys of backup users
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
     attributes: -i
   with_items: "{{ backup_users }}"
@@ -111,14 +111,14 @@
 
 - name: Lock .ssh folder of backup users
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
     attributes: i
   with_items: "{{ backup_users }}"
 
 - name: Lock .ssh/authorized_keys of backup users
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
     attributes: i
   with_items: "{{ backup_users }}"
@@ -135,7 +135,7 @@
 
 - name: Ensure backup folders permissions
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ backup_root_directory }}/backup_{{ item.username }}"
     owner: root
@@ -145,7 +145,7 @@
 
 - name: Ensure backup folders permissions
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/home"
     owner: "backup_{{ item.username }}"

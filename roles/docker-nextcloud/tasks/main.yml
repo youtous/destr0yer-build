@@ -3,7 +3,7 @@
 # see https://github.com/nextcloud/docker for more details
 
 - name: Ensure nextcloud directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ nextcloud_compose_file_dest_directory }}"
 
@@ -18,20 +18,20 @@
     nextcloud_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
 - name: Copy Nextcloud stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.nextcloud.j2.yml
     dest: "{{ nextcloud_compose_file_dest }}"
     mode: u=rw,g=,o=
 
 - name: Ensure Nextcloud config directories exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ nextcloud_compose_file_dest_directory }}/{{ item }}"
   with_items:
     - php-fpm.d
 
 - name: Copy Nextcloud configs
-  template:
+  ansible.builtin.template:
     src: "templates/{{ item.src }}"
     dest: "{{ nextcloud_compose_file_dest_directory }}/{{ item.dest }}"
     mode: u=rw,g=,o=

@@ -9,7 +9,7 @@
     - { key: "vm.max_map_count", value: "262144" }
 
 - name: Ensure elastic directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ elastic_compose_file_dest_directory }}"
 
@@ -18,7 +18,7 @@
     elastic_deploy_timestamp: "{{ ansible_date_time.epoch }}"
 
 - name: Ensure elastic config directories exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ elastic_compose_file_dest_directory }}/config/{{ item }}"
   with_items:
@@ -34,7 +34,7 @@
     - curator
 
 - name: Copy elastic configs
-  template:
+  ansible.builtin.template:
     src: "templates/config/{{ item.dir }}/{{ item.file }}"
     dest: "{{ elastic_compose_file_dest_directory }}/config/{{ item.dir }}/{{ item.file }}"
     mode: u=rw,g=,o=
@@ -51,7 +51,7 @@
     - { dir: curator, file: curator.j2.yml }
 
 - name: Copy logstash pipeline configurations
-  template:
+  ansible.builtin.template:
     src: "templates/config/logstash/pipeline/{{ item }}"
     dest: "{{ elastic_compose_file_dest_directory }}/config/logstash/pipeline/{{ item }}"
     mode: u=rw,g=,o=
@@ -65,14 +65,14 @@
   with_items: "{{ logstash_pipeline_patterns }}"
 
 - name: Copy elastic stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.elastic.j2.yml
     dest: "{{ elastic_compose_file_dest }}"
     mode: u=rw,g=,o=
   when: not elastic_use_as_forwarder
 
 - name: Copy elastic stack (forwarder)
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.elastic-forwarder.j2.yml
     dest: "{{ elastic_compose_file_dest }}"
     mode: u=rw,g=,o=

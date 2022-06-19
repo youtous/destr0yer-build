@@ -7,7 +7,7 @@
 
 - name: Ensure journalbeat is enabled and started
   become: true
-  service:
+  ansible.builtin.service:
     name: journalbeat
     enabled: true
     state: started
@@ -15,7 +15,7 @@
 
 - name: Ensure journalbeat is disabled and stopped
   become: true
-  service:
+  ansible.builtin.service:
     name: journalbeat
     enabled: false
     state: stopped
@@ -24,7 +24,7 @@
 
 - name: Ensure journalbeat configuration directory exists
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     owner: root
     group: root
@@ -38,7 +38,7 @@
 
 - name: Copy journalbeat configuration
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/journalbeat.j2.yml
     dest: "{{ journalbeat_configuration_directory }}/journalbeat.yml"
     owner: root

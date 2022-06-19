@@ -68,7 +68,7 @@
 
 - name: Ensure pre.d and post.d directories are present
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ duply_backup_profile_directory }}/global/{{ item }}"
     owner: root
@@ -80,7 +80,7 @@
 
 - name: Ensure cache backup directory is present
   become: true
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ backup_cache_directory }}"
     owner: root

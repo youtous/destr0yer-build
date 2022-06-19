@@ -28,7 +28,7 @@
 
 - name: Unlock /etc/resolv.conf
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/resolv.conf
     attributes: -i
   # if the Filesystem does not handle ioctl we are maybe on a vm
@@ -37,7 +37,7 @@
 
 - name: Configure /etc/resolv.conf for DNSCrypt-proxy
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/resolv.conf.j2"
     dest: "/etc/resolv.conf"
     owner: root
@@ -48,7 +48,7 @@
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/resolv.conf
     owner: root
     group: root

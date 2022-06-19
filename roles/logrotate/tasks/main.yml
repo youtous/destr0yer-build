@@ -7,7 +7,7 @@
 
 - name: Copy rsyslog logrotate policy
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/rsyslog.j2
     dest: /etc/logrotate.d/rsyslog
     owner: root

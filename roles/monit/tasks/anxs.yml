@@ -1,7 +1,7 @@
 ---
 # modified role from ANXS
 - name: Monit | Update the monit configuration (/etc/monit/monitrc)
-  template:
+  ansible.builtin.template:
     src: "etc/monit/monitrc.j2"
     dest: "/etc/monit/monitrc"
     mode: 0400
@@ -9,7 +9,7 @@
     - restart monit
 
 - name: Monit | Copy the sshd monit service files
-  template:
+  ansible.builtin.template:
     src: "etc/monit/conf.d/{{ item }}.j2"
     dest: "/etc/monit/conf.d/{{ item }}"
   with_items:
@@ -20,13 +20,13 @@
     - reload monit
 
 - name: Enable cron
-  service:
+  ansible.builtin.service:
     name: cron
     state: started
     enabled: true
 
 - name: Create configs
-  template:
+  ansible.builtin.template:
     src: "etc/monit/conf.d/{{ item.type | default('base') }}.conf.j2"
     dest: "/etc/monit/conf.d/{{ item.type | default('base') }}_{{ item.process | default(item.pid | basename | replace('.pid', '')) }}.conf"
     owner: root
@@ -45,7 +45,7 @@
   changed_when: false
 
 - name: Monit | Remove queued messages
-  file:
+  ansible.builtin.file:
     path: "{{ monit_eventqueue_directory }}/{{ item }}"
     state: absent
   when: not monit_email_enable or not monit_eventqueue_enable

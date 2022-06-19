@@ -2,7 +2,7 @@
 # This role contains the default configuration for monitoring postgresql with Monit
 - name: Setup additional Monit configurations
   become: true
-  template:
+  ansible.builtin.template:
     src: "templates/etc/monit/conf.d/{{item}}.j2"
     dest: "/etc/monit/conf.d/{{item}}"
   with_items:

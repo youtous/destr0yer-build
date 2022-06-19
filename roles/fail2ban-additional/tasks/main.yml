@@ -9,7 +9,7 @@
 
 - name: Removing listed fail2ban jails
   become: true
-  file:
+  ansible.builtin.file:
     path: "/etc/fail2ban/jail.d/{{ service.name }}.conf"
     state: absent
   with_items: "{{ fail2ban_services_to_remove }}"
@@ -22,7 +22,7 @@
 # see https://github.com/Oefenweb/ansible-fail2ban for naming details
 - name: Updating fail2ban jail configuration with additional services
   become: true
-  template:
+  ansible.builtin.template:
     src: files/additional-services.j2.conf
     dest: "/etc/fail2ban/jail.d/{{ service.name }}.conf"
     owner: root

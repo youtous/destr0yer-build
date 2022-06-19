@@ -24,7 +24,7 @@
 
 - name: Ensure network firewall directory exists
   become: true
-  file:
+  ansible.builtin.file:
     path: "/etc/network/firewall"
     state: directory
     owner: root

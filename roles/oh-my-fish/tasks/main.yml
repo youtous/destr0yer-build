@@ -15,7 +15,7 @@
 
 - name: Install OMF
   become: true
-  template:
+  ansible.builtin.template:
     src: files/config-omf.fish.j2
     dest: /etc/fish/conf.d/config-omf.fish
     owner: root
@@ -48,7 +48,7 @@
 
 - name: Ensure theme {{ omf_theme }} is set as default
   become: true
-  file:
+  ansible.builtin.file:
     src: "{{ omf_theme_directory }}"
     dest: "{{ omf_default_theme_directory }}"
     force: true

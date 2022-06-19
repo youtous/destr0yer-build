@@ -15,7 +15,7 @@
   when: efi_installed.stat.isdir is defined and efi_installed.stat.isdir
 
 - name: disable unused filesystems | os-10
-  template:
+  ansible.builtin.template:
     src: 'etc/modprobe.d/modprobe.j2'
     dest: '/etc/modprobe.d/dev-sec.conf'
     owner: 'root'

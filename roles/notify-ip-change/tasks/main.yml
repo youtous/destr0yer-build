@@ -9,14 +9,14 @@
       - ruby-json
 
 - name: Enable cron
-  service:
+  ansible.builtin.service:
     name: cron
     state: started
     enabled: true
 
 - name: Creates changed-ip directory
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ notify_change_ip_directory }}"
     state: directory
     owner: root
@@ -25,7 +25,7 @@
 
 - name: Copy changed-ip script
   become: true
-  template:
+  ansible.builtin.template:
     src: files/notify-ip-change.rb
     dest: "{{ notify_change_ip_directory }}/notify-ip-change.rb"
     owner: root

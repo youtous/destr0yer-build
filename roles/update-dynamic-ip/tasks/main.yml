@@ -7,14 +7,14 @@
       - cron
 
 - name: Enable cron
-  service:
+  ansible.builtin.service:
     name: cron
     state: started
     enabled: true
 
 - name: Creates update-ip directory
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ update_ip_directory }}"
     state: directory
     owner: root
@@ -24,7 +24,7 @@
 # todo: in order to use this script in production, we need API with scope & restrictions
 - name: Copy update-ip script
   become: true
-  template:
+  ansible.builtin.template:
     src: files/update-ip-cloudflare.j2.sh
     dest: "{{ update_ip_directory }}/update-ip-cloudflare.sh"
     owner: root

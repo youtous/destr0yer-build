@@ -14,7 +14,7 @@
   when: traefik_internal_network_encryption_enabled is false
 
 - name: Ensure traefik directories exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ item }}"
   with_items:
@@ -25,7 +25,7 @@
     traefik_timestamp_deploy: "{{ ansible_date_time.epoch }}"
 
 - name: Copy traefik stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.traefik.j2.yml
     dest: "{{ traefik_compose_file_dest }}"
     mode: u=rw,g=,o=

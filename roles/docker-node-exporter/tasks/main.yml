@@ -2,12 +2,12 @@
 # This role setup a node_exporter export
 
 - name: Ensure node_exporter directory exists
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ node_exporter_compose_file_dest_directory }}"
 
 - name: Copy node_exporter stack
-  template:
+  ansible.builtin.template:
     src: templates/docker-compose.node_exporter.j2.yml
     dest: "{{ node_exporter_compose_file_dest }}"
     mode: u=rw,g=,o=

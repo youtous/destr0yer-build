@@ -31,7 +31,7 @@
 
 - name: Copy aliases
   become: true
-  template:
+  ansible.builtin.template:
     src: files/aliases.j2
     dest: /etc/aliases
     owner: root
@@ -42,7 +42,7 @@
 
 - name: Copy sasl_passwd
   become: true
-  template:
+  ansible.builtin.template:
     src: files/sasl_passwd.j2
     dest: "{{ postfix_sasl_file }}"
     owner: root
@@ -54,7 +54,7 @@
 
 - name: Copy postfix configurations
   become: true
-  template:
+  ansible.builtin.template:
     src: "files/{{ item.src }}"
     dest: "/etc/postfix/{{ item.dest }}"
     owner: root
@@ -79,13 +79,13 @@
 
 - name: Secure SASL password file
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ postfix_sasl_file }}"
     mode: u=rw,g=,o=
 
 - name: Enable postfix
   become: true
-  service:
+  ansible.builtin.service:
     name: postfix
     enabled: true
 

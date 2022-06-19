@@ -9,13 +9,13 @@
 
 - name: Unlock /etc/hosts
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/hosts
     attributes: -i
 
 - name: Setup hosts
   become: true
-  template:
+  ansible.builtin.template:
     src: files/hosts.j2
     dest: /etc/hosts
     owner: root

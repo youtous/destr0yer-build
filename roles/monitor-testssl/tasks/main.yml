@@ -10,14 +10,14 @@
       - aha
 
 - name: Enable cron
-  service:
+  ansible.builtin.service:
     name: cron
     state: started
     enabled: true
 
 - name: Creates monitor-testssl directory
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ monitor_testssl_directory }}"
     state: directory
     owner: root
@@ -35,7 +35,7 @@
 
 - name: Copy monitor-testssl hosts list
   become: true
-  template:
+  ansible.builtin.template:
     src: templates/hosts_list.json.j2
     dest: "{{ monitor_testssl_directory }}/hosts_list.json"
     owner: root
