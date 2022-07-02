@@ -14,6 +14,5 @@
   vars_files:
     - secret_vars/all.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-    - "host_vars/generated/{{ inventory_hostname }}.yml"
   tags: ["new-systems"]
 ...
