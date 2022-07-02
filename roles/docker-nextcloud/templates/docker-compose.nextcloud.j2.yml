@@ -1,3 +1,4 @@
+---
 version: "3.7"
 
 configs:
@@ -65,7 +66,7 @@ services:
       - "NEXTCLOUD_TRUSTED_DOMAINS={{ nextcloud_domain }}" # add the domain to trusted domains during installation
       - "OVERWRITEHOST={{ nextcloud_domain }}"
       - "OVERWRITEPROTOCOL=https"
-      - "TRUSTED_PROXIES=172.28.0.0/16 10.0.0.0/8" # trust subnetwork proxy (respectively nginx and traefik)
+      - "TRUSTED_PROXIES=172.28.0.0/16 10.0.0.0/8" # trust subnetwork proxy (respectively nginx and caddy)
     networks:
       nextcloud-network-fixed:
     deploy:
@@ -98,7 +99,7 @@ services:
       - nextcloud-data:/var/www/html:ro
     networks:
       nextcloud-network-fixed:
-      {{ traefik_network }}:
+      {{ caddy_network }}:
     configs:
       - source: nginx.conf
         target: /etc/nginx/nginx.conf
@@ -113,46 +114,35 @@ services:
         window: 30s
         max_attempts: 3
       labels:
-        - "traefik.frontend.rule=Host:{{ nextcloud_domain }}"
-        - traefik.frontend.passHostHeader=true
-        - traefik.enable=true
-        - traefik.port=80
-        - "traefik.tags={{ traefik_public_tag }}"
-        - "traefik.docker.network={{ traefik_network }}"
-        # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
-        # HSTS
-        - traefik.frontend.headers.SSLRedirect=true
-        - "traefik.frontend.headers.SSLHost={{ nextcloud_domain }}"
-        - traefik.frontend.headers.STSSeconds=315360000
-        - traefik.frontend.headers.STSIncludeSubdomains=true
-        - traefik.frontend.headers.STSPreload=true
+        caddy: "{{ nextcloud_domain }}"
+        # enable access log
+        caddy.log: ""
+
+        # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+        caddy.1_header.Strict-Transport-Security: "\"max-age=63072000; includeSubDomains; preload\""
+
         # security labels
-        - "traefik.frontend.headers.customResponseHeaders=X-Robots-Tag:none||Server:||X-Powered-By:" # Features-Permissions are set by Nextcloud
-        - traefik.frontend.headers.referrerPolicy=same-origin
-        - traefik.frontend.headers.browserXSSFilter=true
-        # csp defined by nextcloud
-        - traefik.frontend.headers.customFrameOptionsValue=sameorigin # allow same origin for iframes
-        - traefik.frontend.headers.contentTypeNosniff=true
-        # rate limits
-        - traefik.frontend.rateLimit.extractorFunc=client.ip
-        - traefik.frontend.rateLimit.rateSet.rate3s.period=3s
-        - "traefik.frontend.rateLimit.rateSet.rate3s.average={{ nextcloud_max_requests_3s_per_client|int }}"
-        - "traefik.frontend.rateLimit.rateSet.rate3s.burst={{ nextcloud_max_requests_3s_per_client * 2|int }}"
-        # max connections limits
-        - "traefik.backend.maxconn.amount={{ nextcloud_max_connections|int }}"
-        - traefik.backend.maxconn.extractorFunc=request.host
-        # requests size limits: currently disabled due to a bug with 302 requests
-        # - "traefik.backend.buffering.maxRequestBodyBytes={{ nextcloud_max_request_size_megabytes * 1000000|int }}" # maximum request size allowed
-        # - traefik.backend.buffering.memRequestBodyBytes=2097152 # after this limit, request will be buffered on disk instead of RAM
-        # - traefik.backend.buffering.retryExpression=IsNetworkError() && Attempts() <= 2
-        # Nextcloud CalDAV
-        - traefik.frontend.redirect.permanent=true
-        - traefik.frontend.redirect.regex=https://(.*)/.well-known/(card|cal)dav
-        - traefik.frontend.redirect.replacement=https://$$1/remote.php/dav/
+        caddy.1_header.-Server: ""
+        caddy.1_header.-X-Powered-By: ""
+        caddy.1_header.X-Robots-Tag: "none"
+        caddy.1_header.Permissions-Policy: "\"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"" # see best practices https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md, https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+        caddy.1_header.Referrer-Policy: "same-origin"
+        caddy.1_header.X-Content-Type-Options: "nosniff"
+        caddy.1_header.X-Frame-Options: "DENY"
+        caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self'; img-src 'self' data: {{ portainer_csp_img_src_additional }}; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+
+        # redirect well known
+        caddy.2_redir: "\"/.well-known/caldav /remote.php/dav/ 301\""
+        caddy.3_redir: "\"/.well-known/card)dav /remote.php/dav/ 301\""
+
+        # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
+        caddy.4_reverse_proxy: "{% raw %}{{upstreams 80}}{% endraw %}"
+        caddy.4_reverse_proxy.lb_policy: "round_robin"
+        caddy.4_reverse_proxy.health_uri: "/"
+        caddy.4_reverse_proxy.health_interval: "5s"
+
+        # todo : implement max requests size & max rateLimit & max connection (maybe at caddy lvl directly)
 
 networks:
   nextcloud-network-fixed:
@@ -162,9 +152,10 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/16
-  {{ traefik_network }}:
+  {{ caddy_network }}:
     external: true
 
 volumes:
   nextcloud-data:
     driver: local
+...
