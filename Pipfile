@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 ansible = "<2.13"
+jmespath = "*"
 
 [dev-packages]
 

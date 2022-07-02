@@ -1,8 +1,6 @@
 # hosts that must receive a first configuration for server
 factoring_systems:
   hosts:
-    heaven-pascal.youtous.dv:
-    heaven-roberval.youtous.dv:
 
 # destr0yers under a commander, they are accessible from ssh only from ssh_entrypoints
 base_systems:
