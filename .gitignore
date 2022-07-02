@@ -9,3 +9,5 @@ playbook.retry
 
 # ignore .env, must be defined on each machine
 .env
+
+build/
