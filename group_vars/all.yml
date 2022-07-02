@@ -190,6 +190,9 @@ portainer_domain: "portainer.swarm.cluster.dv"
 traefik_domain: "traefik.swarm.cluster.dv"
 promgraf_domain: "prom.swarm.cluster.dv"
 
+# dev only!
+caddy_local_certs: true
+
 # l4 reverse proxy, list your services port here
 traefik_services:
   - name: logstash5000

@@ -1,47 +1,63 @@
-# Destr0yer playbooks
+# Destr0yer playbooks - Simple, Secure, Docker Swarm cluster using ansible
 
 [![pipeline status](https://gitlab.com/youtous/destr0yer-build/badges/master/pipeline.svg)](https://gitlab.com/youtous/destr0yer-build/-/commits/master)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
-# todo : update the guide
+## Requirements
 
-## Daily usage recommendations
+On your computer:
 
- -  **When one of the host ip is changed**, playbook should be completely re-run.
+    - python3, pip3
+    - openssl
+    - terraform
+    - ansible (>= 2.9)
+    - bash
+    - jq
+    - ruby
 
-## Installation
 *Tested on Debian 10 Buster only.*
 
-Please fork this repo for each different server configuration.
+### Ansible 3rd content
 
-### Requirements
-- SSH access
-- Python
-- python-jmespath
+Install requirements using
+`ansible-galaxy install -r requirements.yml`
 
-#### VM only
- _*Commands :*_
-- Start machines using `vagrant up`.
-- Stop machines using `vagrant halt`.
-- Update /etc/hosts using `vagrant hostmanager`
+*See requirements.yml*
 
-[vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager) plugin is used for name resolution.
+## Playbooks
 
-If logs grows due to systemd not capable to generate a MAC address, see https://github.com/systemd/systemd/issues/3374#issuecomment-452718898
-## Ansible Playbooks
+Each playbook interact with a given scope:
 
-### Playbooks description :
-- **destr0yers** : this play setup debian based systems with a secured base configuration. Use it as a _base_.
-- **the-swarm** : this play setup a Docker Swarm network using several nodes. It use TLS for communications between nodes (requires CA setup).
-Use it for Docker infrastructures.
+- `provision.yml`: install requirements for newly created servers
+- `configure.yml`: setup an initial server installation, aimed for a general purpose
+- `swarm.yml`: setup the docker-swarm cluster and associated tools (reverse proxy, scheduler, etc)
+- `elastic.yml`: setup an elastic cluster
+- `mailserver.yml`: setup a mailserver server
+- `teamspeak.yml`: setup a teamspeak server
+- `nextcloud.yml`: setup a nextcloud server
 
-- Edit secrets using : `env EDITOR=vim ansible-vault edit secret_vars/all.yml --vault-password-file ./.vault_password`
+During the **first installation**, the playbooks should be executed in the following order:
 
-#### Deployment of a new node
-1. First configuration a new hosts: `ansible-playbook -i hosts/destr0yers.yml  destr0yers.yml --vault-password-file ./.vault_password --tag="new-systems"`
-2. Launch the recipe using: `ansible-playbook -i hosts/destr0yers.yml destr0yers.yml --vault-password-file ./.vault_password`
-3. Launch the docker recipe using: `ansible-playbook -i hosts/swarm-nodes.yml the-swarm.yml --vault-password-file ./.vault_password`
+0. Add servers to the `factoring_systems` in `hosts/instances.yml`
+1. Execute playbooks: `provision.yml` then `configure.yml` and finally `swarm.yml`
+
+## Getting started - simplified example
+
+- `source vault.fish` - register the secret passphrase for secrets
+- `ansible-galaxy install -r requirements.yml` - install requirements
+- `ansible-playbook -i hosts/instances.yml provision.yml --vault-password-file "./.vault_password" --user=debian` - provision the cluster
+- `ansible-playbook -i hosts/instances.yml configure.yml --vault-password-file "./.vault_password"` - provision the cluster
+- `ansible-playbook -i hosts/instances.yml swarm.yml --vault-password-file "./.vault_password"` - configure the swarm cluster
+
+You can use `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook` to avoid ssh-key trust confirmation.
+
+### Docker-Swarm
+
+- Docker-Swarm requires a X509 root CA. A certificate for each node should be generated too: generate it using `generate-X509-certificate.rb`
+
+### Other commands
+- `bcrypt-passwd.sh` : helps to create a bcrypt password; requires `htpasswd` to be installed.
 
 ### Save `secrets` and `certs`
 Using `make` and the **Makefile** you can easily save secrets and certs in a safe place. For instance a private _Nextcloud_.
@@ -50,8 +66,19 @@ Using `make` and the **Makefile** you can easily save secrets and certs in a saf
 
 _Create a `.env` as `.env.sample` in order to configure save path and cluster name which must be unique._
 
-### Hosts
-Hosts are located in `hosts/{hosts groups list}.yml`. Use separate files for separate clusters.
+## Getting started - detailed version
+
+### I. Infrastructure provisioning - Vagrant _(dev only)_
+
+- Start machines using `vagrant up`.
+- Stop machines using `vagrant halt`.
+- Update /etc/hosts using `vagrant hostmanager`
+
+[vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager) plugin is used for name resolution.
+
+If logs grows due to systemd not capable to generate a MAC address, see https://github.com/systemd/systemd/issues/3374#issuecomment-452718898
+
+### TODO : include the detailed installation there
 
 ## How to start?
 ### Generate ssh keys
@@ -146,47 +173,7 @@ logstash_node_certificate: | # usually logstash-node-hostname.crt
 ```
 See `docker-elastic` for detailed instructions.
 
-### Examples
-#### DockerSwarm hosts
-Swarm comes with several admin applications which require domains,
-here is a list of the required domains :
+## Licence
 
-```
-# prom domains
-192.168.100.10  prom.prom.heaven-pascal.youtous.dv
-192.168.100.10  unsee.prom.heaven-pascal.youtous.dv
-192.168.100.10  alerts.prom.heaven-pascal.youtous.dv
-192.168.100.10  graph.prom.heaven-pascal.youtous.dv
-
-# traefik domains
-192.168.100.10  traefik.heaven-pascal.youtous.dv
-192.168.100.10  consul.heaven-pascal.youtous.dv
-
-# portainer
-192.168.100.10  portainer.heaven-pascal.youtous.dv
-
-# elastic stack
-192.168.100.10  kibana.heaven-pascal.youtous.dv
-192.168.100.10  elasticsearch.heaven-pascal.youtous.dv
-192.168.100.10  logstash.heaven-pascal.youtous.dv
-
-# nextcloud
-192.168.100.10  cloud.heaven-pascal.youtous.dv
-
-# mailserver
-192.168.100.10 mail.heaven-pascal.youtous.dv
-192.168.100.10 autodiscover.heaven-pascal.youtous.dv
-192.168.100.10 autoconfig.heaven-pascal.youtous.dv
-
-```
-
-### Other commands
-- `bcrypt-passwd.sh` : helps to create a bcrypt password; requires `htpasswd` to be installed.
-
-## Ansible 3rd Roles
-
-Install requirements using
-`ansible-galaxy install -r requirements.yml`
-
-*See requirements.yml*
-*Ansible version:* _2.8_
+Destr0yer-build https://github.com/youtous/destr0yer-build Author @youtous.
+This project is licenced under the GPLv3, see LICENCE for details.
