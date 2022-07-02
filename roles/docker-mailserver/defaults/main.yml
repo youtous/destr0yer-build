@@ -4,6 +4,8 @@
 # main domain of the server, eg: localhost.com
 # mailserver_domain: "localhost.com" <--- required
 
+# TODO : adapt this to use caddy instead
+
 # enable traefik to handle certificates creation, if true, ssl_type,ssl_cert_path,ssl_key_path will be overwritten
 mailserver_ssl_use_traefik: true
 # by default, use consul and assume consul external network is created

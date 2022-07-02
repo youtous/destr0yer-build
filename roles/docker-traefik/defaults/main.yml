@@ -1,6 +1,6 @@
 ---
 # version of traefik to use
-traefik_version: "v2.7"
+traefik_version: "v2.8"
 
 traefik_domain: "traefik.{{ hostname }}"
 
