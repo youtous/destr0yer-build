@@ -2,10 +2,11 @@
 ---
 # Variables listed here are not committed and are specific to heave-roberval.youtous.dv
 
+# it is advised to have an unique password per host
 # generate password using
-# openssl passwd -6
-arbiter_password: ""
-arbiter_clear_password: ""
+# `openssl passwd -6`
+sudo_user_password: ""
+sudo_user_clear_password: ""
 
 root_password: ""
 

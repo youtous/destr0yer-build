@@ -32,8 +32,8 @@ common_users:
     uid: 1006
     home: /home/dev-arbiter
     profile:
-    ssh_key: "{{ sudo_ssh_keys }}"
-    password: "{{ sudo_password }}"
+    ssh_key: "{{ sudo_user_ssh_keys }}"
+    password: "{{ sudo_user_password }}"
     update_password: "always"
 
 common_groups_to_create:

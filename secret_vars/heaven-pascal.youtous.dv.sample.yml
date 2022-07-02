@@ -2,15 +2,16 @@
 ---
 # Variables listed here are not committed and are specific to heave-pascal.youtous.dv
 
+# it is advised to have an unique password per host
 # generate password using
-# openssl passwd -6
-arbiter_password: ""
-arbiter_clear_password: ""
-# todo : update these examples
+# `openssl passwd -6`
+sudo_user_password: ""
+sudo_user_clear_password: ""
+
 root_password: ""
 
 # users vars
-specu_ssh_keys: "{{ arbiter_ssh_keys }}"
+specu_ssh_keys: "{{ sudo_user_ssh_keys }}"
 specu_password: ""
 
 # smtp relay
