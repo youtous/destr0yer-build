@@ -13,17 +13,6 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["disk-partitioning", "configure-systems", "swap"]
 
-- name: Configure systems | resolv dns configuration
-  hosts: [base_systems, commander_systems]
-  roles:
-    - dnscrypt-proxy # DNS with TLS
-    - resolv
-  vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["resolv", "configure-systems", "dnscrypt-proxy"]
-
 - name: Configure systems | apt packages configuration and update
   hosts: [base_systems, commander_systems]
   serial: 1 # configure one by one each host in case of docker update/kernel reboot
@@ -116,27 +105,6 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["entrypoint-ssh", "ssh", "sshd", "configure-systems"]
 
-
-- name: Configure systems | configure fish shell
-  hosts: [base_systems, commander_systems]
-  roles:
-    - oh-my-fish
-  vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["fish", "configure-systems"]
-
-- name: Configure systems | glances
-  hosts: [base_systems, commander_systems]
-  roles:
-    - glances # boosted htop
-  vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["configure-systems", "update-systems"]
-
 - name: Configure systems | monit
   hosts: [base_systems, commander_systems]
   roles:
@@ -146,6 +114,18 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["monit", "configure-systems"]
+
+- name: Configure systems | resolv dns configuration
+  hosts: [base_systems, commander_systems]
+  roles:
+    - dnscrypt-proxy # DNS with TLS
+    - monit-dnscrypt-proxy
+    - resolv
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["resolv", "configure-systems", "dnscrypt-proxy"]
 
 - name: Configure systems | hardening
   hosts: [base_systems, commander_systems]
@@ -178,16 +158,6 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["logwatch", "configure-systems"]
 
-- name: Configure DNSCrypt-proxy monit
-  hosts: [base_systems, commander_systems]
-  roles:
-    - monit-dnscrypt-proxy
-  vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["dnscrypt-proxy"]
-
 - name: Configure systems with specifics interfaces
   hosts: interfaces
   roles:
@@ -197,6 +167,26 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["interfaces"]
+
+- name: Configure systems | configure fish shell
+  hosts: [base_systems, commander_systems]
+  roles:
+    - oh-my-fish
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["fish", "configure-systems"]
+
+- name: Configure systems | glances
+  hosts: [base_systems, commander_systems]
+  roles:
+    - glances # boosted htop
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["configure-systems", "update-systems"]
 
 - name: Configure Postfix relay servers
   hosts: smtp_relays
