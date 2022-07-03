@@ -16,13 +16,17 @@
 - name: Populate service facts
   ansible.builtin.service_facts:
 
+- name: List of enabled services
+  ansible.builtin.set_fact:
+    enabled_services: "{{ ansible_facts | json_query('services[*].name') }}"
+
 - name: Ensure journalbeat is disabled and stopped
   become: true
   ansible.builtin.service:
     name: journalbeat
     enabled: false
     state: stopped
-  when: journalbeat_state == 'absent' and 'journalbeat' in json_query(ansible_facts.services[*].name)
+  when: journalbeat_state == 'absent' and 'journalbeat' in enabled_services
 
 - name: Ensure journalbeat configuration directory exists
   become: true

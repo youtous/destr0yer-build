@@ -15,13 +15,17 @@
 - name: Populate service facts
   ansible.builtin.service_facts:
 
+- name: List of enabled services
+  ansible.builtin.set_fact:
+    enabled_services: "{{ ansible_facts | json_query('services[*].name') }}"
+
 - name: Ensure filebeat is disabled and stopped
   become: true
   ansible.builtin.service:
     name: filebeat
     enabled: false
     state: stopped
-  when: filebeat_state == 'absent' and 'filebeat' in json_query(ansible_facts.services[*].name)
+  when: filebeat_state == 'absent' and 'filebeat' in enabled_services
 
 
 - name: Ensure filebeat configuration directory exists

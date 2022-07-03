@@ -2,6 +2,10 @@
 - name: Populate service facts
   ansible.builtin.service_facts:
 
+- name: List of enabled services
+  ansible.builtin.set_fact:
+    enabled_services: "{{ ansible_facts | json_query('services[*].name') }}"
+
 # This role install DNSCrypt-proxy from upstream
 - name: Ensure any local other DNS local service is stopped and disabled
   become: true
@@ -9,7 +13,7 @@
     name: "{{ item }}"
     state: stopped
     enabled: false
-  when: item in json_query(ansible_facts.services[*].name)
+  when: item in enabled_services
   with_items:
     - systemd-resolved
     - bind9

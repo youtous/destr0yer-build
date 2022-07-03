@@ -16,13 +16,17 @@
 - name: Populate service facts
   ansible.builtin.service_facts:
 
+- name: List of enabled services
+  ansible.builtin.set_fact:
+    enabled_services: "{{ ansible_facts | json_query('services[*].name') }}"
+
 - name: Ensure metricbeat is disabled and stopped
   become: true
   ansible.builtin.service:
     name: metricbeat
     enabled: false
     state: stopped
-  when: metricbeat_state == 'absent' and 'metricbeat' in json_query(ansible_facts.services[*].name)
+  when: metricbeat_state == 'absent' and 'metricbeat' in enabled_services
 
 - name: Ensure metricbeat configuration directory exists
   become: true
