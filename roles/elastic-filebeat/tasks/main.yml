@@ -12,14 +12,17 @@
     state: started
   when: filebeat_state == 'present'
 
+- name: Populate service facts
+  ansible.builtin.service_facts:
+
 - name: Ensure filebeat is disabled and stopped
   become: true
   ansible.builtin.service:
     name: filebeat
     enabled: false
     state: stopped
-  ignore_errors: true # noqa ignore-errors
-  when: filebeat_state == 'absent'
+  when: filebeat_state == 'absent' and 'filebeat' in json_query(ansible_facts.services[*].name)
+
 
 - name: Ensure filebeat configuration directory exists
   become: true

@@ -1,4 +1,7 @@
 ---
+- name: Populate service facts
+  ansible.builtin.service_facts:
+
 # This role install DNSCrypt-proxy from upstream
 - name: Ensure any local other DNS local service is stopped and disabled
   become: true
@@ -6,16 +9,15 @@
     name: "{{ item }}"
     state: stopped
     enabled: false
-  ignore_errors: true # noqa ignore-errors
+  when: item in json_query(ansible_facts.services[*].name)
   with_items:
     - systemd-resolved
     - bind9
 
 - name: Check if DNSCrypt-proxy is present
-  ansible.builtin.command: "{{ dnscrypt_binary_path|quote }} -version"
-  changed_when: false
+  ansible.builtin.stat:
+    path: "{{ dnscrypt_binary_path }}"
   register: dnscrypt_proxy_present
-  ignore_errors: true
 
 - name: Ensure DNSCrypt-proxy configuration directories exist
   become: true
@@ -64,7 +66,7 @@
 
 - name: Get current DNSCrypt-proxy version
   ansible.builtin.command: "{{ dnscrypt_binary_path|quote }} -version"
-  when: dnscrypt_proxy_present is not failed
+  when: dnscrypt_proxy_present.stat.exists
   changed_when: false
   register: dnscrypt_proxy_current_version
 
@@ -84,7 +86,7 @@
   # install when not present or local version and remote version are different
   when: >
     dnscrypt_proxy_version == "latest" and
-    (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout))
+    (not dnscrypt_proxy_present.stat.exists or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout))
   notify: restart DNSCrypt-proxy
 
 - name: Install DNSCrypt-proxy specific
@@ -92,7 +94,7 @@
   # install when not present or local version and remote version are different
   when: >
     dnscrypt_proxy_version != "latest" and
-    (dnscrypt_proxy_present is failed or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version))
+    (not dnscrypt_proxy_present.stat.exists or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version))
   notify: restart DNSCrypt-proxy
 
 - name: Configure NetworkManager for DNSCrypt-proxy

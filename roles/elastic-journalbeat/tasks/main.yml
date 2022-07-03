@@ -13,14 +13,16 @@
     state: started
   when: journalbeat_state == 'present'
 
+- name: Populate service facts
+  ansible.builtin.service_facts:
+
 - name: Ensure journalbeat is disabled and stopped
   become: true
   ansible.builtin.service:
     name: journalbeat
     enabled: false
     state: stopped
-  when: journalbeat_state == 'absent'
-  ignore_errors: true # noqa ignore-errors
+  when: journalbeat_state == 'absent' and 'journalbeat' in json_query(ansible_facts.services[*].name)
 
 - name: Ensure journalbeat configuration directory exists
   become: true

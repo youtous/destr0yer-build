@@ -3,10 +3,12 @@
 - name: Check Monit version is {{ monit_version }}
   ansible.builtin.shell: >
     set -o pipefail &&
-    monit --version | grep {{ monit_version|quote }}
+    {{ monit_binary_path }} --version | grep {{ monit_version|quote }}
   changed_when: false
   register: monit_present
   ignore_errors: true
+  args:
+    executable: /bin/bash
 
 - name: Create temporary download directory
   ansible.builtin.file:
@@ -35,7 +37,7 @@
   ansible.builtin.copy:
     remote_src: true
     src: "{{ monit_download_dest_directory }}/monit-{{ monit_version }}/bin/monit"
-    dest: /usr/local/bin/monit
+    dest: "{{ monit_binary_path }}"
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx

@@ -52,13 +52,20 @@
     group: root
     mode: u=rw,g=rx,o=rx
 
+- name: Gather Scaleway host command information
+  ansible.builtin.stat:
+    path: /usr/local/bin/scw-metadata
+  register: scaleway_scw_medata
+
 - name: Check if host is a Scaleway aarch
   ansible.builtin.shell:
     set -o pipefail &&
     scw-metadata | grep aarch
   changed_when: false
   register: host_scw_aarch64
-  ignore_errors: true
+  when: scaleway_scw_medata.stat.exists
+  args:
+    executable: /bin/bash
 
 - name: Fix Scaleway reboot command fish
   become: true
@@ -68,7 +75,7 @@
     owner: root
     group: root
     mode: u=rw,g=rx,o=rx
-  when: host_scw_aarch64 is not failed
+  when: scaleway_scw_medata.stat.exists and host_scw_aarch64 is not failed
 
 - name: Fix Scaleway reboot command bash
   become: true
@@ -78,5 +85,5 @@
     owner: root
     group: root
     mode: u=rw,g=rx,o=rx
-  when: host_scw_aarch64 is not failed
+  when: scaleway_scw_medata.stat.exists and host_scw_aarch64 is not failed
 ...

@@ -1,17 +1,16 @@
 ---
 # This role contains oh-my-fish global installation
 - name: Check if OMF is installed
-  ansible.builtin.command: "ls {{ omf_installation_directory|quote }}"
+  ansible.builtin.stat:
+    path: "{{ omf_installation_directory }}"
   register: omf_present
-  changed_when: false
-  ignore_errors: true
 
 - name: "Clone OMF from {{ omf_repo }}" # noqa git-latest
   become: true
   ansible.builtin.git:
     repo: "{{ omf_repo }}"
     dest: "{{ omf_installation_directory }}"
-  when: omf_present is failed
+  when: not omf_present.stat.exists
 
 - name: Install OMF
   become: true
@@ -23,17 +22,16 @@
     mode: u=rw,g=rx,o=rx
 
 - name: Check if OMF theme "{{ omf_theme }}" is installed
-  ansible.builtin.command: "ls {{ omf_installation_directory|quote }}/themes/{{ omf_theme|quote }}"
-  changed_when: false
+  ansible.builtin.stat:
+    path: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
   register: omf_theme_present
-  ignore_errors: true
 
 - name: "Clone OMF theme \"{{ omf_theme }}\" from {{ omf_theme_repo }}"
   become: true
   ansible.builtin.git: # noqa git-latest
     repo: "{{ omf_theme_repo }}"
     dest: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
-  when: omf_theme_present is failed
+  when: not omf_theme_present.stat.exists
 
 - name: Check if default theme already exists
   ansible.builtin.stat:
@@ -43,7 +41,6 @@
 - name: Move default OMF theme
   become: true
   ansible.builtin.command: mv "{{ omf_default_theme_directory|quote }}" "{{ omf_default_theme_move_directory|quote }}"
-  ignore_errors: true # noqa ignore-errors
   when: omf_default_link.stat.islnk is not defined or not omf_default_link.stat.islnk
 
 - name: Ensure theme {{ omf_theme }} is set as default
@@ -62,7 +59,6 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  ignore_errors: true # noqa ignore-errors
   with_items:
     - fish_prompt.fish
 
@@ -72,4 +68,23 @@
     repo: "{{ omf_plugin_repo_base }}{{ item }}"
     dest: "{{ omf_plugin_directory }}/{{ item }}"
   with_items: "{{ omf_plugins }}"
+
+- name: Enable bat alias in fish
+  become: true
+  ansible.builtin.copy:
+    content: |
+      # Ansible managed content!
+      abbr --add cat 'bat'
+    dest: /etc/fish/conf.d/bat.fish
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  when: omf_enable_bat_alias
+
+- name: Disable bat alias in fish
+  become: true
+  ansible.builtin.file:
+    path: /etc/fish/conf.d/bat.fish
+    state: absent
+  when: not omf_enable_bat_alias
 ...

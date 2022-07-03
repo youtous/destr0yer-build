@@ -73,21 +73,35 @@
       - name: "{{ backup_group_name }}"
         gid: "{{ backup_group_gid }}"
 
+- name: Check if .ssh exists for backup users
+  ansible.builtin.stat:
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
+  with_items: "{{ backup_users }}"
+  register: backup_directory_ssh_status
+
 - name: Unlock .ssh folder of backup users
   become: true
   ansible.builtin.file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
     attributes: -i
+  with_items: "{{ backup_directory_ssh_status.results }}"
+  when:
+    - item.stat.exists
+
+- name: Check if .ssh/authorized_keys exists for backup users
+  ansible.builtin.stat:
+    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
   with_items: "{{ backup_users }}"
-  ignore_errors: true # noqa ignore-errors if the directory is not yet created, ignore
+  register: backup_directory_ssh_authorized_status
 
 - name: Unlock .ssh/authorized_keys of backup users
   become: true
   ansible.builtin.file:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
     attributes: -i
-  with_items: "{{ backup_users }}"
-  ignore_errors: true # noqa ignore-errors
+  with_items: "{{ backup_directory_ssh_authorized_status.results }}"
+  when:
+    - item.stat.exists
 
 - name: Create backup accounts
   ansible.builtin.include_role:

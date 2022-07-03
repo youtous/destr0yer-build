@@ -3,6 +3,7 @@ monit_package_name: "monit-{{ monit_version }}-linux-{{ 'arm64' if (ansible_arch
 monit_download_uri: "https://bitbucket.org/tildeslash/monit/downloads/{{ monit_package_name }}"
 monit_download_dest_directory: "/tmp/monit"
 monit_var_directory: "/var/lib/monit"
+monit_binary_path: "/usr/local/bin/monit"
 
 # which filesystems to monitor
 monit_default_filesystems:

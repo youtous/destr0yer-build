@@ -74,6 +74,8 @@
     | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_mariadb_rules
+  args:
+    executable: /bin/bash
 
 - name: UFW delete existing mariadb rules - tcp,udp/3306
   become: true
@@ -82,6 +84,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_mariadb_rules.stdout_lines }}"
   when: ufw_mariadb_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 - name: UFW Allow mariadb clients - tcp,udp/3306
   become: true

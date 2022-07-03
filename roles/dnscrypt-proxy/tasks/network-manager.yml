@@ -1,9 +1,8 @@
 ---
 - name: Check if /etc/NetworkManager/NetworkManager.conf exists
-  ansible.builtin.command: "ls /etc/NetworkManager/NetworkManager.conf"
+  ansible.builtin.stat:
+    path: "/etc/NetworkManager/NetworkManager.conf"
   register: network_manager_conf_present
-  changed_when: false
-  ignore_errors: true
 
 - name: Create /etc/NetworkManager/NetworkManager.conf
   become: true
@@ -13,7 +12,7 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  when: network_manager_conf_present is failed
+  when: not network_manager_conf_present.stat.exists
   notify: restart NetworkManager
 
 - name: Disable NetworkManager auto-update /etc/resolv.conf
@@ -23,7 +22,7 @@
     regexp: '^dns='
     insertafter: '^[main]'
     line: 'dns=none'
-  when: network_manager_conf_present is not failed
+  when: not network_manager_conf_present.stat.exists
   notify: restart NetworkManager
 
 - name: Unlock /etc/resolv.conf

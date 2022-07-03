@@ -9,6 +9,8 @@
     | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_ssh_rules
+  args:
+    executable: /bin/bash
 
 - name: UFW delete existing ssh rules - tcp,udp/ssh
   become: true
@@ -17,6 +19,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_ssh_rules.stdout_lines }}"
   when: ufw_ssh_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 - name: UFW Allow ssh local clients - ALLOW tcp/ssh
   become: true
