@@ -7,6 +7,8 @@
     iptables -S DOCKER-USER
   register: iptables_docker_user_rules
   changed_when: false
+  args:
+    executable: /bin/bash
 
 - name: Save DOCKER-USER iptables rules
   become: true

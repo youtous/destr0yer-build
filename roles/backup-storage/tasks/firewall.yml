@@ -16,6 +16,8 @@
     | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_ssh_backup_rules
+  args:
+    executable: /bin/bash
 
 - name: UFW delete existing sftp backup rules - tcp,udp/ssh
   become: true
@@ -24,6 +26,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_ssh_backup_rules.stdout_lines }}"
   when: ufw_ssh_backup_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 - name: UFW Allow sftp backup clients - LIMIT tcp/ssh
   become: true

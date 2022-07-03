@@ -9,6 +9,8 @@
   changed_when: false
   register: scw_services_enabled
   ignore_errors: true
+  args:
+    executable: /bin/bash
 
 - name: List running Scaleway services
   become: true
@@ -19,6 +21,8 @@
   changed_when: false
   register: scw_services_running
   ignore_errors: true
+  args:
+    executable: /bin/bash
 
 - name: Stop Scaleway services
   become: true

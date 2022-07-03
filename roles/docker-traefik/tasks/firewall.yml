@@ -19,6 +19,8 @@
     | sed '/^s*$/d'
   changed_when: false
   register: ufw_traefik_rules
+  args:
+    executable: /bin/bash
 
 - name: UFW delete existing traefik rules - tcp,udp
   become: true
@@ -27,6 +29,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_traefik_rules.stdout_lines }}"
   when: ufw_traefik_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 ## End of revocation
 - name: "Allow traefik ports (including containers) to pass firewall - any/{{ item }}"

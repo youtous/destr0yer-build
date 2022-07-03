@@ -13,6 +13,8 @@
     | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_mailserver_465_rules
+  args:
+    executable: /bin/bash
 
 - name: UFW delete existing docker-mailserver:465 rules - tcp,udp/465
   become: true
@@ -21,6 +23,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_docker_mailserver_465_rules.stdout_lines }}"
   when: ufw_docker_mailserver_465_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 - name: UFW Allow docker-mailserver:465 networks - tcp/465
   become: true
@@ -41,6 +45,8 @@
     | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_docker_mailserver_993_rules
+  args:
+    executable: /bin/bash
 
 - name: UFW delete existing docker-mailserver:993 rules - tcp,udp/993
   become: true
@@ -49,6 +55,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_docker_mailserver_993_rules.stdout_lines }}"
   when: ufw_docker_mailserver_993_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 - name: UFW Allow docker-mailserver:993 networks - tcp/993
   become: true

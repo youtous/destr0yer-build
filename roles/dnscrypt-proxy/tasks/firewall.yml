@@ -24,6 +24,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_dns_rules.stdout_lines }}"
   when: ufw_dns_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 - name: UFW Allow DNS clients - tcp,udp/53
   become: true

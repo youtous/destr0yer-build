@@ -8,6 +8,8 @@
     ip6tables -S DOCKER-USER
   register: ip6tables_docker_user_rules
   changed_when: false
+  args:
+    executable: /bin/bash
 
 - name: Save DOCKER-USER ip6tables rules
   become: true

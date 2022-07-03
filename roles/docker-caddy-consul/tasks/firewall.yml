@@ -11,6 +11,8 @@
     | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_443_rules
+  args:
+    executable: /bin/bash
 
 - name: UFW delete existing https rules - tcp,udp/443
   become: true
@@ -19,6 +21,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_caddy_443_rules.stdout_lines }}"
   when: ufw_caddy_443_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 ## Revoke all 80
 - name: List existing https UFW rules - tcp,udp/80
@@ -29,6 +33,8 @@
     | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_80_rules
+  args:
+    executable: /bin/bash
 
 - name: UFW delete existing https rules - tcp,udp/80
   become: true
@@ -37,6 +43,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_caddy_80_rules.stdout_lines }}"
   when: ufw_caddy_80_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 ## Revoke all metrics
 - name: "List existing metrics UFW rules - tcp,udp/{{ caddy_metrics_port }}"
@@ -48,6 +56,8 @@
     | sort -rn | sed '/^s*$/d'
   changed_when: false
   register: ufw_caddy_metrics_rules
+  args:
+    executable: /bin/bash
 
 - name: "UFW delete existing metrics rules - tcp,udp/{{ caddy_metrics_port }}"
   become: true
@@ -56,6 +66,8 @@
     yes y | ufw delete {{ item|quote }}
   with_items: "{{ ufw_caddy_metrics_rules.stdout_lines }}"
   when: ufw_caddy_metrics_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
 
 ## End of revocation
 - name: Allow caddy https (including containers) to pass firewall - tcp/443

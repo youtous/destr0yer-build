@@ -13,6 +13,8 @@
     set -o pipefail &&
     apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}
   when: ansible_distribution_release == "stretch" and not buster_channel_flag.stat.exists
+  args:
+    executable: /bin/bash
 
 - name: Checking if Bullseye update channel Done
   ansible.builtin.stat:
@@ -26,5 +28,7 @@
     set -o pipefail &&
     apt-get --allow-releaseinfo-change update && touch {{ apt_bullseye_flag_path|quote }}
   when: ansible_distribution_release == "buster" and not bullseye_channel_flag.stat.exists
+  args:
+    executable: /bin/bash
 
 ...
