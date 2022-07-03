@@ -4,7 +4,10 @@ repos:
     rev: v4.3.0
     hooks:
       - id: trailing-whitespace
+        exclude: roles/dnscrypt-proxy/templates/config/db/*
       - id: end-of-file-fixer
+        exclude: roles/dnscrypt-proxy/templates/config/db/*
+
       - id: check-yaml
         exclude: \.j2.(yaml|yml)$
       - id: check-toml
