@@ -14,6 +14,7 @@
     set -o pipefail &&
     iptables  -L DOCKER-USER  -n  --line-numbers | grep -zoP '.* 9200 .*\n' |  cut -d' ' -f1 | tr -d '\000' | sort -rn | sed '/^s*$/d'
   register: ufw_cadvisor_9200_rules
+  ignore_errors: true # in case no rule already exists
   changed_when: false
   args:
     executable: /bin/bash

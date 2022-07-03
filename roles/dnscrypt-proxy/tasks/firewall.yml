@@ -15,13 +15,14 @@
   args:
     executable: /bin/bash
   changed_when: false
+  ignore_errors: true # in case no rule already exists
   register: ufw_dns_rules
 
 - name: UFW delete existing DNS rules - tcp,udp/53
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item|quote }}
   with_items: "{{ ufw_dns_rules.stdout_lines }}"
   when: ufw_dns_rules.stdout_lines | length > 0
   args:

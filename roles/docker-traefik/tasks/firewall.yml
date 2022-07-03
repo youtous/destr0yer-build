@@ -19,6 +19,7 @@
     | sed '/^s*$/d'
   changed_when: false
   register: ufw_traefik_rules
+  ignore_errors: true # in case no rule already exists
   args:
     executable: /bin/bash
 
@@ -26,7 +27,7 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    yes y | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item|quote }}
   with_items: "{{ ufw_traefik_rules.stdout_lines }}"
   when: ufw_traefik_rules.stdout_lines | length > 0
   args:
