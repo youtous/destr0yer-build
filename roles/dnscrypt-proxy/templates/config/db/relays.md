@@ -16,189 +16,394 @@ https://github.com/DNSCrypt/dnscrypt-proxy/wiki/Anonymized-DNS
 
 Anonymized DNS relay hosted in AMS on Scaleway
 
-sdns://gRE1MS4xNTguMTY2Ljk3OjQ0Mw
+sdns://gQ01MS4xNTguMTY2Ljk3
 
 
 ## anon-acsacsar-ams-ipv6
 
 Anonymized DNS relay hosted in AMS on Scaleway
 
-sdns://gRpbMjAwMTpiYzg6MTgyNDo3Mzg6OjFdOjQ0Mw
+sdns://gRZbMjAwMTpiYzg6MTgyNDo3Mzg6OjFd
 
 
-## anon-ams-nl
+## anon-cs-austria
 
-Anonymized DNS relay hosted in Netherlands - NL
+Wien, Austria Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRI1MS4xNS4xMjQuMjA4OjQzNDM
-
-
-## anon-bcn
-
-Anonymized DNS relay hosted in Barcelona, Spain.
-
-sdns://gRMxODUuMjUzLjE1NC42Njo0MzQz
+sdns://gQ05NC4xOTguNDEuMjM1
 
 
-## anon-cs-ca2
+## anon-cs-barcelona
 
-Anonymized DNS relay hosted in CA - Vancouver provided by https://cryptostorm.is/
+Barcelona, Spain Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRMxNjIuMjIxLjIwNy4yMjg6NDQz
+sdns://gQ4zNy4xMjAuMTQyLjExNQ
 
 
-## anon-cs-de2
+## anon-cs-belgium
 
-Anonymized DNS relay hosted in Frankfurt, Germany provided by https://cryptostorm.is/
+Brussels, Belgium Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRA4NC4xNi4yNDAuNDM6NDQz
+sdns://gQ0zNy4xMjAuMjM2LjEx
+
+
+## anon-cs-berlin
+
+Berlin, Germany Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ0zNy4xMjAuMjE3Ljc1
+
+
+## anon-cs-brazil
+
+Brazil Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4xNzcuNTQuMTQ1LjEzMQ
+
+
+## anon-cs-bulgaria
+
+Sofia, Bulgaria Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4zNy4xMjAuMTUyLjIzNQ
+
+
+## anon-cs-czech
+
+Prague, Czech Republic Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ8yMTcuMTM4LjIyMC4yNDM
+
+
+## anon-cs-dc
+
+US - Washington, DC Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQwxOTguNy41OC4yMjc
+
+
+## anon-cs-de
+
+Frankfurt, Germany Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQsxNDYuNzAuODIuMw
+
+
+## anon-cs-dk
+
+Denmark Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ0zNy4xMjAuMjMyLjQz
+
+
+## anon-cs-dus1
+
+Dusseldorf, Germany 1 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4yMTMuMjAyLjIxNi4xMg
+
+
+## anon-cs-dus2
+
+Dusseldorf, Germany 2 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ8yMTMuMjAyLjIxNi4yMzY
+
+
+## anon-cs-dus4
+
+Dusseldorf, Germany 4 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ44NS4xMTQuMTM4LjExOQ
+
+
+## anon-cs-finland
+
+Finland Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4xODUuMTE3LjExOC4yMA
+
+
+## anon-cs-fl
+
+US - Miami, FL Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQwyMy4xOS4xMTcuNTU
+
+
+## anon-cs-fl2
+
+US - Miami, FL Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQwyMy4xOS4xMTcuNTE
 
 
 ## anon-cs-fr
 
-Anonymized DNS relay hosted in Paris, France provided by https://cryptostorm.is/
+France Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gREyMTIuMTI5LjQ2LjMyOjQ0Mw
-
-
-## anon-cs-fr2
-
-Anonymized DNS relay hosted in Paris, France (secondary) provided by https://cryptostorm.is/
-
-sdns://gRExOTUuMTU0LjQwLjQ4OjQ0Mw
+sdns://gQ0xNjMuMTcyLjM0LjU2
 
 
-## anon-cs-md
+## anon-cs-hungary
 
-Anonymized DNS relay hosted in Chisinau, Moldova provided by https://cryptostorm.is/
+Budapest, Hungary Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRMxNzguMTc1LjEzOS4yMTE6NDQz
+sdns://gQ04Ni4xMDYuNzQuMjE5
+
+
+## anon-cs-il
+
+US - Chicago, IL Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4xNzMuMjM0LjU2LjExNQ
+
+
+## anon-cs-il2
+
+US - Chicago, IL 2 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4xNzIuMTA3LjE5OS4xOQ
+
+
+## anon-cs-ireland
+
+Dublin, Ireland Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4zNy4xMjAuMjM1LjE4Nw
+
+
+## anon-cs-is
+
+Iceland Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ04Mi4yMjEuMTI4LjQ0
+
+
+## anon-cs-la
+
+US - Los Angeles, CA Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQwyMy4xOS42Ny4xMTY
+
+
+## anon-cs-london
+
+London, England Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ03OC4xMjkuMTQwLjY1
+
+
+## anon-cs-madrid
+
+Madrid, Spain Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4xODUuMTgzLjEwNi44Mw
+
+
+## anon-cs-manchester
+
+Manchester, England Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ0xOTUuMTIuNDguMTcx
+
+
+## anon-cs-milan
+
+Milan, Italy Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ8yMTcuMTM4LjIxOS4yMTk
+
+
+## anon-cs-montreal
+
+Montreal, Canada Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4xNjcuMTE0Ljg0LjEzMg
+
+
+## anon-cs-montreal2
+
+Montreal, Canada 2 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ8xNDQuMTY4LjE2NS4xNjM
+
+
+## anon-cs-nc
+
+US - North Carolina Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4xNTUuMjU0LjIxLjI1MA
 
 
 ## anon-cs-nl
 
-Anonymized DNS relay hosted in Roosendaal, Netherlands provided by https://cryptostorm.is/
+Netherlands Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRExODUuMTA3LjgwLjg0OjQ0Mw
+sdns://gQ0xODUuMTA3LjgwLjg0
 
 
 ## anon-cs-nl2
 
-Anonymized DNS relay hosted in Rotterdam, Netherlands provided by https://cryptostorm.is/
+Netherlands 2 Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRIyMTMuMTYzLjY0LjIwODo0NDM
+sdns://gQ8xNzIuMTA3LjIyNi4xMDc
+
+
+## anon-cs-norway
+
+Oslo, Norway Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ45MS4yMTkuMjE1LjIyNw
+
+
+## anon-cs-nv
+
+US - Las Vegas, NV Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQwzNy4xMjAuMTQ3LjI
+
+
+## anon-cs-nyc1
+
+US - New York City, NY 1 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQwyMy4xOS4yNDUuODg
+
+
+## anon-cs-nyc2
+
+US - New York City, NY 2 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQwyMy4xOS4yNDUuODQ
+
+
+## anon-cs-ore
+
+US - Oregon Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ0xMDQuMjU1LjE3NS4y
+
+
+## anon-cs-poland
+
+Warsaw, Poland Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ0zNy4xMjAuMjExLjkx
 
 
 ## anon-cs-pt
 
-Anonymized DNS relay hosted in Lisbon, Portugal provided by https://cryptostorm.is/
+Portugal Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRExMDkuNzEuNDIuMjI4OjQ0Mw
+sdns://gQ45MS4yMDUuMjMwLjIyNA
 
 
-## anon-cs-se
+## anon-cs-ro
 
-Anonymized DNS relay hosted in Stockholm, Sweden provided by https://cryptostorm.is/
+Romania Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRMxMjguMTI3LjEwNC4xMDg6NDQz
+sdns://gQ0xNDYuNzAuNjYuMjI3
+
+
+## anon-cs-rome
+
+Rome, Italy Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4zNy4xMjAuMjA3LjEzMQ
+
+
+## anon-cs-sea
+
+US - Seattle, WA Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQw2NC4xMjAuNS4yNTE
+
+
+## anon-cs-serbia
+
+Belgrade, Serbia Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ4zNy4xMjAuMTkzLjIxOQ
 
 
 ## anon-cs-sk
 
-Anonymized DNS relay hosted in South Korea provided by https://cryptostorm.is/
+South Korea Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRAyNy4yNTUuNzcuNTY6NDQz
-
-
-## anon-cs-usca
-
-Anonymized DNS relay hosted in US - Los Angeles, CA provided by https://cryptostorm.is/
-
-sdns://gRAyMy4xOS42Ny4xMTY6NDQz
+sdns://gQ8xNzIuMTA3LjE1NC4yMTE
 
 
-## anon-cs-usga
+## anon-cs-slovakia
 
-Anonymized DNS relay hosted in US - Atlanta, GA provided by https://cryptostorm.is/
+Bratislava, Slovakia Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRE2NC40Mi4xODEuMjI3OjQ0Mw
-
-
-## anon-cs-usnc
-
-Anonymized DNS relay hosted in US - Charlotte, NC provided by https://cryptostorm.is/
-
-sdns://gRIxNTUuMjU0LjI5LjExMzo0NDM
+sdns://gQ4xOTMuMzcuMjU1LjIyNw
 
 
-## anon-cs-usnv
+## anon-cs-swe
 
-Anonymized DNS relay hosted in US - Las Vegas, NV provided by https://cryptostorm.is/
+Sweden Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRAzNy4xMjAuMTQ3LjI6NDQz
-
-
-## anon-cs-usor
-
-Anonymized DNS relay hosted in US - Roseburg, OR provided by https://cryptostorm.is/
-
-sdns://gRExMDQuMjU1LjE3NS4yOjQ0Mw
+sdns://gQ8xMjguMTI3LjEwNC4xMDg
 
 
-## anon-cs-ustx
+## anon-cs-sydney
 
-Anonymized DNS relay hosted in US - Dallas, TX provided by https://cryptostorm.is/
+Sydney, Australia Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gREyMDkuNTguMTQ3LjM2OjQ0Mw
+sdns://gQ4zNy4xMjAuMjM0LjI1MQ
 
 
-## anon-dnscrypt.one
+## anon-cs-tokyo
 
-Anonymized DNS relay hosted in Germany (Nuremberg)
+Tokyo, Japan Anonymized DNS relay server provided by https://cryptostorm.is/
 
-sdns://gRIxNDQuOTEuMTA2LjIyNzo0NDM
+sdns://gQwxNDYuNzAuMzEuNDM
+
+
+## anon-cs-tx
+
+US - Dallas, TX Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQ0yMDkuNTguMTQ3LjM2
+
+
+## anon-cs-tx2
+
+US - Dallas, TX 2 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQs0NS4zNS4zNS45OQ
+
+
+## anon-cs-tx3
+
+US - Dallas, TX 3 Anonymized DNS relay server provided by https://cryptostorm.is/
+
+sdns://gQs0NS4zNS43Mi40Mw
 
 
 ## anon-dnscrypt.uk-ipv4
 
-Anonymized DNS relay hosted in UK on DigitalOcean
+Anonymized DNS relay in London. https://www.dnscrypt.uk
 
-sdns://gRIxMzkuNTkuMjAwLjExNjo0NDM
+sdns://gQ0xNjUuMjMyLjMyLjk1
 
 
 ## anon-dnscrypt.uk-ipv6
 
-Anonymized DNS relay hosted in UK on DigitalOcean
+Anonymized DNS relay in London. https://www.dnscrypt.uk
 
-sdns://gR5bMmEwMzpiMGMwOjE6ZTA6OjJlMzplMDAxXTo0NDM
-
-
-## anon-ev-to
-
-Anonymized DNS relay provided by evilvibes.com Location: Toronto, Canada
-
-sdns://gQw2Ni44NS4zMC4xMDU
-
-
-## anon-ev-va
-
-Anonymized DNS relay provided by evilvibes.com Location: Vancouver, Canada
-
-sdns://gQ4xMDQuMzYuMTQ4LjIyMQ
+sdns://gRpbMmEwMzpiMGMwOjE6ZTA6OjQ4NzoxMDAxXQ
 
 
 ## anon-ibksturm
 
-Hosted in Switzerland and maintained by @ibksturm, aka Andreas Ziegler.
+Anonymized DNS relay, No Logging, No Filters, DNSSEC
 
-sdns://gRI4My43OC4xMjAuMjI3Ojg0NDM
+Running privately by ibksturm in Thurgau, Switzerland
 
-
-## anon-ibksturm-ipv6
-
-Hosted in Switzerland and maintained by @ibksturm, aka Andreas Ziegler.
-
-sdns://gS5bMmEwMjoxMjA1OjM0ZTc6OGUzMDpiMjZlOmJmZmY6ZmUxZDplMTliXTo4NDQz
+sdns://gQ4xMDkuMjQ4LjQzLjE1NA
 
 
 ## anon-inconnu
@@ -206,42 +411,70 @@ sdns://gS5bMmEwMjoxMjA1OjM0ZTc6OGUzMDpiMjZlOmJmZmY6ZmUxZDplMTliXTo4NDQz
 Anonymized DNS relay hosted in Seattle, WA (USA), maintained by Eric
 Lagergren (@ericlagergren). Running the official Docker image on Vultr.
 
-sdns://gRIxMDQuMjM4LjE1My40Njo0NDM
+sdns://gQ4xMDQuMjM4LjE1My40Ng
 
 
 ## anon-kama
 
 Anonymized DNS relay hosted in France and maintained by Frank Denis (@jedisct1).
 
-sdns://gRIxMzcuNzQuMjIzLjIzNDo0NDM
+sdns://gQ4xMzcuNzQuMjIzLjIzNA
 
 
 ## anon-meganerd
 
-Anonymized DNS relay hosted by MegaNerd.nl (https://www.meganerd.nl/encrypted-dns-server) in Amsterdam, The Netherlands
+Anonymized DNS relay hosted by MegaNerd.nl (IPv4) (https://www.meganerd.nl/encrypted-dns-server) in Amsterdam, The Netherlands (AMS1)
 
 sdns://gRIxMzYuMjQ0Ljk3LjExNDo0NDM
 
 
 ## anon-meganerd-ipv6
 
-Anonymized DNS relay hosted by MegaNerd.nl (https://www.meganerd.nl/encrypted-dns-server) in Amsterdam, The Netherlands
+Anonymized DNS relay hosted by MegaNerd.nl (IPv6) (https://www.meganerd.nl/encrypted-dns-server) in Amsterdam, The Netherlands (AMS1)
 
 sdns://gStbMjAwMToxOWYwOjUwMDE6Y2JiOjU0MDA6M2ZmOmZlMDc6ZjcwZF06NDQz
 
 
-## anon-plan9-dns
+## anon-plan9-ns2
 
-Anonymized DNS relay hosted in New Jersey, USA. Running the official Docker image on Vultr by @jlongua1
+Anonymized DNS relay hosted in Florida, USA. info - https://jlongua.github.io/plan9-dns/
 
-sdns://gRIxNzMuMTk5LjEyNi4zNTo0NDM
+sdns://gRI0NS42My4xMTAuMTg3Ojg0NDM
 
 
-## anon-publicarray
+## anon-pwoss.org
 
-Anonymized DNS relay hosted in Sydney, Australia and maintained by Sebastian Schmidt (@publicarray)
+Anonymized DNS relay hosted in Nuremberg, Germany (netcup) and maintained by https://pwoss.org (Dan)
 
-sdns://gRIxMzkuOTkuMjIyLjcyOjg0NDM
+sdns://gRM0NS4xNDIuMTc2LjE3MDo0NDM0
+
+
+## anon-resolver4.dns.openinternet.io
+
+Anonymized DNS relay colocated at Sonic.net in Santa Rosa, CA in the United States. Provided by https://openinternet.io
+
+sdns://gQ03MC4zNi4xNzAuMTI2
+
+
+## anon-saldns02-conoha-ipv4
+
+Hosted on ConoHa VPS Tokyo region. No log.
+
+sdns://gRUxMzMuMTMwLjExOC4xMDM6NTA0NDM
+
+
+## anon-saldns99-conoha-ipv4
+
+Hosted on ConoHa VPS Tokyo region (not a resolver, but just a relay). No log
+
+sdns://gRUxMzMuMTMwLjExMy4xNjM6NTA0NDM
+
+
+## anon-saldnssg01-conoha-ipv4
+
+Hosted on ConoHa VPS Singapore region. No log.
+
+sdns://gRQxNjMuNDQuMTU0LjE0NDo1MDQ0Mw
 
 
 ## anon-scaleway
@@ -249,7 +482,7 @@ sdns://gRIxMzkuOTkuMjIyLjcyOjg0NDM
 Anonymized DNS relay hosted in France and maintained by Frank Denis (@jedisct1).
 Running on an instance donated by https://scaleway.com
 
-sdns://gRMxNjMuMTcyLjE4MC4xMjU6NDQz
+sdns://gQ8xNjMuMTcyLjE4MC4xMjU
 
 
 ## anon-scaleway-ams
@@ -257,7 +490,7 @@ sdns://gRMxNjMuMTcyLjE4MC4xMjU6NDQz
 Anonymized DNS relay hosted in Amsterdam and maintained by Frank Denis (@jedisct1).
 Running on an instance donated by https://scaleway.com
 
-sdns://gRE1MS4xNS4xMjIuMjUwOjQ0Mw
+sdns://gQ01MS4xNS4xMjIuMjUw
 
 
 ## anon-scaleway-ams-ipv6
@@ -265,29 +498,28 @@ sdns://gRE1MS4xNS4xMjIuMjUwOjQ0Mw
 Anonymized DNS relay hosted in Amsterdam and maintained by Frank Denis (@jedisct1).
 IPv6 only. Running on an instance donated by https://scaleway.com
 
-sdns://gRpbMjAwMTpiYzg6MTgyMDo1MGQ6OjFdOjQ0Mw
+sdns://gRZbMjAwMTpiYzg6MTgyMDo1MGQ6OjFd
 
 
-## anon-skyfighter
+## anon-serbica
 
-Anonymized DNS relay hosted in Netherlands (https://scaleway.com) and maintained by @tuttimann.
+Anonymized DNS relay hosted in Netherlands by https://litepay.ch
 
-sdns://gQ81MS4xNS42Mi42NTo0NDM
-
-
-## anon-skyfighter-ipv6
-
-Anonymized DNS relay hosted in Netherlands (https://scaleway.com) and maintained by @tuttimann.
-IPv6 only.
-
-sdns://gRtbMjAwMTpiYzg6MTgyNDoxNzBmOjoxXTo0NDM
+sdns://gRMxODUuNjYuMTQzLjE3ODo1MzUz
 
 
 ## anon-sth-se
 
 Anonymized DNS relay hosted in Sweden - SE
 
-sdns://gRI0NS4xNTMuMTg3Ljk2OjQzNDM
+sdns://gRE0NS4xNTMuMTg3Ljk2OjQ0Mw
+
+
+## anon-techsaviours.org
+
+Anonymized DNS relay hosted in Nuremberg, Germany (netcup) and maintained by https://techsaviours.org
+
+sdns://gRI0NS4xMzIuMjQ1Ljk1OjQ0MzQ
 
 
 ## anon-tiarap
@@ -308,25 +540,12 @@ sdns://gSBbMjQwMDo2MTgwOjA6ZDA6OjVmNzM6NDAwMV06MTQ0Mw
 
 Anonymized DNS relay hosted in UK on Vultr
 
-sdns://gRMxMDQuMjM4LjE4Ni4xOTI6NDQz
+sdns://gQ8xMDQuMjM4LjE4Ni4xOTI
 
 
 ## anon-v.dnscrypt.uk-ipv6
 
 Anonymized DNS relay hosted in UK on Vultr
 
-sdns://gSxbMjAwMToxOWYwOjc0MDI6MTU3NDo1NDAwOjJmZjpmZTY2OjJjZmZdOjQ0Mw
+sdns://gShbMjAwMToxOWYwOjc0MDI6MTU3NDo1NDAwOjJmZjpmZTY2OjJjZmZd
 
-
-## anon-yofiji-se-ipv4
-
-Anonymized DNS relay hosted in Sweden and maintained by yofiji.
-
-sdns://gRMxODUuMTkzLjEyNy4yNDQ6NDQz
-
-
-## anon-yofiji-se-ipv6
-
-Anonymized DNS relay hosted in Sweden and maintained by yofiji.
-
-sdns://gSlbMmEwYTozODQwOjEzMzc6MTI3OjA6YjljMTo3ZmY0OjEzMzddOjQ0Mw
