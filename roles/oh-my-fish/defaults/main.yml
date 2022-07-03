@@ -10,4 +10,7 @@ omf_plugin_repo_base: "https://github.com/oh-my-fish/plugin-"
 omf_plugin_directory: "{{ omf_installation_directory }}/pkg"
 omf_plugins:
   - "vcs"
+
+# add or remove the bat alias (instead of standard cat); requires bat to be installed
+omf_enable_bat_alias: true
 ...

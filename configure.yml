@@ -30,7 +30,7 @@
     - system-packages # system packages (htop, curl etc)
     - host # configure system host files
     - system-configuration # configure the system (selinux, timezone...)
-    - system-tools # server cli tools (vim, ccat, etc)
+    - system-tools # server cli tools (vim, etc)
     - iptables-firewall # define firewall policy
   vars_files:
     - secret_vars/all.yml

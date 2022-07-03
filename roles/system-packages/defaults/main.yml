@@ -31,6 +31,7 @@ system_packages:
   - apparmor # security (MAC) :)
   - ccze # colorization
   - grc # colorization
+  - bat # color cat!
 
 # services to enable by default
 system_services_enabled_by_default:

@@ -19,24 +19,14 @@
   ansible.builtin.apt:
     name: "{{ ruby_packages }}"
 
-- name: Test ccat presence
-  ansible.builtin.command: /usr/local/bin/ccat /dev/null
-  register: ccat_present
-  changed_when: false
-  ignore_errors: true
+- name: remove ccat (replaced by bat since Bullseye)
+  ansible.builtin.file:
+    path: /usr/local/bin/ccat
+    state: absent
 
 - name: Requires golang
   ansible.builtin.import_role:
     name: golang
-
-- name: Install ccat
-  become: true
-  ansible.builtin.shell: >
-    cd /root &&
-    /usr/local/go/bin/go get -u github.com/jingweno/ccat &&
-    sudo mv go/bin/ccat /usr/local/bin/ &&
-    sudo rm -Rf github.com/jingweno/ccat
-  when: ccat_present is failed
 
 - name: Requires python
   become: true
