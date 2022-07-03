@@ -84,6 +84,16 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["log", "logrotate", "configure-systems"]
 
+- name: Configure systems | monit
+  hosts: [base_systems, commander_systems]
+  roles:
+    - monit
+  vars_files:
+    - secret_vars/all.yml
+    - task_vars/sudo.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tags: ["monit", "configure-systems"]
+
 - name: Configure systems | fail2ban
   hosts: [base_systems, commander_systems]
   roles:
@@ -104,16 +114,6 @@
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["entrypoint-ssh", "ssh", "sshd", "configure-systems"]
-
-- name: Configure systems | monit
-  hosts: [base_systems, commander_systems]
-  roles:
-    - monit
-  vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["monit", "configure-systems"]
 
 - name: Configure systems | resolv dns configuration
   hosts: [base_systems, commander_systems]
