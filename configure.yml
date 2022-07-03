@@ -16,12 +16,13 @@
 - name: Configure systems | resolv dns configuration
   hosts: [base_systems, commander_systems]
   roles:
+    - dnscrypt-proxy # DNS with TLS
     - resolv
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["resolv", "configure-systems"]
+  tags: ["resolv", "configure-systems", "dnscrypt-proxy"]
 
 - name: Configure systems | apt packages configuration and update
   hosts: [base_systems, commander_systems]
@@ -177,10 +178,9 @@
     - "secret_vars/{{ inventory_hostname }}.yml"
   tags: ["logwatch", "configure-systems"]
 
-- name: Configure DNSCrypt-proxy
+- name: Configure DNSCrypt-proxy monit
   hosts: [base_systems, commander_systems]
   roles:
-    - dnscrypt-proxy # DNS with TLS
     - monit-dnscrypt-proxy
   vars_files:
     - secret_vars/all.yml
