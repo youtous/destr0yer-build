@@ -504,7 +504,7 @@ services:
   # backup indices
   elasticdump-import:
     image: "elasticdump/elasticsearch-dump:latest"
-    ansible.builtin.command: >
+    command: >
       --output=http://elasticsearch:9200/.kibana
       --input=/tmp/current/kibana_index.ndjson
       --type=data
@@ -524,7 +524,7 @@ services:
   # cleanup indices
   curator:
     image: "bobrik/curator:latest"
-    ansible.builtin.command: "/actions.yml"
+    command: "/actions.yml"
     configs:
       - source: actions.yml
         target: /actions.yml

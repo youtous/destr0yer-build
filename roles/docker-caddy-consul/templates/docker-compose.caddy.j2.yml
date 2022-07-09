@@ -13,7 +13,7 @@ services:
   consul:
     image: consul
     hostname: "{% raw %}{{ .Node.Hostname }}{% endraw %}"
-    ansible.builtin.command: agent -server -client=0.0.0.0 -bootstrap-expect={{ consul_replicas }} {% for consul_host_name in caddy_consul_agent_hosts %}-retry-join={{ consul_host_name }} {% endfor %}-raft-protocol={{ consul_replicas }} -ui
+    command: agent -server -client=0.0.0.0 -bootstrap-expect={{ consul_replicas }} {% for consul_host_name in caddy_consul_agent_hosts %}-retry-join={{ consul_host_name }} {% endfor %}-raft-protocol={{ consul_replicas }} -ui
     healthcheck:
       test: "consul info | grep 'health_score = 0'"
     volumes:
@@ -78,7 +78,7 @@ services:
 
   caddy:
     image: "registry.gitlab.com/youtous/caddy-consul-docker:{{ caddy_version }}"
-    ansible.builtin.command: caddy docker-proxy -caddyfile-path=/etc/caddy/Caddyfile
+    command: caddy docker-proxy -caddyfile-path=/etc/caddy/Caddyfile
     healthcheck:
       test: "curl --silent --fail http://localhost:9500/metrics > /dev/null || exit 1"
     sysctls:
