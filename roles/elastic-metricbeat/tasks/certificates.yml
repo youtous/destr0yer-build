@@ -14,7 +14,7 @@
 - name: Ensure logstash root CA is defined
   ansible.builtin.fail:
     msg: root CA is empty or not defined.
-  when: logstash_CA_certificate is not defined or logstash_CA_certificate|length == 0
+  when: logstash_ca_certificate is not defined or logstash_ca_certificate|length == 0
 
 - name: Ensure logstash node crt is defined
   ansible.builtin.fail:

@@ -30,7 +30,7 @@
 - name: Copy logstash RootCA certificate
   become: true
   ansible.builtin.copy:
-    content: "{{ logstash_CA_certificate }}"
+    content: "{{ logstash_ca_certificate }}"
     dest: "{{ journalbeat_certificates_directory }}/{{ logstash_root_ca_certificate_name }}"
     owner: root
     group: root
