@@ -6,7 +6,6 @@ VAGRANTFILE_API_VERSION = "2"
 
 # {FIX} In order to have Virtualbox Guest Additions synced with the host, install
 # vagrant plugin install vagrant-vbguest
-# {FIX} : set /etc/network/interfaces eth0 to auto for NetworkManager restart issues
 servers=[
     {
         :hostname => "heaven-pascal.youtous.dv",
@@ -46,6 +45,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			# configure network
 			# enable ipv6
 			node.vm.provision :shell, inline: "sed -i 's/net.ipv6.conf.all.disable_ipv6 = 1/net.ipv6.conf.all.disable_ipv6 = 0/g' /etc/sysctl.conf"
+			# ensure eth0 is auto enabled
+			node.vm.provision :shell, inline: "echo 'auto eth0' > /etc/network/interfaces.d/eth0"
 			node.vm.hostname = machine[:hostname]
 			node.vm.network :private_network, ip: machine[:ipv4]  #, auto_config: false
 			node.vm.network :private_network, ip: machine[:ipv6]  #, auto_config: false
