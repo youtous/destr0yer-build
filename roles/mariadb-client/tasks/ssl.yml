@@ -10,15 +10,6 @@
     name:
       - openssl
 
-- name: Copy client conf mariadb
-  become: true
-  ansible.builtin.template:
-    src: "templates/50-ssl-clients.cnf.j2"
-    dest: "{{ mariadb_config_include_dir }}/50-ssl-clients.cnf"
-    owner: root
-    group: root
-    mode: u=rw,g=r,o=r
-
 - name: Ensure root CA is defined
   ansible.builtin.fail:
     msg: mariadb root CA is empty or not defined.

@@ -1,9 +1,19 @@
+# Ansible managed
+{% if mariadb_ssl_enabled %}
+
 [mysqld]
 ssl = on
-# will be available in mariadb 10.4.6
-# tls_version = {{ mariadb_tls_version|join(',') }}
+
+tls_version = {{ mariadb_tls_version|join(',') }}
 
 # certificates
 ssl-ca = /etc/mysql/ca.pem
 ssl-cert = /etc/mysql/server-cert.pem
 ssl-key = /etc/mysql/server-key.pem
+
+{% else %}
+
+[mysqld]
+ssl = off
+
+{% endif %}

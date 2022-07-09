@@ -16,17 +16,16 @@
     group: root
     mode: u=rwx,g=rx,o=rx
 
-- name: Configure SSL on mariadb
-  import_tasks: ssl.yml
-  when: mariadb_ssl_enabled
-
-- name: Disable SSL on mariadb
+- name: Copy client conf mariadb
   become: true
-  ansible.builtin.copy:
-    content: "# disabled in Ansible"
+  ansible.builtin.template:
+    src: "templates/50-ssl-clients.cnf.j2"
     dest: "{{ mariadb_config_include_dir }}/50-ssl-clients.cnf"
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  when: not mariadb_ssl_enabled
+
+- name: Configure SSL on mariadb
+  import_tasks: ssl.yml
+  when: mariadb_ssl_enabled
 ...

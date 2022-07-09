@@ -47,17 +47,7 @@
 
 - name: Configure SSL on mariadb
   import_tasks: ssl.yml
-  when: mariadb_ssl_enabled == True
-
-- name: Disable SSL on mariadb
-  become: true
-  ansible.builtin.copy:
-    content: "# disabled in Ansible"
-    dest: "{{ mariadb_config_include_dir }}/50-ssl.j2.cnf"
-    owner: root
-    group: root
-    mode: u=rw,g=r,o=r
-  when: not mariadb_ssl_enabled
+  when: mariadb_ssl_enabled
 
 - name: Setup host.allow for mariadb
   become: true

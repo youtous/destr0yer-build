@@ -15,6 +15,7 @@ On your computer:
   - bash
   - jq
   - ruby
+  - (optional) [step-cli](https://github.com/smallstep/cli)
 
 *Tested on Debian 11 Bullseye only.*
 
@@ -127,7 +128,7 @@ At this step, the cluster is almost configured. The last step is the docker conf
 
 1. Generate a Root certificate using `./generate-X509-certificate.rb`, type `-1` and enter a root name for the certificate (e.g. `swarm.cluster.dv`). Use a secure passphrase for the certificate and fill the information request. (You can define default values using `certs/openssl.conf` then `export $OPENSSL_CONF=./certs/openssl.conf`)
 2. For each node of the cluster, generate a dedicated certificate and sign it using the root CA (e.g. `1.swarm.cluster.dv`, `2.swarm.cluster.dv`, `3.swarm.cluster.dv`), don't set any passphrase on this step.
-3. Copy the content of the .crt (certificate) and .key file from `certs/{hostname}.key,crt` it its associated host `secret_vars/{hostname}.yml`, the variables to fill are `docker_swarm_node_private_key` and `docker_swarm_node_certificate` (`EDITOR='codium --wait' ansible-vault edit secret_vars/hell01.dv.yml  --vault-password-file "./.vault_password"` for interactive editor).
+3. Copy the content of the .crt (certificate) and .key file from `certs/{hostname}.key,crt` it its associated host `secret_vars/{hostname}.yml`, the variables to fill are `docker_swarm_node_private_key` and `docker_swarm_node_certificate` (`EDITOR='code --wait' ansible-vault edit secret_vars/hell01.dv.yml  --vault-password-file "./.vault_password"` for interactive editor).
 4. Delete the certificate and associated key from `certs/{hostname}.key,crt,csr`
 5. Copy the public root certificate from `certs/swarm.cluster.dv-rootCA.crt` to `group_vars/all.yml` in `docker_swarm_CA_certificate` variable.
 6. _(eventually)_ backup your root ca files.
