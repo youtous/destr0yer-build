@@ -323,7 +323,6 @@ logstash_ca_certificate: |
 ### End of Elastic vars ###
 
 ### Parameters only related to debug/VM env
-lock_resolv_conf: false
 
 # Force python3 to be used with Ansible, do not edit!
 ansible_python_interpreter: /usr/bin/python3
