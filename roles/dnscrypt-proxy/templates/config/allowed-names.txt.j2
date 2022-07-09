@@ -4,3 +4,9 @@
 
 ## Rules for name-based query whitelisting, one per line
 ##
+
+# Ansible managed file
+
+{% for name in dnscrypt_allowed_names %}
+{{ name }}
+{% endfor %}

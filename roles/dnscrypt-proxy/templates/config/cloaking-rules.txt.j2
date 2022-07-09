@@ -7,3 +7,9 @@
 #
 # This has to be enabled with the `cloaking_rules` parameter in the main
 # configuration file
+
+# Ansible managed file
+
+{% for rule in dnscrypt_cloaking_rules %}
+{{ rule }}
+{% endfor %}

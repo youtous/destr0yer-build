@@ -1,3 +1,9 @@
 ###########################
 #      IP  Blacklist      #
 ###########################
+
+# Ansible managed file
+
+{% for ip in dnscrypt_blocked_ips %}
+{{ ip }}
+{% endfor %}

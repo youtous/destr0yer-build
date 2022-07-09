@@ -3,3 +3,9 @@
 ###########################
 
 ## Rules for name-based query blocking, one per line
+
+# Ansible managed file
+
+{% for ip in dnscrypt_blocked_names %}
+{{ ip }}
+{% endfor %}

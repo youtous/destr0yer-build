@@ -33,4 +33,14 @@ dnscrypt_proxy_netprobe_address: '8.8.8.8:53'
 # Opportunistic ipv6
 dnscrypt_proxy_block_ipv6: 'false'
 dnscrypt_proxy_cache: 'true'
+
+dnscrypt_allowed_ips: []
+dnscrypt_allowed_names: []
+dnscrypt_blocked_ips: []
+dnscrypt_blocked_names: []
+dnscrypt_cloaking_rules: []
+dnscrypt_forwarding_rules: []
+
+# should the resolv.conf be locked/unlocked?
+lock_resolv_conf: true
 ...

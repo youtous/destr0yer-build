@@ -1,0 +1,9 @@
+###########################
+#      Allowed ips      #
+###########################
+
+# Ansible managed file
+
+{% for ip in dnscrypt_allowed_ips %}
+{{ ip }}
+{% endfor %}

@@ -54,16 +54,18 @@
       dest: db/relays.md
     - src: db/relays.md.minisig
       dest: db/relays.md.minisig
-    - src: blacklist.txt.j2
-      dest: blacklist.txt
+    - src: blocked-names.txt.j2
+      dest: blocked-names.txt
     - src: cloaking-rules.txt.j2
       dest: cloaking-rules.txt
     - src: forwarding-rules.txt.j2
       dest: forwarding-rules.txt
-    - src: ip-blacklist.txt.j2
-      dest: ip-blacklist.txt
-    - src: whitelist.txt.j2
-      dest: whitelist.txt
+    - src: blocked-ips.txt.j2
+      dest: blocked-ips.txt
+    - src: allowed-ips.txt.j2
+      dest: allowed-ips.txt
+    - src: allowed-names.txt.j2
+      dest: allowed-names.txt
     - src: dnscrypt-proxy.toml.j2
       dest: dnscrypt-proxy.toml
   notify: restart DNSCrypt-proxy

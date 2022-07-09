@@ -8,7 +8,6 @@
     attributes: -i
   # if the Filesystem does not handle ioctl we are maybe on a vm
   ignore_errors: true # noqa ignore-errors
-  changed_when: false
 
 - name: Configure network settings
   ansible.builtin.import_role:
@@ -32,5 +31,5 @@
     mode: u=rw,g=r,o=r
   # if the Filesystem does not handle ioctl we are maybe on a vm
   ignore_errors: true # noqa ignore-errors
-  changed_when: false
+  when: lock_resolv_conf
 ...

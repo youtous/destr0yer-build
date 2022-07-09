@@ -6,4 +6,7 @@ nameservers:
   - "1.0.0.1"
   - "2606:4700:4700::1111"
   - "2606:4700:4700::1001"
+
+# should the resolv.conf be locked/unlocked?
+lock_resolv_conf: true
 ...
