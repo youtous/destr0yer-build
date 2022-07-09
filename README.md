@@ -119,6 +119,160 @@ Each newly created instance needs to be configured by ansible using a dedicated 
 4. Run the playbook on the instances, it will setup all the system configuration in a single run: `ansible-playbook -i hosts/destr0yers.yml configure.yml --vault-password-file "./.vault_password"`
 
 
+### V. Configure the Docker Swarm
+
+At this step, the cluster is almost configured. The last step is the docker configuration in swarm mode.
+
+#### V.I Generate the X509 certificates
+
+1. Generate a Root certificate using `./generate-X509-certificate.rb`, type `-1` and enter a root name for the certificate (e.g. `swarm.cluster.dv`). Use a secure passphrase for the certificate and fill the information request. (You can define default values using `certs/openssl.conf` then `export $OPENSSL_CONF=./certs/openssl.conf`)
+2. For each node of the cluster, generate a dedicated certificate and sign it using the root CA (e.g. `1.swarm.cluster.dv`, `2.swarm.cluster.dv`, `3.swarm.cluster.dv`), don't set any passphrase on this step.
+3. Copy the content of the .crt (certificate) and .key file from `certs/{hostname}.key,crt` it its associated host `secret_vars/{hostname}.yml`, the variables to fill are `docker_swarm_node_private_key` and `docker_swarm_node_certificate` (`EDITOR='codium --wait' ansible-vault edit secret_vars/hell01.dv.yml  --vault-password-file "./.vault_password"` for interactive editor).
+4. Delete the certificate and associated key from `certs/{hostname}.key,crt,csr`
+5. Copy the public root certificate from `certs/swarm.cluster.dv-rootCA.crt` to `group_vars/all.yml` in `docker_swarm_CA_certificate` variable.
+6. _(eventually)_ backup your root ca files.
+
+#### V.II Set node roles and register the internal domains
+
+Each docker swarm node can either be a **manager** or a **worker**, see https://docs.docker.com/engine/swarm/how-swarm-mode-works/nodes/.
+Choose an appropriate infrastructure architecture then associate each node a role (your node roles must be compliant with the raft algorithm: https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance).
+
+1. Add the **worker** nodes in the group `swarm_workers` in `hosts/swamr-nodes.yml`
+2. Add a single **manager** node in the group `swarm_primary_manager` in `hosts/swamr-nodes.yml`
+3. Add the others **manager** nodes in the group `swarm_manager` in `hosts/swamr-nodes.yml`
+4. Configure the internal services on a dedicated name (`group_vars/all.yml`) using your DNS provider (you should bind it to multiple managers as a DNS round-robin strategy bound):
+```yaml
+caddy_metrics_domain: "router.swarm.cluster.dv"
+consul_ui_domain: "consul.swarm.cluster.dv"
+portainer_domain: "portainer.swarm.cluster.dv"
+traefik_domain: "traefik.swarm.cluster.dv"
+
+promgraf_domain: "prom.swarm.cluster.dv"
+promgraf_prometheus_domain: "prometheus.{{ promgraf_domain }}"
+promgraf_grafana_domain: "grafana.{{ promgraf_domain }}"
+promgraf_karma_domain: "karma.{{ promgraf_domain }}"
+promgraf_alertmanager_domain: "alertmanager.{{ promgraf_domain }}"
+```
+5. Generate an admin account for portainer, fill `portainer_admin_password` in `secret_vars/all.yml` using  `docker run --rm httpd:2.4-alpine htpasswd -nbB admin "password" | cut -d ":" -f 2`
+6. Generate a random secure value for `consul_acl_master_token` saved in `secret_vars/all.yml`, this key is used to encrypt the certificates, generate it using `ruby -e "require 'securerandom'; puts SecureRandom.uuid"`
+7. Define a grafana admin password using `promgraf_grafana_admin_password` saved in `secret_vars/all.yml`
+
+#### V.III Configure the associated elastic cluster
+
+Elastic is bundled with the cluster setup. The installation is optional but recommanded.
+If you want to disable elastic, simply set an empty list of hosts for `primary_manager_elastic`, `all_logging_elastic` and `all_metric_elastic` in `hosts/swamr-nodes.yml`.
+
+See details at https://github.com/youtous/destr0yer-build/blob/master/roles/docker-elastic/README.md
+
+##### Elastic cluster setup (optional)
+
+1. Define a value for `elastic_cluster_name` in `group_vars/all.yml` and domain values for `kibana_domain`, `elasticsearch_domain` and `logstash_domain`. Don't forget to register the DNS entries associated to these domains.
+2. Define the list of elastic nodes using `hosts/swamr-nodes.yml`, you can also tweak each deployment value using `elastic_hosts`, `elasticsearch_hosts`, `kibana_hosts`, `logstash_hosts` variables of the **docker-elastic** role.
+
+3. Prepare the x509 certificates:
+
+    - Nodes hostnames must follow a pattern such as `<nodeid>.<clusterid>.domain.tld` (important: `logstash_domain` must be a subdmain)
+
+    - Generate root CA with name : `elastic.<clusterid>.domain.tld`, make sure to indicates the following FQDN for the associated certificate: `<clusterid>.domain.tld`.
+    Use `./generate-X509-certificate.rb` to perform the action.
+
+    - For each of the cluster node, generate a certificate using the previously generated RootCA with the following name: `<nodeid>.elastic.<clusterid>.domain.tld` and with the following FQDN: `<nodeid>.<clusterid>.domain.tld`, this certificate will be used by the beat agents on each node to communicate with logstash.
+
+    - Generate a dedicated certificate for each docker service such as **logstash**, (e.g. `logstash.elastic.cluster.dv`, it must be equals to `logstash_domain`!)
+
+    - Please store the certificates in the `secret_vars` folder.
+
+4. Open the logstash ports using traefik in and add the logstash address for beat agents `group_vars/all.yml`:
+```yaml
+# configure beat agents to communicate with logstash
+filebeat_output_server_address: "{{ logstash_domain }}"
+journalbeat_output_server_address: "{{ logstash_domain }}"
+metricbeat_output_server_address: "{{ logstash_domain }}"
+
+traefik_services:
+  - name: logstash-5000
+    port: 5000
+    type: tcp
+  - name: logstash-5044
+    port: 5044
+    type: tcp
+  - name: logstash-5064
+    port: 5064
+    type: tcp
+```
+
+#### V.IV Start the docker-swarm cluster
+
+1. Run the playbook on the instances, it will setup all the docker swarm cluster a single run: `ansible-playbook -i hosts/swamr-nodes.yml swarm.yml --vault-password-file "./.vault_password"`
+2. Go to `portainer_domain` and enjoy your docker swarm cluster! Watch the cluster metrics at `promgraf_grafana_domain`
+3. (optional) in case of elastic setup, go to `kibana_domain`
+    3.1 Define index-patterns
+    _delete can be done in settings > saved objects > filter by pattern_
+    In elastic console, add:
+    ```http request
+    # delete existing indices
+    DELETE /docker-*
+
+    # ensure no mapping exists
+    GET /docker-*/_mapping/field/source.geo
+
+    # define new mapping
+    PUT _template/docker-
+    {
+    "index_patterns": ["docker-*"],
+    "mappings": {
+        "properties": {
+        "host.name": {
+            "type": "keyword"
+        },
+        "host.hostname": {
+            "type": "keyword"
+        },
+        "cluster.name": {
+            "type": "keyword"
+        },
+        "source.geo": {
+            "dynamic": true,
+            "properties" : {
+                "ip": { "type": "ip" },
+                "location" : { "type" : "geo_point" },
+                "latitude" : { "type" : "half_float" },
+                "longitude" : { "type" : "half_float" }
+            }
+        },
+        "fail2ban_bgp": {
+            "dynamic": true,
+            "properties" : {
+                "ip": { "type": "ip" },
+                "location" : { "type" : "geo_point" },
+                "latitude" : { "type" : "half_float" },
+                "longitude" : { "type" : "half_float" }
+            }
+        },
+        "geoip": {
+            "dynamic": true,
+            "properties" : {
+                "ip": { "type": "ip" },
+                "location" : { "type" : "geo_point" },
+                "latitude" : { "type" : "half_float" },
+                "longitude" : { "type" : "half_float" }
+            }
+            }
+        }
+        }
+    }
+    }
+    ```
+
+    3.2 Create the indices patterns using the kibana interface:
+    -  `docker-*`, `id=f7f65d60-9946-11ea-ad57-f9074afbf2d7`
+    -  `journalbeat-*`, `id=f152ec60-9948-11ea-ad57-f9074afbf2d7`
+    -  `metricbeat-*`, `id=metricbeat-*`
+    -  `heartbeat-*`, `id=fca68d10-9948-11ea-ad57-f9074afbf2d7`
+    -  `filebeat-*`, `id=filebeat-*`
+
+    3.3 Important change due to OpenSearch migration: beats dashboards imports must be performed manually; please read https://www.electricbrain.com.au/pages/analytics/opensearch-vs-elasticsearch.php
+
 
 ### TODO : include the detailed installation there
 
