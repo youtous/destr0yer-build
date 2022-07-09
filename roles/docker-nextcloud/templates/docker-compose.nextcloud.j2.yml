@@ -4,19 +4,19 @@ version: "3.7"
 configs:
   nginx.conf:
     name: "{{ nextcloud_stack_name }}_nginx.conf-${DEPLOY_TIMESTAMP}"
-    ansible.builtin.file: "./nginx.conf"
+    file: "./nginx.conf"
   logs.config.php:
     name: "{{ nextcloud_stack_name }}_logs.config.php-${DEPLOY_TIMESTAMP}"
-    ansible.builtin.file: "./logs.config.php"
+    file: "./logs.config.php"
   url-cli.config.php:
     name: "{{ nextcloud_stack_name }}_url-cli.config.php-${DEPLOY_TIMESTAMP}"
-    ansible.builtin.file: "./url-cli.config.php"
+    file: "./url-cli.config.php"
   old-encryption.config.php:
     name: "{{ nextcloud_stack_name }}_old-encryption.config.php-${DEPLOY_TIMESTAMP}"
-    ansible.builtin.file: "./old-encryption.config.php"
+    file: "./old-encryption.config.php"
   www2.conf:
     name: "{{ nextcloud_stack_name }}_www2.conf-${DEPLOY_TIMESTAMP}"
-    ansible.builtin.file: "./php-fpm.d/www2.conf"
+    file: "./php-fpm.d/www2.conf"
 
 services:
   nextcloud: &nextcloud
@@ -130,7 +130,7 @@ services:
         caddy.1_header.X-Content-Type-Options: "nosniff"
         caddy.1_header.X-Frame-Options: "DENY"
         caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
-        caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self'; img-src 'self' data: {{ portainer_csp_img_src_additional }}; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
+        caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
 
         # redirect well known
         caddy.2_redir: "\"/.well-known/caldav /remote.php/dav/ 301\""
