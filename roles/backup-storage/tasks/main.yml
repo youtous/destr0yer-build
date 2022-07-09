@@ -82,13 +82,14 @@
 - name: Unlock .ssh folder of backup users
   become: true
   ansible.builtin.file:
-    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh"
+    path: "{{ item.stat.path }}"
     attributes: -i
   with_items: "{{ backup_directory_ssh_status.results }}"
   when:
     - item.stat.exists
 
 - name: Check if .ssh/authorized_keys exists for backup users
+  become: true
   ansible.builtin.stat:
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
   with_items: "{{ backup_users }}"
@@ -97,7 +98,7 @@
 - name: Unlock .ssh/authorized_keys of backup users
   become: true
   ansible.builtin.file:
-    path: "{{ backup_root_directory }}/backup_{{ item.username }}/.ssh/authorized_keys"
+    path: "{{ item.stat.path }}"
     attributes: -i
   with_items: "{{ backup_directory_ssh_authorized_status.results }}"
   when:
