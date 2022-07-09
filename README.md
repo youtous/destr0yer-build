@@ -191,13 +191,13 @@ metricbeat_output_server_address: "{{ logstash_domain }}"
 
 traefik_services:
   - name: logstash-5000
-    port: 5000
+    port: "5000"
     type: tcp
   - name: logstash-5044
-    port: 5044
+    port: "5044"
     type: tcp
   - name: logstash-5064
-    port: 5064
+    port: "5064"
     type: tcp
 ```
 
