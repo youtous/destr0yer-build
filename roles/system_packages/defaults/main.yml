@@ -28,6 +28,7 @@ system_packages:
   - time
   - sudo
   - ncdu
+  - tree
   - apparmor # security (MAC) :)
   - ccze # colorization
   - grc # colorization
