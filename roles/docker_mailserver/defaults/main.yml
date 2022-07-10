@@ -32,7 +32,7 @@ rainloop_f2b_max_retries: 8
 # traefik public-tag
 traefik_public_tag: "traefik-public"
 # name of the traefik network
-traefik_network: "traefik-public"
+traefik_network: "traefik-public" # TODO: this network is deprecated in favor of TCP/UDP traefik_network
 caddy_network: "caddy-public"
 
 rainloop_max_connections: 100 # maximum of simultaneous requests
