@@ -20,7 +20,7 @@
 
 # Setup TLS using x509 certificates
 - name: Register logstash secrets
-  community.general.docker_secret:
+  community.docker.docker_secret:
     name: "{{ item.name }}"
     data: "{{ item.data }}"
     state: present

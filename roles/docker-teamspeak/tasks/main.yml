@@ -9,7 +9,7 @@
     path: "{{ teamspeak_compose_file_dest_directory }}"
 
 - name: Tag current node as teamspeak origin
-  community.general.docker_node:
+  community.docker.docker_node:
     hostname: "{{ hostname }}"
     labels:
       teamspeak.teamspeak-data: "true"
@@ -25,7 +25,7 @@
     mode: u=rw,g=,o=
 
 - name: Register teamspeak secrets | licensekey.dat
-  community.general.docker_secret:
+  community.docker.docker_secret:
     name: "{{ teamspeak_stack_name }}_licensekey.dat-{{ teamspeak_deploy_timestamp }}"
     data: "{{ teamspeak_license }}"
     state: present
@@ -33,7 +33,7 @@
   no_log: true
 
 - name: Deploy Teamspeak Server
-  community.general.docker_stack:
+  community.docker.docker_stack:
     state: present
     prune: true
     name: "{{ teamspeak_stack_name }}"

@@ -21,7 +21,7 @@
 
 
 - name: Create caddy-public network with encryption
-  community.general.docker_network:
+  community.docker.docker_network:
     name: "{{ caddy_network }}"
     driver: overlay
     driver_options:
@@ -29,7 +29,7 @@
   when: caddy_internal_network_encryption_enabled is true
 
 - name: Create caddy-public network without encryption
-  community.general.docker_network:
+  community.docker.docker_network:
     name: "{{ caddy_network }}"
     driver: overlay
   when: caddy_internal_network_encryption_enabled is false
@@ -66,7 +66,7 @@
 
 # always redeploy permits to have always up to date
 - name: Deploy caddy
-  community.general.docker_stack:
+  community.docker.docker_stack:
     state: present
     prune: true
     name: caddy-consul
