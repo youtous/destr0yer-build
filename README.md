@@ -3,9 +3,9 @@
 [![pipeline status](https://gitlab.com/youtous/destr0yer-build/badges/master/pipeline.svg)](https://gitlab.com/youtous/destr0yer-build/-/commits/master)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Debian - 11 (Bullseye)](https://img.shields.io/badge/Debian-11_(Bullseye)-a80030)](https://www.debian.org/releases/bullseye/releasenotes)
-[![Docker Swarm](https://img.shields.io/badge/Docker Swarm-2496ed)](https://github.com/moby/swarmkit)
-[![Caddy v2](https://img.shields.io/badge/Caddy v2-03af19)](https://github.com/traefik/traefik)
-[![Traefik v2](https://img.shields.io/badge/Traefik v2-37abc8)](https://github.com/traefik/traefik)
+[![Docker Swarm](https://img.shields.io/badge/Docker-Swarm-2496ed)](https://github.com/moby/swarmkit)
+[![Caddy v2](https://img.shields.io/badge/Caddy-v2-03af19)](https://github.com/traefik/traefik)
+[![Traefik v2](https://img.shields.io/badge/Traefik-v2-37abc8)](https://github.com/traefik/traefik)
 [![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
 ## Requirements
