@@ -8,6 +8,11 @@
 [![Traefik v2](https://img.shields.io/badge/Traefik-v2-37abc8)](https://github.com/traefik/traefik)
 [![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
+# TODO:
+
+- [ ] refactor ufw rule manipulation using a role
+- [ ] refactor docker secrets/config manipulation using a role
+
 ## Requirements
 
 On your computer:

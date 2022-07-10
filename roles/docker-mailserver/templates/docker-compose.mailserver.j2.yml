@@ -1,5 +1,7 @@
 version: "3.7"
 
+# TODO : implement compatibility with Caddy V2
+
 configs:
   whitelist_clients.local:
     name: "{{ docker_mailserver_stack_name }}_whitelist_clients-${DEPLOY_TIMESTAMP}"
@@ -512,7 +514,7 @@ networks:
     external: true
 {% endif %}
 {% if rainloop_enabled or mailserver_enable_autodiscover %}
-  {{ traefik_network }}:
+  {{ caddy_network }}:
     external: true
 {% endif %}
 
