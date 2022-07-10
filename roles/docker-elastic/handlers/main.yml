@@ -1,7 +1,4 @@
 ---
-- name: Import docker configs secrets handler
-  include_tasks: docker-config-secrets.yml
-
 - name: docker prune
   community.docker.docker_prune:
     containers: true

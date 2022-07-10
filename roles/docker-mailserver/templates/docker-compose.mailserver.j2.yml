@@ -283,7 +283,7 @@ services:
   mta-sts-web:
     image: nginx:latest
     networks:
-      - {{ traefik_network }}
+      - {{ caddy_network }}
     configs:
       - source: mta_sts_nginx.conf
         target: "/etc/nginx/nginx.conf"
@@ -365,7 +365,7 @@ services:
       - rainloop-data:/rainloop/data
     networks:
       - mailserver-fixed
-      - {{ traefik_network }}
+      - {{ caddy_network }}
 {% if rainloop_on_mysql_host %}
     extra_hosts:
       - "mysql_server:{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
@@ -452,7 +452,7 @@ services:
       - SMTP_PORT=465
       - SMTP_SOCKET=SSL
     networks:
-      - {{ traefik_network }}
+      - {{ caddy_network }}
     deploy:
       replicas: 1
       restart_policy:

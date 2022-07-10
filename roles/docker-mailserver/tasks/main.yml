@@ -167,4 +167,13 @@
     DEPLOY_TIMESTAMP: "{{ mailserver_deploy_timestamp }}"
   notify: docker prune
   no_log: true
+  register: stack_deploy_status
+
+- name: docker prune secrets and configs
+  ansible.builtin.include_role:
+    name: docker_configs_secrets_cleaner
+  vars:
+    stack_name: "{{ docker_mailserver_stack_name }}"
+    deployment_timestamp: "{{ mailserver_deploy_timestamp }}"
+  when: stack_deploy_status.changed # noqa no-handler - until include_role is support in handlers...
 ...

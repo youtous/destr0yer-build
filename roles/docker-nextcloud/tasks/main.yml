@@ -21,7 +21,7 @@
     path: "{{ nextcloud_compose_file_dest_directory }}"
 
 - name: Tag current node as nextcloud origin
-  community.general.docker_node:
+  community.docker.docker_node:
     hostname: "{{ hostname }}"
     labels:
       nextcloud.nextcloud-data: "true"
@@ -65,7 +65,7 @@
   import_tasks: fail2ban.yml
 
 - name: Deploy Nextcloud
-  community.general.docker_stack:
+  community.docker.docker_stack:
     state: present
     prune: true
     name: "{{ nextcloud_stack_name }}"
@@ -91,4 +91,13 @@
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ nextcloud_deploy_timestamp }}"
   notify: docker prune
+  register: stack_deploy_status
+
+- name: docker prune secrets and configs
+  ansible.builtin.include_role:
+    name: docker_configs_secrets_cleaner
+  vars:
+    stack_name: "{{ nextcloud_stack_name }}"
+    deployment_timestamp: "{{ nextcloud_deploy_timestamp }}"
+  when: stack_deploy_status.changed # noqa no-handler - until include_role is support in handlers...
 ...

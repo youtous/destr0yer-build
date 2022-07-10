@@ -1,9 +1,6 @@
 ---
-- name: Import docker configs secrets handler
-  include: docker-config-secrets.yml
-
 - name: docker prune
-  community.general.docker_prune:
+  community.docker.docker_prune:
     containers: true
     images: true
     networks: true

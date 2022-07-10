@@ -33,6 +33,8 @@ rainloop_f2b_max_retries: 8
 traefik_public_tag: "traefik-public"
 # name of the traefik network
 traefik_network: "traefik-public"
+caddy_network: "caddy-public"
+
 rainloop_max_connections: 100 # maximum of simultaneous requests
 rainloop_max_requests_3s_per_client: 100 # maximum of requests per client in 3s
 rainloop_max_request_size_megabytes: 128 # maximum size of request in MB

@@ -103,4 +103,13 @@
     SMTP_PASSWORD: "{{ elastic_alert_email_password }}"
     SMTP_FROM: "{{ elastic_alert_email_from }}"
   notify: docker prune
+  register: stack_deploy_status
+
+- name: docker prune secrets and configs
+  ansible.builtin.include_role:
+    name: docker_configs_secrets_cleaner
+  vars:
+    stack_name: "{{ docker_elastic_stack_name }}"
+    deployment_timestamp: "{{ elastic_deploy_timestamp }}"
+  when: stack_deploy_status.changed # noqa no-handler - until include_role is support in handlers...
 ...

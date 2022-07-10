@@ -20,7 +20,7 @@
   community.docker.docker_stack:
     state: present
     prune: true
-    name: cadvisor
+    name: "{{ cadvisor_stack_name }}"
     compose:
       - "{{ cadvisor_compose_file_dest }}"
   notify: docker prune

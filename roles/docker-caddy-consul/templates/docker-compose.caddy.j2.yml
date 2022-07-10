@@ -3,10 +3,10 @@ version: '3.8'
 # used for specific settings you have outside of your docker config
 # ex: proxies to external servers, storage configuration...
 # remove this block entirely if not needed (Only used for Docker Swarm)
-configs:
+secrets:
   Caddyfile:
     name: "{{ caddy_consul_stack_name }}_Caddyfile-{{ caddy_consul_timestamp_deploy }}"
-    file: "./Caddyfile"
+    external: true
 
 services:
 # todo : check how an external service such as a mailserver can access consul storage
@@ -89,7 +89,7 @@ services:
       test: "curl --silent --fail http://localhost:9500/metrics > /dev/null || exit 1"
     sysctls:
       net.core.somaxconn: {{ caddy_max_connections_sysctl }}
-    configs:
+    secrets:
       - source: Caddyfile
         target: /etc/caddy/Caddyfile
     ports:

@@ -46,11 +46,12 @@
   ansible.builtin.set_fact:
     caddy_consul_timestamp_deploy: "{{ ansible_date_time.epoch }}"
 
-- name: Copy Caddyfile config
-  ansible.builtin.template:
-    src: templates/Caddyfile.j2
-    dest: "{{ caddy_config_file_dest }}"
-    mode: u=rw,g=,o=
+- name: Register caddy-consul secrets | Caddyfile
+  community.docker.docker_secret:
+    name: "{{ caddy_consul_stack_name }}_Caddyfile-{{ caddy_consul_timestamp_deploy }}"
+    data: "{{ lookup('template', 'templates/Caddyfile.j2') }}"
+    state: present
+  no_log: true
 
 - name: Copy caddy-Consul stack
   ansible.builtin.template:
@@ -69,8 +70,17 @@
   community.docker.docker_stack:
     state: present
     prune: true
-    name: caddy-consul
+    name: "{{ caddy_consul_stack_name }}"
     compose:
       - "{{ caddy_compose_file_dest }}"
   notify: docker prune
+  register: stack_deploy_status
+
+- name: docker prune secrets and configs
+  ansible.builtin.include_role:
+    name: docker_configs_secrets_cleaner
+  vars:
+    stack_name: "{{ caddy_consul_stack_name }}"
+    deployment_timestamp: "{{ caddy_consul_timestamp_deploy }}"
+  when: stack_deploy_status.changed # noqa no-handler - until include_role is support in handlers...
 ...
