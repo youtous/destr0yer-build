@@ -1,4 +1,4 @@
-# youtous/docker-elastic
+# youtous/docker_elastic
 
 Provide an elastic stack using docker.
 You can use it as a complete stack or as a forwarder (`elastic_use_as_forwarder: true`).

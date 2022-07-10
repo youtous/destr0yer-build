@@ -30,7 +30,7 @@ database_clients:
     heaven-pascal.youtous.dv:
     heaven-roberval.youtous.dv:
 
-# hosts that will be backed-up on a backup-storage
+# hosts that will be backed-up on a backup_storage
 backed_up_hosts:
   hosts:
     heaven-pascal.youtous.dv:

@@ -9,7 +9,7 @@
   roles:
     - resolv
     - apt
-    - system-packages
+    - system_packages
     - users
   vars_files:
     - secret_vars/all.yml

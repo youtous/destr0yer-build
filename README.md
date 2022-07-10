@@ -206,11 +206,11 @@ If you want to disable elastic, simply set an empty list of hosts for `primary_m
 
 ##### Log forwarding
 Two options are available for log forwarding :
-- setup an elastic cluster using docker-elastic (see dedicated `roles/docker-elastic/README.md`)
+- setup an elastic cluster using docker_elastic (see dedicated `roles/docker_elastic/README.md`)
 - forward logs using _logstash_ and _wireguard_
 
 The following instructions will detail this last option:
-0. On the server node, add a new (peer) wireguard client targeting the new server, see `roles/wireguard-server/README.md`
+0. On the server node, add a new (peer) wireguard client targeting the new server, see `roles/wireguard_server/README.md`
 1. On the client node, setup a wireguard client connection
 ```yaml
 wireguard_clients:
@@ -249,12 +249,12 @@ logstash_ca_certificate: | # usually logstash-rootCA.crt
 logstash_node_private_key: | # usually logstash-node-hostname.key
 logstash_node_certificate: | # usually logstash-node-hostname.crt
 ```
-See `docker-elastic` for detailed instructions.
+See `docker_elastic` for detailed instructions.
 
 ##### Elastic cluster setup (optional)
 
 1. Define a value for `elastic_cluster_name` in `group_vars/all.yml` and domain values for `kibana_domain`, `elasticsearch_domain` and `logstash_domain`. Don't forget to register the DNS entries associated to these domains.
-2. Define the list of elastic nodes using `hosts/swamr-nodes.yml`, you can also tweak each deployment value using `elastic_hosts`, `elasticsearch_hosts`, `kibana_hosts`, `logstash_hosts` variables of the **docker-elastic** role.
+2. Define the list of elastic nodes using `hosts/swamr-nodes.yml`, you can also tweak each deployment value using `elastic_hosts`, `elasticsearch_hosts`, `kibana_hosts`, `logstash_hosts` variables of the **docker_elastic** role.
 
 3. Prepare the x509 certificates:
 

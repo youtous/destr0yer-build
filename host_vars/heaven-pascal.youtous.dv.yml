@@ -245,7 +245,7 @@ monitor_testssl_hosts:
 
 ### Begin of Backup storage parameters ###
 backup_frozen_directory: "/home/frozen-backups/"
-# backup-storage parameters
+# backup_storage parameters
 backup_users:
   - username: heaven-roberval # final username will be prefixed by backup_
     restrict_ips: "{{ hostvars['heaven-roberval.youtous.dv']['ipv4'] + hostvars['heaven-roberval.youtous.dv']['ipv6'] }}"

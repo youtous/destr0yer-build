@@ -1,4 +1,4 @@
-# youtous/docker-mailserver
+# youtous/docker_mailserver
 
 # References for crypto
 https://bettercrypto.org/#_tls_usage_in_mail_server_protocols

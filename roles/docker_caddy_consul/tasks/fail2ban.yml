@@ -18,7 +18,7 @@
 # todo : f2b filters
 - name: Activate caddy jails using fail2ban
   ansible.builtin.include_role:
-    name: fail2ban-additional
+    name: fail2ban_additional
   vars:
     fail2ban_services:
       - name: caddy-auth

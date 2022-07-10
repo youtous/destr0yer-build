@@ -55,9 +55,9 @@
 
 - name: Apply docker systemd fix
   ansible.builtin.import_role:
-    name: docker-healthcheck-systemd
+    name: docker_healthcheck_systemd
 
 - name: Add fail2ban docker filters
   ansible.builtin.import_role:
-    name: fail2ban-docker
+    name: fail2ban_docker
 ...

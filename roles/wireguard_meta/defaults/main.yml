@@ -11,7 +11,7 @@ wireguard_servers: []
 #    private_key: ""
 #    restrict_ips:
 #      - "any"
-#    peers: [] # see wireguard-server role for details
+#    peers: [] # see wireguard_server role for details
 #      - name: "peerB"
 #        public_key: "PEER_B_PUBLIC_KEY"
 #        preshared_key: "SERVER-PEER_B-PRESHARED_KEY"

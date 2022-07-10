@@ -4,7 +4,7 @@
 - name: Configure systems | disk partitioning with LVM
   hosts: [base_systems, commander_systems]
   roles:
-    - disks-lvm-management
+    - disks_lvm_management
     - swap
     - mount
   vars_files:
@@ -27,11 +27,11 @@
 - name: Configure systems | minimal requirements
   hosts: [base_systems, commander_systems]
   roles:
-    - system-packages # system packages (htop, curl etc)
+    - system_packages # system packages (htop, curl etc)
     - host # configure system host files
-    - system-configuration # configure the system (selinux, timezone...)
-    - system-tools # server cli tools (vim, etc)
-    - iptables-firewall # define firewall policy
+    - system_configuration # configure the system (selinux, timezone...)
+    - system_tools # server cli tools (vim, etc)
+    - iptables_firewall # define firewall policy
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -42,7 +42,7 @@
   hosts: [base_systems, commander_systems]
   serial: 1 # configure one by one each host in case of reboot
   roles:
-    - sysctl-configuration
+    - sysctl_configuration
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -53,8 +53,8 @@
   hosts: [base_systems, commander_systems]
   roles:
     - users
-    - ssh-user-keys
-    - restrict-user-ssh-ips
+    - ssh_user_keys
+    - restrict_user_ssh_ips
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -66,7 +66,7 @@
   roles:
     - ssh
     - motd
-    - notify-login # notify when an user connects
+    - notify_login # notify when an user connects
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -98,7 +98,7 @@
   hosts: [base_systems, commander_systems]
   roles:
     - fail2ban
-    - monit-fail2ban
+    - monit_fail2ban
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -108,30 +108,30 @@
 - name: Configure systems | filter ips for base systems (entrypoint required)
   hosts: [base_systems]
   roles:
-    - entrypoint-ssh
+    - entrypoint_ssh
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["entrypoint-ssh", "ssh", "sshd", "configure-systems"]
+  tags: ["entrypoint_ssh", "ssh", "sshd", "configure-systems"]
 
 - name: Configure systems | resolv dns configuration
   hosts: [base_systems, commander_systems]
   roles:
-    - dnscrypt-proxy # DNS with TLS
-    - monit-dnscrypt-proxy
+    - dnscrypt_proxy # DNS with TLS
+    - monit_dnscrypt_proxy
     - resolv
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["resolv", "configure-systems", "dnscrypt-proxy"]
+  tags: ["resolv", "configure-systems", "dnscrypt_proxy"]
 
 - name: Configure systems | hardening
   hosts: [base_systems, commander_systems]
   roles:
     - hardening # hardening systems
-    - scaleway-services # define services policy for scaleway
+    - scaleway_services # define services policy for scaleway
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -171,7 +171,7 @@
 - name: Configure systems | configure fish shell
   hosts: [base_systems, commander_systems]
   roles:
-    - oh-my-fish
+    - oh_my_fish
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -191,7 +191,7 @@
 - name: Configure Postfix relay servers
   hosts: smtp_relays
   roles:
-    - postfix-relay
+    - postfix_relay
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -201,29 +201,29 @@
 - name: Configure backup storage systems
   hosts: backup_storage
   roles:
-    - backup-storage
+    - backup_storage
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["backup-storage"]
+  tags: ["backup_storage"]
 
 - name: Configure backed-up systems
   hosts: backed_up_hosts
   roles:
-    - backup-strategy
+    - backup_strategy
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["backup-strategy"]
+  tags: ["backup_strategy"]
 
 - name: Configure database servers
   hosts: database_servers
   roles:
-    - mariadb-server
-    - monit-mariadb
-    - backup-mariadb
+    - mariadb_server
+    - monit_mariadb
+    - backup_mariadb
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -233,7 +233,7 @@
 - name: Configure database clients
   hosts: database_clients
   roles:
-    - mariadb-client
+    - mariadb_client
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -243,7 +243,7 @@
 - name: Configure WireGuard peers
   hosts: wireguard_peers
   roles:
-    - wireguard-meta
+    - wireguard_meta
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -253,7 +253,7 @@
 - name: Watch servers ips
   hosts: watch_ip
   roles:
-    - notify-ip-change
+    - notify_ip_change
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -263,7 +263,7 @@
 - name: Monitor ssl hosts
   hosts: watch_ssl
   roles:
-    - monitor-testssl
+    - monitor_testssl
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

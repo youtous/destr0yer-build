@@ -6,7 +6,7 @@
   hosts: all
   roles:
     - docker
-    - monit-docker
+    - monit_docker
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -17,8 +17,8 @@
   hosts: all
   serial: 1 # configure one by one each host in case of reboot
   roles:
-    - docker-configure
-    - docker-prune-daily
+    - docker_configure
+    - docker_prune_daily
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -29,7 +29,7 @@
 - name: Initiate the primary manager
   hosts: swarm_primary_manager
   roles:
-    - docker-initiate-swarm
+    - docker_initiate_swarm
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -39,7 +39,7 @@
 - name: Initiate managers
   hosts: swarm_managers
   roles:
-    - docker-initiate-managers
+    - docker_initiate_managers
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -49,7 +49,7 @@
 - name: Initiate workers
   hosts: swarm_workers
   roles:
-    - docker-initiate-workers
+    - docker_initiate_workers
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -66,27 +66,27 @@
 - name: Integrate fail2ban for docker (recidive)
   hosts: all
   roles:
-    - docker-fail2ban
+    - docker_fail2ban
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-fail2ban"]
+  tags: ["docker_fail2ban"]
 
 - name: Setup auto-restore DOCKER-USER chain
   hosts: all
   roles:
-    - docker-user-chain
+    - docker_user_chain
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
-  tags: ["docker-user-chain"]
+  tags: ["docker_user_chain"]
 
 - name: Setup docker common tools
   hosts: all
   roles:
-    - docker-ctop-cmd
+    - docker_ctop_cmd
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -96,8 +96,8 @@
 - name: Setup docker backup tools
   hosts: all
   roles:
-    - docker-backup-mysql
-    - docker-backup-volumes
+    - docker_backup_mysql
+    - docker_backup_volumes
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -107,7 +107,7 @@
 - name: Setup caddy reverse-proxy with consul
   hosts: swarm_primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
   roles:
-    - docker-caddy-consul # smart reverse proxy for docker swarm
+    - docker_caddy_consul # smart reverse proxy for docker swarm
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -118,10 +118,10 @@
   hosts: [swarm_managers, swarm_primary_manager]
   tasks:
     - ansible.builtin.include_role:
-        name: docker-caddy-consul
+        name: docker_caddy_consul
         tasks_from: fail2ban
     - ansible.builtin.include_role:
-        name: docker-caddy-consul
+        name: docker_caddy_consul
         tasks_from: firewall
   vars_files:
     - secret_vars/all.yml
@@ -132,7 +132,7 @@
 - name: Setup traefik reverse-proxy
   hosts: swarm_primary_manager # we use the primary_manager as an entrypoint, docker-swarm will handle replicas if needed
   roles:
-    - docker-traefik # L4 smart reverse proxy for docker swarm
+    - docker_traefik # L4 smart reverse proxy for docker swarm
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -143,7 +143,7 @@
   hosts: [swarm_managers, swarm_primary_manager]
   tasks:
     - ansible.builtin.include_role:
-        name: docker-traefik
+        name: docker_traefik
         tasks_from: firewall
   vars_files:
     - secret_vars/all.yml
@@ -154,7 +154,7 @@
 - name: Setup swarm_cronjon
   hosts: swarm_primary_manager
   roles:
-    - docker-swarm-cronjob
+    - docker_swarm_cronjob
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -164,7 +164,7 @@
 - name: Setup docker-swarm portainer
   hosts: swarm_primary_manager
   roles:
-    - docker-portainer # web manager of the cluster
+    - docker_portainer # web manager of the cluster
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -174,7 +174,7 @@
 - name: Setup promgraf stack
   hosts: swarm_primary_manager
   roles:
-    - docker-promgraf
+    - docker_promgraf
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -184,7 +184,7 @@
 - name: Setup docker-swarm metrics
   hosts: swarm_primary_manager
   roles:
-    - docker-cadvisor
+    - docker_cadvisor
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -194,7 +194,7 @@
 - name: Setup docker-swarm metrics
   hosts: all
   roles:
-    - docker-node-exporter
+    - docker_node_exporter
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

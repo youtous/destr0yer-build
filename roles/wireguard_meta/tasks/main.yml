@@ -10,7 +10,7 @@
 
 - name: Setup wireguard servers
   ansible.builtin.include_role:
-    name: wireguard-server
+    name: wireguard_server
   vars:
     wireguard_server: "{{ wg_server }}"
   loop: "{{ wireguard_servers | flatten(levels=1) }}"
@@ -20,7 +20,7 @@
 
 - name: Setup wireguard clients
   ansible.builtin.include_role:
-    name: wireguard-client
+    name: wireguard_client
   vars:
     wireguard_client: "{{ wg_client }}"
   loop: "{{ wireguard_clients | flatten(levels=1) }}"
@@ -30,7 +30,7 @@
 
 - name: Setup monit wireguard
   ansible.builtin.include_role:
-    name: monit-wireguard
+    name: monit_wireguard
   vars:
     monit_wireguard_interfaces: "{{ wireguard_monit_interfaces }}"
 ...

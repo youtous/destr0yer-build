@@ -5,7 +5,7 @@
 - name: Install Mailserver
   hosts: mailserver
   roles:
-    - docker-mailserver
+    - docker_mailserver
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

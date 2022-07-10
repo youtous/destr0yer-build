@@ -91,11 +91,11 @@
 
 - name: Monit postfix
   ansible.builtin.import_role:
-    name: monit-postfix
+    name: monit_postfix
 
 - name: Activate postfix-sasl and postfix jails using fail2ban
   ansible.builtin.include_role:
-    name: fail2ban-additional
+    name: fail2ban_additional
   vars:
     fail2ban_services:
       - name: postfix

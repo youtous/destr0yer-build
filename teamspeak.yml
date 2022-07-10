@@ -4,7 +4,7 @@
 - name: Install Teamspeak server
   hosts: teamspeak
   roles:
-    - docker-teamspeak
+    - docker_teamspeak
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

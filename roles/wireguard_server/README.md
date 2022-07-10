@@ -1,4 +1,4 @@
-# ansible/wireguard-server
+# ansible/wireguard_server
 
 ## Setup server
 

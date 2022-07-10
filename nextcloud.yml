@@ -4,7 +4,7 @@
 - name: Install Nextcloud
   hosts: nextcloud
   roles:
-    - docker-nextcloud
+    - docker_nextcloud
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml

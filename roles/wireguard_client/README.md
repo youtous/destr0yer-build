@@ -1,4 +1,4 @@
-# ansible/wireguard-client
+# ansible/wireguard_client
 
 Test leaks using https://ipleak.net/.
 

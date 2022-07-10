@@ -4,7 +4,7 @@
 - name: Setup docker elastic cluster
   hosts: primary_manager_elastic
   roles:
-    - docker-elastic # setup an elastic stack cluster
+    - docker_elastic # setup an elastic stack cluster
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -14,10 +14,10 @@
 - name: Setup elastic for each node logging tools
   hosts: all_logging_elastic
   roles:
-    - elastic-journalbeat # output system logs from journalctl to elastic cluster, docker logs will be parsed too (docker not required on the host)
-    - elastic-filebeat # output system logs such as /var/log/auth.log
-    - monit-journalbeat # monitor
-    - monit-filebeat
+    - elastic_journalbeat # output system logs from journalctl to elastic cluster, docker logs will be parsed too (docker not required on the host)
+    - elastic_filebeat # output system logs such as /var/log/auth.log
+    - monit_journalbeat # monitor
+    - monit_filebeat
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
@@ -27,8 +27,8 @@
 - name: Setup elastic for each node metrics tools
   hosts: all_metric_elastic
   roles:
-    - elastic-metricbeat # collect metrics of the node, docker or other processes (docker not required on the host)
-    - monit-metricbeat
+    - elastic_metricbeat # collect metrics of the node, docker or other processes (docker not required on the host)
+    - monit_metricbeat
   vars_files:
     - secret_vars/all.yml
     - task_vars/sudo.yml
