@@ -68,7 +68,7 @@ services:
       - "OVERWRITEPROTOCOL=https"
       - "TRUSTED_PROXIES=172.28.0.0/16 10.0.0.0/8" # trust subnetwork proxy (respectively nginx and caddy)
     networks:
-      nextcloud-network-fixed:
+      internal:
     deploy:
       placement:
         constraints:
@@ -98,7 +98,7 @@ services:
     volumes:
       - nextcloud-data:/var/www/html:ro
     networks:
-      nextcloud-network-fixed:
+      internal:
       {{ caddy_network }}:
     configs:
       - source: nginx.conf
@@ -132,26 +132,22 @@ services:
         caddy.1_header.X-XSS-Protection: "\"1; mode=block\""
         caddy.1_header.Content-Security-Policy: "\"default-src 'self'; script-src 'self'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"" # https://csp-evaluator.withgoogle.com/ content security policy
 
-        # redirect well known
-        caddy.2_redir: "\"/.well-known/caldav /remote.php/dav/ 301\""
-        caddy.3_redir: "\"/.well-known/card)dav /remote.php/dav/ 301\""
-
         # try to match filter for a reverse proxy to upstream (eventually add load balancing etc)
         caddy.4_reverse_proxy: "{% raw %}{{upstreams 80}}{% endraw %}"
         caddy.4_reverse_proxy.lb_policy: "round_robin"
-        caddy.4_reverse_proxy.health_uri: "/"
+        caddy.4_reverse_proxy.health_uri: "/login"
         caddy.4_reverse_proxy.health_interval: "5s"
 
         # todo : implement max requests size & max rateLimit & max connection (maybe at caddy lvl directly)
 
 networks:
-  nextcloud-network-fixed:
+  internal:
     driver: overlay
+{% if nextcloud_internal_network_encryption_enabled %}
     driver_opts:
       encrypted: ""
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
+{% endif %}
+
   {{ caddy_network }}:
     external: true
 

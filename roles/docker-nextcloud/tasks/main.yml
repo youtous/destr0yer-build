@@ -2,6 +2,18 @@
 # This role setup a Nextcloud in a docker swarm cluster
 # see https://github.com/nextcloud/docker for more details
 
+- name: Verify nextcloud_admin_user is defined and not empty
+  ansible.builtin.assert:
+    that: >
+      nextcloud_admin_user is defined and nextcloud_admin_user|length
+    msg: "nextcloud_admin_user must be defined an not empty"
+
+- name: Verify nextcloud_admin_password is defined and not empty
+  ansible.builtin.assert:
+    that: >
+      nextcloud_admin_password is defined and nextcloud_admin_password|length
+    msg: "nextcloud_admin_password must be defined an not empty"
+
 - name: Ensure nextcloud directory exists
   ansible.builtin.file:
     state: directory
