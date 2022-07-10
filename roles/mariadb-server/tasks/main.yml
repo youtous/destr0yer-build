@@ -55,6 +55,7 @@
     dest: "/etc/hosts.allow"
     block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - mariadb allowed ip whitelist ###"
+# TODO : check if existing rules are checked!
 
 - name: List existing mariadb UFW rules
   become: true

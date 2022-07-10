@@ -2,6 +2,10 @@
 
 [![pipeline status](https://gitlab.com/youtous/destr0yer-build/badges/master/pipeline.svg)](https://gitlab.com/youtous/destr0yer-build/-/commits/master)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Debian - 11 (Bullseye)](https://img.shields.io/badge/Debian-11_(Bullseye)-a80030)](https://www.debian.org/releases/bullseye/releasenotes)
+[![Docker Swarm](https://img.shields.io/badge/Docker Swarm-2496ed)](https://github.com/moby/swarmkit)
+[![Caddy v2](https://img.shields.io/badge/Caddy v2-03af19)](https://github.com/traefik/traefik)
+[![Traefik v2](https://img.shields.io/badge/Traefik v2-37abc8)](https://github.com/traefik/traefik)
 [![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
 ## Requirements
@@ -11,13 +15,13 @@ On your computer:
   - python3, pip3
   - openssl
   - terraform
+  - htpasswd
   - ansible (>= 2.9)
   - bash
   - jq
   - ruby
   - (optional) [step-cli](https://github.com/smallstep/cli)
 
-*Tested on Debian 11 Bullseye only.*
 
 ### Ansible 3rd content
 
@@ -53,14 +57,13 @@ During the **first installation**, the playbooks should be executed in the follo
 
 You can use `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook` to avoid ssh-key trust confirmation.
 
-### Docker-Swarm
+### Useful commands
 
-- Docker-Swarm requires a X509 root CA. A certificate for each node should be generated too: generate it using `generate-X509-certificate.rb`
-
-### Other commands
+- Docker-Swarm, Elastic, MariaDB and other services require a X509 root CA. The generation can be simplified using `generate-X509-certificate.rb`, `step-cli` is also a good candidate for managing certificates.
 - `bcrypt-passwd.sh` : helps to create a bcrypt password; requires `htpasswd` to be installed.
 
 ### Save `secrets` and `certs`
+
 Using `make` and the **Makefile** you can easily save secrets and certs in a safe place. For instance a private _Nextcloud_.
 - `make push` - save secrets and certs
 - `make pull` - restore secrets and certs
@@ -69,7 +72,9 @@ _Create a `.env` as `.env.sample` in order to configure save path and cluster na
 
 ## Getting started - detailed version
 
-### I. Infrastructure provisioning - Vagrant _(dev only)_
+### I. Infrastructure provisioning
+
+#### Vagrant _(dev only)_
 
 - Start machines using `vagrant up`.
 - Stop machines using `vagrant halt`.
@@ -79,6 +84,9 @@ _Create a `.env` as `.env.sample` in order to configure save path and cluster na
 
 If logs grows due to systemd not capable to generate a MAC address, see https://github.com/systemd/systemd/issues/3374#issuecomment-452718898
 
+#### Terraform
+
+See https://gitlab.com/deepcube-draft/wp2-deepcube-platform/deepcube-platform-architecture/docker-swarm-infrastructure/-/tree/main/terraform.
 
 ### II. Preparing ansible hosts for ignition!
 
@@ -103,7 +111,7 @@ This step allow ansible to prepare a freshly created instance. This step is only
     - Generate a basic auth user used for http admin auth in `backend_users` using `./bcrypt-password.sh <admin username>` then get the base64 of it using `echo -n 'my-bcrypt-password' | base64`
 6. Repeat the previous step for each instance: `ansible-vault create secret_vars/myhostname.tld.yml  --vault-password-file "./.vault_password"`. Instance's specific secrets.
 
-### III. Initial configuration for freshly created instance
+### III. Initial configuration for freshly created instance (bootstrap configuration)
 
 Each newly created instance needs to be configured by ansible using a dedicated preparation playbook.
 
@@ -112,15 +120,37 @@ Each newly created instance needs to be configured by ansible using a dedicated 
 3. Once the playbook is successfuly executed, remove the instances from the `factoring_systems` group in `hosts/destr0yers.yml`
 
 
-### IV. Configure the instances
+### IV. Configure the instances (system configuration)
 
 1. Configure the desired state of the cluster in `group_vars/all.yml` (**important:** please define a list of allowed ssh ips using `ssh_entrypoints`)
-2. Configure instance specifities using its dedicated configuration file in `host_vars/myhostname.tld.yml`, some informations can be retrieved using `instance_info`, see examples in `hosts/`.
+2. Configure instance specifities using its dedicated configuration file in `host_vars/myhostname.tld.yml`, see examples in `hosts/`.
 3. Add the instances in the group `base_systems` in `hosts/destr0yers.yml`
 4. Run the playbook on the instances, it will setup all the system configuration in a single run: `ansible-playbook -i hosts/destr0yers.yml configure.yml --vault-password-file "./.vault_password"`
 
+#### Server keys generation
 
-### V. Configure the Docker Swarm
+The backup configuration requires ssh keys and gpg keys to be generated from your host and then saved in the related vaults.
+
+##### Generate ssh keys
+
+For each account present on the server, a couple of public and private key is required. Generate it using `ssh-keygen -q -t ed25519 -C "" -N ""`
+and save it in the secret vault.
+
+#### Generate GPG keys for backup encryption
+
+Backups are encrypted using GPG.
+
+_The following step are from this guide: https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled_
+
+1. Generate a new GPG key using: `gpg --full-gen-key` _(choose RSA and RSA, 4096bits, never expires)_
+2. Export the public key using: `gpg --output {public key name}.pub.asc --armor --export {the name you entered previously}`
+3. Export the private key using: `gpg --output {private key name}.sec.asc --armor --export-secret-key {the name you entered previously}`
+4. Save the public and the private key in the host secret vault.
+5. Define this key as encryption key for the backup in `host_vars`. **/!\\** don't forget to set the names and the ownertrust.
+6. Save the _ownertrust_, the _both keys_ and the _passphrase_ in a **safe place**.
+7. When the export is completed, **delete the GPG key from the host machine**.
+
+### V. Configure the Docker Swarm (cluster configuration)
 
 At this step, the cluster is almost configured. The last step is the docker configuration in swarm mode.
 
@@ -132,6 +162,12 @@ At this step, the cluster is almost configured. The last step is the docker conf
 4. Delete the certificate and associated key from `certs/{hostname}.key,crt,csr`
 5. Copy the public root certificate from `certs/swarm.cluster.dv-rootCA.crt` to `group_vars/all.yml` in `docker_swarm_CA_certificate` variable.
 6. _(eventually)_ backup your root ca files.
+
+__Good practice:__ keep the expiration dates in a calendar with a reminder in order to rotate the Root CA and certificates before expiration.
+
+*Notes :*
+ - chacha20 is currently secured enough and resists against timing guess attacks
+ - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121)
 
 #### V.II Set node roles and register the internal domains
 
@@ -163,7 +199,52 @@ promgraf_alertmanager_domain: "alertmanager.{{ promgraf_domain }}"
 Elastic is bundled with the cluster setup. The installation is optional but recommanded.
 If you want to disable elastic, simply set an empty list of hosts for `primary_manager_elastic`, `all_logging_elastic` and `all_metric_elastic` in `hosts/swamr-nodes.yml`.
 
-See details at https://github.com/youtous/destr0yer-build/blob/master/roles/docker-elastic/README.md
+##### Log forwarding
+Two options are available for log forwarding :
+- setup an elastic cluster using docker-elastic (see dedicated `roles/docker-elastic/README.md`)
+- forward logs using _logstash_ and _wireguard_
+
+The following instructions will detail this last option:
+0. On the server node, add a new (peer) wireguard client targeting the new server, see `roles/wireguard-server/README.md`
+1. On the client node, setup a wireguard client connection
+```yaml
+wireguard_clients:
+  - interface: wg-elastic
+    name: "{{ hostname }} elastic"
+    addresses: # client address + network
+      - 10.101.101.2/24
+    endpoint: "logstash.castle.youtous.me:1991" # vpn server address
+    persistent_keepalive: "" # only used when behind a NAT
+    mtu: "" # optional mtu
+    allowed_ips: # which traffic to redirect to the vpn?
+      - 10.101.101.0/24
+    dns: [] # optional DNS ips to use for this VPN
+    server_public_key: "server public key=" # public key of the server
+    public_key: "client public key=" # client keys
+    private_key: "{{ wireguard_elastic_client_private_key }}"
+    preshared_key: "{{ wireguard_elastic_client_preshared_key }}"
+```
+2. Add the client peer ip on the wireguard server to allowed external logstash using
+```yaml
+logstash_external_allowed_ip4s: # vpn for logstash data exchange
+  - "10.101.101.2" # myclient hostname
+```
+
+When wireguard tunnel is setup, elastic cluster must be configured:
+1. On the elastic master node: generate a client certificate and key used by the client node for submitting data to the elastic receiver.
+```yaml
+# on the forwarder node
+logstash_client_forwarder_ca_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
+logstash_client_forwarder_node_certificate: ""
+logstash_client_forwarder_node_private_key: ""
+```
+2. On the elastic client node: generate a rootCA used for generating certificates in the swarm cluster.
+```yaml
+logstash_ca_certificate: | # usually logstash-rootCA.crt
+logstash_node_private_key: | # usually logstash-node-hostname.key
+logstash_node_certificate: | # usually logstash-node-hostname.crt
+```
+See `docker-elastic` for detailed instructions.
 
 ##### Elastic cluster setup (optional)
 
@@ -273,102 +354,6 @@ traefik_services:
     -  `filebeat-*`, `id=filebeat-*`
 
     3.3 Important change due to OpenSearch migration: beats dashboards imports must be performed manually; please read https://www.electricbrain.com.au/pages/analytics/opensearch-vs-elasticsearch.php
-
-
-### TODO : include the detailed installation there
-
-## How to start?
-### Generate ssh keys
-For each account present on the server, a couple of public and private key is required. Generate it using `ssh-keygen -q -t ed25519 -C "" -N ""`
-and save it in the secret vault.
-
-### Generate GPG keys for backup encryption
-Backups requires to be encrypted using GPG.
-In order to make it work, keys must be generated.
-
-_We follow this guide: https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled_
-1. Generate a new GPG key using: `gpg --full-gen-key` _(choose RSA and RSA, 4096bits, never expires)_
-2. Export the public key using: `gpg --output {public key name}.pub.asc --armor --export {the name you entered previously}`
-3. Export the private key using: `gpg --output {private key name}.sec.asc --armor --export-secret-key {the name you entered previously}`
-4. Save the public and the private key in the host secret vault.
-5. Define this key as encryption key for the backup in `host_vars`. **/!\\** don't forget to set the names and the ownertrust.
-6. Save the _ownertrust_, the _both keys_ and the _passphrase_ in a **safe place**.
-7. When the export is completed, **delete the GPG key from the host machine**.
-
-
-### Create CA for swarm or elastic cluster
-
-**Script:** a dedicated scrip has been created for this task. It create a client certificate signed by a root authority (X509 standard).
-Use `./generate-X509-certificate.rb`
-
-**REMINDER :** add the expiration date as a comment and as a calendar event.
-
-Using a personal Root CA is useful for swarm mode over TLS.
-Details of the procedure are available on : https://gist.github.com/fntlnz/cf14feb5a46b2eda428e000157447309
-**Important :** use a secure encryption for root CA using `openssl genrsa -chacha20...`
-
-To sum up :
-- Root CA
-    1. RootCA (private ! and encrypted using chacha20) : `openssl genrsa -chacha20 -out certs/heaven.youtous.me-rootCA.key 4096`
-    2. Root CERTIFICATE (crt) (to be shared and renewed in 2500 days) : `openssl req -x509 -new -nodes -key certs/heaven.youtous.me-rootCA.key -sha256 -days 2500 -out certs/heaven.youtous.me-rootCA.crt`
-- For each server :
-    1. Certificate key (private ! but not encrypted) : `openssl genrsa -out certs/heaven-pascal.youtous.dv.key 4096`
-    2. Certificate signing (csr) : `openssl req -new -key certs/heaven-pascal.youtous.dv.key -out certs/heaven-pascal.youtous.dv.csr`
-    3. Generate the CERTIFICATE (crt) (to be renewed in 1024 days) : `openssl x509 -req -in certs/heaven-pascal.youtous.dv.csr -CA certs/heaven.youtous.me-rootCA.crt -CAkey certs/heaven.youtous.me-rootCA.key -CAcreateserial -out certs/heaven-pascal.youtous.dv.crt -days 1024 -sha256`
-    4. Next time, don't use `-CAcreateserial` but `-CAserial certs/heaven.youtous.me-rootCA.srl` (http://users.skynet.be/pascalbotte/art/server-cert.htm)
-    5. On the certificate has been generated, it to host secrets, there is no need to save it.
-
-*Notes :*
- - chacha20 is currently secured enough and resists against timing guess attacks
- - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121)
-
-### Use elastic for logging
-
-Two options are available for log forwarding :
-- setup an elastic cluster using docker-elastic (see dedicated `roles/docker-elastic/README.md`)
-- forward logs using _logstash_ and _wireguard_
-
-The following instructions will detail this last option:
-0. On the server node, add a new (peer) wireguard client targeting the new server, see `roles/wireguard-server/README.md`
-1. On the client node, setup a wireguard client connection
-```yaml
-wireguard_clients:
-  - interface: wg-elastic
-    name: "{{ hostname }} elastic"
-    addresses: # client address + network
-      - 10.101.101.2/24
-    endpoint: "logstash.castle.youtous.me:1991" # vpn server address
-    persistent_keepalive: "" # only used when behind a NAT
-    mtu: "" # optional mtu
-    allowed_ips: # which traffic to redirect to the vpn?
-      - 10.101.101.0/24
-    dns: [] # optional DNS ips to use for this VPN
-    server_public_key: "server public key=" # public key of the server
-    public_key: "client public key=" # client keys
-    private_key: "{{ wireguard_elastic_client_private_key }}"
-    preshared_key: "{{ wireguard_elastic_client_preshared_key }}"
-```
-2. Add the client peer ip on the wireguard server to allowed external logstash using
-```yaml
-logstash_external_allowed_ip4s: # vpn for logstash data exchange
-  - "10.101.101.2" # myclient hostname
-```
-
-When wireguard tunnel is setup, elastic cluster must be configured:
-1. On the elastic master node: generate a client certificate and key used by the client node for submitting data to the elastic receiver.
-```yaml
-# on the forwarder node
-logstash_client_forwarder_ca_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
-logstash_client_forwarder_node_certificate: ""
-logstash_client_forwarder_node_private_key: ""
-```
-2. On the elastic client node: generate a rootCA used for generating certificates in the swarm cluster.
-```yaml
-logstash_ca_certificate: | # usually logstash-rootCA.crt
-logstash_node_private_key: | # usually logstash-node-hostname.key
-logstash_node_certificate: | # usually logstash-node-hostname.crt
-```
-See `docker-elastic` for detailed instructions.
 
 ## Licence
 
