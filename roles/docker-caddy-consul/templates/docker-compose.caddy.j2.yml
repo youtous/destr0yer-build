@@ -11,9 +11,9 @@ configs:
 services:
 # todo : check how an external service such as a mailserver can access consul storage
   consul:
-    image: consul
+    image: "consul:{{ caddy_consul_version }}"
     hostname: "{% raw %}{{ .Node.Hostname }}{% endraw %}"
-    command: agent -server -client=0.0.0.0 -bootstrap-expect={{ consul_replicas }} {% for consul_host_name in caddy_consul_agent_hosts %}-retry-join={{ consul_host_name }} {% endfor %}-raft-protocol={{ consul_replicas }} -ui
+    command: agent -server -client=0.0.0.0 -bootstrap-expect={{ consul_replicas }} {% for consul_host_name in caddy_consul_agent_hosts %}-retry-join={{ consul_host_name }} {% endfor %} -ui
     healthcheck:
       test: "consul info | grep 'health_score = 0'"
     volumes:
@@ -24,6 +24,12 @@ services:
     networks:
       internal:
       {{ caddy_network }}:
+    extra_hosts:
+{% for consul_hostname in caddy_consul_agent_hosts %}
+{% for l_ip in hostvars[consul_hostname]['ipv4_private'] %}
+      - "{{ consul_hostname }}:{{ l_ip }}"
+{% endfor %}
+{% endfor %}
     deploy:
       mode: replicated
       replicas: {{ consul_replicas }}

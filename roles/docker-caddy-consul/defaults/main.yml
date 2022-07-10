@@ -1,6 +1,9 @@
 ---
 # version of caddy to use
-caddy_version: "latest"
+caddy_version: "v-2.5.1"
+
+# version of consul to use
+caddy_consul_version: "1.12"
 
 # please define manually an acl token for consul (uuid-4)
 # > irb
@@ -64,8 +67,6 @@ caddy_max_connections_sysctl: 4096
 
 # Caddyfile additional content
 caddy_caddyfile_content: ""
-# caddy_caddyfile_content: |
-
 
 # key used to encrypt tls certificates stored in consul, change it needed
 caddy_consul_certificates_aes_key: "consultls-1234567890-caddytls-32"
