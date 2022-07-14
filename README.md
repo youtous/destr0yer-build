@@ -17,14 +17,13 @@
 
 On your computer:
 
-  - python3, pip3
-  - openssl
-  - terraform
-  - htpasswd
-  - ansible (>= 2.9)
+  - python3, pip3, pipenv
+  - openssl (certificate management)
+  - htpasswd (generate basic auth passwords)
+  - ansible (>= 5)
   - bash
-  - jq
-  - ruby
+  - jq (used in the roles)
+  - ruby (optional if you don't mind using certificate scripts)
   - (optional) [step-cli](https://github.com/smallstep/cli)
 
 

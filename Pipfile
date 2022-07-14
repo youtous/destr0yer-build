@@ -4,8 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-ansible = "<2.13"
 jmespath = "*"
+molecule = "*"
+molecule-podman = "*"
+ansible = "<6"
+molecule-docker = "*"
 
 [dev-packages]
 
