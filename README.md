@@ -7,7 +7,7 @@
 [![Caddy v2](https://img.shields.io/badge/Caddy-v2-03af19)](https://github.com/traefik/traefik)
 [![Traefik v2](https://img.shields.io/badge/Traefik-v2-37abc8)](https://github.com/traefik/traefik)
 [![GitHub Repo stars](https://img.shields.io/github/stars/youtous/destr0yer-build?label=✨%20youtous%2Fdestr0yer-build&style=social)](https://github.com/youtous/destr0yer-build/)
-[![Gitlab Repo](https://img.shields.io/badge/gitlab.com%2Fyoutous%2Fdestr0yer-build?label=✨%20youtous%2Fdestr0yer--build&style=social&logo=gitlab)](https://gitlab.com/youtous/destr0yer-build/)
+[![Gitlab Repo](https://img.shields.io/badge/gitlab.com%2Fyoutous%2Fdestr0yer--build?label=✨%20youtous%2Fdestr0yer-build&style=social&logo=gitlab)](https://gitlab.com/youtous/destr0yer-build/)
 [![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
 # TODO:
