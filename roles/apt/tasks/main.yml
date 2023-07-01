@@ -60,7 +60,7 @@
     name: unattended-upgrades
 
 - name: Check if distribution upgrade is required
-  import_tasks: upgrade_distribution.yml
+  ansible.builtin.import_tasks: upgrade_distribution.yml
 
 - name: Update and upgrade apt packages
   become: true

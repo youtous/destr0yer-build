@@ -19,11 +19,13 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    (yes || true) | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item | quote }}
   with_items: "{{ ufw_caddy_443_rules.stdout_lines }}"
   when: ufw_caddy_443_rules.stdout_lines | length > 0
   args:
     executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
 ## Revoke all 80
 - name: List existing https UFW rules - tcp,udp/80
@@ -42,11 +44,13 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    (yes || true) | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item | quote }}
   with_items: "{{ ufw_caddy_80_rules.stdout_lines }}"
   when: ufw_caddy_80_rules.stdout_lines | length > 0
   args:
     executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
 ## Revoke all metrics
 - name: "List existing metrics UFW rules - tcp,udp/{{ caddy_metrics_port }}"
@@ -66,11 +70,13 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    (yes || true) | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item | quote }}
   with_items: "{{ ufw_caddy_metrics_rules.stdout_lines }}"
   when: ufw_caddy_metrics_rules.stdout_lines | length > 0
   args:
     executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
 ## End of revocation
 - name: Allow caddy https (including containers) to pass firewall - tcp/443

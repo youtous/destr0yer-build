@@ -79,11 +79,11 @@
     name: "{{ promgraf_stack_name }}"
     compose:
       - "{{ promgraf_compose_file_dest }}"
-  notify: docker prune
+  notify: Docker prune
   register: stack_deploy_status
 
-- name: docker prune secrets and configs
-  ansible.builtin.include_role:
+- name: Docker prune secrets and configs
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: docker_configs_secrets_cleaner
   vars:
     stack_name: "{{ promgraf_stack_name }}"

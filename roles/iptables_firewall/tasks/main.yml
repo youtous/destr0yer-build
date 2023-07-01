@@ -28,7 +28,7 @@
     insertbefore: "^# don't delete the 'COMMIT'"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv4 before rules ###"
   notify:
-    - restart ufw
+    - Restart ufw
 
 - name: Insert customs IPv6 rules in before6.rules
   become: true
@@ -38,7 +38,7 @@
     insertbefore: "^# don't delete the 'COMMIT'"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv6 before rules ###"
   notify:
-    - restart ufw
+    - Restart ufw
 
 - name: OpenSSH default policy limit
   become: true
@@ -62,7 +62,7 @@
 # IP forwarding is disabled by default
 - name: Set value IPv4 forwarding
   become: true
-  sysctl:
+  ansible.posix.sysctl:
     name: net.ipv4.ip_forward
     value: "{{ ipv4_ip_forwarding }}"
     sysctl_set: true
@@ -71,7 +71,7 @@
 
 - name: Set value IPv6 forwarding
   become: true
-  sysctl:
+  ansible.posix.sysctl:
     name: net.ipv6.conf.all.forwarding
     value: "{{ ipv6_ip_forwarding }}"
     sysctl_set: true

@@ -26,6 +26,6 @@
     mode: u=rw,g=r,o=r
 
 - name: Configure SSL on mariadb
-  import_tasks: ssl.yml
+  ansible.builtin.import_tasks: ssl.yml
   when: mariadb_ssl_enabled
 ...

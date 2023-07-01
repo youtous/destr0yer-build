@@ -10,7 +10,7 @@
 
 - name: Mount devices and save it permanantly
   become: true
-  mount:
+  ansible.posix.mount:
     path: "{{ item.path }}"
     src: "{{ item.src }}"
     fstype: "{{ item.fstype }}"
@@ -20,7 +20,7 @@
 
 - name: Unmount devices and save it permanantly
   become: true
-  mount:
+  ansible.posix.mount:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ unmount_devices }}"

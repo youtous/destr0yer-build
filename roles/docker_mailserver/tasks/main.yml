@@ -102,16 +102,16 @@
       dest: update-resolver-ip.sh
 
 - name: Register mailserver secrets
-  import_tasks: secrets.yml
+  ansible.builtin.import_tasks: secrets.yml
 
 - name: Register MTA-STS policies
-  import_tasks: mta-sts.yml
+  ansible.builtin.import_tasks: mta-sts.yml
 
 - name: Register firewall policy
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 
 - name: Fail2ban for docker-mailserver
-  import_tasks: fail2ban.yml
+  ansible.builtin.import_tasks: fail2ban.yml
 
 - name: Deploy mailserver
   community.docker.docker_stack:
@@ -165,12 +165,12 @@
 
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ mailserver_deploy_timestamp }}"
-  notify: docker prune
+  notify: Docker prune
   no_log: true
   register: stack_deploy_status
 
-- name: docker prune secrets and configs
-  ansible.builtin.include_role:
+- name: Docker prune secrets and configs
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: docker_configs_secrets_cleaner
   vars:
     stack_name: "{{ docker_mailserver_stack_name }}"

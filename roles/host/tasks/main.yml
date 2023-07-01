@@ -5,7 +5,7 @@
   ansible.builtin.hostname:
     name: "{{ hostname }}"
   notify:
-    - restart network-manager
+    - Restart network-manager
 
 - name: Unlock /etc/hosts
   become: true

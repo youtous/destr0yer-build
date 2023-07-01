@@ -1,21 +1,25 @@
 ---
-- name: restart postfix
+- name: Restart postfix
   become: true
   ansible.builtin.systemd:
     name: postfix
     state: restarted
 
-- name: reload postfix
+- name: Reload postfix
   become: true
   ansible.builtin.systemd:
     name: postfix
     state: reloaded
 
-- name: hash sasl passwd
+- name: Hash sasl passwd
   become: true
-  ansible.builtin.command: "postmap hash:{{ postfix_sasl_file|quote }}"
+  ansible.builtin.command: "postmap hash:{{ postfix_sasl_file | quote }}"
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
-- name: newaliases
+- name: Newaliases
   become: true
   ansible.builtin.command: "newaliases"
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 ...

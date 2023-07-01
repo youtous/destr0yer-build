@@ -5,23 +5,34 @@
   hosts: systems
   vars:
     _provisionned_file_path: /etc/status_provision_ansible
+    apt_allowed_to_reboot: false # prevent reboot in this phase in order to preserve disk partition assigned
   vars_files:
     - secret_vars/all.yml
     - "secret_vars/{{ inventory_hostname }}.yml"
   tasks:
-    - name: "Check if provision is needed using {{ _provisionned_file_path }} existence"
+    - name: "Check if provision is needed"
       ansible.builtin.stat:
         path: "{{ _provisionned_file_path }}"
       register: system_provisionned_stat
 
-    - name: Prepare base system for new hosts
-      vars:
-        apt_allowed_to_reboot: false # prevent reboot in this phase in order to preserve disk partition assigned
-      roles:
-        - resolv
-        - apt
-        - system_packages
-        - users
+    - name: Setup resolv
+      ansible.builtin.include_role:
+        name: resolv
+      when: not system_provisionned_stat.stat.exists
+
+    - name: Setup apt
+      ansible.builtin.include_role:
+        name: apt
+      when: not system_provisionned_stat.stat.exists
+
+    - name: Install system packages
+      ansible.builtin.include_role:
+        name: system_packages
+      when: not system_provisionned_stat.stat.exists
+
+    - name: Setup users
+      ansible.builtin.include_role:
+        name: users
       when: not system_provisionned_stat.stat.exists
 
     - name: Mark system as provisionned

@@ -5,7 +5,7 @@
     path: "{{ omf_installation_directory }}"
   register: omf_present
 
-- name: "Clone OMF from {{ omf_repo }}" # noqa git-latest
+- name: "Clone OMF from {{ omf_repo }}"
   become: true
   ansible.builtin.git:
     repo: "{{ omf_repo }}"
@@ -22,16 +22,17 @@
     group: root
     mode: u=rw,g=rx,o=rx
 
-- name: Check if OMF theme "{{ omf_theme }}" is installed
+- name: "Check if OMF theme is installed : {{ omf_theme }}"
   ansible.builtin.stat:
     path: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
   register: omf_theme_present
 
-- name: "Clone OMF theme \"{{ omf_theme }}\" from {{ omf_theme_repo }}"
+- name: "Clone OMF theme {{ omf_theme }}"
   become: true
-  ansible.builtin.git: # noqa git-latest
+  ansible.builtin.git:
     repo: "{{ omf_theme_repo }}"
     dest: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
+    version: "{{ omf_theme_version }}"
   when: not omf_theme_present.stat.exists
 
 - name: Check if default theme already exists
@@ -41,12 +42,14 @@
 
 - name: Move default OMF theme
   become: true
-  ansible.builtin.command: mv "{{ omf_default_theme_directory|quote }}" "{{ omf_default_theme_move_directory|quote }}"
+  ansible.builtin.command: mv "{{ omf_default_theme_directory | quote }}" "{{ omf_default_theme_move_directory | quote }}"
   when:
     - omf_default_link.stat.islnk is not defined or not omf_default_link.stat.islnk
     - omf_default_link.stat.isdir is defined and omf_default_link.stat.isdir
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
-- name: Ensure theme {{ omf_theme }} is set as default
+- name: Ensure theme is set as default {{ omf_theme }}
   become: true
   ansible.builtin.file:
     src: "{{ omf_theme_directory }}"
@@ -67,9 +70,10 @@
 
 - name: Install OMF plugins
   become: true
-  ansible.builtin.git: # noqa git-latest
-    repo: "{{ omf_plugin_repo_base }}{{ item }}"
-    dest: "{{ omf_plugin_directory }}/{{ item }}"
+  ansible.builtin.git:
+    repo: "{{ omf_plugin_repo_base }}{{ item.name }}"
+    dest: "{{ omf_plugin_directory }}/{{ item.name }}"
+    version: "{{ item.version }}"
   with_items: "{{ omf_plugins }}"
 
 - name: Enable bat alias in fish

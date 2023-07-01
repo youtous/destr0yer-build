@@ -32,6 +32,6 @@
 
 
 - name: Import logstash client certificate (acting as a forwarder)
-  import_tasks: docker-logstash-forwarder.yml
+  ansible.builtin.import_tasks: docker-logstash-forwarder.yml
   when: elastic_use_as_forwarder
 ...

@@ -19,8 +19,8 @@
 - name: Retrieve latest DNSCrypt-proxy from repo
   ansible.builtin.shell: >
     set -o pipefail &&
-    curl -sL {{ dnscrypt_proxy_repo|quote }}
-    | grep dnscrypt-proxy-{{ dnscrypt_proxy_platform|quote }}_{{ dnscrypt_proxy_cpu_platform|quote }}-
+    curl -sL {{ dnscrypt_proxy_repo | quote }}
+    | grep dnscrypt-proxy-{{ dnscrypt_proxy_platform | quote }}_{{ dnscrypt_proxy_cpu_platform | quote }}-
     | grep browser_download_url | head -1 | cut -d \" -f 4
   register: dnscrypt_remote_download
   changed_when: false
@@ -51,7 +51,7 @@
 
 - name: Verify downloaded files
   changed_when: false
-  ansible.builtin.command: "minisign -Vm '{{ tmp_dir_build.path|quote }}/dnscrypt-proxy.tar.gz' -P '{{ dnscrypt_proxy_public_key|quote }}'"
+  ansible.builtin.command: "minisign -Vm '{{ tmp_dir_build.path | quote }}/dnscrypt-proxy.tar.gz' -P '{{ dnscrypt_proxy_public_key | quote }}'"
 
 - name: Extract downloaded files
   ansible.builtin.unarchive:
@@ -68,7 +68,7 @@
     group: root
     mode: u=rwx,g=xr,o=x
     remote_src: true
-  notify: restart dnscrypt-proxy
+  notify: Restart dnscrypt-proxy
 
 - name: Cleanup build directory
   become: true

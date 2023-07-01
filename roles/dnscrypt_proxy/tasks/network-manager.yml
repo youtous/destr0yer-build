@@ -13,7 +13,7 @@
     group: root
     mode: u=rw,g=r,o=r
   when: not network_manager_conf_present.stat.exists
-  notify: restart NetworkManager
+  notify: Restart NetworkManager
 
 - name: Disable NetworkManager auto-update /etc/resolv.conf
   become: true
@@ -23,7 +23,7 @@
     insertafter: '^[main]'
     line: 'dns=none'
   when: not network_manager_conf_present.stat.exists
-  notify: restart NetworkManager
+  notify: Restart NetworkManager
 
 - name: Unlock /etc/resolv.conf
   become: true
@@ -41,7 +41,7 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
-  notify: restart NetworkManager
+  notify: Restart NetworkManager
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable

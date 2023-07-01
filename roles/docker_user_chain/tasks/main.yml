@@ -8,7 +8,7 @@
   changed_when: false
 
 - name: Configure docker logstash firewall ipv4
-  import_tasks: export-ipv4.yml
+  ansible.builtin.import_tasks: export-ipv4.yml
   when: docker_ipv4 is not failed
 
 - name: Check if docker ipv6 iptables is enabled
@@ -19,7 +19,7 @@
   changed_when: false
 
 - name: Configure docker logstash firewall ipv6
-  import_tasks: export-ipv6.yml
+  ansible.builtin.import_tasks: export-ipv6.yml
   when: docker_ipv6 is not failed
 
 - name: Ensure network firewall directory exists

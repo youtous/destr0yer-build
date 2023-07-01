@@ -1,5 +1,5 @@
 ---
-- name: restart wireguard
+- name: Restart wireguard
   become: true
   ansible.builtin.systemd:
     name: "{{ wireguard_service_name }}"

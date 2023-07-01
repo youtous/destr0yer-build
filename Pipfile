@@ -7,10 +7,10 @@ name = "pypi"
 jmespath = "*"
 molecule = "*"
 molecule-podman = "*"
-ansible = "<6"
+ansible = "8"
+ansible-lint = "*"
 molecule-docker = "*"
+pre-commit = "*"
 
 [dev-packages]
-
-[requires]
-python_version = "3.10"
+black = "*"

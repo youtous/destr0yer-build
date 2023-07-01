@@ -1,5 +1,5 @@
 ---
-- name: docker prune
+- name: Docker prune
   community.docker.docker_prune:
     containers: true
     images: true

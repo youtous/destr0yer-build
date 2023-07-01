@@ -1,5 +1,5 @@
 ---
-- name: restart journalbeat
+- name: Restart journalbeat
   become: true
   ansible.builtin.systemd:
     name: journalbeat

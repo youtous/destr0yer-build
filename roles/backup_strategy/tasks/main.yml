@@ -55,11 +55,11 @@
 # generate per host GPG key using : https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled
 # /!\ Be careful about ' characters, it's better not to have one in the passphrase
 - name: Import GPG keys for root user
-  import_tasks: gpg.yml
+  ansible.builtin.import_tasks: gpg.yml
 
 - name: Setup Duplicity backup strategy
   become: true
-  ansible.builtin.import_role:
+  ansible.builtin.import_role: # noqa: var-naming[no-role-prefix]
     name: oefenweb.duply-backup
   vars:
     duply_backup_profiles: "{{ backup_profiles }}"

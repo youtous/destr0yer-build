@@ -1,7 +1,7 @@
 ---
 # This role contains the default policy for logwatch
 - name: Install logwatch
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
 
 - name: Override logwatch conf service
   become: true

@@ -35,7 +35,7 @@
     gid: "{{ docker_group_gid }}"
     name: "{{ docker_group_name }}"
 
-- name: Adding user '{{ ansible_user }}' to docker group
+- name: "Adding to docker group user: {{ ansible_user }}"
   become: true
   block:
     - name: "Add docker group to ansible user"

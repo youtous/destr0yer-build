@@ -3,7 +3,7 @@
 
 - name: Setup mariadb-server
   become: true
-  ansible.builtin.import_role:
+  ansible.builtin.import_role: # noqa: var-naming[no-role-prefix]
     name: geerlingguy.mysql
   vars:
     mysql_root_home: /root
@@ -42,11 +42,11 @@
     group: root
     mode: u=rw,g=r,o=
   notify:
-    - systemd daemon reload
-    - restart mariadb
+    - Systemd daemon reload
+    - Restart mariadb
 
 - name: Configure SSL on mariadb
-  import_tasks: ssl.yml
+  ansible.builtin.import_tasks: ssl.yml
   when: mariadb_ssl_enabled
 
 - name: Setup host.allow for mariadb
@@ -72,11 +72,13 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    (yes || true) | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item | quote }}
   with_items: "{{ ufw_mariadb_rules.stdout_lines }}"
   when: ufw_mariadb_rules.stdout_lines | length > 0
   args:
     executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
 - name: UFW Allow mariadb clients - tcp,udp/3306
   become: true

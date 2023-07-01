@@ -12,7 +12,7 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port|quote }}(?!\\d).*\# backup client allowed\n'
+    ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port | quote }}(?!\\d).*\# backup client allowed\n'
     | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
   changed_when: false
   ignore_errors: true # in case no rule already exists
@@ -24,19 +24,21 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    (yes || true) | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item | quote }}
   with_items: "{{ ufw_ssh_backup_rules.stdout_lines }}"
   when: ufw_ssh_backup_rules.stdout_lines | length > 0
   args:
     executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
 - name: UFW Allow sftp backup clients - LIMIT tcp/ssh
   become: true
-  community.general.ufw:
+  community.general.ufw: # noqa jinja[invalid]
     rule: limit
     port: ssh
     proto: tcp
     src: "{{ item }}"
     comment: 'backup client allowed'
-  with_items: "{{ backup_users | json_query('[*].restrict_ips') | list | flatten | unique }}"
+  with_items: "{{ backup_users | json_query('[*].restrict_ips') | list | flatten | unique | default([]) }}"
 ...

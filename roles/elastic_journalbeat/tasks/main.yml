@@ -2,7 +2,7 @@
 # This role setup journalbeat; a log exporter to elastic stack (using logstash receiver)
 
 - name: Install journalbeat
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
   when: journalbeat_state == 'present'
 
 - name: Ensure journalbeat is enabled and started
@@ -39,7 +39,7 @@
   when: journalbeat_state == 'present'
 
 - name: Configure TLS logstash/journalbeat certificates
-  import_tasks: certificates.yml
+  ansible.builtin.import_tasks: certificates.yml
   when: journalbeat_state == 'present'
 
 - name: Copy journalbeat configuration
@@ -51,6 +51,6 @@
     group: root
     mode: u=rw,g=,o=
   notify:
-    - restart journalbeat
+    - Restart journalbeat
   when: journalbeat_state == 'present'
 ...

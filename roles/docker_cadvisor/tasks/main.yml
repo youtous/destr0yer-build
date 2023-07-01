@@ -14,7 +14,7 @@
     mode: u=rw,g=,o=
 
 - name: Configure stack firewall
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 
 - name: Deploy cadvisor
   community.docker.docker_stack:
@@ -23,5 +23,5 @@
     name: "{{ cadvisor_stack_name }}"
     compose:
       - "{{ cadvisor_compose_file_dest }}"
-  notify: docker prune
+  notify: Docker prune
 ...

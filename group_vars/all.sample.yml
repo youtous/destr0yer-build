@@ -88,19 +88,13 @@ elastic_internal_network_encryption_enabled: false
 
 # ips of the nodes of the swarm
 nodes_ip4s: "{{
-  (
-  groups['swarm_workers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
-  groups['swarm_managers'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])  +
-  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])
-  ) | flatten
-}}"
+  (groups['swarm_workers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([])) | flatten }}"
 nodes_ip6s: "{{
-  (
-  groups['swarm_workers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique | default([]) +
-  groups['swarm_managers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([]) +
-  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([])
-  ) | flatten
-}}"
+  (groups['swarm_workers'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([])) | flatten }}"
 
 nodes_ip4s_without_current_host: "{{ nodes_ip4s | difference(ipv4_private) }}"
 nodes_ip6s_without_current_host: "{{ nodes_ip6s | difference(ipv6_private) }}"
@@ -108,25 +102,19 @@ nodes_ips_without_current_host: "{{ (nodes_ip4s_without_current_host + nodes_ip6
 nodes_ips: "{{ nodes_ips_without_current_host }}"
 
 nodes_public_ip4s: "{{
-  (
-  groups['swarm_workers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
-  groups['swarm_managers'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])  +
-  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4'])  | list | flatten | unique  | default([])
-  ) | flatten
-}}"
+  (groups['swarm_workers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4']) | list | flatten | unique | default([])) | flatten }}"
 nodes_public_ip6s: "{{
-  (
-  groups['swarm_workers'] | map('extract', hostvars, ['ipv6']) | list | flatten | unique | default([]) +
-  groups['swarm_managers'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])  +
-  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6'])  | list | flatten | unique  | default([])
-  ) | flatten
-}}"
+  (groups['swarm_workers'] | map('extract', hostvars, ['ipv6']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv6']) | list | flatten | unique | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6']) | list | flatten | unique | default([])) | flatten }}"
 nodes_public_ips: "{{ (nodes_public_ip4s + nodes_public_ip6s) | flatten }}"
 
 nodes_public_ip4s_without_current_host: "{{ nodes_public_ip4s | difference(ipv4) }}"
 nodes_public_ip6s_without_current_host: "{{ nodes_public_ip6s | difference(ipv6) }}"
 nodes_public_ips_without_current_host:
-  "{{ (nodes_public_ip4s_without_current_host + nodes_public_ip6s_without_current_host) | flatten  }}" # subtract current host
+  "{{ (nodes_public_ip4s_without_current_host + nodes_public_ip6s_without_current_host) | flatten }}" # subtract current host
 
 # first manager ipv4
 primary_manager_ipv4: "{{ groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private']) | first | first }}"
@@ -175,8 +163,8 @@ docker_swarm_ca_certificate: |
 promgraf_domain: "prom.swarm.cluster.dv"
 
 # ips allowed to access metrics
-trusted_metrics_ips_loc:
-  "{{ ( groups['all'] | map('extract', hostvars, ['ipv4_private']) | list | default([]) ) | flatten }}" # allow all internal nodes to read the metrics
+trusted_metrics_ips_loc: "{{ (groups['all'] | map('extract', hostvars, ['ipv4_private']) | list
+  | default([])) | flatten }}" # allow all internal nodes to read the metrics
 
 # prometheus monitoring configuration
 promgraf_prometheus_configuration: |

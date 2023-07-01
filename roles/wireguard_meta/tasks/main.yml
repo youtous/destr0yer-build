@@ -9,7 +9,7 @@
     msg: "wireguard interfaces must not contain duplicates"
 
 - name: Setup wireguard servers
-  ansible.builtin.include_role:
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: wireguard_server
   vars:
     wireguard_server: "{{ wg_server }}"
@@ -19,7 +19,7 @@
   no_log: true
 
 - name: Setup wireguard clients
-  ansible.builtin.include_role:
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: wireguard_client
   vars:
     wireguard_client: "{{ wg_client }}"

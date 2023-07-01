@@ -5,6 +5,6 @@
   ansible.builtin.template:
     src: "templates/etc/monit/conf.d/journalbeat.j2"
     dest: "/etc/monit/conf.d/journalbeat"
-    mode: 0400
-  notify: reload monit
+    mode: "0400"
+  notify: Reload monit
 ...

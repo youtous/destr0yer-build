@@ -15,7 +15,7 @@
 
 - name: "Set timezone to {{ timezone }}"
   become: true
-  timezone:
+  community.general.timezone:
     name: "{{ timezone }}"
 
 - name: Ensure system folder permissions are correct

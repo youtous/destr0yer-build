@@ -19,20 +19,20 @@
   args:
     executable: /bin/bash
 
-- name: iptables delete existing cadvisor rules - tcp/9200 # noqa no-changed-when
+- name: Iptables delete existing cadvisor rules - tcp/9200 # noqa no-changed-when
   become: true
-  ansible.builtin.command: "iptables -D DOCKER-USER {{ item|quote }}"
+  ansible.builtin.command: "iptables -D DOCKER-USER {{ item | quote }}"
   with_items: "{{ ufw_cadvisor_9200_rules.stdout_lines }}"
   when: ufw_cadvisor_9200_rules.stdout_lines | length > 0
 
 - name: Drop other ips firewall - tcp/9200 (cadvisor external) # noqa no-changed-when
   become: true
-  ansible.builtin.command: "iptables -I DOCKER-USER -i {{ item|quote }} -p tcp -m conntrack --ctorigdstport 9200 --ctdir ORIGINAL -j DROP"
+  ansible.builtin.command: "iptables -I DOCKER-USER -i {{ item | quote }} -p tcp -m conntrack --ctorigdstport 9200 --ctdir ORIGINAL -j DROP"
   with_items: "{{ docker_external_interfaces }}"
 
 - name: Allow nodes firewall - tcp/9200 (cadvisor external) # noqa no-changed-when
   become: true
-  ansible.builtin.command: "iptables -I DOCKER-USER -i {{ item|quote }} -s {{ cadvisor_external_allowed_ip4s|join(',') }}
+  ansible.builtin.command: "iptables -I DOCKER-USER -i {{ item | quote }} -s {{ cadvisor_external_allowed_ip4s | join(',') }}
     -p tcp -m conntrack --ctorigdstport 9200 --ctdir ORIGINAL -j ACCEPT"
   with_items: "{{ docker_external_interfaces }}"
 

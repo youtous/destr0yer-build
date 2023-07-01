@@ -12,14 +12,14 @@
 
 
 - name: Partitioning setup
-  import_tasks: parted.yml
+  ansible.builtin.import_tasks: parted.yml
 
 - name: LVM setup
-  import_tasks: lvm.yml
+  ansible.builtin.import_tasks: lvm.yml
 
 - name: Format setup
-  import_tasks: format.yml
+  ansible.builtin.import_tasks: format.yml
 
 - name: Mount setup
-  import_tasks: mount.yml
+  ansible.builtin.import_tasks: mount.yml
 ...

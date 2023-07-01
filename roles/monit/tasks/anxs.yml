@@ -5,21 +5,21 @@
   ansible.builtin.template:
     src: "etc/monit/monitrc.j2"
     dest: "/etc/monit/monitrc"
-    mode: 0400
+    mode: "0400"
   notify:
-    - restart monit
+    - Restart monit
 
 - name: Monit | Copy the sshd monit service files
   ansible.builtin.template:
     src: "etc/monit/conf.d/{{ item }}.j2"
     dest: "/etc/monit/conf.d/{{ item }}"
-    mode: 0400
+    mode: "0400"
   with_items:
     - sshd
     - cron
     - ntp
   notify:
-    - reload monit
+    - Reload monit
 
 - name: Enable cron
   ansible.builtin.service:
@@ -33,15 +33,15 @@
     dest: "/etc/monit/conf.d/{{ item.type | default('base') }}_{{ item.process | default(item.pid | basename | replace('.pid', '')) }}.conf"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   with_community.general.flattened:
     - "{{ monit_process_list }}"
   when: item.pid is defined and item.pid
   notify:
-    - reload monit
+    - Reload monit
 
 - name: Monit | Determine queued messages
-  ansible.builtin.command: "ls -1 {{ monit_eventqueue_directory|quote }}/"
+  ansible.builtin.command: "ls -1 {{ monit_eventqueue_directory | quote }}/"
   register: monit_queued_messages
   when: not monit_email_enable or not monit_eventqueue_enable
   changed_when: false

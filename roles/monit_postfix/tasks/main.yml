@@ -8,5 +8,5 @@
     mode: u=rw,g=r,o=
   with_items:
     - postfix
-  notify: reload monit
+  notify: Reload monit
 ...

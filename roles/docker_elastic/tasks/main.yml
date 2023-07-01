@@ -2,9 +2,11 @@
 # This role setup an elastic-stack for logging management purposes
 
 # https://github.com/elastic/elasticsearch-docker/blob/7c1dc434d32b88b414180cbddc9412acb41cb14c/README.md
-- name: set vm.max_map_count to 262144 in sysctl
+- name: Set vm.max_map_count to 262144 in sysctl
   become: true
-  sysctl: name={{ item.key }} value={{ item.value }}
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
   with_items:
     - { key: "vm.max_map_count", value: "262144" }
 
@@ -81,10 +83,10 @@
   when: elastic_use_as_forwarder
 
 - name: Configure additional parameters for logstash with docker
-  import_tasks: docker-logstash.yml
+  ansible.builtin.import_tasks: docker-logstash.yml
 
 - name: Tag docker nodes
-  import_tasks: tag_hosts.yml
+  ansible.builtin.import_tasks: tag_hosts.yml
 
 - name: Deploy elastic
   community.docker.docker_stack:
@@ -102,11 +104,11 @@
     SMTP_USERNAME: "{{ elastic_alert_email_user }}"
     SMTP_PASSWORD: "{{ elastic_alert_email_password }}"
     SMTP_FROM: "{{ elastic_alert_email_from }}"
-  notify: docker prune
+  notify: Docker prune
   register: stack_deploy_status
 
-- name: docker prune secrets and configs
-  ansible.builtin.include_role:
+- name: Docker prune secrets and configs
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: docker_configs_secrets_cleaner
   vars:
     stack_name: "{{ docker_elastic_stack_name }}"

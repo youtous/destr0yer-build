@@ -27,7 +27,7 @@
     default_release: buster-backports
     update_cache: true
   notify:
-    - restart wireguard
+    - Restart wireguard
   when: ansible_os_family == "Debian" and ansible_lsb.major_release|int == 10
 
 - name: Install wiregard using latest version from stable
@@ -37,12 +37,12 @@
     state: latest # noqa package-latest
     update_cache: true
   notify:
-    - restart wireguard
+    - Restart wireguard
   when: ansible_os_family == "Debian" and ansible_lsb.major_release|int >= 11
 
 - name: Enable WireGuard kernel module
   become: true
-  modprobe:
+  community.general.modprobe:
     name: wireguard
     state: present
   register: wireguard_module_enabled
@@ -50,6 +50,6 @@
   retries: 10
   delay: 10
   notify:
-    - restart wireguard
+    - Restart wireguard
   failed_when: wireguard_module_enabled is failure
 ...

@@ -17,11 +17,13 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    (yes || true) | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item | quote }}
   with_items: "{{ ufw_docker_swarm_9100_rules.stdout_lines }}"
   when: ufw_docker_swarm_9100_rules.stdout_lines | length > 0
   args:
     executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
 ## End of revocation
 - name: Allow metrics ips to pass firewall - tcp/9100

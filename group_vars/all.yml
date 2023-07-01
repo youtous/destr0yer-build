@@ -84,19 +84,13 @@ local_docker_ips:
 
 # ips of the nodes of the swarm
 nodes_ip4s: "{{
-  (
-  groups['swarm_workers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
-  groups['swarm_managers'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])  +
-  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private'])  | list | flatten | unique  | default([])
-  ) | flatten
-}}"
+  (groups['swarm_workers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([])) | flatten }}"
 nodes_ip6s: "{{
-  (
-  groups['swarm_workers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique | default([]) +
-  groups['swarm_managers'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([]) +
-  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6_private'])  | list | flatten | unique  | default([])
-  ) | flatten
-}}"
+  (groups['swarm_workers'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([]) +
+  groups['swarm_managers'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([]) +
+  groups['swarm_primary_manager'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([])) | flatten }}"
 
 nodes_ip4s_without_current_host: "{{ nodes_ip4s | difference(ipv4_private) }}"
 nodes_ip6s_without_current_host: "{{ nodes_ip6s | difference(ipv6_private) }}"
@@ -178,7 +172,7 @@ traefik_services:
 
 # ips allowed to access metrics
 trusted_metrics_ips_loc:
-  "{{ ( groups['all'] | map('extract', hostvars, ['ipv4_private']) | list | default([]) ) | flatten }}" # allow all internal nodes to read the metrics
+  "{{ (groups['all'] | map('extract', hostvars, ['ipv4_private']) | list | default([])) | flatten }}" # allow all internal nodes to read the metrics
 
 # prometheus monitoring configuration
 promgraf_prometheus_configuration: |
@@ -222,7 +216,7 @@ promgraf_prometheus_configuration: |
           node_id: "{{ hostvars[instance]['hostname'] }}"
   {% endfor %}
 
-trusted_metrics_ips: "{{ (trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips) | flatten  }}"
+trusted_metrics_ips: "{{ (trusted_metrics_ips_loc + local_docker_ips + trusted_backend_ips) | flatten }}"
 
 # cadvisor config:
 cadvisor_external_allowed_ip4s: "{{ trusted_metrics_ips }}"
@@ -246,7 +240,7 @@ elastic_cluster_name: "youtous.dv"
 
 logstash_cluster_public_ips: "{{ ((groups['all'] | map('extract', hostvars, ['ipv4']) | list
                               | default([])) + (groups['all'] | map('extract', hostvars, ['ipv6'])
-                              | list | default([]))) | flatten  }}"
+                              | list | default([]))) | flatten }}"
 logstash_allowed_ips: "{{ (logstash_cluster_public_ips + local_docker_ips) | flatten }}"
 
 # domains

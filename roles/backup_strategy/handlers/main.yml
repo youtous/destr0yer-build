@@ -1,6 +1,8 @@
 ---
-- name: update trustdb
+- name: Update trustdb
   become: true
   become_user: root
   ansible.builtin.command: gpg --update-trustdb
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 ...

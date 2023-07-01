@@ -5,11 +5,11 @@
     mounted_devices_path: "{{ ansible_mounts | json_query('[].mount') }}"
 
 - name: Install Monit
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
 
 - name: Setup Monit
   become: true
-  import_tasks: anxs.yml
+  ansible.builtin.import_tasks: anxs.yml
 
 - name: Setup additional Monit configurations
   become: true
@@ -20,7 +20,7 @@
   with_items:
     - system
   notify:
-    - reload monit
+    - Reload monit
 
 - name: Enable Monit
   become: true

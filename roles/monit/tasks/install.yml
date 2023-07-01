@@ -3,7 +3,7 @@
 - name: Check Monit version is {{ monit_version }}
   ansible.builtin.shell: >
     set -o pipefail &&
-    {{ monit_binary_path }} --version | grep {{ monit_version|quote }}
+    {{ monit_binary_path }} --version | grep {{ monit_version | quote }}
   changed_when: false
   register: monit_present
   ignore_errors: true

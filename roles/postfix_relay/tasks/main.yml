@@ -27,7 +27,7 @@
     owner: root
     mode: u=rw,g=r,o=r
   notify:
-    - reload postfix
+    - Reload postfix
 
 - name: Copy aliases
   become: true
@@ -61,7 +61,7 @@
     group: root
     mode: u=rw,g=r,o=r
   notify:
-    - restart postfix
+    - Restart postfix
   with_items:
     - { src: main.j2.cf, dest: main.cf }
     - { src: header_check.j2, dest: header_check }
@@ -75,7 +75,7 @@
     line: "{{ postfix_smtp_port }}      inet  n       -       y       -       -       smtpd"
   when: postfix_smtp_port != "smtp"
   notify:
-    - restart postfix
+    - Restart postfix
 
 - name: Secure SASL password file
   become: true
@@ -94,7 +94,7 @@
     name: monit_postfix
 
 - name: Activate postfix-sasl and postfix jails using fail2ban
-  ansible.builtin.include_role:
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: fail2ban_additional
   vars:
     fail2ban_services:

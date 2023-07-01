@@ -1,24 +1,21 @@
 ---
 # This role contains the default policy for fail2ban
-- name: Include default vars
-  ansible.builtin.include_vars: default.yml
-
 - name: Install fail2ban backend packages
   become: true
   ansible.builtin.apt:
     name:
       - python3-systemd
   notify:
-    - restart fail2ban
+    - Restart fail2ban
 
 - name: Setup fail2ban
   become: true
   ansible.builtin.import_role:
     name: oefenweb.fail2ban
   vars:
-    fail2ban_ignoreips: "{{ fail2ban_ignoreips }}"
-    fail2ban_destemail: "{{ fail2ban_destemail }}"
-    fail2ban_services: "{{ fail2ban_services }}"
+    fail2ban_ignoreips: "{{ oefenweb_fail2ban_ignoreips }}"
+    fail2ban_destemail: "{{ oefenweb_fail2ban_destemail }}"
+    fail2ban_services: "{{ oefenweb_fail2ban_services }}"
 
 - name: Copy fail2ban configurations files
   become: true
@@ -29,7 +26,7 @@
     group: root
     mode: u=rw,g=r,o=r
   notify:
-    - restart fail2ban
+    - Restart fail2ban
   with_items:
     - { src: filter.d/recidive.conf, dest: filter.d/recidive.conf } # update from upstream, default debian don't match
 

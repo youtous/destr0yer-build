@@ -30,5 +30,5 @@
     name: "{{ item }}"
     state: stopped
     enabled: false
-  with_items: "{{ scw_services_running.stdout_lines | default([]) + scw_services_enabled.stdout_lines | default([])  }}"
+  with_items: "{{ scw_services_running.stdout_lines | default([]) + scw_services_enabled.stdout_lines | default([]) }}"
 ...

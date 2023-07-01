@@ -9,35 +9,35 @@
     group: root
     mode: u=rwx,g=,o=
 
-- name: import public keys
+- name: Import public keys
   become: true
   become_user: root
   ansible.builtin.shell: >
     set -o pipefail &&
-    echo '{{ item.key }}' | gpg --import && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
+    echo '{{ item.key }}' | gpg --import && touch {{ duply_backup_lock_directory | quote }}/{{ item.name | quote }}
   args:
     executable: /bin/bash
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   with_items: "{{ backup_gpg_public_keys }}"
 
-- name: import ownertrusts
+- name: Import ownertrusts
   become: true
   become_user: root
   ansible.builtin.shell: >
     set -o pipefail &&
-    echo '{{ item.value }}' | gpg --import-ownertrust && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
+    echo '{{ item.value }}' | gpg --import-ownertrust && touch {{ duply_backup_lock_directory | quote }}/{{ item.name | quote }}
   args:
     executable: /bin/bash
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"
   notify: update trustdb
   with_items: "{{ backup_gpg_ownertrusts }}"
 
-- name: import private keys
+- name: Import private keys
   become: true
   become_user: root
   ansible.builtin.shell: >
     set -o pipefail &&
-    echo '{{ item.key }}' | gpg --allow-secret-key-import --batch --import && touch {{ duply_backup_lock_directory|quote }}/{{ item.name|quote }}
+    echo '{{ item.key }}' | gpg --allow-secret-key-import --batch --import && touch {{ duply_backup_lock_directory | quote }}/{{ item.name | quote }}
   args:
     executable: /bin/bash
     creates: "{{ duply_backup_lock_directory }}/{{ item.name }}"

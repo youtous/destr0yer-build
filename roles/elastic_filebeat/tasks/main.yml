@@ -1,7 +1,7 @@
 ---
 # This role setup filebeat; a log exporter to elastic stack (using logstash receiver)
 - name: Install filebeat
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
   when: filebeat_state == 'present'
 
 - name: Ensure filebeat is enabled and started
@@ -39,7 +39,7 @@
   when: filebeat_state == 'present'
 
 - name: Configure TLS logstash/filebeat certificates
-  import_tasks: certificates.yml
+  ansible.builtin.import_tasks: certificates.yml
   when: filebeat_state == 'present'
 
 - name: Copy filebeat configuration
@@ -51,6 +51,6 @@
     group: root
     mode: u=rw,g=,o=
   notify:
-    - restart filebeat
+    - Restart filebeat
   when: filebeat_state == 'present'
 ...

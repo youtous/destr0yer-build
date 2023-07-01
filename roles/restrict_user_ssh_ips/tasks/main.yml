@@ -9,5 +9,5 @@
     insertbefore: "^Subsystem"
     validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
   notify:
-    - restart sshd
+    - Restart sshd
 ...

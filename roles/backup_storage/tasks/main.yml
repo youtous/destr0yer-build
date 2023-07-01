@@ -26,7 +26,7 @@
     line: "Subsystem sftp internal-sftp"
     validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
   notify:
-    - restart sshd
+    - Restart sshd
 
 - name: Add sftp-backup group to allowed groups
   become: true
@@ -37,7 +37,7 @@
     marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp allow groups ssh ###"
     validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
   notify:
-    - restart sshd
+    - Restart sshd
 
 - name: Configure sftp access with restricted ip
   become: true
@@ -48,10 +48,10 @@
     insertbefore: "^Subsystem"
     validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
   notify:
-    - restart sshd
+    - Restart sshd
 
 - name: Configure firewall for allow sftp access
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 
 - name: Configure sftp group policy
   become: true
@@ -62,11 +62,11 @@
     validate: "/usr/sbin/sshd -T -f %s -C user=doesnotexist,host=none,addr=none"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - sftp group policy ###"
   notify:
-    - restart sshd
+    - Restart sshd
 
 - name: Create backup group
   become: true
-  ansible.builtin.import_role:
+  ansible.builtin.import_role: # noqa: var-naming[no-role-prefix]
     name: youtous.users
   vars:
     groups_to_create:
@@ -105,7 +105,7 @@
     - item.stat.exists
 
 - name: Create backup accounts
-  ansible.builtin.include_role:
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: youtous.users
   vars:
     # pass sudo vars which are passed when using include_role (https://github.com/ansible/ansible/issues/29159#issuecomment-380800491)
@@ -169,10 +169,10 @@
   with_items: "{{ backup_users }}"
 
 - name: Configure frozen backups export
-  import_tasks: frozen.yml
+  ansible.builtin.import_tasks: frozen.yml
   when: backup_frozen_directory is defined
 
 - name: Disable frozen backups export
-  import_tasks: remove-frozen.yml
+  ansible.builtin.import_tasks: remove-frozen.yml
   when: backup_frozen_directory is undefined
 ...

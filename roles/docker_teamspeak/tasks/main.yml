@@ -50,11 +50,11 @@
     TS3SERVER_DB_CONNECTIONS: "{{ teamspeak_db_connections }}"
     # deploy timestamp
     DEPLOY_TIMESTAMP: "{{ teamspeak_deploy_timestamp }}"
-  notify: docker prune
+  notify: Docker prune
   register: stack_deploy_status
 
-- name: docker prune secrets and configs
-  ansible.builtin.include_role:
+- name: Docker prune secrets and configs
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: docker_configs_secrets_cleaner
   vars:
     stack_name: "{{ teamspeak_stack_name }}"

@@ -1,12 +1,12 @@
 ---
-- name: docker prune
+- name: Docker prune
   community.docker.docker_prune:
     containers: true
     images: true
     networks: true
     builder_cache: true
 
-- name: restart fail2ban
+- name: Restart fail2ban
   become: true
   ansible.builtin.systemd:
     name: fail2ban

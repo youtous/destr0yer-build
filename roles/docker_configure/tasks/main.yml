@@ -39,7 +39,7 @@
     group: root
     mode: u=rw,g=,o=
   notify:
-    - restart docker
+    - Restart docker
 
 - name: Copy node certificate
   become: true
@@ -50,7 +50,7 @@
     group: root
     mode: u=rw,g=,o=
   notify:
-    - restart docker
+    - Restart docker
 
 - name: Copy node private key
   become: true
@@ -62,7 +62,7 @@
     mode: u=rw,g=,o=
   no_log: true
   notify:
-    - restart docker
+    - Restart docker
 
 - name: Create systemd docker.service.d directory
   become: true
@@ -82,8 +82,8 @@
     group: root
     mode: u=rw,g=,o=
   notify:
-    - daemon-reload systemd
-    - restart docker
+    - Daemon-reload systemd
+    - Restart docker
 
 # Docker DNS configuration
 - name: Register docker0 host ip
@@ -113,7 +113,7 @@
     dest: /etc/rsyslog.d/10-docker.conf
     mode: u=rw,g=r,o=
   notify:
-    - restart rsyslog
+    - Restart rsyslog
   when: docker_log_backend == 'rsyslog'
 
 - name: Prevent duplicates from journald to rsyslog when using docker with journald
@@ -156,8 +156,8 @@
     group: root
     mode: u=rw,g=,o=
   notify:
-    - restart docker
+    - Restart docker
 
 - name: Firewall
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 ...

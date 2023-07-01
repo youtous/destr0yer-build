@@ -9,5 +9,5 @@
     marker: "### {mark} ANSIBLE MANAGED BLOCK - ssh entrypoint ip whitelist ###"
 
 - name: Configure firewall ssh
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 ...

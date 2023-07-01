@@ -19,7 +19,7 @@
   ansible.builtin.apt:
     name: "{{ ruby_packages }}"
 
-- name: remove ccat (replaced by bat since Bullseye)
+- name: Remove ccat (replaced by bat since Bullseye)
   ansible.builtin.file:
     path: /usr/local/bin/ccat
     state: absent

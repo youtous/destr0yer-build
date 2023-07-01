@@ -1,10 +1,11 @@
 ---
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
       - id: trailing-whitespace
         exclude: roles/dnscrypt_proxy/templates/config/db/.*
+
       - id: end-of-file-fixer
         exclude: roles/dnscrypt_proxy/templates/config/db/.*
 

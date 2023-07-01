@@ -1,7 +1,7 @@
 ---
 
 - name: Install wireguard
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
 
 - name: Ensure wireguard keys are defined
   ansible.builtin.fail:
@@ -30,10 +30,10 @@
   with_items:
     - { src: wg.conf.j2, dest: "{{ wireguard_server.interface }}.conf" }
   notify:
-    - restart wireguard
+    - Restart wireguard
 
 - name: Configure firewall for wireguard
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 
 - name: Start and enable wireguard
   become: true

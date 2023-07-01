@@ -35,7 +35,7 @@
     group: mysql
     mode: u=rw,g=r,o=r
   notify:
-    - restart mariadb
+    - Restart mariadb
 
 - name: Copy mariadb server certificate
   become: true
@@ -46,7 +46,7 @@
     group: mysql
     mode: u=rw,g=r,o=r
   notify:
-    - restart mariadb
+    - Restart mariadb
 
 - name: Copy mariadb server private key
   become: true
@@ -58,5 +58,5 @@
     mode: u=rw,g=,o=
   no_log: true
   notify:
-    - restart mariadb
+    - Restart mariadb
 ...

@@ -32,6 +32,6 @@
     name: portainer
     compose:
       - "{{ portainer_compose_file_dest }}"
-  notify: docker prune
+  notify: Docker prune
 
 ...

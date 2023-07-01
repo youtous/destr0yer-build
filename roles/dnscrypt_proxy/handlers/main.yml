@@ -1,57 +1,57 @@
 ---
-- name: restart DNSCrypt-proxy
+- name: Restart DNSCrypt-proxy
   become: true
   ansible.builtin.systemd:
     name: dnscrypt-proxy
     state: restarted
   listen:
-    - restart dnscrypt-proxy
-    - restart DNSCrypt-proxy
+    - Restart dnscrypt-proxy
+    - Restart DNSCrypt-proxy
 
-- name: make sure DNSCrypt-proxy service is running after restart
+- name: Make sure DNSCrypt-proxy service is running after restart
   ansible.builtin.command: systemctl is-active dnscrypt-proxy # noqa command-instead-of-module
   changed_when: false
   listen:
-    - restart dnscrypt-proxy
-    - restart DNSCrypt-proxy
+    - Restart dnscrypt-proxy
+    - Restart DNSCrypt-proxy
 
-- name: restart NetworkManager
+- name: Restart NetworkManager
   become: true
   ansible.builtin.systemd:
     name: networking
     state: restarted
-  notify: restart postfix
+  notify: Restart postfix
 
-- name: make sure NetworkManager service is running after restart
+- name: Make sure NetworkManager service is running after restart
   ansible.builtin.command: systemctl is-active networking # noqa command-instead-of-module
   changed_when: false
-  listen: restart NetworkManager
+  listen: Restart NetworkManager
 
-- name: make sure DNS are available after restart
+- name: Make sure DNS are available after restart
   ansible.builtin.command: dig A youtous.me
   changed_when: false
   listen:
-    - restart dnscrypt-proxy
-    - restart DNSCrypt-proxy
-    - restart NetworkManager
+    - Restart dnscrypt-proxy
+    - Restart DNSCrypt-proxy
+    - Restart NetworkManager
 
 - name: Populate service facts
   ansible.builtin.service_facts:
-  listen: restart postfix
+  listen: Restart postfix
 
 # postfix needs to be restarted in order to enable copy of the /etc/resolv.conf in chrooted environment
 # https://serverfault.com/questions/661621/why-do-i-have-to-manually-copy-etc-services-and-etc-resolv-conf-into-var-spoo
-- name: restart postfix if it exists
+- name: Restart postfix if it exists
   become: true
   ansible.builtin.systemd:
     name: postfix
     state: restarted
-  listen: restart postfix
+  listen: Restart postfix
   when: '"postfix.service" in ansible_facts.services'
 
-- name: make sure postfix service is running after restart
+- name: Make sure postfix service is running after restart
   ansible.builtin.command: systemctl is-active postfix # noqa command-instead-of-module
   changed_when: false
-  listen: restart postfix
+  listen: Restart postfix
   when: '"postfix.service" in ansible_facts.services'
 ...

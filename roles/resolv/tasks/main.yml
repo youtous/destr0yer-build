@@ -18,7 +18,7 @@
     resolv_nameservers: "{{ nameservers }}"
     resolv_options: "{{ resolv_conf_options | default([]) }}"
   notify:
-    - restart network-manager
+    - Restart network-manager
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable

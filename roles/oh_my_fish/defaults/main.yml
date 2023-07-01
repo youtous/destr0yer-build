@@ -4,13 +4,14 @@ omf_repo_version: "HEAD"
 omf_installation_directory: '/usr/share/oh-my-fish'
 omf_theme: 'gianu'
 omf_theme_repo: "https://github.com/oh-my-fish/theme-{{ omf_theme }}"
+omf_theme_version: "HEAD"
 omf_theme_directory: "{{ omf_installation_directory }}/themes/{{ omf_theme }}"
 omf_default_theme_directory: "{{ omf_installation_directory }}/themes/default"
 omf_default_theme_move_directory: "{{ omf_installation_directory }}/themes/default-moved"
 omf_plugin_repo_base: "https://github.com/oh-my-fish/plugin-"
 omf_plugin_directory: "{{ omf_installation_directory }}/pkg"
 omf_plugins:
-  - "vcs"
+  - {name: "vcs", version: "HEAD"}
 
 # add or remove the bat alias (instead of standard cat); requires bat to be installed
 omf_enable_bat_alias: true

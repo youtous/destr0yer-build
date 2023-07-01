@@ -14,7 +14,7 @@
     group: root
     mode: u=rw,g=r,o=r
   when: sysstat_enabled
-  notify: restart sysstat
+  notify: Restart sysstat
 
 - name: Enable sysstat service
   become: true

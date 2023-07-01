@@ -6,5 +6,5 @@
     src: "templates/etc/monit/conf.d/metricbeat.j2"
     dest: "/etc/monit/conf.d/metricbeat"
     mode: u=rw,g=r,o=
-  notify: reload monit
+  notify: Reload monit
 ...

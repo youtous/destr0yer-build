@@ -16,7 +16,7 @@
   loop_control:
     loop_var: service
   notify:
-    - restart fail2ban
+    - Restart fail2ban
 
 # This role permits to append additional services to the fail2ban jail
 # see https://github.com/Oefenweb/ansible-fail2ban for naming details
@@ -32,5 +32,5 @@
   loop_control:
     loop_var: service
   notify:
-    - restart fail2ban
+    - Restart fail2ban
 ...

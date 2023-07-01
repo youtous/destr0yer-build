@@ -68,10 +68,10 @@
       dest: allowed-names.txt
     - src: dnscrypt-proxy.toml.j2
       dest: dnscrypt-proxy.toml
-  notify: restart DNSCrypt-proxy
+  notify: Restart DNSCrypt-proxy
 
 - name: Get current DNSCrypt-proxy version
-  ansible.builtin.command: "{{ dnscrypt_binary_path|quote }} -version"
+  ansible.builtin.command: "{{ dnscrypt_binary_path | quote }} -version"
   when: dnscrypt_proxy_present.stat.exists
   changed_when: false
   register: dnscrypt_proxy_current_version
@@ -79,7 +79,7 @@
 - name: Get remote latest DNSCrypt-proxy version
   ansible.builtin.shell: >
     set -o pipefail &&
-    curl -sL "{{ dnscrypt_proxy_repo|quote }}" | grep "tag_name" | head -1 | cut -d \" -f 4
+    curl -sL "{{ dnscrypt_proxy_repo | quote }}" | grep "tag_name" | head -1 | cut -d \" -f 4
   register: dnscrypt_proxy_remote_version
   when: dnscrypt_proxy_version == "latest"
   args:
@@ -88,23 +88,23 @@
   changed_when: false
 
 - name: Install DNSCrypt-proxy latest
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
   # install when not present or local version and remote version are different
   when: >
     dnscrypt_proxy_version == "latest" and
     (not dnscrypt_proxy_present.stat.exists or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version.stdout))
-  notify: restart DNSCrypt-proxy
+  notify: Restart DNSCrypt-proxy
 
 - name: Install DNSCrypt-proxy specific
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
   # install when not present or local version and remote version are different
   when: >
     dnscrypt_proxy_version != "latest" and
     (not dnscrypt_proxy_present.stat.exists or (dnscrypt_proxy_current_version.stdout != dnscrypt_proxy_remote_version))
-  notify: restart DNSCrypt-proxy
+  notify: Restart DNSCrypt-proxy
 
 - name: Configure NetworkManager for DNSCrypt-proxy
-  import_tasks: network-manager.yml
+  ansible.builtin.import_tasks: network-manager.yml
 
 - name: Copy DNSCrypt-proxy systemd service configuration
   become: true
@@ -117,10 +117,10 @@
   with_items:
     - src: dnscrypt-proxy.j2.service
       dest: dnscrypt-proxy.service
-  notify: restart DNSCrypt-proxy
+  notify: Restart DNSCrypt-proxy
 
 - name: Install DNSCrypt-proxy firewall rules
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 
 - name: Enable DNSCrypt-proxy
   become: true

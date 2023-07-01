@@ -3,5 +3,5 @@ traefik_compose_file_dest_directory: ~/traefik
 traefik_compose_file_dest_name: docker-compose.traefik.yml
 traefik_stack_name: traefik
 traefik_compose_file_dest: "{{ traefik_compose_file_dest_directory }}/{{ traefik_compose_file_dest_name }}"
-traefik_opened_ports: "{{ traefik_services | community.general.json_query('[*].port')   }}"
+traefik_opened_ports: "{{ traefik_services | community.general.json_query('[*].port') }}"
 ...

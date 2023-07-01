@@ -22,11 +22,13 @@
   become: true
   ansible.builtin.shell: >
     set -o pipefail &&
-    (yes || true) | ufw delete {{ item|quote }}
+    (yes || true) | ufw delete {{ item | quote }}
   with_items: "{{ ufw_dns_rules.stdout_lines }}"
   when: ufw_dns_rules.stdout_lines | length > 0
   args:
     executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 
 - name: UFW Allow DNS clients - tcp,udp/53
   become: true

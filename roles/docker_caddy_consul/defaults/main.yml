@@ -34,7 +34,7 @@ caddy_metrics_port: "9500"
 caddy_metrics_allowed_ips: []
 
 # number of consul replicas (try to align with number of caddy replicas for HA)
-consul_replicas: "{{ ( groups['swarm_managers'] | length ) + 1 }}"
+consul_replicas: "{{ (groups['swarm_managers'] | length) + 1 }}"
 
 # docker restart policies (0 for unlimited)
 caddy_max_attempts: 0

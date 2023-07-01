@@ -14,7 +14,7 @@
     mode: u=rw,g=,o=
 
 - name: Configure stack firewall
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 
 - name: Install docker-compose pip module
   ansible.builtin.pip:
@@ -26,5 +26,5 @@
     project_name: node_exporter
     project_src: "{{ node_exporter_compose_file_dest_directory }}"
     state: present
-  notify: docker prune
+  notify: Docker prune
 ...

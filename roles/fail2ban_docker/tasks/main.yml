@@ -12,5 +12,5 @@
   with_items:
     - common-docker.conf
   notify:
-    - restart fail2ban
+    - Restart fail2ban
 ...

@@ -28,6 +28,7 @@ On your computer:
   - ruby (optional if you don't mind using certificate scripts)
   - (optional) [step-cli](https://github.com/smallstep/cli)
 
+Install python dependencies: `pipenv install`
 
 ### Ansible 3rd content
 

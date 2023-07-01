@@ -1,4 +1,7 @@
 ---
+# additional services that you would to define, see https://github.com/Oefenweb/ansible-fail2ban
+fail2ban_additional_services: []
+
 # fail2ban_loglevel: "INFO"
 fail2ban_logtarget: "SYSLOG" # log to systemd
 # fail2ban_syslog_target: /var/log/fail2ban.log
@@ -45,5 +48,4 @@ fail2ban_default_services:
   - name: pam-generic
 
 fail2ban_services: "{{ fail2ban_default_services | default([]) + fail2ban_additional_services | default([]) }}"
-
 ...

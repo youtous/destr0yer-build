@@ -2,7 +2,7 @@
 # This role setup metricbeat
 
 - name: Install metricbeat
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
   when: metricbeat_state == 'present'
 
 - name: Ensure metricbeat is enabled and started
@@ -39,7 +39,7 @@
   when: metricbeat_state == 'present'
 
 - name: Configure TLS logstash/metricbeat certificates
-  import_tasks: certificates.yml
+  ansible.builtin.import_tasks: certificates.yml
   when: metricbeat_state == 'present'
 
 - name: Copy metricbeat configuration
@@ -51,6 +51,6 @@
     group: root
     mode: u=rw,g=,o=
   notify:
-    - restart metricbeat
+    - Restart metricbeat
   when: metricbeat_state == 'present'
 ...

@@ -1,6 +1,6 @@
 ---
 - name: Integrate fail2ban recidive in docker-user chain
-  ansible.builtin.include_role:
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: fail2ban_additional
   vars:
     fail2ban_services:

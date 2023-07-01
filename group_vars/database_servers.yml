@@ -1,6 +1,6 @@
 ---
 database_clients_ips:
-  "{{ (groups['database_clients'] | map('extract', hostvars, ['mariadb_client_ipv4']) |  list | flatten | unique | default([]) +
+  "{{ (groups['database_clients'] | map('extract', hostvars, ['mariadb_client_ipv4']) | list | flatten | unique | default([]) +
        groups['database_clients'] | map('extract', hostvars, ['mariadb_client_ipv6']) | list | flatten | unique | default([])) | flatten }}"
 
 # define database_clients allowed to access database servers, filter current host

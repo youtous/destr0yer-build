@@ -60,10 +60,10 @@
     mode: u=rw,g=,o=
 
 - name: Fail2ban for caddy
-  import_tasks: fail2ban.yml
+  ansible.builtin.import_tasks: fail2ban.yml
 
 - name: Configure stack firewall
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
 
 # always redeploy permits to have always up to date
 - name: Deploy caddy
@@ -73,11 +73,11 @@
     name: "{{ caddy_consul_stack_name }}"
     compose:
       - "{{ caddy_compose_file_dest }}"
-  notify: docker prune
+  notify: Docker prune
   register: stack_deploy_status
 
-- name: docker prune secrets and configs
-  ansible.builtin.include_role:
+- name: Docker prune secrets and configs
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: docker_configs_secrets_cleaner
   vars:
     stack_name: "{{ caddy_consul_stack_name }}"

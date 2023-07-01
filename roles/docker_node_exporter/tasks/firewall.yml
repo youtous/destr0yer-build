@@ -10,6 +10,6 @@
   changed_when: false
 
 - name: Configure docker node_exporter firewall ipv4
-  import_tasks: docker-node_exporter-ipv4.yml
+  ansible.builtin.import_tasks: docker-node_exporter-ipv4.yml
   when: docker_ipv4 is not failed
 ...

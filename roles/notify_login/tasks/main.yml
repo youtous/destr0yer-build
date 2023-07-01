@@ -2,7 +2,7 @@
 # This role contains notify-login settings for monitoring connexions
 - name: Setup notify-login
   become: true
-  ansible.builtin.import_role:
+  ansible.builtin.import_role: # noqa: var-naming[no-role-prefix]
     name: grzegorznowak.ansible_ssh_login_notifications
   vars:
     ssh_login_notifications_slack_enable: false

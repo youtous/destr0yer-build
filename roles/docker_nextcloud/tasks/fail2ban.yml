@@ -14,10 +14,10 @@
   with_items:
     - nextcloud.conf
   notify:
-    - restart fail2ban
+    - Restart fail2ban
 
 - name: Activate nextcloud jails using fail2ban
-  ansible.builtin.include_role:
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: fail2ban_additional
   vars:
     fail2ban_services:

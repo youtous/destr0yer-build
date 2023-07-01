@@ -26,10 +26,10 @@
     - postfix-sasl
     - sieve
   notify:
-    - restart fail2ban
+    - Restart fail2ban
 
 - name: Activate mailserver jails using fail2ban
-  ansible.builtin.include_role:
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: fail2ban_additional
   vars:
     fail2ban_services:
@@ -78,11 +78,11 @@
   with_items:
     - rainloop.conf
   notify:
-    - restart fail2ban
+    - Restart fail2ban
   when: rainloop_enabled
 
 - name: Activate rainloop jails using fail2ban
-  ansible.builtin.include_role:
+  ansible.builtin.include_role: # noqa: var-naming[no-role-prefix]
     name: fail2ban_additional
   vars:
     fail2ban_services:
