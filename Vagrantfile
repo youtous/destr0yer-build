@@ -3,7 +3,6 @@
 
 VAGRANTFILE_API_VERSION = "2"
 
-
 # {FIX} In order to have Virtualbox Guest Additions synced with the host, install
 # vagrant plugin install vagrant-vbguest
 servers=[
@@ -11,8 +10,7 @@ servers=[
         :hostname => "heaven-pascal.youtous.dv",
         :ipv4 => "192.168.100.10",
         :ipv6 => "fde4:8dba:82e1::c1",
-        :box => "debian/bullseye64",
-        #:box_version => "10.0.0",
+        :box => "debian/bookworm64",
         :ram => 4096,
         :cpu => 2
     },
@@ -20,9 +18,8 @@ servers=[
         :hostname => "heaven-roberval.youtous.dv",
         :ipv4 => "192.168.100.11",
         :ipv6 => "fde4:8dba:82e1::c2",
-        :box => "debian/bullseye64",
-				#:box_version => "10.0.0",
-				:ram => 4096,
+        :box => "debian/bookworm64",
+		:ram => 4096,
         :cpu => 2
     }
 ]
@@ -35,12 +32,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # do not modify hosts on host
     #config.hostmanager.manage_host = false
 
+	config.vagrant.plugins = ["vagrant-vbguest"]
+	# workaround for vbguest plugin
+	config.vbguest.installer_options = { allow_kernel_upgrade: true }
+	config.vbguest.installer_hooks[:before_install] = [
+		"apt-get update",
+		"apt-get -y install libxt6 libxmu6"
+	]
+	config.vbguest.installer_hooks[:after_install] = [
+		"VBoxClient --version"
+	]
+
 	servers.each do |machine|
 		config.vm.define machine[:hostname] do |node|
 
 			# define the VM
 			node.vm.box = machine[:box]
-			#node.vm.box_version = machine[:box_version]
+			node.vm.box_version = machine[:box_version]
 
 			# configure network
 			# enable ipv6
@@ -48,8 +56,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			# ensure eth0 is auto enabled
 			node.vm.provision :shell, inline: "echo 'auto eth0' > /etc/network/interfaces.d/eth0"
 			node.vm.hostname = machine[:hostname]
-			node.vm.network :private_network, ip: machine[:ipv4]  #, auto_config: false
-			node.vm.network :private_network, ip: machine[:ipv6]  #, auto_config: false
+			node.vm.network :private_network, ip: machine[:ipv4], auto_config: true
+			node.vm.network :private_network, ip: machine[:ipv6], auto_config: false
 
 			node.vm.provider :virtualbox do |vb|
 				vb.customize ["modifyvm", :id, "--memory", machine[:ram]]
