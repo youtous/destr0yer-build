@@ -1,5 +1,6 @@
 ---
 omf_repo: 'https://github.com/oh-my-fish/oh-my-fish'
+omf_repo_version: "HEAD"
 omf_installation_directory: '/usr/share/oh-my-fish'
 omf_theme: 'gianu'
 omf_theme_repo: "https://github.com/oh-my-fish/theme-{{ omf_theme }}"

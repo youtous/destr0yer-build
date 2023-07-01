@@ -40,26 +40,26 @@ Install requirements using
 
 Each playbook interact with a given scope:
 
-- `provision.yml`: install requirements for newly created servers
-- `configure.yml`: setup an initial server installation, aimed for a general purpose
-- `swarm.yml`: setup the docker-swarm cluster and associated tools (reverse proxy, scheduler, etc)
-- `elastic.yml`: setup an elastic cluster
-- `mailserver.yml`: setup a mailserver server
-- `teamspeak.yml`: setup a teamspeak server
-- `nextcloud.yml`: setup a nextcloud server
+- `00-provision.yml`: install requirements for newly created servers
+- `01-configure.yml`: setup an initial server installation, aimed for a general purpose
+- `02-swarm.yml`: setup the docker-swarm cluster and associated tools (reverse proxy, scheduler, etc)
+- `90-elastic.yml`: setup an elastic cluster
+- `90-mailserver.yml`: setup a mailserver server
+- `90-teamspeak.yml`: setup a teamspeak server
+- `90-nextcloud.yml`: setup a nextcloud server
 
 During the **first installation**, the playbooks should be executed in the following order:
 
-0. Add servers to the `factoring_systems` in `hosts/destr0yers.yml`
-1. Execute playbooks: `provision.yml` then `configure.yml` and finally `swarm.yml`
+0. Add the servers in either `base_systems` or `commander_systems` in `hosts/base-nodes.yml`
+1. Execute playbooks: `00-provision.yml` then `01-configure.yml` and finally `02-swarm.yml`
 
 ## Getting started - simplified example
 
 - `source vault.fish` - register the secret passphrase for secrets
 - `ansible-galaxy install -r requirements.yml` - install requirements
-- `ansible-playbook -i hosts/destr0yers.yml provision.yml --vault-password-file "./.vault_password" --user=debian` - provision the cluster
-- `ansible-playbook -i hosts/destr0yers.yml configure.yml --vault-password-file "./.vault_password"` - provision the cluster
-- `ansible-playbook -i hosts/swarm-nodes.yml swarm.yml --vault-password-file "./.vault_password"` - configure the swarm cluster
+- `ansible-playbook -i hosts/base-nodes.yml 00-provision.yml --vault-password-file "./.vault_password" --user=debian` - provision the cluster
+- `ansible-playbook -i hosts/base-nodes.yml 01-configure.yml --vault-password-file "./.vault_password"` - provision the cluster
+- `ansible-playbook -i hosts/swarm-nodes.yml 02-swarm.yml --vault-password-file "./.vault_password"` - configure the swarm cluster
 
 You can use `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook` to avoid ssh-key trust confirmation.
 
@@ -82,6 +82,7 @@ _Create a `.env` as `.env.sample` in order to configure save path and cluster na
 
 #### Vagrant _(dev only)_
 
+- *Pre-requise*: Install vagrant plugins `vagrant plugin install vagrant-vbguest vagrant-hostmanager`
 - Start machines using `vagrant up`.
 - Stop machines using `vagrant halt`.
 - Update /etc/hosts using `vagrant hostmanager`
@@ -99,7 +100,7 @@ See https://gitlab.com/deepcube-draft/wp2-deepcube-platform/deepcube-platform-ar
 In this step, we will configure the instances using ansible.
 
 1. Create a host inventory file in `host_vars/` for each instance created in the previous step (e.g. `host_vars/myhostname.tld.yml`, the content of the file can be manually or use terraform inventory, have a look in this repo as a reference).
-2. Add each freshly created instance in `hosts/destr0yers.yml` in the `factoring_hosts` group:
+2. Add each freshly created instance in `hosts/base-nodes.yml` in the `factoring_hosts` group:
 ```
 factoring_systems:
   hosts:
@@ -121,17 +122,14 @@ This step allow ansible to prepare a freshly created instance. This step is only
 
 Each newly created instance needs to be configured by ansible using a dedicated preparation playbook.
 
-1. Ensure the newly created instances are listed in the group `factoring_systems` in `hosts/destr0yers.yml`
-2. Run the playbook with a root user: `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts/destr0yers.yml provision.yml --vault-password-file "./.vault_password" --extra-vars='nameservers=["1.1.1.1"]' --user=root`
-3. Once the playbook is successfuly executed, remove the instances from the `factoring_systems` group in `hosts/destr0yers.yml`
-
+1. Ensure the newly created instances are listed in the group `systems` in `hosts/base-nodes.yml` (either in `base_systems` or `commander_systems`)
+2. Run the playbook with a root user: `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts/base-nodes.yml 00-provision.yml --vault-password-file "./.vault_password" --extra-vars='nameservers=["1.1.1.1"]' --user=root`
 
 ### IV. Configure the instances (system configuration)
 
 1. Configure the desired state of the cluster in `group_vars/all.yml` (**important:** please define a list of allowed ssh ips using `ssh_entrypoints`)
 2. Configure instance specifities using its dedicated configuration file in `host_vars/myhostname.tld.yml`, see examples in `hosts/`.
-3. Add the instances in the group `base_systems` in `hosts/destr0yers.yml`
-4. Run the playbook on the instances, it will setup all the system configuration in a single run: `ansible-playbook -i hosts/destr0yers.yml configure.yml --vault-password-file "./.vault_password"`
+3. Run the playbook on the instances, it will setup all the system configuration in a single run: `ansible-playbook -i hosts/base-nodes.yml 01-configure.yml --vault-password-file "./.vault_password"`
 
 #### Server keys generation
 
@@ -203,7 +201,7 @@ promgraf_alertmanager_domain: "alertmanager.{{ promgraf_domain }}"
 #### V.III Configure the associated elastic cluster
 
 Elastic is bundled with the cluster setup. The installation is optional but recommanded.
-If you want to disable elastic, simply set an empty list of hosts for `primary_manager_elastic`, `all_logging_elastic` and `all_metric_elastic` in `hosts/swamr-nodes.yml`.
+If you want to disable elastic, simply set an empty list of hosts for `primary_manager_elastic`, `all_logging_elastic` and `all_metric_elastic` in `hosts/swarm-nodes.yml`.
 
 ##### Log forwarding
 Two options are available for log forwarding :
@@ -291,7 +289,7 @@ traefik_services:
 
 #### V.IV Start the docker-swarm cluster
 
-1. Run the playbook on the instances, it will setup all the docker swarm cluster a single run: `ansible-playbook -i hosts/swamr-nodes.yml swarm.yml --vault-password-file "./.vault_password"`
+1. Run the playbook on the instances, it will setup all the docker swarm cluster a single run: `ansible-playbook -i hosts/swamr-nodes.yml 02-swarm.yml --vault-password-file "./.vault_password"`
 2. Go to `portainer_domain` and enjoy your docker swarm cluster! Watch the cluster metrics at `promgraf_grafana_domain`
 3. (optional) in case of elastic setup, go to `kibana_domain`
     3.1 Define index-patterns

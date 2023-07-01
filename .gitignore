@@ -6,6 +6,7 @@ secret_vars/*
 !secret_vars/*.sample.yml
 playbook.retry
 .vagrant
+.vscode
 
 # ignore .env, must be defined on each machine
 .env

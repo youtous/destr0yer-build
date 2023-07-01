@@ -10,6 +10,7 @@
   ansible.builtin.git:
     repo: "{{ omf_repo }}"
     dest: "{{ omf_installation_directory }}"
+    version: "{{ omf_repo_version }}"
   when: not omf_present.stat.exists
 
 - name: Install OMF

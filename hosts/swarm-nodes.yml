@@ -1,50 +1,54 @@
-# There are 2 types of nodes in swarm mode : master, workers
-# https://docs.docker.com/engine/swarm/how-swarm-mode-works/nodes/
+---
+all:
+  children:
+    # There are 2 types of nodes in swarm mode : master, workers
+    # https://docs.docker.com/engine/swarm/how-swarm-mode-works/nodes/
 
-# The first manager node is used by Ansible as an entry point
-swarm_primary_manager:
-  hosts:
-    heaven-pascal.youtous.dv:
+    # The first manager node is used by Ansible as an entry point
+    swarm_primary_manager:
+      hosts:
+        heaven-pascal.youtous.dv:
 
-# Other manager nodes
-swarm_managers:
+    # Other manager nodes
+    swarm_managers:
 
-swarm_workers:
-  hosts:
-    heaven-roberval.youtous.dv:
+    swarm_workers:
+      hosts:
+        heaven-roberval.youtous.dv:
 
-#### Elastic ####
+    #### Elastic ####
 
-# Primary manager to setup an elastic cluster
-primary_manager_elastic:
-  hosts:
-    heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
+    # Primary manager to setup an elastic cluster
+    primary_manager_elastic:
+      hosts:
+        heaven-pascal.youtous.dv: # prefer to set the primary_manager, MUST be a manager
 
-# redirect machine logs to elastic cluster (including docker)
-all_logging_elastic:
-  hosts: # enabled for all nodes by default
-    heaven-pascal.youtous.dv:
-    heaven-roberval.youtous.dv:
+    # redirect machine logs to elastic cluster (including docker)
+    all_logging_elastic:
+      hosts: # enabled for all nodes by default
+        heaven-pascal.youtous.dv:
+        heaven-roberval.youtous.dv:
 
-# collect and send metrics of node, docker and processes to elastic cluster
-all_metric_elastic:
-  hosts: # enabled for all nodes by default
-    heaven-pascal.youtous.dv:
-    heaven-roberval.youtous.dv:
+    # collect and send metrics of node, docker and processes to elastic cluster
+    all_metric_elastic:
+      hosts: # enabled for all nodes by default
+        heaven-pascal.youtous.dv:
+        heaven-roberval.youtous.dv:
 
-#### Applications ####
+    #### Applications ####
 
-# Mailserver hosts
-mailserver:
-  hosts:
-    heaven-pascal.youtous.dv:
+    # Mailserver hosts
+    mailserver:
+      hosts:
+        heaven-pascal.youtous.dv:
 
-# Nextcloud hosts
-nextcloud:
-  hosts:
-    heaven-pascal.youtous.dv:
+    # Nextcloud hosts
+    nextcloud:
+      hosts:
+        heaven-pascal.youtous.dv:
 
-# Teamspeak hosts
-teamspeak:
-  hosts:
-    heaven-pascal.youtous.dv:
+    # Teamspeak hosts
+    teamspeak:
+      hosts:
+        heaven-pascal.youtous.dv:
+...

@@ -59,7 +59,7 @@
 - name: Cleanup swarm init
   hosts: localhost
   tasks:
-    - name: refresh inventory
+    - name: Refresh inventory
       ansible.builtin.meta: refresh_inventory
   tags: ["docker-swarm-init", "docker-swarm-init-cleanup"]
 
@@ -142,7 +142,8 @@
 - name: Setup traefik additionals on managers | firewall
   hosts: [swarm_managers, swarm_primary_manager]
   tasks:
-    - ansible.builtin.include_role:
+    - name: Setup traefik firewall
+      ansible.builtin.include_role:
         name: docker_traefik
         tasks_from: firewall
   vars_files:
@@ -202,14 +203,14 @@
   tags: ["metrics", "node_exporter"]
 
 - name: Include elastic cluster setup
-  import_playbook: elastic.yml
+  import_playbook: 90-elastic.yml
 
 - name: Include mailserver deployment for regenerating firewall rules
-  import_playbook: mailserver.yml
+  import_playbook: 90-mailserver.yml
 
 - name: Include nextcloud deployment (just in case :)) # ufw rules
-  import_playbook: nextcloud.yml
+  import_playbook: 90-nextcloud.yml
 
 - name: Include teamspeak deployment (just in case :)) # potential ufw rules (not yet used)
-  import_playbook: teamspeak.yml
+  import_playbook: 90-teamspeak.yml
 ...

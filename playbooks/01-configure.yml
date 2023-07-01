@@ -2,7 +2,7 @@
 # Provision servers using a global policy
 
 - name: Configure systems | disk partitioning with LVM
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - disks_lvm_management
     - swap
@@ -14,7 +14,7 @@
   tags: ["disk-partitioning", "configure-systems", "swap"]
 
 - name: Configure systems | apt packages configuration and update
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   serial: 1 # configure one by one each host in case of docker update/kernel reboot
   roles:
     - apt
@@ -25,7 +25,7 @@
   tags: ["apt", "configure-systems"]
 
 - name: Configure systems | minimal requirements
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - system_packages # system packages (htop, curl etc)
     - host # configure system host files
@@ -39,7 +39,7 @@
   tags: ["system", "configure-systems", "minimal"]
 
 - name: Configure systems | configure kernel
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   serial: 1 # configure one by one each host in case of reboot
   roles:
     - sysctl_configuration
@@ -50,7 +50,7 @@
   tags: ["sysctl", "configure-systems"]
 
 - name: Configure systems | manage users
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - users
     - ssh_user_keys
@@ -62,7 +62,7 @@
   tags: ["users", "configure-systems"]
 
 - name: Configure systems | configure OpenSSH
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - ssh
     - motd
@@ -75,7 +75,7 @@
 
 
 - name: Configure systems | configure log management
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - logrotate
   vars_files:
@@ -85,7 +85,7 @@
   tags: ["log", "logrotate", "configure-systems"]
 
 - name: Configure systems | monit
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - monit
   vars_files:
@@ -95,7 +95,7 @@
   tags: ["monit", "configure-systems"]
 
 - name: Configure systems | fail2ban
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - fail2ban
     - monit_fail2ban
@@ -116,7 +116,7 @@
   tags: ["entrypoint_ssh", "ssh", "sshd", "configure-systems"]
 
 - name: Configure systems | resolv dns configuration
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - dnscrypt_proxy # DNS with TLS
     - monit_dnscrypt_proxy
@@ -128,7 +128,7 @@
   tags: ["resolv", "configure-systems", "dnscrypt_proxy"]
 
 - name: Configure systems | hardening
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - hardening # hardening systems
     - scaleway_services # define services policy for scaleway
@@ -139,7 +139,7 @@
   tags: ["hardening", "configure-systems"]
 
 - name: Configure systems | sysstat
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - sysstat # resource monitoring
   vars_files:
@@ -149,7 +149,7 @@
   tags: ["sysstat", "configure-systems"]
 
 - name: Configure systems | logwatch
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - logwatch # monitor server using emails
   vars_files:
@@ -169,7 +169,7 @@
   tags: ["interfaces"]
 
 - name: Configure systems | configure fish shell
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - oh_my_fish
   vars_files:
@@ -179,7 +179,7 @@
   tags: ["fish", "configure-systems"]
 
 - name: Configure systems | glances
-  hosts: [base_systems, commander_systems]
+  hosts: systems
   roles:
     - glances # boosted htop
   vars_files:

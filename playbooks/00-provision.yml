@@ -1,0 +1,33 @@
+# vim: ts=2 sw=2 et
+---
+# Provision newly created servers, create a sudo user using root user
+- name: Perform initial provisionning
+  hosts: systems
+  vars:
+    _provisionned_file_path: /etc/status_provision_ansible
+  vars_files:
+    - secret_vars/all.yml
+    - "secret_vars/{{ inventory_hostname }}.yml"
+  tasks:
+    - name: "Check if provision is needed using {{ _provisionned_file_path }} existence"
+      ansible.builtin.stat:
+        path: "{{ _provisionned_file_path }}"
+      register: system_provisionned_stat
+
+    - name: Prepare base system for new hosts
+      vars:
+        apt_allowed_to_reboot: false # prevent reboot in this phase in order to preserve disk partition assigned
+      roles:
+        - resolv
+        - apt
+        - system_packages
+        - users
+      when: not system_provisionned_stat.stat.exists
+
+    - name: Mark system as provisionned
+      ansible.builtin.file:
+        path: "{{ _provisionned_file_path }}"
+        state: touch
+        mode: u=rw,g=r,o=r
+      when: not system_provisionned_stat.stat.exists
+...
