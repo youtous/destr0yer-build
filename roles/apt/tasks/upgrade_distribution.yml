@@ -34,4 +34,21 @@
     executable: /bin/bash
   register: cmd_output
   changed_when: cmd_output.rc != 0
+
+- name: Checking if Bookworm update channel Done
+  ansible.builtin.stat:
+    path: "{{ apt_bookworm_flag_path }}"
+  register: bookworm_channel_flag
+  when: ansible_distribution_release == "bullseye"
+
+- name: Update to Bookworm stable channel # noqa command-instead-of-module
+  become: true
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    apt-get --allow-releaseinfo-change update && touch {{ apt_bookworm_flag_path | quote }}
+  when: ansible_distribution_release == "bullseye" and not bookworm_channel_flag.stat.exists
+  args:
+    executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
 ...

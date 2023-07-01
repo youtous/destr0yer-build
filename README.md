@@ -56,11 +56,12 @@ During the **first installation**, the playbooks should be executed in the follo
 
 ## Getting started - simplified example
 
+- `pipenv install && pipenv shell` - open a virtualenv shell
 - `source vault.fish` - register the secret passphrase for secrets
 - `ansible-galaxy install -r requirements.yml` - install requirements
-- `ansible-playbook -i hosts/base-nodes.yml 00-provision.yml --vault-password-file "./.vault_password" --user=debian` - provision the cluster
-- `ansible-playbook -i hosts/base-nodes.yml 01-configure.yml --vault-password-file "./.vault_password"` - provision the cluster
-- `ansible-playbook -i hosts/swarm-nodes.yml 02-swarm.yml --vault-password-file "./.vault_password"` - configure the swarm cluster
+- `ansible-playbook -i hosts/base-nodes.yml playbooks/00-provision.yml --vault-password-file "./.vault_password" --user=debian` - provision the cluster
+- `ansible-playbook -i hosts/base-nodes.yml playbooks/01-configure.yml --vault-password-file "./.vault_password"` - provision the cluster
+- `ansible-playbook -i hosts/swarm-nodes.yml playbooks/02-swarm.yml --vault-password-file "./.vault_password"` - configure the swarm cluster
 
 You can use `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook` to avoid ssh-key trust confirmation.
 
@@ -124,13 +125,13 @@ This step allow ansible to prepare a freshly created instance. This step is only
 Each newly created instance needs to be configured by ansible using a dedicated preparation playbook.
 
 1. Ensure the newly created instances are listed in the group `systems` in `hosts/base-nodes.yml` (either in `base_systems` or `commander_systems`)
-2. Run the playbook with a root user: `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts/base-nodes.yml 00-provision.yml --vault-password-file "./.vault_password" --extra-vars='nameservers=["1.1.1.1"]' --user=root`
+2. Run the playbook with a root user: `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts/base-nodes.yml playbooks/00-provision.yml --vault-password-file "./.vault_password" --extra-vars='nameservers=["1.1.1.1"]' --user=root`
 
 ### IV. Configure the instances (system configuration)
 
 1. Configure the desired state of the cluster in `group_vars/all.yml` (**important:** please define a list of allowed ssh ips using `ssh_entrypoints`)
 2. Configure instance specifities using its dedicated configuration file in `host_vars/myhostname.tld.yml`, see examples in `hosts/`.
-3. Run the playbook on the instances, it will setup all the system configuration in a single run: `ansible-playbook -i hosts/base-nodes.yml 01-configure.yml --vault-password-file "./.vault_password"`
+3. Run the playbook on the instances, it will setup all the system configuration in a single run: `ansible-playbook -i hosts/base-nodes.yml playbooks/01-configure.yml --vault-password-file "./.vault_password"`
 
 #### Server keys generation
 
@@ -290,7 +291,7 @@ traefik_services:
 
 #### V.IV Start the docker-swarm cluster
 
-1. Run the playbook on the instances, it will setup all the docker swarm cluster a single run: `ansible-playbook -i hosts/swamr-nodes.yml 02-swarm.yml --vault-password-file "./.vault_password"`
+1. Run the playbook on the instances, it will setup all the docker swarm cluster a single run: `ansible-playbook -i hosts/swamr-nodes.yml playbooks/02-swarm.yml --vault-password-file "./.vault_password"`
 2. Go to `portainer_domain` and enjoy your docker swarm cluster! Watch the cluster metrics at `promgraf_grafana_domain`
 3. (optional) in case of elastic setup, go to `kibana_domain`
     3.1 Define index-patterns
