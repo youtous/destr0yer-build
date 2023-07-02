@@ -1,7 +1,7 @@
 ---
 # https://golang.org/dl/
-go_version_to_install: '1.18.3'
-go_amd64_checksum: "sha256:956f8507b302ab0bb747613695cdae10af99bbd39a90cae522b7c0302cc27245"
-go_arm64_checksum: "sha256:beacbe1441bee4d7978b900136d1d6a71d150f0a9bb77e9d50c822065623a35a"
+go_version_to_install: '1.20.5'
+go_amd64_checksum: "sha256:d7ec48cde0d3d2be2c69203bc3e0a44de8660b9c09a6e85c4732a3f7dc442612"
+go_arm64_checksum: "sha256:aa2fab0a7da20213ff975fa7876a66d47b48351558d98851b87d1cfef4360d09"
 go_root: "/usr/local/go"
 ...

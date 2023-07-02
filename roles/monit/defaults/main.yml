@@ -4,9 +4,9 @@ monit_filesystems: []
 #  - {mnt: "/home", usage_alerts: ["90%", "99%"]}, default are already configured
 
 # Monit installation
-monit_version: "5.32.0"
+monit_version: "5.33.0"
 # checksum is available at https://bitbucket.org/tildeslash/monit/downloads/ (tar.gz)
-monit_download_checksum: "sha256:8ecb1153e0ba11edce52e81c7bb59f1b54b2468463404cbcee66aaa51b5df6ad"
+monit_download_checksum: "sha256:ee99c248bd7c97d7f10296c87836f1233aac0e611dcb3f9ac527df62a0303cf5"
 
 # list of services to monitor
 monit_services_monitored:

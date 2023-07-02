@@ -10,7 +10,7 @@
     name:
       - dnscrypt-proxy
 
-- name: Create buid directory
+- name: Create build directory
   ansible.builtin.tempfile:
     state: directory
     suffix: build
@@ -27,7 +27,6 @@
   when: dnscrypt_proxy_version == "latest"
   args:
     executable: /bin/bash
-    warn: false
 
 - name: Download latest DNSCrypt-proxy for local installation
   ansible.builtin.get_url:

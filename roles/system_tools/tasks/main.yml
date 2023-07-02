@@ -32,12 +32,4 @@
   become: true
   ansible.builtin.apt:
     name: "{{ python_packages }}"
-
-- name: Update setuptools
-  become: true
-  ansible.builtin.pip:
-    executable: pip3
-    name: setuptools
-    state: latest # noqa package-latest
-    extra_args: --upgrade
 ...

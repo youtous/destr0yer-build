@@ -17,7 +17,7 @@
 - name: Register server environment in /etc/server_environment (dev,prod,test)
   become: true
   ansible.builtin.copy:
-    content: "{{ server_environment }}"
+    content: "{{ system_configuration_server_environment }}"
     dest: /etc/server_environment
     mode: u=rw,g=r,o=r
 

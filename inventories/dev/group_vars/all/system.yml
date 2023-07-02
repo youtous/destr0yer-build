@@ -5,7 +5,7 @@
 users_default_shell: "/usr/bin/fish"
 
 # Time configuration
-timezone: "Europe/Paris"
+timezone: "Etc/UTC"
 
 # Email that will receive all notifications, useful for monitoring
 monitoring_email: "monitoring@youtous.me"

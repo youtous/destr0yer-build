@@ -12,10 +12,6 @@
   become: true
   ansible.builtin.import_role:
     name: oefenweb.fail2ban
-  vars:
-    fail2ban_ignoreips: "{{ oefenweb_fail2ban_ignoreips }}"
-    fail2ban_destemail: "{{ oefenweb_fail2ban_destemail }}"
-    fail2ban_services: "{{ oefenweb_fail2ban_services }}"
 
 - name: Copy fail2ban configurations files
   become: true

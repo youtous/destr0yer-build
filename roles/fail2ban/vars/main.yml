@@ -1,5 +1,2 @@
 ---
-oefenweb_fail2ban_ignoreips: "{{ fail2ban_ignoreips }}"
-oefenweb_fail2ban_destemail: "{{ fail2ban_destemail }}"
-oefenweb_fail2ban_services: "{{ fail2ban_services }}"
 ...
