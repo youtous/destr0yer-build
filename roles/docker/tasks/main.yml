@@ -27,7 +27,7 @@
     executable: pip3
     name: docker
     state: latest
-    extra_args: --upgrade
+    extra_args: --upgrade --break-system-packages
 
 - name: Ensure docker group is present
   become: true

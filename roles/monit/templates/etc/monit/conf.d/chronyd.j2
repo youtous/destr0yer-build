@@ -1,6 +1,6 @@
-check process ntpd with pidfile /var/run/ntpd.pid
+check process chronyd with pidfile /var/run/chrony/chronyd.pid
   group system
   start program = "/bin/systemctl start chronyd"
   stop program = "/bin/systemctl stop chronyd"
-  if failed host 127.0.0.1 port 123 type udp retry {{monit_net_retry}} then alert
+  if failed host 127.0.0.1 port 123 type udp retry {{ monit_net_retry }} then alert
   if 5 restarts within 5 cycles then timeout

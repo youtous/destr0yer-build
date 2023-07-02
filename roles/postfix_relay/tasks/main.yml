@@ -38,7 +38,7 @@
     group: root
     mode: u=rw,g=r,o=r
   notify:
-    - newaliases
+    - Newaliases
 
 - name: Copy sasl_passwd
   become: true
@@ -49,7 +49,7 @@
     group: root
     mode: u=rw,g=,o=
   notify:
-    - hash sasl passwd
+    - Hash sasl passwd
   no_log: true
 
 - name: Copy postfix configurations

@@ -18,7 +18,7 @@
       - setuptools_scm
       - wheel
     state: latest # noqa package-latest
-    extra_args: --upgrade
+    extra_args: --upgrade --break-system-packages
 
 # our ssh client needs to be upgraded in order to support secure cyphers
 - name: Install pexpect at latest version
@@ -27,7 +27,7 @@
     executable: pip3
     name: pexpect
     state: latest # noqa package-latest
-    extra_args: --upgrade
+    extra_args: --upgrade --break-system-packages
 
 - name: Install duplicity using pip3
   become: true
@@ -35,7 +35,7 @@
     executable: pip3
     name: duplicity
     state: latest # noqa package-latest
-    extra_args: --upgrade
+    extra_args: --upgrade --break-system-packages
 
 - name: Install duply package
   become: true

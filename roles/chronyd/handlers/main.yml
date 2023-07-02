@@ -1,0 +1,12 @@
+---
+- name: Restart chrony
+  become: true
+  ansible.builtin.service:
+    name: "{{ chrony_service_name }}"
+    state: restarted
+
+- name: Systemd daemon reload
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+...

@@ -1,6 +1,7 @@
 ---
-- name: Setup chronyd
-  become: true
-  ansible.builtin.import_role:
-    name: frzk.chrony
+- name: Include OS specific configuration
+  ansible.builtin.include_vars: "{{ ansible_distribution }}.yml"
+
+- name: Include Linux specific tasks
+  ansible.builtin.include_tasks: "Linux.yml"
 ...

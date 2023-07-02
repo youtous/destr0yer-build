@@ -8,11 +8,6 @@ collections:
   - name: ansible.posix
 
 roles:
-  # Chronyd
-  - name: frzk.chrony
-    src: https://github.com/Frzk/ansible-role-chrony.git
-    version: 0be9533ba308417d1234212514dd260347682e96
-
   # swap
   - name: geerlingguy.swap
     src: https://github.com/geerlingguy/ansible-role-swap.git
@@ -71,7 +66,7 @@ roles:
   # Network interfaces
   - name: MichaelRigart.interfaces
     src: https://github.com/michaelrigart/ansible-role-interfaces.git
-    version: cd3bbd715c29276f642e0841e09eeb67d3a07e5a
+    version: dc80e628e6ee42937c209d539b00de8f4659f6e9
 
   # PostgreSQL
   - name: geerlingguy.postgresql
@@ -80,6 +75,6 @@ roles:
 
   # Mariadb
   - name: geerlingguy.mysql
-    src: https://github.com/youtous/ansible-role-mysql.git
-    version: 1c1bd8e47f252a25f9b9b5686bb1571df267ebe1
+    src: https://github.com/geerlingguy/ansible-role-mysql.git
+    version: 2000f55fe4c424ed2409206160b2718c259faea4
 ...

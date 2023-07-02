@@ -5,6 +5,11 @@
   ansible.builtin.apt:
     name:
       - python3-dev
+      - lm-sensors
+      - psensor
+      - psensor-server
+      - python3-psutil
+      - python3-jinja2
 
 # our ssh client needs to be upgraded in order to support secure cyphers
 - name: Install glances at latest version
@@ -16,5 +21,5 @@
       - glances
       - py-cpuinfo
     state: latest # noqa package-latest
-    extra_args: --upgrade
+    extra_args: --upgrade --break-system-packages
 ...
