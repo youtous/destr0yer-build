@@ -17,7 +17,7 @@
 
 - name: List of enabled services
   ansible.builtin.set_fact:
-    enabled_services: "{{ ansible_facts | json_query('services[*].name') }}"
+    enabled_services: "{{ ansible_facts | community.general.json_query('services[*].name') }}"
 
 - name: Ensure filebeat is disabled and stopped
   become: true

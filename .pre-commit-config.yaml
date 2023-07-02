@@ -22,6 +22,5 @@ repos:
     rev: v6.17.2 # put latest release tag from https://github.com/ansible-community/ansible-lint/releases/
     hooks:
       - id: ansible-lint
-        files: \.(yaml|yml)$
         exclude: \.j2.(yaml|yml)$
 ...

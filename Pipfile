@@ -4,13 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-jmespath = "*"
 molecule = "*"
 molecule-podman = "*"
 ansible = "8"
 ansible-lint = "*"
 molecule-docker = "*"
 pre-commit = "*"
+jmespath = "*"
 
 [dev-packages]
 black = "*"

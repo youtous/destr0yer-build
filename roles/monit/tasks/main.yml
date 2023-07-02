@@ -2,7 +2,7 @@
 # This role contains the default configuration for setting up Monit (a monitoring tool)
 - name: List mounted devices paths
   ansible.builtin.set_fact:
-    mounted_devices_path: "{{ ansible_mounts | json_query('[].mount') }}"
+    mounted_devices_path: "{{ ansible_mounts | community.general.json_query('[].mount') }}"
 
 - name: Install Monit
   ansible.builtin.import_tasks: install.yml

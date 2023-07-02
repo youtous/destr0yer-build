@@ -7,6 +7,7 @@ secret_vars/*
 playbook.retry
 .vagrant
 .vscode
+.cache
 
 # ignore .env, must be defined on each machine
 .env
