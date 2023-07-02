@@ -12,6 +12,8 @@
 
 # TODO:
 - [ ] refactor ufw rule manipulation using a role + add tests in the role (ufw rules are deleted but others are kept) + instead of shell yes, just use ufw --force delete 2
+- check swarm installation on bookworm
+- start k3s installation
 
 ## Requirements
 
