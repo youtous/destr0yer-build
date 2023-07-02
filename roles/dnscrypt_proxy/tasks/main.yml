@@ -117,7 +117,9 @@
   with_items:
     - src: dnscrypt-proxy.j2.service
       dest: dnscrypt-proxy.service
-  notify: Restart DNSCrypt-proxy
+  notify:
+    - Daemon-reload systemd
+    - Restart DNSCrypt-proxy
 
 - name: Install DNSCrypt-proxy firewall rules
   ansible.builtin.import_tasks: firewall.yml

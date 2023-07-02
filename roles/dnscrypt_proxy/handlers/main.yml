@@ -8,6 +8,11 @@
     - Restart dnscrypt-proxy
     - Restart DNSCrypt-proxy
 
+- name: Daemon-reload systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
 - name: Make sure DNSCrypt-proxy service is running after restart
   ansible.builtin.command: systemctl is-active dnscrypt-proxy # noqa command-instead-of-module
   changed_when: false

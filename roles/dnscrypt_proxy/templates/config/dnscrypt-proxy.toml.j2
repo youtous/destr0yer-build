@@ -483,7 +483,7 @@ cache_neg_max_ttl = 600
 
   ## Path to the file of blocking rules (absolute, or relative to the same directory as the config file)
 
-  blocked_names_file = 'blocked-names.txt'
+  blocked_names_file = '{{ dnscrypt_configuration_path }}/blocked-names.txt'
 
 
   ## Optional path to a file logging blocked queries
@@ -511,7 +511,7 @@ cache_neg_max_ttl = 600
 
   ## Path to the file of blocking rules (absolute, or relative to the same directory as the config file)
 
-  blocked_ips_file = 'blocked-ips.txt'
+  blocked_ips_file = '{{ dnscrypt_configuration_path }}/blocked-ips.txt'
 
 
   ## Optional path to a file logging blocked queries
@@ -539,7 +539,7 @@ cache_neg_max_ttl = 600
 
   ## Path to the file of whitelisting rules (absolute, or relative to the same directory as the config file)
 
-  allowed_names_file = 'allowed-names.txt'
+  allowed_names_file = '{{ dnscrypt_configuration_path }}/allowed-names.txt'
 
 
   ## Optional path to a file logging whitelisted queries
@@ -555,7 +555,7 @@ cache_neg_max_ttl = 600
 
   ## Path to the file of allowed ip rules (absolute, or relative to the same directory as the config file)
 
-  allowed_ips_file = 'allowed-ips.txt'
+  allowed_ips_file = '{{ dnscrypt_configuration_path }}/allowed-ips.txt'
 
 
   ## Optional path to a file logging allowed queries
@@ -628,14 +628,14 @@ cache_neg_max_ttl = 600
   ## An example of a remote source from https://github.com/DNSCrypt/dnscrypt-resolvers
 
   [sources.'public-resolvers']
-  cache_file = 'db/public-resolvers.md'
+  cache_file = '{{ dnscrypt_configuration_path }}/db/public-resolvers.md'
   minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
   prefix = ''
 
   ## Anonymized DNS relays
 
   [sources.'relays']
-  cache_file = 'db/relays.md'
+  cache_file = '{{ dnscrypt_configuration_path }}/db/relays.md'
   minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
   prefix = ''
 
