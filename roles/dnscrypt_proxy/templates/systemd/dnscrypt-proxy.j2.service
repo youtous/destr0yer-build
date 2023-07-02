@@ -30,7 +30,6 @@ RuntimeDirectory=dnscrypt-proxy
 StateDirectory=dnscrypt-proxy
 SystemCallArchitectures=native
 SystemCallFilter=@system-service @chown
-SystemCallFilter=~@resources @privileged
 
 [Install]
 WantedBy=multi-user.target

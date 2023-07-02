@@ -80,7 +80,7 @@
   ansible.builtin.shell:
     cmd: >
       set -o pipefail &&
-      curl -sL "{{ dnscrypt_proxy_repo | quote }}" | grep "tag_name" | head -1 | cut -d \" -f 4
+      curl "{{ dnscrypt_proxy_repo | quote }}" | grep "tag_name" | head -1 | cut -d \" -f 4
   register: dnscrypt_proxy_remote_version
   when: dnscrypt_proxy_version == "latest"
   args:
