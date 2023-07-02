@@ -15,51 +15,51 @@ all:
         commander_systems:
 
 
-      ### Per host application ###
+    ### Per host application ###
 
-      # hosts that will be able to deliver mails using an smtp relay
-      smtp_relays:
-        hosts:
-          heaven-pascal.youtous.dv:
-          heaven-roberval.youtous.dv:
+    # hosts that will be able to deliver mails using an smtp relay
+    smtp_relays:
+      hosts:
+        heaven-pascal.youtous.dv:
+        heaven-roberval.youtous.dv:
 
-      # hosts with a database server
-      database_servers:
-        hosts:
-          heaven-pascal.youtous.dv:
-      # client who connect to database servers
-      database_clients:
-        hosts:
-          heaven-pascal.youtous.dv:
-          heaven-roberval.youtous.dv:
+    # hosts with a database server
+    database_servers:
+      hosts:
+        heaven-pascal.youtous.dv:
+    # client who connect to database servers
+    database_clients:
+      hosts:
+        heaven-pascal.youtous.dv:
+        heaven-roberval.youtous.dv:
 
-      # hosts that will be backed-up on a backup_storage
-      backed_up_hosts:
-        hosts:
-          heaven-pascal.youtous.dv:
-          heaven-roberval.youtous.dv:
+    # hosts that will be backed-up on a backup_storage
+    backed_up_hosts:
+      hosts:
+        heaven-pascal.youtous.dv:
+        heaven-roberval.youtous.dv:
 
-      # hosts where ip is monitored
-      watch_ip:
-        # hosts:
-        #  heaven-pascal.youtous.dv:
+    # hosts where ip is monitored
+    watch_ip:
+      # hosts:
+      #  heaven-pascal.youtous.dv:
 
-      # hosts which are monitoring ssl hosts, /!\ docker MUST be installed
-      watch_ssl:
-        hosts:
-          heaven-pascal.youtous.dv:
+    # hosts which are monitoring ssl hosts, /!\ docker MUST be installed
+    watch_ssl:
+      hosts:
+        heaven-pascal.youtous.dv:
 
-      # hosts with specific interfaces configuration
-      interfaces:
+    # hosts with specific interfaces configuration
+    interfaces:
 
-      # hosts used as backup server
-      backup_storage:
-        hosts:
-          heaven-pascal.youtous.dv:
+    # hosts used as backup server
+    backup_storage:
+      hosts:
+        heaven-pascal.youtous.dv:
 
-      # hosts using Wireguard
-      wireguard_peers:
-        hosts:
-          heaven-pascal.youtous.dv:
-          heaven-roberval.youtous.dv:
+    # hosts using Wireguard
+    wireguard_peers:
+      hosts:
+        heaven-pascal.youtous.dv:
+        heaven-roberval.youtous.dv:
 ...
