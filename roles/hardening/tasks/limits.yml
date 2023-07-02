@@ -11,7 +11,7 @@
         state: 'directory'
 
     - name: Create additional limits config file -> 10.softcore.conf | sysctl-31a, sysctl-31b
-      community.general.system.pam_limits:
+      community.general.pam_limits:
         dest: '/etc/security/limits.d/10.softcore.conf'
         domain: '*'
         limit_type: soft
@@ -20,7 +20,7 @@
         comment: Prevent core dumps for all users. These are usually not needed and may contain sensitive information
 
     - name: Create additional limits config file -> 10.hardcore.conf | sysctl-31a, sysctl-31b
-      community.general.system.pam_limits:
+      community.general.pam_limits:
         dest: '/etc/security/limits.d/10.hardcore.conf'
         domain: '*'
         limit_type: hard

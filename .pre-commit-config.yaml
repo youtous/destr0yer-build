@@ -22,5 +22,14 @@ repos:
     rev: v6.17.2 # put latest release tag from https://github.com/ansible-community/ansible-lint/releases/
     hooks:
       - id: ansible-lint
+        pass_filenames: false
+        always_run: true
+        entry: "ansible-lint"
+        args:
+          - "--profile=production"
+        additional_dependencies:
+          - "ansible-core>=2.13"
+          - "yamllint>=1.26"
+          - "jmespath"
         exclude: \.j2.(yaml|yml)$
 ...
