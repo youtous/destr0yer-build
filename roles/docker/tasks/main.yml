@@ -20,6 +20,7 @@
     executable: pip3
     name: docker-py
     state: absent
+    extra_args: --break-system-packages
 
 - name: Ensure docker pip module is installed and updated
   become: true
