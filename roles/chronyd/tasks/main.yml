@@ -1,0 +1,6 @@
+---
+- name: Setup chronyd
+  become: true
+  ansible.builtin.import_role:
+    name: frzk.chrony
+...

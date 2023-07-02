@@ -1,5 +1,15 @@
 # vim: ts=2 sw=2 et
 ---
+- name: Ensure server_environment is defined and not empty
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Check"
+      ansible.builtin.assert:
+        that: >
+          server_environment is defined and server_environment|length
+        msg: "server_environment must be defined an not empty"
+
 # Provision newly created servers, create a sudo user using root user
 - name: Perform initial provisionning
   hosts: systems
@@ -7,8 +17,8 @@
     _provisionned_file_path: /etc/status_provision_ansible
     apt_allowed_to_reboot: false # prevent reboot in this phase in order to preserve disk partition assigned
   vars_files:
-    - secret_vars/all.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tasks:
     - name: "Check if provision is needed"
       ansible.builtin.stat:

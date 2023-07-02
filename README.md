@@ -2,7 +2,7 @@
 
 [![pipeline status](https://gitlab.com/youtous/destr0yer-build/badges/master/pipeline.svg)](https://gitlab.com/youtous/destr0yer-build/-/commits/master)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Debian - 11 (Bullseye)](https://img.shields.io/badge/Debian-11_(Bullseye)-a80030)](https://www.debian.org/releases/bullseye/releasenotes)
+[![Debian - 12 (Bookworm)](https://img.shields.io/badge/Debian-12(Bookworm)-a80030)](https://www.debian.org/releases/bookworm/releasenotes)
 [![Docker Swarm](https://img.shields.io/badge/Docker-Swarm-2496ed)](https://github.com/moby/swarmkit)
 [![Caddy v2](https://img.shields.io/badge/Caddy-v2-03af19)](https://github.com/traefik/traefik)
 [![Traefik v2](https://img.shields.io/badge/Traefik-v2-37abc8)](https://github.com/traefik/traefik)
@@ -57,9 +57,9 @@ During the **first installation**, the playbooks should be executed in the follo
 - `pipenv install && pipenv shell` - open a virtualenv shell
 - `source vault.fish` - register the secret passphrase for secrets
 - `ansible-galaxy install -r requirements.yml` - install requirements
-- `ansible-playbook -i hosts/base-nodes.yml playbooks/00-provision.yml --vault-password-file "./.vault_password" --user=debian` - provision the cluster
-- `ansible-playbook -i hosts/base-nodes.yml playbooks/01-configure.yml --vault-password-file "./.vault_password"` - provision the cluster
-- `ansible-playbook -i hosts/swarm-nodes.yml playbooks/02-swarm.yml --vault-password-file "./.vault_password"` - configure the swarm cluster
+- `ansible-playbook -i inventories/dev/base-nodes.yml playbooks/00-provision.yml --vault-password-file "./.vault_password"  --extra-vars='nameservers=["1.1.1.1"]' --user=root` - provision the cluster (only needed once)
+- `ansible-playbook -i inventories/dev/base-nodes.yml playbooks/01-configure.yml --vault-password-file "./.vault_password"` - configure the cluster
+- `ansible-playbook -i inventories/dev/swarm-nodes.yml playbooks/02-swarm.yml --vault-password-file "./.vault_password"` - configure the swarm cluster
 
 You can use `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook` to avoid ssh-key trust confirmation.
 
@@ -111,25 +111,25 @@ This step allow ansible to prepare a freshly created instance. This step is only
 
 3. Then `source vault.fish` - register the secret passphrase for secrets
 4. Install the requirements `ansible-galaxy install -r requirements.yml`
-5. Create a global vault for storing sensible variables (passwords etc): `ansible-vault create secret_vars/all.yml  --vault-password-file "./.vault_password"` (example can be found in `all.sample.yml`)
+5. Create a global vault for storing sensible variables (passwords etc): `ansible-vault create secret_vars/{{ server_environment }}/all.yml  --vault-password-file "./.vault_password"` (example can be found in `all.sample.yml`)
     - Provide a password for the sudo admin user `sudo_user_password` using `openssl passwd -6`, also save the password in `sudo_user_clear_password`
     - Generate a root password the same, it is not required to save this password as long as you have a sudo user.
     - Add your ssh **public** keys in `sudo_user_ssh_keys`
     - Generate a basic auth user used for http admin auth in `backend_users` using `./bcrypt-password.sh <admin username>` then get the base64 of it using `echo -n 'my-bcrypt-password' | base64`
-6. Repeat the previous step for each instance: `ansible-vault create secret_vars/myhostname.tld.yml  --vault-password-file "./.vault_password"`. Instance's specific secrets.
+6. Repeat the previous step for each instance: `ansible-vault create secret_vars/{{ server_environment }}/myhostname.tld.yml  --vault-password-file "./.vault_password"`. Instance's specific secrets.
 
 ### III. Initial configuration for freshly created instance (bootstrap configuration)
 
 Each newly created instance needs to be configured by ansible using a dedicated preparation playbook.
 
 1. Ensure the newly created instances are listed in the group `systems` in `hosts/base-nodes.yml` (either in `base_systems` or `commander_systems`)
-2. Run the playbook with a root user: `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts/base-nodes.yml playbooks/00-provision.yml --vault-password-file "./.vault_password" --extra-vars='nameservers=["1.1.1.1"]' --user=root`
+2. Run the playbook with a root user: `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventories/dev/base-nodes.yml playbooks/00-provision.yml --vault-password-file "./.vault_password" --extra-vars='nameservers=["1.1.1.1"]' --user=root`
 
 ### IV. Configure the instances (system configuration)
 
 1. Configure the desired state of the cluster in `group_vars/all.yml` (**important:** please define a list of allowed ssh ips using `ssh_entrypoints`)
 2. Configure instance specifities using its dedicated configuration file in `host_vars/myhostname.tld.yml`, see examples in `hosts/`.
-3. Run the playbook on the instances, it will setup all the system configuration in a single run: `ansible-playbook -i hosts/base-nodes.yml playbooks/01-configure.yml --vault-password-file "./.vault_password"`
+3. Run the playbook on the instances, it will setup all the system configuration in a single run: `ansible-playbook -i inventories/dev/base-nodes.yml playbooks/01-configure.yml --vault-password-file "./.vault_password"`
 
 #### Server keys generation
 
@@ -162,7 +162,7 @@ At this step, the cluster is almost configured. The last step is the docker conf
 
 1. Generate a Root certificate using `./generate-X509-certificate.rb`, type `-1` and enter a root name for the certificate (e.g. `swarm.cluster.dv`). Use a secure passphrase for the certificate and fill the information request. (You can define default values using `certs/openssl.conf` then `export $OPENSSL_CONF=./certs/openssl.conf`)
 2. For each node of the cluster, generate a dedicated certificate and sign it using the root CA (e.g. `1.swarm.cluster.dv`, `2.swarm.cluster.dv`, `3.swarm.cluster.dv`), don't set any passphrase on this step.
-3. Copy the content of the .crt (certificate) and .key file from `certs/{hostname}.key,crt` it its associated host `secret_vars/{hostname}.yml`, the variables to fill are `docker_swarm_node_private_key` and `docker_swarm_node_certificate` (`EDITOR='code --wait' ansible-vault edit secret_vars/hell01.dv.yml  --vault-password-file "./.vault_password"` for interactive editor).
+3. Copy the content of the .crt (certificate) and .key file from `certs/{hostname}.key,crt` it its associated host `secret_vars/{{ server_environment }}/{hostname}.yml`, the variables to fill are `docker_swarm_node_private_key` and `docker_swarm_node_certificate` (`EDITOR='code --wait' ansible-vault edit secret_vars/{{ server_environment }}/{{ server_environment }}/{{ server_environment }}/{{ server_environment }}/hell01.dv.yml  --vault-password-file "./.vault_password"` for interactive editor).
 4. Delete the certificate and associated key from `certs/{hostname}.key,crt,csr`
 5. Copy the public root certificate from `certs/swarm.cluster.dv-rootCA.crt` to `group_vars/all.yml` in `docker_swarm_CA_certificate` variable.
 6. _(eventually)_ backup your root ca files.
@@ -194,9 +194,9 @@ promgraf_grafana_domain: "grafana.{{ promgraf_domain }}"
 promgraf_karma_domain: "karma.{{ promgraf_domain }}"
 promgraf_alertmanager_domain: "alertmanager.{{ promgraf_domain }}"
 ```
-5. Generate an admin account for portainer, fill `portainer_admin_password` in `secret_vars/all.yml` using  `docker run --rm httpd:2.4-alpine htpasswd -nbB admin "password" | cut -d ":" -f 2`
-6. Generate a random secure value for `consul_acl_master_token` saved in `secret_vars/all.yml`, this key is used to encrypt the certificates, generate it using `ruby -e "require 'securerandom'; puts SecureRandom.uuid"`
-7. Define a grafana admin password using `promgraf_grafana_admin_password` saved in `secret_vars/all.yml`
+5. Generate an admin account for portainer, fill `portainer_admin_password` in `secret_vars/{{ server_environment }}/all.yml` using  `docker run --rm httpd:2.4-alpine htpasswd -nbB admin "password" | cut -d ":" -f 2`
+6. Generate a random secure value for `consul_acl_master_token` saved in `secret_vars/{{ server_environment }}/{{ server_environment }}/all.yml`, this key is used to encrypt the certificates, generate it using `ruby -e "require 'securerandom'; puts SecureRandom.uuid"`
+7. Define a grafana admin password using `promgraf_grafana_admin_password` saved in `secret_vars/{{ server_environment }}/all.yml`
 
 #### V.III Configure the associated elastic cluster
 
@@ -289,7 +289,7 @@ traefik_services:
 
 #### V.IV Start the docker-swarm cluster
 
-1. Run the playbook on the instances, it will setup all the docker swarm cluster a single run: `ansible-playbook -i hosts/swamr-nodes.yml playbooks/02-swarm.yml --vault-password-file "./.vault_password"`
+1. Run the playbook on the instances, it will setup all the docker swarm cluster a single run: `ansible-playbook -i inventories/dev/swamr-nodes.yml playbooks/02-swarm.yml --vault-password-file "./.vault_password"`
 2. Go to `portainer_domain` and enjoy your docker swarm cluster! Watch the cluster metrics at `promgraf_grafana_domain`
 3. (optional) in case of elastic setup, go to `kibana_domain`
     3.1 Define index-patterns

@@ -1,14 +1,23 @@
 ---
 # This playbook plays with elastic stack roles some requires docker and for some it's optional
+- name: Ensure server_environment is defined and not empty
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Check"
+      ansible.builtin.assert:
+        that: >
+          server_environment is defined and server_environment|length
+        msg: "server_environment must be defined an not empty"
 
 - name: Setup docker elastic cluster
   hosts: primary_manager_elastic
   roles:
     - docker_elastic # setup an elastic stack cluster
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["elastic", "elastic-cluster"]
 
 - name: Setup elastic for each node logging tools
@@ -19,9 +28,9 @@
     - monit_journalbeat # monitor
     - monit_filebeat
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["elastic", "elastic-collector", "elastic-node-collector"]
 
 - name: Setup elastic for each node metrics tools
@@ -30,8 +39,8 @@
     - elastic_metricbeat # collect metrics of the node, docker or other processes (docker not required on the host)
     - monit_metricbeat
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["elastic", "elastic-collector", "elastic-metric-collector"]
 ...

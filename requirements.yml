@@ -8,10 +8,10 @@ collections:
   - name: ansible.posix
 
 roles:
-  # NTP
-  - name: geerlingguy.ntp
-    src: https://github.com/geerlingguy/ansible-role-ntp.git
-    version: a56b794d81f090c2490cd2a5b2fb760baa67353c
+  # Chronyd
+  - name: frzk.chrony
+    src: https://github.com/Frzk/ansible-role-chrony.git
+    version: 0be9533ba308417d1234212514dd260347682e96
 
   # swap
   - name: geerlingguy.swap

@@ -1,0 +1,32 @@
+---
+# users config
+
+
+common_users:
+  # arbiter is the only sudoer
+  - username: "{{ sudo_user_username }}"
+    name: System's Arbiter
+    groups: ['admin', 'sshusers', 'docker']
+    uid: 1006
+    home: /home/dev-arbiter
+    profile:
+    ssh_key: "{{ sudo_user_ssh_keys }}"
+    password: "{{ sudo_user_password }}"
+    update_password: "always"
+
+common_groups_to_create:
+  - name: admin
+    gid: 10000
+  - name: docker
+    gid: 1099
+  - name: users
+    gid: 20000
+  - name: sshusers
+    gid: 20500
+
+# computed vars
+all_users: "{{ common_users | default([]) + host_users | default([]) }}"
+all_groups: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
+all_users_to_delete: "{{ common_users_to_delete | default([]) + host_users_to_delete | default([]) }}"
+
+...

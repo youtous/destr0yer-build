@@ -1,0 +1,16 @@
+---
+# system configuration
+
+###  Beginning of destr0yers vars  ###
+users_default_shell: "/usr/bin/fish"
+
+# Time configuration
+timezone: "Europe/Paris"
+
+# Email that will receive all notifications, useful for monitoring
+monitoring_email: "monitoring@youtous.me"
+
+# email server used to deliver emails
+relay_server: "mailserver.youtous.me"
+relay_port: 465
+...

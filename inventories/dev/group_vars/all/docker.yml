@@ -1,75 +1,6 @@
 ---
-# Variables listed here are applicable to all host groups
+# docker configuration
 
-###  Beginning of destr0yers vars  ###
-users_default_shell: "/usr/bin/fish"
-
-# Time configuration
-timezone: "Europe/Paris"
-
-# Environment : dev,test,prod
-server_environment: "dev"
-
-# Network configuration
-domain_name: youtous.me
-domain_search: []
-nameservers: # use DNSCrypt-proxy
-  - '127.0.0.1'
-  - '::1'
-
-# Email that will receive all notifications, useful for monitoring
-monitoring_email: "monitoring@youtous.me"
-
-# email server used to deliver emails
-relay_server: "mailserver.youtous.me"
-relay_port: 465
-
-common_users:
-  # arbiter is the only sudoer
-  - username: "{{ sudo_user_username }}"
-    name: System's Arbiter
-    groups: ['admin', 'sshusers', 'docker']
-    uid: 1006
-    home: /home/dev-arbiter
-    profile:
-    ssh_key: "{{ sudo_user_ssh_keys }}"
-    password: "{{ sudo_user_password }}"
-    update_password: "always"
-
-common_groups_to_create:
-  - name: admin
-    gid: 10000
-  - name: docker
-    gid: 1099
-  - name: users
-    gid: 20000
-  - name: sshusers
-    gid: 20500
-
-# computed vars
-all_users: "{{ common_users | default([]) + host_users | default([]) }}"
-all_groups: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
-all_users_to_delete: "{{ common_users_to_delete | default([]) + host_users_to_delete | default([]) }}"
-
-# ips which should never be banned
-fail2ban_trusted_ips:
-  - "163.172.154.21"
-  - "192.168.100.1"
-
-# entrypoints ips from where we can access base_destr0yers
-ssh_entrypoints:
-  - "163.172.154.21"
-  - "192.168.100.1"
-
-# allow docker networks (and eventually other networks such as vpn) to query the local dns server
-dns_allowed_hosts: "{{ local_docker_ips }}"
-
-# mariadb root CA certificate, required when mariadb_ssl_enabled=true
-mariadb_ssl_enabled: false # consider using Wireguard instead
-
-###  End of destr0yers vars  ###
-
-### Begin of the-swarm global vars ###
 
 # ips that will be allowed to access the backend
 trusted_backend_ips: "{{ ssh_entrypoints }}"
@@ -285,9 +216,4 @@ logstash_ca_certificate: |
   kNLYfAK0StW8JHRj8PeKoWejh6cj7WwX+nK7Cu2dQyxspj3i59VpoW0=
   -----END CERTIFICATE-----
 ### End of Elastic vars ###
-
-### Parameters only related to debug/VM env
-
-# Force python3 to be used with Ansible, do not edit!
-ansible_python_interpreter: /usr/bin/python3
 ...

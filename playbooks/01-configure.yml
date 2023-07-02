@@ -1,5 +1,14 @@
 ---
 # Provision servers using a global policy
+- name: Ensure server_environment is defined and not empty
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Check"
+      ansible.builtin.assert:
+        that: >
+          server_environment is defined and server_environment|length
+        msg: "server_environment must be defined an not empty"
 
 - name: Configure systems | disk partitioning with LVM
   hosts: systems
@@ -8,9 +17,9 @@
     - swap
     - mount
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["disk-partitioning", "configure-systems", "swap"]
 
 - name: Configure systems | apt packages configuration and update
@@ -19,9 +28,9 @@
   roles:
     - apt
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["apt", "configure-systems"]
 
 - name: Configure systems | minimal requirements
@@ -29,13 +38,14 @@
   roles:
     - system_packages # system packages (htop, curl etc)
     - host # configure system host files
+    - chronyd # chronyd
     - system_configuration # configure the system (selinux, timezone...)
     - system_tools # server cli tools (vim, etc)
     - iptables_firewall # define firewall policy
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["system", "configure-systems", "minimal"]
 
 - name: Configure systems | configure kernel
@@ -44,9 +54,9 @@
   roles:
     - sysctl_configuration
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["sysctl", "configure-systems"]
 
 - name: Configure systems | manage users
@@ -56,9 +66,9 @@
     - ssh_user_keys
     - restrict_user_ssh_ips
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["users", "configure-systems"]
 
 - name: Configure systems | configure OpenSSH
@@ -68,9 +78,9 @@
     - motd
     - notify_login # notify when an user connects
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["ssh", "sshd", "configure-systems"]
 
 
@@ -79,9 +89,9 @@
   roles:
     - logrotate
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["log", "logrotate", "configure-systems"]
 
 - name: Configure systems | monit
@@ -89,9 +99,9 @@
   roles:
     - monit
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["monit", "configure-systems"]
 
 - name: Configure systems | fail2ban
@@ -100,9 +110,9 @@
     - fail2ban
     - monit_fail2ban
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["fail2ban", "configure-systems"]
 
 - name: Configure systems | filter ips for base systems (entrypoint required)
@@ -110,9 +120,9 @@
   roles:
     - entrypoint_ssh
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["entrypoint_ssh", "ssh", "sshd", "configure-systems"]
 
 - name: Configure systems | resolv dns configuration
@@ -122,9 +132,9 @@
     - monit_dnscrypt_proxy
     - resolv
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["resolv", "configure-systems", "dnscrypt_proxy"]
 
 - name: Configure systems | hardening
@@ -133,9 +143,9 @@
     - hardening # hardening systems
     - scaleway_services # define services policy for scaleway
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["hardening", "configure-systems"]
 
 - name: Configure systems | sysstat
@@ -143,9 +153,9 @@
   roles:
     - sysstat # resource monitoring
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["sysstat", "configure-systems"]
 
 - name: Configure systems | logwatch
@@ -153,9 +163,9 @@
   roles:
     - logwatch # monitor server using emails
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["logwatch", "configure-systems"]
 
 - name: Configure systems with specifics interfaces
@@ -163,9 +173,9 @@
   roles:
     - network
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["interfaces"]
 
 - name: Configure systems | configure fish shell
@@ -173,9 +183,9 @@
   roles:
     - oh_my_fish
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["fish", "configure-systems"]
 
 - name: Configure systems | glances
@@ -183,9 +193,9 @@
   roles:
     - glances # boosted htop
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["configure-systems", "update-systems"]
 
 - name: Configure Postfix relay servers
@@ -193,9 +203,9 @@
   roles:
     - postfix_relay
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["smtp-relay"]
 
 - name: Configure backup storage systems
@@ -203,9 +213,9 @@
   roles:
     - backup_storage
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["backup_storage"]
 
 - name: Configure backed-up systems
@@ -213,9 +223,9 @@
   roles:
     - backup_strategy
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["backup_strategy"]
 
 - name: Configure database servers
@@ -225,9 +235,9 @@
     - monit_mariadb
     - backup_mariadb
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["database-servers", "database"]
 
 - name: Configure database clients
@@ -235,9 +245,9 @@
   roles:
     - mariadb_client
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["database-clients", "database"]
 
 - name: Configure WireGuard peers
@@ -245,9 +255,9 @@
   roles:
     - wireguard_meta
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["wireguard"]
 
 - name: Watch servers ips
@@ -255,9 +265,9 @@
   roles:
     - notify_ip_change
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["watch-ip"]
 
 - name: Monitor ssl hosts
@@ -265,8 +275,8 @@
   roles:
     - monitor_testssl
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["watch-ssl"]
 ...

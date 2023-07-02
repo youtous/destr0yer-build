@@ -1,0 +1,24 @@
+---
+# network configuration
+
+# Network configuration
+domain_name: youtous.me
+domain_search: []
+nameservers: # use DNSCrypt-proxy
+  - '127.0.0.1'
+  - '::1'
+
+
+# ips which should never be banned
+fail2ban_trusted_ips:
+  - "163.172.154.21"
+  - "192.168.100.1"
+
+# entrypoints ips from where we can access base_destr0yers
+ssh_entrypoints:
+  - "163.172.154.21"
+  - "192.168.100.1"
+
+# allow docker networks (and eventually other networks such as vpn) to query the local dns server
+dns_allowed_hosts: "{{ local_docker_ips }}"
+...

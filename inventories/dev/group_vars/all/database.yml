@@ -1,0 +1,6 @@
+---
+# database configuration
+
+# mariadb root CA certificate, required when mariadb_ssl_enabled=true
+mariadb_ssl_enabled: false # consider using Wireguard instead
+...

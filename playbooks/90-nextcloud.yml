@@ -1,13 +1,22 @@
 ---
 # This plays a docker nextcloud instance.
+- name: Ensure server_environment is defined and not empty
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Check"
+      ansible.builtin.assert:
+        that: >
+          server_environment is defined and server_environment|length
+        msg: "server_environment must be defined an not empty"
 
 - name: Install Nextcloud
   hosts: nextcloud
   roles:
     - docker_nextcloud
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["nextcloud"]
 ...

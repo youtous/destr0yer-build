@@ -1,5 +1,14 @@
 ---
 # This play a docker swarm cluster.
+- name: Ensure server_environment is defined and not empty
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Check"
+      ansible.builtin.assert:
+        that: >
+          server_environment is defined and server_environment|length
+        msg: "server_environment must be defined an not empty"
 
 
 - name: Install docker on all systems
@@ -8,9 +17,9 @@
     - docker
     - monit_docker
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker-setup", "docker-swarm-setup", "docker-swarm-init"]
 
 - name: Configure docker in swarm mode on all systems
@@ -20,9 +29,9 @@
     - docker_configure
     - docker_prune_daily
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-setup", "docker-swarm-init"]
 
 
@@ -31,9 +40,9 @@
   roles:
     - docker_initiate_swarm
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-init"]
 
 - name: Initiate managers
@@ -41,9 +50,9 @@
   roles:
     - docker_initiate_managers
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-init"]
 
 - name: Initiate workers
@@ -51,9 +60,9 @@
   roles:
     - docker_initiate_workers
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker-swarm-init"]
 
 - name: Cleanup swarm init
@@ -68,9 +77,9 @@
   roles:
     - docker_fail2ban
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker_fail2ban"]
 
 - name: Setup auto-restore DOCKER-USER chain
@@ -78,9 +87,9 @@
   roles:
     - docker_user_chain
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker_user_chain"]
 
 - name: Setup docker common tools
@@ -88,9 +97,9 @@
   roles:
     - docker_ctop_cmd
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker-common-tools"]
 
 - name: Setup docker backup tools
@@ -99,9 +108,9 @@
     - docker_backup_mysql
     - docker_backup_volumes
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["docker-backup-tools"]
 
 - name: Setup caddy reverse-proxy with consul
@@ -109,9 +118,9 @@
   roles:
     - docker_caddy_consul # smart reverse proxy for docker swarm
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["caddy", "caddy-stack"]
 
 - name: Setup caddy additionals on managers | fail2ban, firewall
@@ -126,9 +135,9 @@
         name: docker_caddy_consul
         tasks_from: firewall
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["caddy", "caddy-f2b", "caddy-firewall"]
 
 - name: Setup traefik reverse-proxy
@@ -136,9 +145,9 @@
   roles:
     - docker_traefik # L4 smart reverse proxy for docker swarm
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["traefik"]
 
 - name: Setup traefik additionals on managers | firewall
@@ -149,9 +158,9 @@
         name: docker_traefik
         tasks_from: firewall
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["traefik", "traefik-firewall"]
 
 - name: Setup swarm_cronjon
@@ -159,9 +168,9 @@
   roles:
     - docker_swarm_cronjob
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["cronjob"]
 
 - name: Setup docker-swarm portainer
@@ -169,9 +178,9 @@
   roles:
     - docker_portainer # web manager of the cluster
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["portainer"]
 
 - name: Setup promgraf stack
@@ -179,9 +188,9 @@
   roles:
     - docker_promgraf
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["metrics", "promgraf"]
 
 - name: Setup docker-swarm metrics
@@ -189,9 +198,9 @@
   roles:
     - docker_cadvisor
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["metrics", "cadvisor"]
 
 - name: Setup docker-swarm metrics
@@ -199,9 +208,9 @@
   roles:
     - docker_node_exporter
   vars_files:
-    - secret_vars/all.yml
-    - task_vars/sudo.yml
-    - "secret_vars/{{ inventory_hostname }}.yml"
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["metrics", "node_exporter"]
 
 - name: Include elastic cluster setup
