@@ -5,10 +5,13 @@
   become: true
   ansible.builtin.file:
     state: directory
-    path: "{{ mariadb_config_directory }}"
+    path: "{{ item }}"
     owner: root
     group: root
     mode: u=rwx,g=xr,o=x
+  with_items:
+    - "{{ mariadb_config_include_dir }}"
+    - "{{ mariadb_config_directory }}"
 
 - name: Setup my.cnf global
   become: true
