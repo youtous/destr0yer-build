@@ -8,7 +8,7 @@ mariadb_allowed_ips: []
 
 # The MySQL databases to create. A database has the values name, encoding (defaults to utf8), collation
 # (defaults to utf8_general_ci) and replicate (defaults to 1, only used if replication is configured).
-# The formats of these are the same as in the mysql_db module.
+# The formats of these are the same as in the mariadb_db module.
 mariadb_databases: []
 
 # The MySQL users and their privileges. A user has the values:
@@ -23,7 +23,7 @@ mariadb_databases: []
 # Special note about requiring SSL for some users (outside of the server)
 #    append_privs: true
 #    priv: '*.*:REQUIRESSL'
-# (https://docs.ansible.com/ansible/latest/modules/mysql_user_module.html)
+# (https://docs.ansible.com/ansible/latest/modules/mariadb_user_module.html)
 mariadb_users: []
 
 # where to store mariadb data
@@ -38,6 +38,8 @@ mariadb_tls_version:
 
 # additional files directory
 mariadb_config_include_dir: "/etc/mysql/my.extra.d"
+mariadb_config_directory: /etc/mysql
+mariadb_config_file: /etc/mysql/my.cnf
 
 # provide a certificate and it key signed by a ca
 # using ssl
@@ -50,4 +52,77 @@ mariadb_server_certificate: ""
 
 # THIS KEY MUST BE SECRET
 mariadb_server_key: ""
+
+# MySQL connection settings.
+mariadb_port: "3306"
+mariadb_bind_address: '0.0.0.0'
+mariadb_skip_name_resolve: false
+mariadb_sql_mode: ~
+# The following variables have a default value depending on operating system.
+mariadb_pid_file: /run/mysqld/mysqld.pid
+mariadb_socket: /run/mysqld/mysqld.sock
+
+# Slow query log settings.
+mariadb_slow_query_log_enabled: false
+mariadb_slow_query_time: "2"
+# The following variable has a default value depending on operating system.
+# mariadb_slow_query_log_file: /var/log/mysql-slow.log
+
+# Memory settings (default values optimized ~512MB RAM).
+mariadb_key_buffer_size: "256M"
+mariadb_max_allowed_packet: "64M"
+mariadb_table_open_cache: "256"
+mariadb_sort_buffer_size: "1M"
+mariadb_read_buffer_size: "1M"
+mariadb_read_rnd_buffer_size: "4M"
+mariadb_myisam_sort_buffer_size: "64M"
+mariadb_thread_cache_size: "8"
+mariadb_query_cache_type: "0"
+mariadb_query_cache_size: "16M"
+mariadb_query_cache_limit: "1M"
+mariadb_max_connections: "151"
+mariadb_tmp_table_size: "16M"
+mariadb_max_heap_table_size: "16M"
+mariadb_group_concat_max_len: "1024"
+mariadb_join_buffer_size: "262144"
+
+# Other settings.
+mariadb_lower_case_table_names: "0"
+mariadb_wait_timeout: "28800"
+mariadb_event_scheduler_state: "OFF"
+
+# InnoDB settings.
+mariadb_innodb_file_per_table: "1"
+# Set .._buffer_pool_size up to 80% of RAM but beware of setting too high.
+mariadb_innodb_buffer_pool_size: "256M"
+# Set .._log_file_size to 25% of buffer pool size.
+mariadb_innodb_log_file_size: "64M"
+mariadb_innodb_log_buffer_size: "8M"
+mariadb_innodb_flush_log_at_trx_commit: "1"
+mariadb_innodb_lock_wait_timeout: "50"
+
+# These settings require MySQL > 5.5.
+mariadb_innodb_large_prefix: "1"
+mariadb_innodb_file_format: "barracuda"
+
+# mysqldump settings.
+mariadb_mysqldump_max_allowed_packet: "64M"
+
+# Logging settings.
+mariadb_log: "syslog"
+# The following variables have a default value depending on operating system.
+# mariadb_log_error: /var/log/mysql/mysql.err
+mariadb_syslog_tag: mysql
+mariadb_log_error: "syslog"
+
+# Replication settings (replication is only enabled if master/user have values).
+mariadb_server_id: "1"
+mariadb_max_binlog_size: "100M"
+mariadb_expire_logs_days: "10"
+
+mariadb_disable_log_bin: false
+
+mariadb_replication_role: ''
+mariadb_replication_master: ''
+mariadb_replication_master_inventory_host: "{{ mariadb_replication_master }}"
 ...

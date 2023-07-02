@@ -1,6 +1,26 @@
 ---
 # This role installs Mariadb-server on the system. It allows connections from database_clients hosts (group).
 
+- name: Ensure mariadb etc directory exists
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "{{ mariadb_config_directory }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=xr,o=x
+
+- name: Setup my.cnf global
+  become: true
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: "{{ mariadb_config_file }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+    force: true
+  notify: Restart mariadb
+
 - name: Setup mariadb-server
   become: true
   ansible.builtin.import_role: # noqa: var-naming[no-role-prefix]
@@ -10,7 +30,7 @@
     mysql_root_username: root
     mysql_root_password: "{{ mariadb_root_password }}"
     mysql_enabled_on_startup: true
-    overwrite_global_mycnf: true
+    overwrite_global_mycnf: false
     # A list of files that should override the default global my.cnf. Each item in the array requires a "src"
     # parameter which is a path to a file. An optional "force" parameter can force the file to be updated each time ansible runs.
     mysql_config_include_files:
@@ -21,17 +41,14 @@
       - mariadb-client
       - mariadb-server
       - python3-mysqldb
-    mysql_port: "3306"
-    mysql_bind_address: '0.0.0.0'
+    mysql_port: "{{ mariadb_port }}"
+    mysql_bind_address: "{{ mariadb_bind_address }}"
     mysql_datadir: "{{ mariadb_datadir }}"
-    mysql_log_error: syslog # using journalctl
-    mysql_syslog_tag: mariadb
+    mysql_log_error: "{{ mariadb_log_error }}" # using journalctl
+    mysql_syslog_tag: "{{ mariadb_syslog_tag }}"
     mysql_config_include_dir: "{{ mariadb_config_include_dir }}"
-    mysql_supports_innodb_large_prefix: false # https://github.com/geerlingguy/ansible-role-mysql/issues/272
-    # tweaking mariadb resources
-    # mysql_key_buffer_size: "256M"
-    # mysql_max_allowed_packet: "64M"
-    # mysql_table_open_cache: "256"
+    mysql_supports_innodb_large_prefix: "{{ mariadb_supports_innodb_large_prefix }}" # https://github.com/geerlingguy/ansible-role-mysql/issues/272
+
 
 - name: Configure systemd.service for mariadb (logging)
   become: true
