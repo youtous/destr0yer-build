@@ -11,9 +11,7 @@
 [![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
 # TODO:
-- [ ] refactor ufw rule manipulation using a role + add tests in the role (ufw rules are deleted but others are kept)
-- [ ] add tests in docker configs/secret role (old secrets deleted, not the new one and the no pattern are also kept)
-
+- [ ] refactor ufw rule manipulation using a role + add tests in the role (ufw rules are deleted but others are kept) + instead of shell yes, just use ufw --force delete 2
 
 ## Requirements
 
