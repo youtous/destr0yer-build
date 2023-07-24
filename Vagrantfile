@@ -33,6 +33,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #config.hostmanager.manage_host = false
 
 	config.vagrant.plugins = ["vagrant-vbguest"]
+	if Vagrant.has_plugin?("vagrant-vbguest") then
+		config.vbguest.auto_update = false
+	end
 	# workaround for vbguest plugin
 	config.vbguest.installer_options = { allow_kernel_upgrade: true }
 	config.vbguest.installer_hooks[:before_install] = [

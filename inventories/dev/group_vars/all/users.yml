@@ -6,7 +6,7 @@ common_users:
   # arbiter is the only sudoer
   - username: "{{ sudo_user_username }}"
     name: System's Arbiter
-    groups: ['admin', 'sshusers', 'docker']
+    groups: ['admin', 'sshusers', 'docker'] # TODO : check if docker group is needed
     uid: 1006
     home: /home/dev-arbiter
     profile:
@@ -17,7 +17,7 @@ common_users:
 common_groups_to_create:
   - name: admin
     gid: 10000
-  - name: docker
+  - name: docker # TODO : check if docker group is needed
     gid: 1099
   - name: users
     gid: 20000

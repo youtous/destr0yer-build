@@ -8,7 +8,7 @@ users_default_shell: "/usr/bin/fish"
 timezone: "Etc/UTC"
 
 # Email that will receive all notifications, useful for monitoring
-monitoring_email: "monitoring@youtous.me"
+monitoring_email: "monitoring+devstage@youtous.me"
 
 # email server used to deliver emails
 relay_server: "mailserver.youtous.me"

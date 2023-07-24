@@ -25,10 +25,10 @@ disk_partitions_to_create:
   - device: "{{ docker_partition_device }}"
     part_number: 1
     flags: [lvm]
-    name: "docker_partition-{{ docker_partition_volume_id }}"
+    name: "docker_partition-{{ docker_partition_volume_id }}" # TODO : check if docker is needed
 
 volume_groups_to_create:
-  - pvs: "/dev/disk/by-partlabel/{{ ('docker_partition-'~docker_partition_volume_id) | hash('md5') }}"
+  - pvs: "/dev/disk/by-partlabel/{{ ('docker_partition-'~docker_partition_volume_id) | hash('md5') }}" # TODO : check if docker is needed
     vg: "vg0"
 
 logical_volume_groups_to_create:
@@ -42,14 +42,14 @@ filesystems_to_create:
     mount_path: /docker
 
 # use the created partition to host docker data
-docker_data_root: "/docker"
+docker_data_root: "/docker" # TODO : check if docker is needed
 
 ### End of partition management
 
 host_users:
   - username: specu
     name: Specific user on heaven
-    groups: ['users', 'sshusers', 'docker']
+    groups: ['users', 'sshusers', 'docker'] # TODO : check if docker is needed
     uid: 10020
     ssh_key: "{{ specu_ssh_keys }}"
     password: "{{ specu_password }}"
@@ -140,12 +140,12 @@ teamspeak_db_host: "172.18.0.1" # db on docker_gwbridge host
 docker_external_interfaces: ["eth0", "eth1"]
 # list of nodes (ips) allowed to submit log data
 logstash_trough_vpn: ["10.101.101.2"] # vpn for logstash data exchange
-logstash_external_allowed_ip4s: "{{ local_docker_ips + logstash_trough_vpn }}"
+logstash_external_allowed_ip4s: "{{ local_docker_ips + logstash_trough_vpn }}" # TODO : check if docker is needed
 
  # allow docker + all nodes are allowed to send logs data, list can be completed
 logstash_allowed_ip4s: "{{ local_docker_ips + nodes_ip4s_without_current_host }}"
 # TODO: ipv6 docker is not yet enabled, skipping todo : when ipv6 enable it
-
+# TODO : check if docker is needed
 # elastic alert configuration
 elastic_alert_email_server: "{{ relay_server }}"
 elastic_alert_email_port: "{{ relay_port }}"
@@ -155,7 +155,7 @@ elastic_alert_email_password: "{{ relay_password }}"
 
 metricbeats_modules:
   - system
-  - docker
+  - docker # TODO : check if docker is needed
   - mysql # enable metrics for mysql
 
 ### End of docker elastic parameters ###

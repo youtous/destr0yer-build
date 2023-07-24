@@ -20,5 +20,5 @@ ssh_entrypoints:
   - "192.168.100.1"
 
 # allow docker networks (and eventually other networks such as vpn) to query the local dns server
-dns_allowed_hosts: "{{ local_docker_ips }}"
+dns_allowed_hosts: "{{ local_docker_ips | default([]) }}"
 ...

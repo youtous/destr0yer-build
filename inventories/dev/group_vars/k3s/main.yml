@@ -1,0 +1,13 @@
+---
+# Global k3s configuration for nodes (workers and controllers)
+# See: https://docs.k3s.io/cli/agent#node
+
+k3s_server:
+  secrets-encryption: true
+
+k3s_agent:
+  node-name: "{{ hostname }}"
+  with-node-id: false
+  protect-kernel-defaults: true
+  selinux: true
+...

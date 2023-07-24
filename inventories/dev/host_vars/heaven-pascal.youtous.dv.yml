@@ -14,7 +14,7 @@ ipv6_private:
 host_users:
   - username: specu
     name: Specific user on heaven
-    groups: ['users', 'sshusers', 'docker']
+    groups: ['users', 'sshusers', 'docker'] # TODO : check if docker group is needed
     uid: 10020
     ssh_key: "{{ specu_ssh_keys }}"
     password: "{{ specu_password }}"
@@ -191,7 +191,7 @@ elastic_alert_email_password: "{{ relay_password }}"
 
 metricbeats_modules:
   - system
-  - docker
+  - docker # TODO : check if docker is needed
   - mysql # enable metrics for mysql
 
 ### End of docker elastic parameters ###
@@ -298,8 +298,8 @@ global_backup_jobs:
 # what to keep ?
 global_backup_excludes:
   - "+ /home"
-  - "+ /var/lib/docker/volumes"
-  - "+ /var/lib/docker/swarm"
+  - "+ /var/lib/docker/volumes" # TODO : check if docker is needed
+  - "+ /var/lib/docker/swarm" # TODO : check if docker is needed
   - "- **" # only keep home folder and swarm
 ### End of Backup strategy parameters ###
 ...
