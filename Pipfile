@@ -11,6 +11,8 @@ ansible-lint = "*"
 molecule-docker = "*"
 pre-commit = "*"
 jmespath = "*"
+jc = "*"
+netaddr = "*"
 
 [dev-packages]
 black = "*"
