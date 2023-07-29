@@ -6,35 +6,15 @@
     block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - DNS allowed ip whitelist ###"
 
-- name: List existing DNS UFW rules
-  become: true
-  ansible.builtin.shell: >
-    set -o pipefail &&
-    ufw status numbered | grep -zoP '\[.*\]\s53(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'
-    | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
-  args:
-    executable: /bin/bash
-  changed_when: false
-  ignore_errors: true # in case no rule already exists
-  register: ufw_dns_rules
-
-- name: UFW delete existing DNS rules - tcp,udp/53
-  become: true
-  ansible.builtin.shell: >
-    set -o pipefail &&
-    (yes || true) | ufw delete {{ item | quote }}
-  with_items: "{{ ufw_dns_rules.stdout_lines }}"
-  when: ufw_dns_rules.stdout_lines | length > 0
-  args:
-    executable: /bin/bash
-  register: cmd_output
-  changed_when: cmd_output.rc != 0
-
 - name: UFW Allow DNS clients - tcp,udp/53
   become: true
-  community.general.ufw:
-    rule: allow
-    port: "53"
-    src: "{{ item }}"
-  with_items: "{{ dns_allowed_hosts }}"
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "53"
+      rule: "allow"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ dns_allowed_hosts }}"
 ...

@@ -8,37 +8,18 @@
     marker: "### {mark} ANSIBLE MANAGED BLOCK - backup ip whitelist ###"
 
 ## same with firewall rules
-- name: List existing sftp backup UFW rules
-  become: true
-  ansible.builtin.shell: >
-    set -o pipefail &&
-    ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port | quote }}(?!\\d).*\# backup client allowed\n'
-    | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
-  changed_when: false
-  ignore_errors: true # in case no rule already exists
-  register: ufw_ssh_backup_rules
-  args:
-    executable: /bin/bash
-
-- name: UFW delete existing sftp backup rules - tcp,udp/ssh
-  become: true
-  ansible.builtin.shell: >
-    set -o pipefail &&
-    (yes || true) | ufw delete {{ item | quote }}
-  with_items: "{{ ufw_ssh_backup_rules.stdout_lines }}"
-  when: ufw_ssh_backup_rules.stdout_lines | length > 0
-  args:
-    executable: /bin/bash
-  register: cmd_output
-  changed_when: cmd_output.rc != 0
 
 - name: UFW Allow sftp backup clients - LIMIT tcp/ssh
   become: true
-  community.general.ufw: # noqa jinja[invalid]
-    rule: limit
-    port: ssh
-    proto: tcp
-    src: "{{ item }}"
-    comment: 'backup client allowed'
-  with_items: "{{ backup_users | community.general.json_query('[*].restrict_ips') | list | flatten | unique | default([]) }}"
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "{{ sshd_port | quote }}"
+      rule: "limit"
+      proto: tcp
+      direction: in
+      comment: "backup client allowed"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ backup_users | community.general.json_query('[*].restrict_ips') | list | flatten | unique | default([]) }}"
 ...

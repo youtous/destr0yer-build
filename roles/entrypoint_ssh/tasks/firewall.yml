@@ -1,46 +1,15 @@
 ---
-# firewall rules for ssh
-- name: List existing ssh UFW rules
-  become: true
-  ansible.builtin.shell: >
-    set -o pipefail &&
-    ufw status numbered | grep -zoP '\[.*\]\s{{ sshd_port | quote }}(?!\\d).*\n'
-    | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'  | tr --delete [:blank:] | sed 's/\x0//g'
-    | sort -rn | sed '/^s*$/d'
-  changed_when: false
-  register: ufw_ssh_rules
-  ignore_errors: true # in case no rule already exists
-  args:
-    executable: /bin/bash
-
-- name: UFW delete existing ssh rules - tcp,udp/ssh
-  become: true
-  ansible.builtin.shell: >
-    set -o pipefail &&
-    (yes || true) | ufw delete {{ item | quote }}
-  with_items: "{{ ufw_ssh_rules.stdout_lines }}"
-  when: ufw_ssh_rules.stdout_lines | length > 0
-  args:
-    executable: /bin/bash
-  register: cmd_output
-  changed_when: cmd_output.rc != 0
-
-- name: UFW Allow ssh local clients - ALLOW tcp/ssh
-  become: true
-  community.general.ufw:
-    rule: allow
-    port: ssh
-    proto: tcp
-    src: "{{ item }}"
-  with_items: "{{ ssh_entrypoints_local_interfaces_ips }}"
-
 - name: UFW Allow ssh clients - ALLOW tcp/ssh
   become: true
-  community.general.ufw:
-    rule: allow
-    port: ssh
-    proto: tcp
-    src: "{{ item }}"
-  with_items: "{{ ssh_entrypoints }}"
-
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "{{ sshd_port | quote }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "standard ssh connection"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ ssh_entrypoints_local_interfaces_ips | default([]) + ssh_entrypoints | default([]) | flatten }}"
 ...

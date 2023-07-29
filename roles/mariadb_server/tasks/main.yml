@@ -76,37 +76,17 @@
     block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
     marker: "### {mark} ANSIBLE MANAGED BLOCK - mariadb allowed ip whitelist ###"
 
-- name: List existing mariadb UFW rules
+- name: "UFW Allow mariadb clients - tcp,udp/{{ mariadb_port }}"
   become: true
-  ansible.builtin.shell: >
-    set -o pipefail &&
-    ufw status numbered | grep -zoP '\[.*\]\s3306(?!\\d).*\n'  | sed -E 's/\[\s*([0-9]+)\].*$/\1/g'
-    | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
-  changed_when: false
-  ignore_errors: true # in case no rule already exists
-  register: ufw_mariadb_rules
-  args:
-    executable: /bin/bash
-
-- name: UFW delete existing mariadb rules - tcp,udp/3306
-  become: true
-  ansible.builtin.shell: >
-    set -o pipefail &&
-    (yes || true) | ufw delete {{ item | quote }}
-  with_items: "{{ ufw_mariadb_rules.stdout_lines }}"
-  when: ufw_mariadb_rules.stdout_lines | length > 0
-  args:
-    executable: /bin/bash
-  register: cmd_output
-  changed_when: cmd_output.rc != 0
-
-- name: UFW Allow mariadb clients - tcp,udp/3306
-  become: true
-  community.general.ufw:
-    rule: allow
-    port: "3306"
-    src: "{{ item }}"
-  with_items: "{{ mariadb_allowed_ips }}"
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "{{ mariadb_port }}"
+      rule: "allow"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ mariadb_allowed_ips }}"
 
 - name: Configure logrotate for mariadb
   ansible.builtin.import_role:
