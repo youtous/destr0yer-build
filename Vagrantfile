@@ -60,7 +60,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			node.vm.provision :shell, inline: "echo 'auto eth0' > /etc/network/interfaces.d/eth0"
 			node.vm.hostname = machine[:hostname]
 			node.vm.network :private_network, ip: machine[:ipv4], auto_config: true
-			node.vm.network :private_network, ip: machine[:ipv6], auto_config: false
+			node.vm.network :private_network, ip: machine[:ipv6], auto_config: true
 
 			node.vm.provider :virtualbox do |vb|
 				vb.customize ["modifyvm", :id, "--memory", machine[:ram]]
