@@ -8,78 +8,83 @@ collections:
   - name: ansible.posix
 
 roles:
+    # ufw smart rules
+  - name: youtous.ufw_smart_rules
+    src: git+https://github.com/youtous/ansible-ufw-smart-rules.git
+    version: 2aa2b0f252c2a67564bf568e516011ea603f65f5
+
     # k3s
   - name: xanmanning.k3s
-    src: https://github.com/PyratLabs/ansible-role-k3s.git
+    src: git+https://github.com/PyratLabs/ansible-role-k3s.git
     version: 37cca2e4874296961cc0138533cadd824f4fdb74
 
   # swap
   - name: geerlingguy.swap
-    src: https://github.com/geerlingguy/ansible-role-swap.git
+    src: git+https://github.com/geerlingguy/ansible-role-swap.git
     version: 27d6d46f298d8f13e295acec5b65623c204bd49b
 
   # user management
   - name: youtous.users
-    src: https://github.com/youtous/ansible-users.git
+    src: git+https://github.com/youtous/ansible-users.git
     version: 79dbcbc58181580c1fc01e233d59ee6248267c3d
 
   # Logrotate
   - name: arillso.logrotate
-    src: https://github.com/arillso/ansible.logrotate.git
+    src: git+https://github.com/arillso/ansible.logrotate.git
     version: 0aced5bf8e938b8eee2d902bd3c9262c764c2e54
 
   # Fail2ban
   - name: oefenweb.fail2ban
-    src: https://github.com/Oefenweb/ansible-fail2ban.git
+    src: git+https://github.com/Oefenweb/ansible-fail2ban.git
     version: 4b02c28f346fddcd32f329ac1eacc5d420b35382
 
   # Docker
   - name: geerlingguy.docker
-    src: https://github.com/geerlingguy/ansible-role-docker.git
+    src: git+https://github.com/geerlingguy/ansible-role-docker.git
     version: c94e327a74a16a85f23d73be386c161a9cfe81d4
 
   # Resolv.conf
   - name: ahuffman.resolv
-    src: https://github.com/ahuffman/ansible-resolv.git
+    src: git+https://github.com/ahuffman/ansible-resolv.git
     version: bf111291a0e0145bdb91b8fa00510bd826bb3c55
 
   # journald conf
   - name: 0x0I.journald
-    src: https://github.com/0x0I/ansible-role-journald.git
+    src: git+https://github.com/0x0I/ansible-role-journald.git
     version: 26a0b11533326a5779951090e7cc4b59d3962fb4
 
   # golang installer
   - name: fubarhouse.golang
-    src: https://github.com/fubarhouse/ansible-role-golang.git
+    src: git+https://github.com/fubarhouse/ansible-role-golang.git
     version: e9989fa6a65053ae7c7364be20f652ad7c189e0f
 
   # Email notification on login
   - name: grzegorznowak.ansible_ssh_login_notifications
-    src: https://github.com/spottmedia/ansible-ssh-login-notifications.git
+    src: git+https://github.com/spottmedia/ansible-ssh-login-notifications.git
     version: 9ba28df6612c7cabf43483206c3234a326720513
 
   # Logwatch
   - name: youtous.logwatch
-    src: https://github.com/youtous/ansible-logwatch.git
+    src: git+https://github.com/youtous/ansible-logwatch.git
     version: 09973157886f0568b8051b20c276fe9d50b13fed
 
   # Duplicity backups
   - name: oefenweb.duply-backup
-    src: https://github.com/Oefenweb/ansible-duply-backup.git
+    src: git+https://github.com/Oefenweb/ansible-duply-backup.git
     version: bc8d65b7ff445e6aea3cedf5c8cd238d2c4f8820
 
   # Network interfaces
   - name: MichaelRigart.interfaces
-    src: https://github.com/michaelrigart/ansible-role-interfaces.git
+    src: git+https://github.com/michaelrigart/ansible-role-interfaces.git
     version: dc80e628e6ee42937c209d539b00de8f4659f6e9
 
   # PostgreSQL
   - name: geerlingguy.postgresql
-    src: https://github.com/geerlingguy/ansible-role-postgresql.git
+    src: git+https://github.com/geerlingguy/ansible-role-postgresql.git
     version: e61751f344dbd1fd05dc82311d88b1f2bc71d21f
 
   # Mariadb
   - name: geerlingguy.mysql
-    src: https://github.com/geerlingguy/ansible-role-mysql.git
+    src: git+https://github.com/geerlingguy/ansible-role-mysql.git
     version: 2000f55fe4c424ed2409206160b2718c259faea4
 ...
