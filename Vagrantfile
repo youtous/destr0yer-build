@@ -79,6 +79,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     				    echo #{ssh_pub_key} >> /root/.ssh/authorized_keys
     				SHELL
      		end
+
+			node.vm.synced_folder '.', '/vagrant', disabled: true
 		end
     end
 end
