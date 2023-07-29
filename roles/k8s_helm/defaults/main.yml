@@ -1,0 +1,8 @@
+---
+k8s_helm_version: 'v3.12.2'
+
+
+k8s_helm_version_sha256sum: '2b6efaa009891d3703869f4be80ab86faa33fa83d9d5ff2f6492a8aebe97b219'
+k8s_helm_os: "linux"
+k8s_helm_arch: "amd64"
+...

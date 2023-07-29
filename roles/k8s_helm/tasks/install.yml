@@ -1,0 +1,50 @@
+---
+- name: Import GPG keyring
+  ansible.builtin.import_tasks: import_gpg.yml
+
+- name: Create build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: build
+  register: tmp_dir_build
+
+- name: Download helm release and verify checksum
+  ansible.builtin.get_url:
+    url: "{{ k8s_helm_download_release_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ k8s_helm_archive_name }}"
+    checksum: "sha256:{{ k8s_helm_version_sha256sum }}"
+    mode: u=rw,g=,o=
+
+- name: Download helm release signature
+  ansible.builtin.get_url:
+    url: "{{ k8s_helm_download_signature_release_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ k8s_helm_archive_name }}.asc"
+    mode: u=rw,g=,o=
+
+- name: Check GPG signature
+  ansible.builtin.command: gpg --verify "{{ tmp_dir_build.path }}/{{ k8s_helm_archive_name }}.asc" "{{ tmp_dir_build.path }}/{{ k8s_helm_archive_name }}"
+  register: gpg_result
+  failed_when: gpg_result.rc != 0
+  changed_when: false
+
+- name: Extract downloaded release
+  ansible.builtin.unarchive:
+    src: "{{ tmp_dir_build.path }}/{{ k8s_helm_archive_name }}"
+    dest: "{{ tmp_dir_build.path }}"
+    remote_src: true
+
+- name: Copy helm binary
+  become: true
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ tmp_dir_build.path }}/{{ k8s_helm_os }}-{{ k8s_helm_arch }}/helm"
+    dest: "{{ k8s_helm_path }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
+- name: Remove the temporary build directory
+  ansible.builtin.file:
+    path: "{{ tmp_dir_build.path }}"
+    state: absent
+...

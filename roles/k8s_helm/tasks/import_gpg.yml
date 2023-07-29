@@ -1,0 +1,32 @@
+---
+# Import keys of the releasers
+
+- name: Create a temporary GPG key file
+  ansible.builtin.tempfile:
+    state: file
+    suffix: '.gpg'
+  register: gpg_tempfile
+
+- name: Save the GPG key content to the temporary file
+  ansible.builtin.copy:
+    content: "{{ k8s_helm_gpg_keyring }}"
+    dest: "{{ gpg_tempfile.path }}"
+
+- name: Import the GPG key using the command
+  ansible.builtin.command: gpg --import "{{ gpg_tempfile.path }}"
+  register: gpg_import_result
+
+- name: Display GPG key import result
+  ansible.builtin.debug:
+    var: gpg_import_result
+
+- name: Remove the temporary GPG key file
+  ansible.builtin.file:
+    path: "{{ gpg_tempfile.path }}"
+    state: absent
+
+- name: Fail if GPG key import is unsuccessful
+  ansible.builtin.fail:
+    msg: "Failed to import GPG key."
+  when: gpg_import_result.rc != 0
+...

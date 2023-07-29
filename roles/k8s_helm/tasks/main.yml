@@ -1,0 +1,22 @@
+---
+# This role install or update helm if needed
+
+- name: Check if helm is installed
+  ansible.builtin.stat:
+    path: "{{ k8s_helm_path }}"
+  register: helm_binary_present
+
+- name: Get helm installed version
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    {{ k8s_helm_path }} version | grep "{{ k8s_helm_version }}" --only-matching
+  args:
+    executable: /bin/bash
+  when: helm_binary_present.stat.exists
+  changed_when: false
+  register: helm_current_version
+
+- name: Install helm
+  when: not helm_binary_present.stat.exists or (helm_current_version.stdout != k8s_helm_version)
+  ansible.builtin.import_tasks: install.yml
+...
