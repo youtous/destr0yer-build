@@ -1,5 +1,9 @@
 ---
 sysctl_vm_overcommit_memory: '0'
+sysctl_vm_panic_on_oom: '0'
 sysctl_net_core_somaxconn: '4096'
 sysctl_vm_max_map_count: '262144'
+sysctl_kernel_panic: '10'
+sysctl_kernel_panic_on_oops: '1'
+sysctl_kernel_keys_root_maxbytes: '25000000'
 ...

@@ -30,4 +30,44 @@
     state: present
     reload: true
   notify: reboot
+
+- name: VM Panic on OOM
+  become: true
+  ansible.posix.sysctl:
+    name: vm.panic_on_oom
+    value: "{{ sysctl_vm_panic_on_oom }}"
+    sysctl_set: true
+    state: present
+    reload: true
+  notify: reboot
+
+- name: Kernel Panic
+  become: true
+  ansible.posix.sysctl:
+    name: kernel.panic
+    value: "{{ sysctl_kernel_panic }}"
+    sysctl_set: true
+    state: present
+    reload: true
+  notify: reboot
+
+- name: Kernel Panic on oops
+  become: true
+  ansible.posix.sysctl:
+    name: kernel.panic_on_oops
+    value: "{{ sysctl_kernel_panic_on_oops }}"
+    sysctl_set: true
+    state: present
+    reload: true
+  notify: reboot
+
+- name: Kernel Keys root max bytes
+  become: true
+  ansible.posix.sysctl:
+    name: kernel.keys.root_maxbytes
+    value: "{{ sysctl_kernel_keys_root_maxbytes }}"
+    sysctl_set: true
+    state: present
+    reload: true
+  notify: reboot
 ...
