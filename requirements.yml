@@ -6,6 +6,7 @@ collections:
   - name: community.docker
   - name: community.general
   - name: ansible.posix
+  - name: kubernetes.core
 
 roles:
     # ufw smart rules

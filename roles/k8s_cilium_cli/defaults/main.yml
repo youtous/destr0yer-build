@@ -1,0 +1,8 @@
+---
+# see https://github.com/cilium/cilium-cli/releases/tag/v0.15.4
+k8s_cilium_cli_version: v0.15.4
+k8s_cilium_cli_version_sha256sum: '73a8182f8af6b91f08618831c2946a67eecd56124aa8be065bd7cf61fd1fa0dd'
+
+k8s_cilium_cli_os: "linux"
+k8s_cilium_cli_arch: "amd64"
+...

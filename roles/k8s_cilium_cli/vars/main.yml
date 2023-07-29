@@ -1,0 +1,9 @@
+---
+k8s_cilium_path: "/usr/local/bin/cilium"
+k8s_cilium_release_channel: "https://github.com/cilium/cilium-cli/releases/download"
+
+k8s_cilium_archive_name: "cilium-{{ k8s_cilium_cli_os }}-{{ k8s_cilium_cli_arch }}.tar.gz"
+k8s_cilium_download_release_url: "{{ k8s_cilium_release_channel }}/{{ k8s_cilium_cli_version }}/{{ k8s_cilium_archive_name }}"
+
+k8s_cilium_cli_version_output: "cilium-cli: {{ k8s_cilium_cli_version }}"
+...
