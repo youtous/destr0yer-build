@@ -24,8 +24,10 @@ mariadb_client_ipv6: "{{ ipv6_private }}"
 
 # smtp relay parameters
 relay_email: monitoring-heaven-pascal@youtous.me
-relay_user: "{{ relay_email }}"
-relay_password: "{{ secret_relay_password }}"
+
+# relay disabled on this host
+# relay_user: "{{ relay_email }}"
+# relay_password: "{{ secret_relay_password }}"
 
 ### End of smtp relay parameters ###
 
