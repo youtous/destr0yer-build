@@ -17,6 +17,7 @@
     - k3s
     - k8s_helm
     - k8s_cilium_cli
+    - k8s_k9s
     # - monit_k3s # TODO : create k3s monit role
   vars_files:
     - ../secret_vars/{{ server_environment }}/all.yml

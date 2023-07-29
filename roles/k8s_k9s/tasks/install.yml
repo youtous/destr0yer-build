@@ -1,0 +1,35 @@
+---
+- name: Create build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: build
+  register: tmp_dir_build
+
+- name: Download k9s release and verify checksum
+  ansible.builtin.get_url:
+    url: "{{ k8s_k9s_download_release_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ k8s_k9s_archive_name }}"
+    checksum: "sha256:{{ k8s_k9s_version_sha256sum }}"
+    mode: u=rw,g=,o=
+
+- name: Extract downloaded release
+  ansible.builtin.unarchive:
+    src: "{{ tmp_dir_build.path }}/{{ k8s_k9s_archive_name }}"
+    dest: "{{ tmp_dir_build.path }}"
+    remote_src: true
+
+- name: Copy k9s binary
+  become: true
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ tmp_dir_build.path }}/k9s"
+    dest: "{{ k8s_k9s_path }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
+- name: Remove the temporary build directory
+  ansible.builtin.file:
+    path: "{{ tmp_dir_build.path }}"
+    state: absent
+...
