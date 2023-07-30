@@ -11,8 +11,8 @@ cilium_k8s_helm_values:
 
   ipam:
     operator:
-      clusterPoolIPv4PodCIDRList: "10.43.0.0/16" # should be the same as the K8s cluster
-      clusterPoolIPv4MaskSize: "20"
+      clusterPoolIPv4PodCIDRList: "10.43.0.0/16" # define the service pool of ips (for all nodes)
+      clusterPoolIPv4MaskSize: "24" # mask size for each node
 
 
 cilium_helm_show_commands: true
