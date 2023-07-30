@@ -1,0 +1,4 @@
+---
+certmanager_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+certmanager_chart_archive_name: "cert-manager-{{ certmanager_k3s_chart_version }}.tgz"
+...

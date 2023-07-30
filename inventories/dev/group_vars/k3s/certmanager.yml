@@ -1,0 +1,18 @@
+# Cluster Cert issuer
+certmanager_k8s_cluster_cert_issuer:
+  apiVersion: cert-manager.io/v1
+  kind: ClusterIssuer
+  metadata:
+    name: letsencrypt-staging
+  spec:
+    acme:
+      email: monitoring+letsencrypt@test.org
+      server: https://acme-staging-v02.api.letsencrypt.org/directory
+      privateKeySecretRef:
+        # Secret used to store the account's private key.
+        name: le-cluster-issuer-account-key
+      # Add a ACME HTTP01 challenge solver
+      solvers:
+      - http01:
+          ingress:
+            ingressClassName: haproxy

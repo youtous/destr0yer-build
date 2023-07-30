@@ -1,0 +1,47 @@
+---
+- name: Create build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: build
+  register: tmp_dir_build
+
+- name: Download the chart
+  ansible.builtin.get_url:
+    url: "{{ certmanager_k3s_chart_download_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ certmanager_chart_archive_name }}"
+    checksum: "sha256:{{ certmanager_k3s_chart_sha265sum }}"
+    mode: u=rw,g=,o=
+
+- name: Install certmanager chart
+  become: true # TODO : remove all become on Kube ressouruces => the token should be availble on the acount
+  kubernetes.core.helm:
+    name: "{{ certmanager_helm_release_name }}"
+    chart_ref: "{{ tmp_dir_build.path }}/{{ certmanager_chart_archive_name }}"
+    release_namespace: "{{ certmanager_k8s_namespace }}"
+    create_namespace: true
+    values: "{{ certmanager_k8s_helm_values }}"
+  register: certmanager__helm_install_chart
+  environment:
+    KUBECONFIG: "{{ certmanager_kubeconfig_path }}"
+
+- name: Show install helm chart command
+  when:
+    - certmanager__helm_install_chart is defined
+    - certmanager__helm_install_chart.stdout is defined
+    - certmanager_helm_show_commands
+  ansible.builtin.debug:
+    var: certmanager__helm_install_chart.stdout
+
+- name: Cleanup build directory
+  ansible.builtin.file:
+    state: absent
+    path: "{{ tmp_dir_build.path }}"
+
+- name: Setup ClusterIssuer
+  become: true
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ certmanager_k8s_cluster_cert_issuer }}"
+  environment:
+    KUBECONFIG: "{{ certmanager_kubeconfig_path }}"
+...

@@ -31,6 +31,7 @@
   hosts: k3s_control_node[0]
   roles:
     - k3s_cilium
+    - k3s_certmanager
     - k3s_haproxy
   vars_files:
     - ../secret_vars/{{ server_environment }}/all.yml

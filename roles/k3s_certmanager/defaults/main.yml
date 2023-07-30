@@ -1,0 +1,36 @@
+---
+# Certmanager variables
+
+certmanager_k3s_chart_version: "v1.12.3"
+certmanager_k3s_chart_download_url: "https://charts.jetstack.io/charts/cert-manager-{{ certmanager_k3s_chart_version }}.tgz"
+certmanager_k3s_chart_sha265sum: "2ecb7518e9adc7028841ec05eb37dff417cd4e70b80b8f24f1ee4e76e985f80f"
+
+certmanager_helm_release_name: certmanager
+
+certmanager_k8s_namespace: cert-manager
+
+certmanager_k8s_helm_values:
+  installCRDs: true
+  namespace: "{{ certmanager_k8s_namespace }}"
+
+# Cluster Cert issuer
+certmanager_k8s_cluster_cert_issuer:
+  apiVersion: cert-manager.io/v1
+  kind: ClusterIssuer
+  metadata:
+    name: letsencrypt-staging
+  spec:
+    acme:
+      email: myemail@company.com
+      server: https://acme-staging-v02.api.letsencrypt.org/directory
+      privateKeySecretRef:
+        # Secret used to store the account's private key.
+        name: le-cluster-issuer-account-key
+      # Add a ACME HTTP01 challenge solver
+      solvers:
+      - http01:
+          ingress:
+            ingressClassName: haproxy
+
+certmanager_helm_show_commands: true
+...
