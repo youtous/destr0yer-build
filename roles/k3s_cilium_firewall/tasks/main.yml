@@ -78,4 +78,18 @@
       direction: in
     ufw_rules_criteria: from_ips
     ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium VM network to access k8s host network"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_ip: "{{ k3s_cilium_k8s_service_host }}"
+      to_port: "{{ k3s_cilium_k8s_service_port }}"
+      rule: "allow"
+      direction: in
+      comment: "cilium kube api access"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_cilium_allowed_k8s_service_access }}"
 ...
