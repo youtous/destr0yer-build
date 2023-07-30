@@ -7,9 +7,9 @@
 
 - name: Git clone helm repo
   ansible.builtin.git:
-    repo: "{{ haproxy_k3s_git_repository }}"
+    repo: "{{ haproxy_git_repository }}"
     dest: "{{ tmp_dir_build.path }}"
-    version: "{{ haproxy_k3s_git_version }}"
+    version: "{{ haproxy_git_version }}"
 
 - name: Install HAProxy chart
   become: true

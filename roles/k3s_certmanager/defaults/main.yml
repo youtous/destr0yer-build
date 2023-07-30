@@ -1,9 +1,9 @@
 ---
 # Certmanager variables
 
-certmanager_k3s_chart_version: "v1.12.3"
-certmanager_k3s_chart_download_url: "https://charts.jetstack.io/charts/cert-manager-{{ certmanager_k3s_chart_version }}.tgz"
-certmanager_k3s_chart_sha265sum: "2ecb7518e9adc7028841ec05eb37dff417cd4e70b80b8f24f1ee4e76e985f80f"
+certmanager_chart_version: "v1.12.3"
+certmanager_chart_download_url: "https://charts.jetstack.io/charts/cert-manager-{{ certmanager_chart_version }}.tgz"
+certmanager_chart_sha265sum: "2ecb7518e9adc7028841ec05eb37dff417cd4e70b80b8f24f1ee4e76e985f80f"
 
 certmanager_helm_release_name: certmanager
 
@@ -18,7 +18,7 @@ certmanager_k8s_cluster_cert_issuer:
   apiVersion: cert-manager.io/v1
   kind: ClusterIssuer
   metadata:
-    name: letsencrypt-staging
+    name: letsencrypt
   spec:
     acme:
       email: myemail@company.com

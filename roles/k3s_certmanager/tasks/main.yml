@@ -7,9 +7,9 @@
 
 - name: Download the chart
   ansible.builtin.get_url:
-    url: "{{ certmanager_k3s_chart_download_url }}"
+    url: "{{ certmanager_chart_download_url }}"
     dest: "{{ tmp_dir_build.path }}/{{ certmanager_chart_archive_name }}"
-    checksum: "sha256:{{ certmanager_k3s_chart_sha265sum }}"
+    checksum: "sha256:{{ certmanager_chart_sha265sum }}"
     mode: u=rw,g=,o=
 
 - name: Install certmanager chart

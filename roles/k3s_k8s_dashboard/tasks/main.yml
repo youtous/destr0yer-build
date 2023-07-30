@@ -1,0 +1,39 @@
+---
+- name: Create build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: build
+  register: tmp_dir_build
+
+- name: Download the chart
+  ansible.builtin.get_url:
+    url: "{{ k8s_dashboard_chart_download_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ k8s_dashboard_chart_archive_name }}"
+    checksum: "sha256:{{ k8s_dashboard_chart_sha265sum }}"
+    mode: u=rw,g=,o=
+
+- name: Install k8s-dashboard chart
+  become: true # TODO : remove all become on Kube ressouruces => the token should be availble on the acount
+  kubernetes.core.helm:
+    name: "{{ k8s_dashboard_helm_release_name }}"
+    chart_ref: "{{ tmp_dir_build.path }}/{{ k8s_dashboard_chart_archive_name }}"
+    release_namespace: "{{ k8s_dashboard_k8s_namespace }}"
+    create_namespace: true
+    values: "{{ k8s_dashboard_k8s_helm_values }}"
+  register: k8s_dashboard__helm_install_chart
+  environment:
+    KUBECONFIG: "{{ k8s_dashboard_kubeconfig_path }}"
+
+- name: Show install helm chart command
+  when:
+    - k8s_dashboard__helm_install_chart is defined
+    - k8s_dashboard__helm_install_chart.stdout is defined
+    - k8s_dashboard_helm_show_commands
+  ansible.builtin.debug:
+    var: k8s_dashboard__helm_install_chart.stdout
+
+- name: Cleanup build directory
+  ansible.builtin.file:
+    state: absent
+    path: "{{ tmp_dir_build.path }}"
+...

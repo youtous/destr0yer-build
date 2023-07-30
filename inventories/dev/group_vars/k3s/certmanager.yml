@@ -1,9 +1,13 @@
+---
+# used for generating default sub domains, requires dns wildcard
+k8s_base_cluster_domain: k8s.youtous.dv
+
 # Cluster Cert issuer
 certmanager_k8s_cluster_cert_issuer:
   apiVersion: cert-manager.io/v1
   kind: ClusterIssuer
   metadata:
-    name: letsencrypt-staging
+    name: letsencrypt
   spec:
     acme:
       email: monitoring+letsencrypt@test.org
@@ -16,3 +20,4 @@ certmanager_k8s_cluster_cert_issuer:
       - http01:
           ingress:
             ingressClassName: haproxy
+...

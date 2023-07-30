@@ -1,0 +1,4 @@
+---
+k8s_dashboard_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+k8s_dashboard_chart_archive_name: "kubernetes-dashboard-{{ k8s_dashboard_chart_version }}.tgz"
+...

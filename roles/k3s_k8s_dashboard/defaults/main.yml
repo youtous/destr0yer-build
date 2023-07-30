@@ -1,0 +1,31 @@
+---
+# k8s-dashboard variables
+
+k8s_dashboard_chart_version: "7.0.3"
+k8s_dashboard_chart_download_url: "https://kubernetes.github.io/dashboard/kubernetes-dashboard-{{ k8s_dashboard_chart_version }}.tgz"
+k8s_dashboard_chart_sha265sum: "8f32f02b060b1e4d575cdf2ae120595b7a9397c6f90272ce444beff0b6bf9c1f"
+
+k8s_dashboard_helm_release_name: kubernetes-dashboard
+
+k8s_dashboard_k8s_namespace: kubernetes-dashboard
+
+k8s_dashboard_k8s_helm_values:
+
+  app:
+    ingress:
+      ingressClassName: haproxy
+      issuer:
+        scope: cluster
+        name: letsencrypt
+      hosts:
+        - "dashboard.{{ k8s_base_cluster_domain }}" # adapt to your needs
+
+  nginx:
+    enabled: false
+  cert-manager:
+    enabled: false
+  metrics-server:
+    enabled: false
+
+k8s_dashboard_helm_show_commands: true
+...
