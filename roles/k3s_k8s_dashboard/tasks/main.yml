@@ -13,7 +13,6 @@
     mode: u=rw,g=,o=
 
 - name: Install k8s-dashboard chart
-  become: true # TODO : remove all become on Kube ressouruces => the token should be availble on the acount
   kubernetes.core.helm:
     name: "{{ k8s_dashboard_helm_release_name }}"
     chart_ref: "{{ tmp_dir_build.path }}/{{ k8s_dashboard_chart_archive_name }}"

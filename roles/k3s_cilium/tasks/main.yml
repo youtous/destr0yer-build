@@ -12,7 +12,6 @@
     version: "{{ cilium_helm_git_version }}"
 
 - name: Install cilium chart
-  become: true
   kubernetes.core.helm:
     name: "{{ cilium_helm_release_name }}"
     chart_ref: "{{ tmp_dir_build.path }}/install/kubernetes/cilium"

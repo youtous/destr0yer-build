@@ -1,0 +1,17 @@
+---
+- name: "Check if kubeconfig exists"
+  ansible.builtin.stat:
+    path: "{{ k8s_service_account_kubeconfig_destination }}"
+  register: kubeconfig_exists
+
+- name: Ensure permissions of the kubeconfig folder
+  ansible.builtin.file:
+    path: "{{ k8s_service_account_kubeconfig_destination | ansible.builtin.dirname }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: u=rwx,g=,o=
+
+- name: Create ServiceAccount with kubeconfig
+  ansible.builtin.import_tasks: create.yml
+  when: not kubeconfig_exists.stat.exists
+...

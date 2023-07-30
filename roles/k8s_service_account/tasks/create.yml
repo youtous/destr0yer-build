@@ -1,0 +1,67 @@
+---
+- name: Create ServiceAccount
+  become: true
+  run_once: true
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: "{{ k8s_service_account_name }}"
+        namespace: "{{ k8s_service_account_namespace }}"
+  environment:
+    KUBECONFIG: "{{ k8s_service_account_kubeconfig_path }}"
+
+- name: Give admin permissions to ServiceAccount
+  become: true
+  run_once: true
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: "{{ k8s_service_account_name }}"
+        namespace: "{{ k8s_service_account_namespace }}"
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - kind: ServiceAccount
+          name: "{{ k8s_service_account_name }}"
+          namespace: "{{ k8s_service_account_namespace }}"
+  environment:
+    KUBECONFIG: "{{ k8s_service_account_kubeconfig_path }}"
+
+- name: Fetch the token for the Service Account
+  become: true
+  ansible.builtin.command: "kubectl --namespace={{ k8s_service_account_namespace }} create token {{ k8s_service_account_name }}"
+  run_once: true
+  changed_when: false
+  register: _service_account_token
+  failed_when: _service_account_token.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_service_account_kubeconfig_path }}"
+
+- name: Fetch the kubernetes ca
+  become: true
+  ansible.builtin.command: kubectl config view --raw -o {% raw %}go-template='{{index ((index (index .clusters 0) "cluster")) "certificate-authority-data" }}'{% endraw %}
+  run_once: true
+  changed_when: false
+  register: _kube_ca_command
+  failed_when: _kube_ca_command.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_service_account_kubeconfig_path }}"
+
+- name: Generate kubeconfig file
+  ansible.builtin.template:
+    src: templates/config.j2.yml
+    dest: "{{ k8s_service_account_kubeconfig_destination }}"
+  vars:
+    _kube_user: "{{ k8s_service_account_name }}"
+    _kube_server: "{{ k8s_service_account_server }}"
+    _kube_user_token: "{{ _service_account_token.stdout }}"
+    _kube_ca: "{{ _kube_ca_command.stdout }}"
+...

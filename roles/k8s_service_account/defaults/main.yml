@@ -1,0 +1,8 @@
+---
+k8s_service_account_name: "alfred-admin"
+k8s_service_account_namespace: "kube-system"
+
+
+k8s_service_account_server: "https://127.0.0.1:6443"
+k8s_service_account_kubeconfig_destination: "~/.kube/config"
+...

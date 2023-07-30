@@ -1,3 +1,3 @@
 ---
-cilium_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+cilium_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 ...
