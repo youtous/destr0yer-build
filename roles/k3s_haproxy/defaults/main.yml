@@ -2,11 +2,24 @@
 # HAProxy Ingress variables
 
 haproxy_k3s_git_version: "4e32c08fb654336551e62ba30e9d06be00d5eeae"
-
 haproxy_k3s_git_repository: "https://github.com/haproxytech/helm-charts.git"
 
-haproxy_k3s_node_ports_http: 30000
-haproxy_k3s_node_ports_https: 30001
-haproxy_k3s_node_ports_stat: 30002
+haproxy_helm_release_name: haproxy-ingress
 
+haproxy_k8s_namespace: haproxy-ingress
+
+haproxy_k8s_helm_values:
+  kind: DaemonSet
+  controller:
+    hostNetwork: true
+    ingressClassResource:
+      enabled: true
+
+    service:
+      nodePorts:
+        http: 80
+        https: 443
+        stat: 1024
+
+haproxy_helm_show_commands: true
 ...

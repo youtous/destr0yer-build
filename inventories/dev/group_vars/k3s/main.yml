@@ -17,7 +17,7 @@ k3s_installation_server:
 
   # IPv4 Cluster IP for coredns service. Should be in your service-cidr range
   cluster-dns: "10.43.0.10"
-  
+
   kube-apiserver-arg:
     #- 'admission-control-config-file=/var/lib/rancher/k3s/server/psa.yaml' # TODO : enable
     #- 'audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log'
@@ -27,6 +27,7 @@ k3s_installation_server:
     - 'audit-log-maxsize=100'
     - 'request-timeout=300s'
     - 'service-account-lookup=true'
+    - 'service-node-port-range=25-16000' # allow self hosting w/o LB
   kube-controller-manager-arg:
     - 'terminated-pod-gc-threshold=10'
     - 'use-service-account-credentials=true'
