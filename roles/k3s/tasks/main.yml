@@ -9,15 +9,43 @@
       - python3-kubernetes
     state: present
 
-- name: Setup k3s-resolv.conf
+- name: Create Rancher and k3s directories if not exists
   become: true
-  ansible.builtin.template:
-    src: "templates/k3s-resolv.conf.j2"
-    dest: "/etc/k3s-resolv.conf"
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item }}"
     owner: root
     group: root
-    mode: u=rw,g=r,o=r
+    mode: u=rwx,g=rx,o=x
+  with_items:
+    - "{{ k3s_var_lib_rancher_path }}"
+    - "{{ k3s_var_lib_k3s_path }}"
 
+- name: Create k3s server and manifests directories if not exists
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+  with_items:
+    - "{{ k3s_var_lib_server_path }}"
+    - "{{ k3s_var_lib_manifests_path }}"
+
+# If you plan to override a manifest, consider disabling the related service as the overriding 
+# does not take care of ordre update
+- name: Copy overrided manifests
+  become: true
+  ansible.builtin.template:
+    src: "templates/{{ item.src }}"
+    dest: "{{ k3s_var_lib_manifests_path }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  with_items: 
+    - {src: coredns.override.j2.yaml, dest: coredns.override.yaml }
+  
 - name: Install k3s and configure
   ansible.builtin.import_role:
     name: xanmanning.k3s

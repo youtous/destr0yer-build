@@ -1,0 +1,6 @@
+---
+k3s_var_lib_rancher_path: "/var/lib/rancher"
+k3s_var_lib_k3s_path: "{{ k3s_var_lib_rancher_path }}/k3s"
+k3s_var_lib_server_path: "{{ k3s_var_lib_k3s_path }}/server"
+k3s_var_lib_manifests_path: "{{ k3s_var_lib_server_path }}/manifests"
+...

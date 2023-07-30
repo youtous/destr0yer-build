@@ -14,6 +14,10 @@ k3s_installation_server:
   secrets-encryption: true
   protect-kernel-defaults: true
   selinux: false # todo: set it to true
+
+  # IPv4 Cluster IP for coredns service. Should be in your service-cidr range
+  cluster-dns: "10.43.0.10"
+  
   kube-apiserver-arg:
     #- 'admission-control-config-file=/var/lib/rancher/k3s/server/psa.yaml' # TODO : enable
     #- 'audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log'
@@ -42,6 +46,7 @@ k3s_installation_server:
   disable:
     - traefik
     - servicelb
+    - coredns
 
 k3s_installation_agent:
   protect-kernel-defaults: true
@@ -55,7 +60,6 @@ k3s_installation_agent:
   with-node-id: false
 
   # network
-  cluster-cidr: "10.42.0.0/16" # configure ipv4 and # TODO: ipv6 stack
   node-ip: "{{ ipv4_private | first }}"
   node-external-ip: "{{ ipv4 | first }}"
 

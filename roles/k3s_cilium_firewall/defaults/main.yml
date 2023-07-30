@@ -24,4 +24,6 @@ k3s_cilium_k8s_service_host: "{{ cilium_k8s_helm_values.k8sServiceHost }}"
 # extended from k3s role
 k3s_ufw_kube_api_port: "6443"
 k3s_ufw_kubelet_metrics_port: "10250"
+
+k3s_ufw_host_dns_port: "53"
 ...

@@ -109,4 +109,17 @@
       comment: cilium extended rule
     ufw_rules_criteria: from_ips
     ufw_rule_from_ips: "{{ k3s_cilium_allowed_k8s_service_access }}"
+
+- name: "UFW Allow host dns access (cilium service network) - ALLOW {{ k3s_ufw_host_dns_port }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "{{ k3s_ufw_host_dns_port }}"
+      rule: "allow"
+      direction: in
+      comment: cilium extended rule
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_cilium_allowed_k8s_service_access }}"
 ...
