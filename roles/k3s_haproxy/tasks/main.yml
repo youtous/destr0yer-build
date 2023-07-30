@@ -11,20 +11,25 @@
     dest: "{{ tmp_dir_build.path }}"
     version: "{{ haproxy_k3s_git_version }}"
 
-- name: Deploy HAProxy ingress-controller
+- name: Install HAProxy chart
+  become: true
   kubernetes.core.helm:
-    name: haproxy-kubernetes-ingress
-    chart_ref: "{{ tmp_dir_build.path/kubernetes-ingress }}"
-    release_namespace: haproxy-controller
+    name: "{{ haproxy_helm_release_name }}"
+    chart_ref: "{{ tmp_dir_build.path }}/kubernetes-ingress"
+    release_namespace: "{{ haproxy_k8s_namespace }}"
     create_namespace: true
-    values:
-      controller.service.nodePorts.http: "{{ haproxy_k3s_node_ports_http }}"
-      controller.service.nodePorts.https: "{{ haproxy_k3s_node_ports_https }}"
-      controller.service.nodePorts.stat: "{{ haproxy_k3s_node_ports_stat }}"
-      controller.kind: DaemonSet
-      controller.daemonset.useHostPort: true
+    values: "{{ haproxy_k8s_helm_values }}"
+  register: haproxy__helm_install_chart
+  environment:
+    KUBECONFIG: "{{ haproxy_kubeconfig_path }}"
 
-# TODO : check and ensure that source if ip is correct when using nodeports
+- name: Show install helm chart command
+  when:
+    - haproxy__helm_install_chart is defined
+    - haproxy__helm_install_chart.stdout is defined
+    - haproxy_helm_show_commands
+  ansible.builtin.debug:
+    var: haproxy__helm_install_chart.stdout
 
 - name: Cleanup build directory
   ansible.builtin.file:

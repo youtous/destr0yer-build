@@ -118,7 +118,16 @@ k3s_installation_server:
   disable:
     - traefik
     - coredns
-
+  kube-apiserver-arg:
+    #- 'admission-control-config-file=/var/lib/rancher/k3s/server/psa.yaml' # TODO : enable
+    #- 'audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log'
+    #- 'audit-policy-file=/var/lib/rancher/k3s/server/audit.yaml'
+    - 'audit-log-maxage=30'
+    - 'audit-log-maxbackup=10'
+    - 'audit-log-maxsize=100'
+    - 'request-timeout=300s'
+    - 'service-account-lookup=true'
+    - 'service-node-port-range=25-16000' # allow self hosting w/o LB
 # k3s_installation_server:
 #  listen-port: 6443
 
