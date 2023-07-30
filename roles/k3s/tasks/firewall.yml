@@ -1,0 +1,42 @@
+---
+# see https://docs.k3s.io/installation/requirements#inbound-rules-for-k3s-server-nodes
+
+- name: "UFW Allow HA embedded etcd (controllers only) - ALLOW tcp/{{ k3s_ufw_embedded_etcd_port_range }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "{{ k3s_ufw_embedded_etcd_port_range }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_controllers_ips }}"
+
+- name: "UFW Allow kube api (all nodes) - ALLOW tcp/{{ k3s_ufw_kube_api_port }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "{{ k3s_ufw_kube_api_port }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW Allow Kubelet metrics (all nodes) - ALLOW tcp/{{ k3s_ufw_kubelet_metrics_port }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "{{ k3s_ufw_kubelet_metrics_port }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+...

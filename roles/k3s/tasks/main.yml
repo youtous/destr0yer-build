@@ -1,5 +1,13 @@
 ---
-# todo : open ports
+- name: Configure firewall for k3s needs
+  ansible.builtin.import_tasks: firewall.yml
+
+- name: Install python-kubernetes
+  become: true
+  ansible.builtin.package:
+    name:
+      - python3-kubernetes
+    state: present
 
 - name: Install k3s and configure
   ansible.builtin.import_role:
@@ -38,4 +46,5 @@
     k3s_agent: "{{ k3s_installation_agent }}"
     k3s_become: "{{ k3s_installation_become }}"
     k3s_registries: "{{ k3s_installation_registries }}"
+    k3s_registration_address: "{{ k3s_installation_registration_address }}"
 ...

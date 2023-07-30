@@ -111,8 +111,10 @@ k3s_installation_service_env_file: false
 ##
 # Server Configuration
 ##
-
-k3s_installation_server: {}
+# TODO : reintegrate base k3s parameters from inventories
+k3s_installation_server:
+  disable:
+    - traefik
 # k3s_installation_server:
 #  listen-port: 6443
 
@@ -155,4 +157,27 @@ k3s_installation_registries:
 #        key_file:
 #        # path to the ca file used in the registry
 #        ca_file:
+
+# address of the k3s control plane (should be a loadbalancer or a vip)
+# until multiple addresses are supported (see https://github.com/k3s-io/k3s/issues/7325)
+# k3s_installation_registration_address: 
+
+# port ranges
+k3s_ufw_embedded_etcd_port_range: "2379:2380"
+k3s_ufw_kube_api_port: "6443"
+k3s_ufw_kubelet_metrics_port: "10250"
+
+k3s_workers_ips: "{{ 
+  groups['k3s_worker_node'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['k3s_worker_node'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([]) 
+  }}
+  "
+
+k3s_controllers_ips: "{{ 
+  groups['k3s_control_node'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['k3s_control_node'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([]) 
+  }}
+  "
+
+k3s_all_nodes_ips: "{{ k3s_workers_ips + k3s_controllers_ips | flatten | unique }}" 
 ...
