@@ -10,7 +10,6 @@
     repo: "{{ cilium_helm_git_repository }}"
     dest: "{{ tmp_dir_build.path }}"
     version: "{{ cilium_helm_git_version }}"
-    depth: 1
 
 - name: Install cilium chart
   become: true

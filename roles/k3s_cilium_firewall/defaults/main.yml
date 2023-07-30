@@ -15,9 +15,13 @@ k3s_all_nodes_ips: "{{ k3s_workers_ips + k3s_controllers_ips | flatten | unique 
 
 
 # network to be authorized to access to any port on the private network (handled by cilium for filtering)
-k3s_cilium_allowed_k8s_service_access:  
+k3s_cilium_allowed_k8s_service_access:
   - "{{ cilium_k8s_helm_values.ipam.operator.clusterPoolIPv4PodCIDRList }}"
 #  - "{{ cilium_k8s_helm_values.ipam.operator.clusterPoolIPv6PodCIDRList }}"
 k3s_cilium_k8s_service_port: "{{ cilium_k8s_helm_values.k8sServicePort }}"
 k3s_cilium_k8s_service_host: "{{ cilium_k8s_helm_values.k8sServiceHost }}"
+
+# extended from k3s role
+k3s_ufw_kube_api_port: "6443"
+k3s_ufw_kubelet_metrics_port: "10250"
 ...
