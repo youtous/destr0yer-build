@@ -3,9 +3,9 @@
 # This file describes specific host vars
 hostname: host.sample.dv
 ipv4: # /!\ When one of the host ip is changed, playbook should be completely re-run
-  - 192.168.100.10
+  - "192.168.100.10"
 ipv6:
-  - fde4:8dba:82e1::c1
+  - "fde4:8dba:82e1::c1"
 
 ipv4_private:
   - "192.168.100.10"

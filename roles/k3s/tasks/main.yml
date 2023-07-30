@@ -9,6 +9,15 @@
       - python3-kubernetes
     state: present
 
+- name: Setup k3s-resolv.conf
+  become: true
+  ansible.builtin.template:
+    src: "templates/k3s-resolv.conf.j2"
+    dest: "/etc/k3s-resolv.conf"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
 - name: Install k3s and configure
   ansible.builtin.import_role:
     name: xanmanning.k3s

@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+
+# use of specific dns servers for k8s
+{% for dns_server in k3s_dns_servers %}
+nameserver {{ dns_server }}
+{% endfor %}

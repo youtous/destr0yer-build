@@ -1,13 +1,13 @@
 # This file describes specific host vars
 hostname: heaven-roberval.youtous.dv
 ipv4:
-  - 192.168.100.11
+  - "192.168.100.11"
 ipv6:
-  - fde4:8dba:82e1::c2
+  - "fde4:8dba:82e1::c2"
 ipv4_private:
-  - 192.168.100.11
+  - "192.168.100.11"
 ipv6_private:
-  - fde4:8dba:82e1::c2
+  - "fde4:8dba:82e1::c2"
 
 
 host_users: []

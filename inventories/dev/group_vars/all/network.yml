@@ -20,5 +20,10 @@ ssh_entrypoints:
   - "192.168.100.1"
 
 # allow docker networks (and eventually other networks such as vpn) to query the local dns server
-dns_allowed_hosts: "{{ local_docker_ips | default([]) }}"
+# also allow private ips to reach the dns (loop)
+all_private_ips: "{{ (ipv4_private | default([])) + (ipv6_private | default([])) | list | flatten }}"
+dns_allowed_hosts: "{{ (local_docker_ips | default([])) + all_private_ips | list | flatten }}"
+
+# ensure that dnscrypt proxy also listen on private ips for K3s loop
+dnscrypt_proxy_listen_addresses: "{{ ['127.0.0.1:53', '[::1]:53'] + (all_private_ips | ansible.utils.ipwrap | product([':53']) | map('join') | list) | flatten }}"
 ...

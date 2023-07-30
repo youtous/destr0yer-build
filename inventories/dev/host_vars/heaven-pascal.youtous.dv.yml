@@ -3,13 +3,13 @@
 # This file describes specific host vars
 hostname: heaven-pascal.youtous.dv
 ipv4: # /!\ When one of the host ip is changed, playbook should be completely re-run
-  - 192.168.100.10
+  - "192.168.100.10"
 ipv6:
-  - fde4:8dba:82e1::c1
+  - "fde4:8dba:82e1::c1"
 ipv4_private:
   - "192.168.100.10"
 ipv6_private:
-  - fde4:8dba:82e1::c1
+  - "fde4:8dba:82e1::c1"
 
 host_users:
   - username: specu
@@ -73,8 +73,8 @@ mariadb_databases:
 ### Begin of Wireguard server parameters ###
 
 # allow VPN clients to access DNS         # <=> wireguard_server.interface.addresses
-dns_allowed_hosts: "{{ local_docker_ips + ['10.99.99.1/24', 'fdc9:281f:04d7:9ee9::1/64'] }}"
-# dns_allowed_hosts: "{{ local_docker_ips + wireguard_server_address }}"
+dns_allowed_hosts: "{{ (local_docker_ips | default([])) + ['10.99.99.1/24', 'fdc9:281f:04d7:9ee9::1/64'] + all_private_ips | list | flatten }}"
+
 
 wireguard_server_external_interface: eth0
 wireguard_servers:
