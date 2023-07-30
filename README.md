@@ -25,6 +25,7 @@ On your computer:
   - ansible (>= 5)
   - bash
   - jq (used in the roles)
+  - netaddr (used in the roles)
   - ruby (optional if you don't mind using certificate scripts)
   - (optional) [step-cli](https://github.com/smallstep/cli)
 

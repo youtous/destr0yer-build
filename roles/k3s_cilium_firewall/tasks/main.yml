@@ -1,0 +1,81 @@
+---
+# see https://docs.cilium.io/en/stable/operations/system_requirements/
+
+- name: "UFW allow cilium requirements firewall - udp/8472 VXLAN overlay"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "8472"
+      rule: "allow"
+      proto: "udp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium requirements firewall - tcp/4240 health check"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "4240"
+      rule: "allow"
+      proto: "tcp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium requirements firewall - tcp/4250 Mutual Authentication port"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "4250"
+      rule: "allow"
+      proto: "tcp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium requirements firewall - udp/51871 WireGuard encryption tunnel endpoint"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "51871"
+      rule: "allow"
+      proto: "udp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium requirements firewall - tcp/4244 Hubble server"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "4244"
+      rule: "allow"
+      proto: "tcp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium requirements firewall - tcp/4245 Hubble Relay"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:
+      to_port: "4245"
+      rule: "allow"
+      proto: "tcp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+...

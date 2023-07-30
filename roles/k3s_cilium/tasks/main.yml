@@ -1,0 +1,39 @@
+---
+- name: Create build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: build
+  register: tmp_dir_build
+
+- name: Git clone helm repo
+  ansible.builtin.git:
+    repo: "{{ cilium_helm_git_repository }}"
+    dest: "{{ tmp_dir_build.path }}"
+    version: "{{ cilium_helm_git_version }}"
+    depth: 1
+
+- name: Install cilium chart
+  become: true
+  kubernetes.core.helm:
+    name: "{{ cilium_helm_release_name }}"
+    chart_ref: "{{ tmp_dir_build.path }}/install/kubernetes/cilium"
+    release_namespace: "{{ cilium_k8s_namespace }}"
+    create_namespace: true
+    values: "{{ cilium_k8s_helm_values }}"
+  register: cilium__helm_install_chart
+  environment:
+    KUBECONFIG: "{{ cilium_kubeconfig_path }}"
+
+- name: Show install helm chart command
+  when:
+    - cilium__helm_install_chart is defined
+    - cilium__helm_install_chart.stdout is defined
+    - cilium_helm_show_commands
+  ansible.builtin.debug:
+    var: cilium__helm_install_chart.stdout
+
+- name: Cleanup build directory
+  ansible.builtin.file:
+    state: absent
+    path: "{{ tmp_dir_build.path }}"
+...

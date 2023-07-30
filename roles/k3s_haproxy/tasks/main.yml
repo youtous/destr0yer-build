@@ -1,0 +1,33 @@
+---
+- name: Create build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: build
+  register: tmp_dir_build
+
+- name: Git clone helm repo
+  ansible.builtin.git:
+    repo: "{{ haproxy_k3s_git_repository }}"
+    dest: "{{ tmp_dir_build.path }}"
+    version: "{{ haproxy_k3s_git_version }}"
+
+- name: Deploy HAProxy ingress-controller
+  kubernetes.core.helm:
+    name: haproxy-kubernetes-ingress
+    chart_ref: "{{ tmp_dir_build.path/kubernetes-ingress }}"
+    release_namespace: haproxy-controller
+    create_namespace: true
+    values:
+      controller.service.nodePorts.http: "{{ haproxy_k3s_node_ports_http }}"
+      controller.service.nodePorts.https: "{{ haproxy_k3s_node_ports_https }}"
+      controller.service.nodePorts.stat: "{{ haproxy_k3s_node_ports_stat }}"
+      controller.kind: DaemonSet
+      controller.daemonset.useHostPort: true
+
+# TODO : check and ensure that source if ip is correct when using nodeports
+
+- name: Cleanup build directory
+  ansible.builtin.file:
+    state: absent
+    path: "{{ tmp_dir_build.path }}"
+...

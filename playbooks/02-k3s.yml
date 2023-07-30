@@ -17,19 +17,31 @@
     - k3s
     - k8s_helm
     - k8s_cilium_cli
+    - k3s_cilium_firewall
     - k8s_k9s
     # - monit_k3s # TODO : create k3s monit role
+    # TODO : do the necessary for creating a local config for the non root user on the cluster (k3s.yml)
   vars_files:
     - ../secret_vars/{{ server_environment }}/all.yml
     - ../task_vars/sudo.yml
     - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup"]
 
+- name: Install k3s internal services
+  hosts: k3s_control_node[0]
+  roles:
+    - k3s_cilium
+    #- k3s_haproxy
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["k3s-setup", "k3s-internal-services"]
 
 # TODO : ensure prune daily k3s
 # TODO : Integrate fail2ban for k3s (recidive)
 # TODO : check how iptable chain is handled
-# TODO : tooling, k9s, ctop
+# TODO : tooling, ctop
 # TODO : setup k3s backup
 # TODO : configure reverse proxy + ACME + f2b on those
 # TODO : setup portainer

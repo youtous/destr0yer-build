@@ -1,0 +1,20 @@
+---
+cilium_helm_git_version: "b5013e1562dbfe442dd2011a5af46de9095315ff" # https://github.com/cilium/cilium/releases/tag/v1.14.0
+cilium_helm_git_repository: "https://github.com/cilium/cilium.git"
+cilium_helm_release_name: "cilium"
+
+cilium_k8s_namespace: "cilium"
+
+cilium_k8s_helm_values:
+  operator:
+    replicas: 1 # 3 in case of HA
+
+  ipam:
+    operator:
+      clusterPoolIPv4PodCIDRList: "10.43.0.0/16" # should be the same as the K8s cluster
+      clusterPoolIPv4MaskSize: "20"
+
+
+cilium_helm_show_commands: true
+# TODO : handle upgrade
+...

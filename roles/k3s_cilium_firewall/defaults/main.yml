@@ -1,0 +1,15 @@
+---
+k3s_workers_ips: "{{
+  groups['k3s_worker_node'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['k3s_worker_node'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([])
+  }}
+  "
+
+k3s_controllers_ips: "{{
+  groups['k3s_control_node'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
+  groups['k3s_control_node'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([])
+  }}
+  "
+
+k3s_all_nodes_ips: "{{ k3s_workers_ips + k3s_controllers_ips | flatten | unique }}"
+...
