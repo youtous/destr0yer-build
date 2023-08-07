@@ -3,7 +3,6 @@
 # See: https://docs.k3s.io/cli/agent#node
 
 # TODO : https://docs.k3s.io/security/hardening-guide
-# TODO : ensure that k3s is using node dns ::1
 
 # address of the k3s control plane (should be a loadbalancer or a vip)
 # until multiple addresses are supported (see https://github.com/k3s-io/k3s/issues/7325)
