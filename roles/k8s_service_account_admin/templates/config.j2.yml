@@ -11,7 +11,3 @@ contexts:
     cluster: default
     user: "{{ _kube_user }}"
 current-context: default
-users:
-- name: "{{ _kube_user }}"
-  user:
-    token: "{{ _kube_user_token }}"

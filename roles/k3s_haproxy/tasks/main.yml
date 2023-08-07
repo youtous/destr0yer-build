@@ -21,6 +21,7 @@
   register: haproxy__helm_install_chart
   environment:
     KUBECONFIG: "{{ haproxy_kubeconfig_path }}"
+    K8S_AUTH_API_KEY: "{{ k8s_service_account_admin_token }}"
 
 - name: Show install helm chart command
   when:

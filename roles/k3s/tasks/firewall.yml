@@ -6,7 +6,7 @@
   ansible.builtin.import_role:
     name: youtous.ufw_smart_rules
   vars:
-    ufw_rule_parameters:
+    ufw_rule_parameters: # noqa: var-naming[no-role-prefix]
       to_port: "{{ k3s_ufw_embedded_etcd_port_range }}"
       rule: "allow"
       proto: tcp
@@ -19,7 +19,7 @@
   ansible.builtin.import_role:
     name: youtous.ufw_smart_rules
   vars:
-    ufw_rule_parameters:
+    ufw_rule_parameters: # noqa: var-naming[no-role-prefix]
       to_port: "{{ k3s_ufw_kube_api_port }}"
       rule: "allow"
       proto: tcp
@@ -32,7 +32,7 @@
   ansible.builtin.import_role:
     name: youtous.ufw_smart_rules
   vars:
-    ufw_rule_parameters:
+    ufw_rule_parameters: # noqa: var-naming[no-role-prefix]
       to_port: "{{ k3s_ufw_kubelet_metrics_port }}"
       rule: "allow"
       proto: tcp

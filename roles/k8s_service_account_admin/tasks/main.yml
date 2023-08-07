@@ -1,0 +1,28 @@
+---
+# This role creates the kubeconfig required on each node with associated service account
+- name: Ensure permissions of the kubeconfig folder
+  ansible.builtin.file:
+    path: "{{ k8s_service_account_admin_kubeconfig_destination | ansible.builtin.dirname }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: u=rwx,g=,o=
+
+- name: Copy kube password script
+  become: true
+  ansible.builtin.copy:
+    src: "files/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  with_items:
+    - kube_auth.fish
+    - kube_auth.sh
+
+- name: Create ServiceAccount with kubeconfig
+  ansible.builtin.import_tasks: create.yml
+
+- name: Fetch ServiceAccount token
+  ansible.builtin.import_tasks: fetch_token.yml
+  when: not k8s_service_account_admin_token_is_defined
+...

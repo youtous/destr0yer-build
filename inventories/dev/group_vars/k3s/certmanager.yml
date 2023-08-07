@@ -17,7 +17,7 @@ certmanager_k8s_cluster_cert_issuer:
         name: le-cluster-issuer-account-key
       # Add a ACME HTTP01 challenge solver
       solvers:
-      - http01:
-          ingress:
-            ingressClassName: haproxy
+        - http01:
+            ingress:
+              ingressClassName: haproxy
 ...

@@ -17,4 +17,5 @@ cilium_k8s_helm_values:
 
 cilium_helm_show_commands: true
 # TODO : handle upgrade
+# TODO : install all helm charts as archive
 ...

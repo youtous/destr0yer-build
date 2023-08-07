@@ -33,7 +33,7 @@
     - "{{ k3s_var_lib_server_path }}"
     - "{{ k3s_var_lib_manifests_path }}"
 
-# If you plan to override a manifest, consider disabling the related service as the overriding 
+# If you plan to override a manifest, consider disabling the related service as the overriding
 # does not take care of ordre update
 - name: Copy overrided manifests
   become: true

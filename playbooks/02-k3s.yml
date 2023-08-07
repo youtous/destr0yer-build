@@ -30,7 +30,7 @@
 - name: Generate service accounts on controllers
   hosts: k3s_control_node
   roles:
-    - k8s_service_account # TODO document + peerhaps improve security access of this account
+    - k8s_service_account_admin # TODO document + peerhaps improve security access of this account
   vars_files:
     - ../secret_vars/{{ server_environment }}/all.yml
     - ../task_vars/sudo.yml
@@ -62,4 +62,5 @@
 # TODO : setup mailserver
 # TODO : setup nextcloud
 # TODO : setup teamspeak
+# TODO : role that setup namespace w/ service accounts
 ...

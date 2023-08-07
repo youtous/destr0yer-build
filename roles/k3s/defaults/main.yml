@@ -119,9 +119,9 @@ k3s_installation_server:
     - traefik
     - coredns
   kube-apiserver-arg:
-    #- 'admission-control-config-file=/var/lib/rancher/k3s/server/psa.yaml' # TODO : enable
-    #- 'audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log'
-    #- 'audit-policy-file=/var/lib/rancher/k3s/server/audit.yaml'
+    # - 'admission-control-config-file=/var/lib/rancher/k3s/server/psa.yaml' # TODO : enable
+    # - 'audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log'
+    # - 'audit-policy-file=/var/lib/rancher/k3s/server/audit.yaml'
     - 'audit-log-maxage=30'
     - 'audit-log-maxbackup=10'
     - 'audit-log-maxsize=100'
@@ -173,26 +173,26 @@ k3s_installation_registries:
 
 # address of the k3s control plane (should be a loadbalancer or a vip)
 # until multiple addresses are supported (see https://github.com/k3s-io/k3s/issues/7325)
-# k3s_installation_registration_address: 
+# k3s_installation_registration_address:
 
 # port ranges
 k3s_ufw_embedded_etcd_port_range: "2379:2380"
 k3s_ufw_kube_api_port: "6443"
 k3s_ufw_kubelet_metrics_port: "10250"
 
-k3s_workers_ips: "{{ 
+k3s_workers_ips: "{{
   groups['k3s_worker_node'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
-  groups['k3s_worker_node'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([]) 
+  groups['k3s_worker_node'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([])
   }}
   "
 
-k3s_controllers_ips: "{{ 
+k3s_controllers_ips: "{{
   groups['k3s_control_node'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | default([]) +
-  groups['k3s_control_node'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([]) 
+  groups['k3s_control_node'] | map('extract', hostvars, ['ipv6_private']) | list | flatten | unique | default([])
   }}
   "
 
-k3s_all_nodes_ips: "{{ k3s_workers_ips + k3s_controllers_ips | flatten | unique }}" 
+k3s_all_nodes_ips: "{{ k3s_workers_ips + k3s_controllers_ips | flatten | unique }}"
 
 # should we forward dns requests to the node host? otherwise will use /etc/resolv.conf and then fallback on 8.8.8.8
 k3s_forward_dns_to_host: true

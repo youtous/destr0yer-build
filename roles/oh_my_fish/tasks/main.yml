@@ -81,7 +81,7 @@
   ansible.builtin.copy:
     content: |
       # Ansible managed content!
-      abbr --add cat 'bat'
+      abbr --add cat 'batcat'
     dest: /etc/fish/conf.d/bat.fish
     owner: root
     group: root

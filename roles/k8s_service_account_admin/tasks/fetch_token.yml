@@ -1,0 +1,25 @@
+---
+- name: Fetch the token for the Service Account and set it as fact
+  become: true
+  ansible.builtin.command: >
+    kubectl --namespace={{ k8s_service_account_admin_namespace }} create token {{ k8s_service_account_admin_name }}
+  run_once: true
+  no_log: true
+  changed_when: false
+  register: _service_account_token
+  failed_when: _service_account_token.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_service_account_admin_kubeconfig_path }}"
+
+- name: "[ACTION REQUIRED] Please save kube admin token"
+  ansible.builtin.debug:
+    verbosity: 0
+    msg: >
+      Please save the kube admin token in your vault (key=k8s_service_account_admin_token),
+       retrieve the token using kubectl : {{ _service_account_token.cmd | join(' ') }}
+
+- name: Setting host facts with admin token
+  no_log: true
+  ansible.builtin.set_fact:
+    k8s_service_account_admin_token: "{{ _service_account_token.stdout }}"
+...

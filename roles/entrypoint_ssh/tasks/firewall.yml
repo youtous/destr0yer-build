@@ -4,7 +4,7 @@
   ansible.builtin.import_role:
     name: youtous.ufw_smart_rules
   vars:
-    ufw_rule_parameters:
+    ufw_rule_parameters: # noqa: var-naming[no-role-prefix]
       to_port: "{{ sshd_port | quote }}"
       rule: "allow"
       proto: tcp

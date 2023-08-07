@@ -11,9 +11,11 @@
   ansible.builtin.copy:
     content: "{{ k8s_helm_gpg_keyring }}"
     dest: "{{ gpg_tempfile.path }}"
+    mode: u=rw,g=r,o=
 
 - name: Import the GPG key using the command
   ansible.builtin.command: gpg --import "{{ gpg_tempfile.path }}"
+  changed_when: gpg_import_result.rc != 0
   register: gpg_import_result
 
 - name: Display GPG key import result
