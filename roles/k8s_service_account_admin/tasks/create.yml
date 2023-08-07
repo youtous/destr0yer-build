@@ -10,6 +10,7 @@
       metadata:
         name: "{{ k8s_service_account_admin_name }}"
         namespace: "{{ k8s_service_account_admin_namespace }}"
+      automountServiceAccountToken: false
   environment:
     KUBECONFIG: "{{ k8s_service_account_admin_kubeconfig_path }}"
 

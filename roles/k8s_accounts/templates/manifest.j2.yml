@@ -1,0 +1,36 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ item.namespace }}"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "{{ item.name }}"
+  namespace: "{{ item.namespace }}"
+automountServiceAccountToken:  {{ item.automountServiceAccountToken | default(false) | bool }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: "{{ item.roleName | default(item.name ~ '-role-admin') }}"
+  namespace: "{{ item.namespace }}"
+rules:
+  - apiGroups: {{ item.apiGroups | default(['']) }}
+    resources: {{ item.resources | default(['']) }}
+    verbs: {{ item.verbs | default(['']) }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "{{ item.roleBindingName | default(item.name ~ '-rolebd-admin') }}"
+  namespace: "{{ item.namespace }}"
+subjects:
+  - kind: ServiceAccount
+    name: "{{ item.name }}"
+roleRef:
+  kind: Role
+  name: "{{ item.roleName | default(item.name ~ '-role-admin') }}"
+  apiGroup: rbac.authorization.k8s.io
+...

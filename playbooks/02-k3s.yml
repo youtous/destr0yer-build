@@ -27,10 +27,10 @@
     - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup"]
 
-- name: Generate service accounts on controllers
+- name: Generate admin service account on controllers
   hosts: k3s_control_node
   roles:
-    - k8s_service_account_admin # TODO document + peerhaps improve security access of this account
+    - k8s_service_account_admin # TODO document
   vars_files:
     - ../secret_vars/{{ server_environment }}/all.yml
     - ../task_vars/sudo.yml
@@ -49,6 +49,16 @@
     - ../task_vars/sudo.yml
     - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "k3s-internal-services"]
+
+- name: Generate service accounts and namespaces
+  hosts: k3s_control_node
+  roles:
+    - k8s_accounts # TODO document
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["k3s-accounts"]
 
 # TODO : ensure prune daily k3s
 # TODO : Integrate fail2ban for k3s (recidive)

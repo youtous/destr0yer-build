@@ -1,0 +1,18 @@
+---
+# service account to create with the associated namespace;
+# in the example, the service account has all the permissions on the namespace
+# adjust to your needs
+k8s_accounts_service_accounts:
+  # - name: mynamespace-admin
+  #   namespace: mynamespace
+  #   apiGroups: [""]
+  #   resources: ["*"]
+  #   verbs: ["*"]
+  #   roleName: myns-role-admin (optional)
+  #   roleBindingName: myns-rolebd-admin (optional)
+
+# for the ease of the deployment, an associated config file will be created in the .kube folder
+# with the name of the service-account
+
+k8s_accounts_server: "https://127.0.0.1:6443"
+...

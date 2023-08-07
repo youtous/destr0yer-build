@@ -1,0 +1,3 @@
+---
+k8s_accounts_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
+...

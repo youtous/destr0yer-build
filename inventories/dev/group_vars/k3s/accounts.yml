@@ -1,0 +1,9 @@
+---
+# application accounts to define here
+k8s_accounts_service_accounts:
+  - name: nextcloud-admin
+    namespace: nextcloud
+    apiGroups: [""]
+    resources: ["*"]
+    verbs: ["*"]
+...

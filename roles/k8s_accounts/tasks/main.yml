@@ -1,0 +1,47 @@
+---
+# This role create accounts and associated namespace then store a dedicated
+# kubeconfig on the controllers
+
+- name: Create service account and associated namespace
+  run_once: true
+  kubernetes.core.k8s:
+    state: present
+    template: "manifest.j2.yml"
+  environment:
+    KUBECONFIG: "{{ k8s_accounts_kubeconfig_path }}"
+    K8S_AUTH_API_KEY: "{{ k8s_service_account_admin_token }}"
+  with_items: "{{ k8s_accounts_service_accounts }}"
+
+- name: Fetch the kubernetes ca
+  ansible.builtin.command: >
+    kubectl config view --raw
+    -o {% raw %}go-template='{{index ((index (index .clusters 0) "cluster"))
+    "certificate-authority-data" }}'{% endraw %}
+  run_once: true
+  changed_when: false
+  register: _kube_ca_command
+  failed_when: _kube_ca_command.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_accounts_kubeconfig_path }}"
+    K8S_AUTH_API_KEY: "{{ k8s_service_account_admin_token }}"
+
+- name: Generate kubeconfig file
+  ansible.builtin.template:
+    src: templates/config.j2.yml
+    dest: "~/.kube/config_{{ item.name }}.yml"
+    mode: u=rw,g=,o=
+  vars:
+    _kube_user: "{{ item.name }}"
+    _kube_server: "{{ k8s_accounts_server }}"
+    _kube_ca: "{{ _kube_ca_command.stdout }}"
+    _kube_namespace: "{{ item.namespace }}"
+  with_items: "{{ k8s_accounts_service_accounts }}"
+
+- name: "Get service account token"
+  ansible.builtin.debug:
+    verbosity: 0
+    msg: >
+      Please save the kube service account token in your vault,
+       retrieve the token using kubectl : kubectl --namespace={{ item.namespace }} create token {{ item.name }} --duration=1000000h
+  with_items: "{{ k8s_accounts_service_accounts }}"
+...

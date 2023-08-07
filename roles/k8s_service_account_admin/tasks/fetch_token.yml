@@ -16,7 +16,7 @@
     verbosity: 0
     msg: >
       Please save the kube admin token in your vault (key=k8s_service_account_admin_token),
-       retrieve the token using kubectl : {{ _service_account_token.cmd | join(' ') }} --duration=0s
+       retrieve the token using kubectl : {{ _service_account_token.cmd | join(' ') }} --duration=1000000h
 
 - name: Setting host facts with admin token
   no_log: true
