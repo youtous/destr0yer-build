@@ -2,7 +2,7 @@
 # service account to create with the associated namespace;
 # in the example, the service account has all the permissions on the namespace
 # adjust to your needs
-k8s_accounts_service_accounts:
+k8s_accounts_service_accounts: []
   # - name: mynamespace-admin
   #   namespace: mynamespace
   #   apiGroups: [""]
@@ -10,6 +10,13 @@ k8s_accounts_service_accounts:
   #   verbs: ["*"]
   #   roleName: myns-role-admin (optional)
   #   roleBindingName: myns-rolebd-admin (optional)
+
+# account, role and roleBinding will be deleted, namespace will still exists
+k8s_accounts_service_accounts_to_delete: []
+  # - name: mynamespace-admin
+  #   namespace: mynamespace
+  #   roleName: mynamespace-admin-role
+  #   roleBindingName: mynamespace-admin-rolebd
 
 # for the ease of the deployment, an associated config file will be created in the .kube folder
 # with the name of the service-account

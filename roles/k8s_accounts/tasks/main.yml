@@ -2,6 +2,16 @@
 # This role create accounts and associated namespace then store a dedicated
 # kubeconfig on the controllers
 
+- name: Delete service account and associated role, roleBinding
+  run_once: true
+  kubernetes.core.k8s:
+    state: absent
+    template: "manifest_delete.j2.yml"
+  environment:
+    KUBECONFIG: "{{ k8s_accounts_kubeconfig_path }}"
+    K8S_AUTH_API_KEY: "{{ k8s_service_account_admin_token }}"
+  with_items: "{{ k8s_accounts_service_accounts_to_delete }}"
+
 - name: Create service account and associated namespace
   run_once: true
   kubernetes.core.k8s:
