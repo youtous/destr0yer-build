@@ -11,8 +11,7 @@
 [![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
 # TODO:
-- [ ] refactor ufw rule manipulation using a role + add tests in the role (ufw rules are deleted but others are kept) + instead of shell yes, just use ufw --force delete 2
-- check swarm installation on bookworm
+- deprecate swarm installation on bookworm
 - start k3s installation
 
 ## Requirements
@@ -70,6 +69,13 @@ You can use `ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook` to avoid ssh-key 
 
 - Docker-Swarm, Elastic, MariaDB and other services require a X509 root CA. The generation can be simplified using `generate-X509-certificate.rb`, `step-cli` is also a good candidate for managing certificates.
 - `bcrypt-passwd.sh` : helps to create a bcrypt password; requires `htpasswd` to be installed.
+
+**Kube :**
+- Visualize your cluster state:
+```fish
+source source /usr/local/bin/kube_auth.fish
+KUBECONFIG=~/.kube/config k9s --token="$K8S_AUTH_API_KEY" --context=default
+```
 
 ### Save `secrets` and `certs`
 

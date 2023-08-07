@@ -1,3 +1,4 @@
 ---
 haproxy_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
+haproxy_chart_archive_name: "haproxy-{{ haproxy_chart_version }}.tgz"
 ...

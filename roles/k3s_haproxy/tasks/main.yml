@@ -5,16 +5,17 @@
     suffix: build
   register: tmp_dir_build
 
-- name: Git clone helm repo
-  ansible.builtin.git:
-    repo: "{{ haproxy_git_repository }}"
-    dest: "{{ tmp_dir_build.path }}"
-    version: "{{ haproxy_git_version }}"
+- name: Download the chart
+  ansible.builtin.get_url:
+    url: "{{ haproxy_chart_download_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ haproxy_chart_archive_name }}"
+    checksum: "sha256:{{ haproxy_chart_sha265sum }}"
+    mode: u=rw,g=,o=
 
 - name: Install HAProxy chart
   kubernetes.core.helm:
     name: "{{ haproxy_helm_release_name }}"
-    chart_ref: "{{ tmp_dir_build.path }}/kubernetes-ingress"
+    chart_ref: "{{ tmp_dir_build.path }}/{{ haproxy_chart_archive_name }}"
     release_namespace: "{{ haproxy_k8s_namespace }}"
     create_namespace: true
     values: "{{ haproxy_k8s_helm_values }}"

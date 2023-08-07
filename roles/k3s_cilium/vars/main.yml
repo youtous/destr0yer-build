@@ -1,3 +1,4 @@
 ---
 cilium_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
+cilium_chart_archive_name: "cilium-{{ cilium_chart_version }}.tgz"
 ...

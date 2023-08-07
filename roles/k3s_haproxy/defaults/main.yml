@@ -1,8 +1,11 @@
 ---
 # HAProxy Ingress variables
 
-haproxy_git_version: "4e32c08fb654336551e62ba30e9d06be00d5eeae"
-haproxy_git_repository: "https://github.com/haproxytech/helm-charts.git"
+haproxy_chart_version: "1.19.2"
+
+haproxy_chart_download_url:
+  "https://github.com/haproxytech/helm-charts/releases/download/haproxy-{{ haproxy_chart_version }}/haproxy-{{ haproxy_chart_version }}.tgz"
+haproxy_chart_sha265sum: "de0b1efa3e947f4bca8c6a5f535a1f2bf8a5e32e60d9f4f88a26eb36e4d1642a"
 
 haproxy_helm_release_name: haproxy-ingress
 

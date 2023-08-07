@@ -1,8 +1,10 @@
 ---
-cilium_helm_git_version: "b5013e1562dbfe442dd2011a5af46de9095315ff" # https://github.com/cilium/cilium/releases/tag/v1.14.0
-cilium_helm_git_repository: "https://github.com/cilium/cilium.git"
-cilium_helm_release_name: "cilium"
+cilium_chart_version: "1.14.0"
 
+cilium_chart_download_url: "https://helm.cilium.io/cilium-{{ cilium_chart_version }}.tgz"
+cilium_chart_sha265sum: "a5ddfaefc33d298dd32b6a3a46c6d21b26593cfa476a2a3a55d2104f433462c0"
+
+cilium_helm_release_name: "cilium"
 cilium_k8s_namespace: "cilium"
 
 cilium_k8s_helm_values:

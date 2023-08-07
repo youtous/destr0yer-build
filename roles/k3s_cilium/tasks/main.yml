@@ -5,16 +5,17 @@
     suffix: build
   register: tmp_dir_build
 
-- name: Git clone helm repo
-  ansible.builtin.git:
-    repo: "{{ cilium_helm_git_repository }}"
-    dest: "{{ tmp_dir_build.path }}"
-    version: "{{ cilium_helm_git_version }}"
+- name: Download the chart
+  ansible.builtin.get_url:
+    url: "{{ cilium_chart_download_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ cilium_chart_archive_name }}"
+    checksum: "sha256:{{ cilium_chart_sha265sum }}"
+    mode: u=rw,g=,o=
 
 - name: Install cilium chart
   kubernetes.core.helm:
     name: "{{ cilium_helm_release_name }}"
-    chart_ref: "{{ tmp_dir_build.path }}/install/kubernetes/cilium"
+    chart_ref: "{{ tmp_dir_build.path }}/{{ cilium_chart_archive_name }}"
     release_namespace: "{{ cilium_k8s_namespace }}"
     create_namespace: true
     values: "{{ cilium_k8s_helm_values }}"
