@@ -16,8 +16,9 @@ k8s_dashboard_k8s_helm_values:
       ingressClassName: haproxy
 
       annotations:
-        # TODO : test this
-        haproxy.org/allow-list: "{{ trusted_backend_ips | join(', ') }}"
+        # TODO : replace by allow-list when it will work, until use whitelist
+        # ensure that at least one ip exists in the whitelist, otherwise all ips are allowed
+        haproxy.org/whitelist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten ) | join(', ') }}"
 
         haproxy.org/load-balance: "roundrobin"
 
