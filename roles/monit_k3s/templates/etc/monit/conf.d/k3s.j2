@@ -1,0 +1,7 @@
+# from https://wiki.debian-fr.xyz/Monit#postfix
+
+check program k3s with path "/bin/systemctl is-active --quiet k3s.service"
+  if status != 0 then alert
+  start program = "/bin/systemctl start k3s.service"
+  stop  program = "/bin/systemctl stop k3s.service"
+  if 5 restarts within 5 cycles then timeout
