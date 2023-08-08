@@ -6,4 +6,5 @@ sysctl_vm_max_map_count: '262144'
 sysctl_kernel_panic: '10'
 sysctl_kernel_panic_on_oops: '1'
 sysctl_kernel_keys_root_maxbytes: '25000000'
+sysctl_net_ipv4_ip_unprivileged_port_start: '1024'
 ...

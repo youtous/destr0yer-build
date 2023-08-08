@@ -1,13 +1,13 @@
 ---
 # see https://docs.cilium.io/en/stable/operations/system_requirements/
 
-- name: "UFW allow cilium requirements firewall - udp/8472 VXLAN overlay"
+- name: "UFW allow cilium requirements firewall - udp/6081 GENEVE overlay"
   become: true
   ansible.builtin.import_role:
     name: youtous.ufw_smart_rules
   vars:
     ufw_rule_parameters: # noqa: var-naming[no-role-prefix]
-      to_port: "8472"
+      to_port: "6081"
       rule: "allow"
       proto: "udp"
       direction: in

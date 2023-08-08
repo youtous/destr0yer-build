@@ -11,6 +11,16 @@
     reload: true
   notify: reboot
 
+- name: Define unprivileged ports start
+  become: true
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_unprivileged_port_start
+    value: "{{ sysctl_net_ipv4_ip_unprivileged_port_start }}"
+    sysctl_set: true
+    state: present
+    reload: true
+  notify: reboot
+
 - name: Configure overcommit memory
   become: true
   ansible.posix.sysctl:

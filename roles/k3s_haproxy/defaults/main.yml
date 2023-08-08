@@ -1,11 +1,11 @@
 ---
 # HAProxy Ingress variables
 
-haproxy_chart_version: "1.19.2"
+haproxy_chart_version: "1.32.2"
 
 haproxy_chart_download_url:
-  "https://github.com/haproxytech/helm-charts/releases/download/haproxy-{{ haproxy_chart_version }}/haproxy-{{ haproxy_chart_version }}.tgz"
-haproxy_chart_sha265sum: "de0b1efa3e947f4bca8c6a5f535a1f2bf8a5e32e60d9f4f88a26eb36e4d1642a"
+  "https://github.com/haproxytech/helm-charts/releases/download/kubernetes-ingress-{{ haproxy_chart_version }}/kubernetes-ingress-{{ haproxy_chart_version }}.tgz" # noqa yaml[line-length]
+haproxy_chart_sha265sum: "fce4bbbe55b7f448e2255e591a904994c9c6387fac7dcfb03d9bebc7e89ff4a6"
 
 haproxy_helm_release_name: haproxy-ingress
 
@@ -13,10 +13,58 @@ haproxy_k8s_namespace: haproxy-ingress
 
 haproxy_k8s_helm_values:
   kind: DaemonSet
+
+  securityContext:
+    enabled: true
+    runAsUser: 1000
+    runAsGroup: 1000
+
   controller:
     hostNetwork: true
     ingressClassResource:
       enabled: true
+
+    # see https://www.haproxy.com/documentation/kubernetes/latest/community/configuration-reference/configmap/
+    config:
+      timeout-client: "10s"
+      timeout-connect: "10s"
+      timeout-server: "10s"
+      rate-limit: "ON"
+      rate-limit-expire: "1m"
+      rate-limit-interval: "10s"
+      rate-limit-size: "100k"
+
+      ssl-redirect: "true"
+
+      # enforce headers
+      # hsts headers (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+      # see best practices
+      # https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md,
+      # https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
+      # https://csp-evaluator.withgoogle.com/ content security policy
+      # noqa yaml[line-length]
+      response-set-header: |
+        Strict-Transport-Security \"max-age=63072000; includeSubDomains; preload\"
+        Permissions-Policy \"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"
+        Referrer-Policy \"same-origin\"
+        X-Content-Type-Options \"nosniff\"
+        X-Frame-Options \"DENY\"
+        X-XSS-Protection \"1; mode=block\"
+        Content-Security-Policy \"default-src 'self'; script-src 'self'; img-src 'self' data: 'self'; style-src 'self'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
+        Server \"\"
+        X-Powered-By \"\"
+
+      # see https://ssl-config.mozilla.org/
+      # noqa yaml[line-length]
+      global-config-snippet: |
+        # intermediate configuration
+        ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305
+        ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+        ssl-default-bind-options prefer-client-ciphers no-sslv3 no-tlsv10 no-tlsv11 no-tls-tickets
+
+        ssl-default-server-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305
+        ssl-default-server-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+        ssl-default-server-options no-sslv3 no-tlsv10 no-tlsv11 no-tls-tickets
 
     service:
       nodePorts:

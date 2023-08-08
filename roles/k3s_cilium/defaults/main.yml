@@ -7,15 +7,39 @@ cilium_chart_sha265sum: "a5ddfaefc33d298dd32b6a3a46c6d21b26593cfa476a2a3a55d2104
 cilium_helm_release_name: "cilium"
 cilium_k8s_namespace: "cilium"
 
+# TODO : document that by default cilium uses GENEVE and DSR in order to improve performance
+# and keep remote ip addr
+
 cilium_k8s_helm_values:
   operator:
     replicas: 1 # 3 in case of HA
 
+  kubeProxyReplacement: "strict"
+
+  k8sServiceHost: "{{ ipv4_private | first }}"
+  k8sServicePort: 6443
+
+  global:
+    encryption:
+      enabled: true
+      nodeEncryption: true
+
+  loadBalancer:
+    mode: dsr # see https://docs.cilium.io/en/latest/network/kubernetes/kubeproxy-free/#direct-server-return-dsr
+    dsrDispatch: geneve
+  tunnel: "geneve" # in order to use dsr, node to node cannot use vxlan
+  tunnelProtocol: "geneve"
+
   ipam:
+    mode: "cluster-pool"
+
     operator:
       clusterPoolIPv4PodCIDRList: "10.43.0.0/16" # define the service pool of ips (for all nodes)
       clusterPoolIPv4MaskSize: "24" # mask size for each node
 
+  prometheus:
+    enabled: true
+    port: 19090
 
 cilium_helm_show_commands: true
 # TODO : handle upgrade

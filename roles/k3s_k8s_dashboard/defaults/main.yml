@@ -14,9 +14,26 @@ k8s_dashboard_k8s_helm_values:
   app:
     ingress:
       ingressClassName: haproxy
+
+      annotations:
+        # TODO : test this
+        haproxy.org/allow-list: "{{ trusted_backend_ips | join(', ') }}"
+
+        haproxy.org/load-balance: "roundrobin"
+
+        # overrides defaults
+        # noqa yaml[line-length]
+        haproxy.org/response-set-header: |
+          Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
+
+      # tls
       issuer:
         scope: cluster
         name: letsencrypt
+
+      # TODO : document
+      # One should enable this in production
+      # secretName: "dashboard-kube-certmanager" # cert name for certmanager
       hosts:
         - "dashboard.{{ k8s_base_cluster_domain }}" # adapt to your needs
 

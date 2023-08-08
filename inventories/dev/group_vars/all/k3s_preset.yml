@@ -2,4 +2,7 @@
 # Preset values required for k3s
 
 sysctl_vm_overcommit_memory: 1
+
+# allow unprivileged containers to bind any node port
+sysctl_net_ipv4_ip_unprivileged_port_start: 20
 ...
