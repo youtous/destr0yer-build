@@ -23,10 +23,10 @@ k8s_dashboard_k8s_helm_values:
         haproxy.org/load-balance: "roundrobin"
 
         # overrides defaults
-        haproxy.org/response-set-header: >
-          Content-Security-Policy \"default-src 'self'; script-src 'self'
-           'unsafe-inline'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline';
-           font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
+        # yamllint disable rule:line-length
+        haproxy.org/response-set-header: |
+          Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
+        # yamllint enable rule:line-length
 
       # tls
       issuer:
@@ -34,8 +34,8 @@ k8s_dashboard_k8s_helm_values:
         name: letsencrypt
 
       # TODO : document
-      # One should enable this in production
-      # secretName: "dashboard-kube-certmanager" # cert name for certmanager
+      # One should use its own cert in production
+      # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
       hosts:
         - "dashboard.{{ k8s_base_cluster_domain }}" # adapt to your needs
 

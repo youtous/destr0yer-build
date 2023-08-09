@@ -5,9 +5,6 @@
 # ips that will be allowed to access the backend
 trusted_backend_ips: "{{ ssh_entrypoints }}"
 
-# list of auth users for the backend user:bcrypt(pass):
-backend_users: "{{ backend_users | default([]) }}"
-
 # local docker networks
 local_docker_ips:
   - '172.17.0.0/16' # docker0

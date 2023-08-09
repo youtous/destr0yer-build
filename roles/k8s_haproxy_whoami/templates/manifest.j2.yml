@@ -34,6 +34,11 @@ metadata:
   namespace: "{{ k8s_haproxy_whoami_namespace }}"
   annotations:
     haproxy.org/whitelist:  "{{ k8s_haproxy_whoami_allowlist }}"
+    # protect with additional basic auth
+    haproxy.org/auth-type: basic-auth
+    haproxy.org/auth-realm: "Admin Area"
+    haproxy.org/auth-secret: "{{ k8s_haproxy_whoami_basic_auth_secret_name }}"
+
 spec:
   ingressClassName: haproxy
   rules:

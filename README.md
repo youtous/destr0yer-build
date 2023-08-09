@@ -124,7 +124,7 @@ This step allow ansible to prepare a freshly created instance. This step is only
     - Provide a password for the sudo admin user `sudo_user_password` using `openssl passwd -6`, also save the password in `sudo_user_clear_password`
     - Generate a root password the same, it is not required to save this password as long as you have a sudo user.
     - Add your ssh **public** keys in `sudo_user_ssh_keys`
-    - Generate a basic auth user used for http admin auth in `backend_users` using `./bcrypt-password.sh <admin username>` then get the base64 of it using `echo -n 'my-bcrypt-password' | base64`
+    - Generate a basic auth user used for http admin auth in `backend_users` using `./bcrypt-passwd.sh` then add the entry as: `{username: "myuser", password: "myencryptedpasswprd" }`
 6. Repeat the previous step for each instance: `ansible-vault create secret_vars/{{ server_environment }}/myhostname.tld.yml  --vault-password-file "./.vault_password"`. Instance's specific secrets.
 
 ### III. Initial configuration for freshly created instance (bootstrap configuration)

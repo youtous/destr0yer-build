@@ -10,6 +10,11 @@ k8s_haproxy_whoami_replicas: 1
 
 k8s_haproxy_whoami_allowlist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten) | join(', ') }}"
 
+k8s_haproxy_whoami_basic_auth_secret_name: whoami-haproxy-credentials
+k8s_haproxy_whoami_basic_auth_users: "{{ backend_users | default([]) }}"
+# - username: myuser
+#   password: myencryptedpassword
+
 # if set to false, namespace will be deleted with associated resources
 k8s_haproxy_whoami_enabled: true
 
