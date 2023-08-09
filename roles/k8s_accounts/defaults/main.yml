@@ -22,4 +22,7 @@ k8s_accounts_service_accounts_to_delete: []
 # with the name of the service-account
 
 k8s_accounts_server: "https://127.0.0.1:6443"
+
+# kube config
+k8s_accounts_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 ...

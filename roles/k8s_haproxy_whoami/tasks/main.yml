@@ -1,0 +1,21 @@
+---
+- name: Delete resources
+  run_once: true
+  kubernetes.core.k8s:
+    state: absent
+    template: "manifest.j2.yml"
+  environment:
+    KUBECONFIG: "{{ k8s_haproxy_whoami_kubeconfig_path }}"
+    K8S_AUTH_API_KEY: "{{ k8s_haproxy_whoami_token }}"
+  when: not k8s_haproxy_whoami_enabled
+
+- name: Deploy resources
+  run_once: true
+  kubernetes.core.k8s:
+    state: present
+    template: "manifest.j2.yml"
+  environment:
+    KUBECONFIG: "{{ k8s_haproxy_whoami_kubeconfig_path }}"
+    K8S_AUTH_API_KEY: "{{ k8s_haproxy_whoami_token }}"
+  when: k8s_haproxy_whoami_enabled
+...

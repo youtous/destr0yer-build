@@ -7,4 +7,6 @@ k8s_service_account_admin_namespace: "kube-system"
 k8s_service_account_admin_server: "https://127.0.0.1:6443"
 k8s_service_account_admin_kubeconfig_destination: "~/.kube/config"
 # TODO: document that service admin token should be stored in the vault
+
+k8s_service_account_admin_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
 ...

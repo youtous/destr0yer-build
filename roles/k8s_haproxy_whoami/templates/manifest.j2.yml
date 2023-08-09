@@ -1,13 +1,18 @@
 ---
-# TODO : deploy this one as  a role
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ k8s_haproxy_whoami_namespace }}"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: whoami-deployment
+  namespace: "{{ k8s_haproxy_whoami_namespace }}"
   labels:
     app: whoami
 spec:
-  replicas: 1
+  replicas: {{ k8s_haproxy_whoami_replicas }}
   selector:
     matchLabels:
       app: whoami
@@ -18,19 +23,21 @@ spec:
     spec:
       containers:
         - name: whoami-container
-          image: containous/whoami
+          image: "{{ k8s_haproxy_whoami_image }}"
           ports:
             - containerPort: 80
-
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: whoami-ingress
+  namespace: "{{ k8s_haproxy_whoami_namespace }}"
+  annotations:
+    haproxy.org/whitelist:  "{{ k8s_haproxy_whoami_allowlist }}"
 spec:
   ingressClassName: haproxy
   rules:
-    - host: who.k8s.youtous.dv
+    - host: "{{ k8s_haproxy_whoami_domain }}"
       http:
         paths:
           - path: /
@@ -45,6 +52,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: whoami-service
+  namespace: "{{ k8s_haproxy_whoami_namespace }}"
 spec:
   selector:
     app: whoami

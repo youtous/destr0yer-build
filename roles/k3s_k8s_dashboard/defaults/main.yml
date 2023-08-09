@@ -18,14 +18,15 @@ k8s_dashboard_k8s_helm_values:
       annotations:
         # TODO : replace by allow-list when it will work, until use whitelist
         # ensure that at least one ip exists in the whitelist, otherwise all ips are allowed
-        haproxy.org/whitelist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten ) | join(', ') }}"
+        haproxy.org/whitelist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten) | join(', ') }}"
 
         haproxy.org/load-balance: "roundrobin"
 
         # overrides defaults
-        # noqa yaml[line-length]
-        haproxy.org/response-set-header: |
-          Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
+        haproxy.org/response-set-header: >
+          Content-Security-Policy \"default-src 'self'; script-src 'self'
+           'unsafe-inline'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline';
+           font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
 
       # tls
       issuer:
@@ -46,4 +47,7 @@ k8s_dashboard_k8s_helm_values:
     enabled: false
 
 k8s_dashboard_helm_show_commands: true
+
+# kube config
+k8s_dashboard_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 ...

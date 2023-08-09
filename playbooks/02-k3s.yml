@@ -41,6 +41,7 @@
     - k3s_cilium
     - k3s_certmanager
     - k3s_haproxy
+    - k8s_haproxy_whoami
     - k3s_k8s_dashboard
   vars_files:
     - ../secret_vars/{{ server_environment }}/all.yml

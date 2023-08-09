@@ -33,4 +33,7 @@ certmanager_k8s_cluster_cert_issuer:
               ingressClassName: haproxy
 
 certmanager_helm_show_commands: true
+
+# kube config
+certmanager_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 ...

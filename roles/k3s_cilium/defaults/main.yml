@@ -42,5 +42,8 @@ cilium_k8s_helm_values:
     port: 19090
 
 cilium_helm_show_commands: true
+
+# kube config
+cilium_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 # TODO : handle upgrade
 ...

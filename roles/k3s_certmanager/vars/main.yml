@@ -1,4 +1,3 @@
 ---
-certmanager_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 certmanager_chart_archive_name: "cert-manager-{{ certmanager_chart_version }}.tgz"
 ...

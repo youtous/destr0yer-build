@@ -42,7 +42,7 @@ haproxy_k8s_helm_values:
       # https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md,
       # https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy
       # https://csp-evaluator.withgoogle.com/ content security policy
-      # noqa yaml[line-length]
+      # yamllint disable rule:line-length
       response-set-header: |
         Strict-Transport-Security \"max-age=63072000; includeSubDomains; preload\"
         Permissions-Policy \"accelerometer=(), camera=(), interest-cohort=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()\"
@@ -53,9 +53,10 @@ haproxy_k8s_helm_values:
         Content-Security-Policy \"default-src 'self'; script-src 'self'; img-src 'self' data: 'self'; style-src 'self'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
         Server \"\"
         X-Powered-By \"\"
+      # yamllint enable rule:line-length
 
       # see https://ssl-config.mozilla.org/
-      # noqa yaml[line-length]
+      # yamllint disable rule:line-length
       global-config-snippet: |
         # intermediate configuration
         ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305
@@ -65,6 +66,7 @@ haproxy_k8s_helm_values:
         ssl-default-server-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305
         ssl-default-server-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
         ssl-default-server-options no-sslv3 no-tlsv10 no-tlsv11 no-tls-tickets
+      # yamllint enable rule:line-length
 
     service:
       nodePorts:
@@ -73,4 +75,7 @@ haproxy_k8s_helm_values:
         stat: 1024
 
 haproxy_helm_show_commands: true
+
+# kube config
+haproxy_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 ...
