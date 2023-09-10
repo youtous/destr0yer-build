@@ -32,6 +32,18 @@
   ansible.builtin.debug:
     var: promgraf__helm_install_chart.stdout
 
+- name: Create secrets
+  run_once: true
+  no_log: true
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  environment:
+    KUBECONFIG: "{{ k3s_promgraf_kubeconfig_path }}"
+    K8S_AUTH_API_KEY: "{{ k8s_service_account_admin_token }}"
+  with_items:
+    - "smtp_auth.j2.yml"
+
 - name: Cleanup build directory
   ansible.builtin.file:
     state: absent

@@ -14,8 +14,13 @@ k3s_promgraf_helm_release_name: kube-prometheus-stack
 
 k3s_promgraf_k8s_namespace: promgraf
 
+k3s_promgraf_smtp_user: ""
+k3s_promgraf_smtp_password: ""
+k3s_promgraf_admin_user: "admin"
+k3s_promgraf_admin_password: ""
 
 k3s_promgraf_k8s_helm_values:
+
   alertmanager:
     ingress:
       enabled: true
@@ -60,7 +65,7 @@ k3s_promgraf_k8s_helm_values:
         # overrides defaults
         # yamllint disable rule:line-length
         haproxy.org/response-set-header: |
-          Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
+          Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'self'; frame-src 'self'; object-src 'none';\"
         # yamllint enable rule:line-length
 
 
@@ -104,6 +109,14 @@ k3s_promgraf_k8s_helm_values:
       # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
       hosts:
         - "prom.{{ k8s_base_cluster_domain }}" # adapt to your needs
+
+  adminUser: "{{ k3s_promgraf_admin_user }}"
+  adminPassword: "{{ k3s_promgraf_admin_password }}"
+
+  smtp:
+    existingSecret: "promgraf-smtp-auth"
+
+# TODO: smtp config, check if karma needed,
 
 k3s_promgraf_helm_show_commands: true
 
