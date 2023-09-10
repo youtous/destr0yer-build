@@ -43,6 +43,7 @@
     - k3s_haproxy
     - k8s_haproxy_whoami
     - k3s_k8s_dashboard
+    - k3s_promgraf
   vars_files:
     - ../secret_vars/{{ server_environment }}/all.yml
     - ../task_vars/sudo.yml
