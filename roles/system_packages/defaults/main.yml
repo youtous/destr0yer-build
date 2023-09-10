@@ -29,6 +29,7 @@ system_packages:
   - sudo
   - ncdu
   - tree
+  - duf
   - apparmor # security (MAC) :)
   - ccze # colorization
   - grc # colorization
