@@ -1,0 +1,99 @@
+---
+# Prometheus variables
+# See: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+
+k3s_promgraf_kube_prometheus_stack_chart_version: "50.3.0"
+# yamllint disable rule:line-length
+k3s_promgraf_kube_prometheus_stack_chart_download_url:
+  "https://github.com/prometheus-community/helm-charts/releases/download/kube-prometheus-stack-{{ k3s_promgraf_kube_prometheus_stack_chart_version }}/kube-prometheus-stack-{{ k3s_promgraf_kube_prometheus_stack_chart_version }}.tgz"
+# yamllint enable rule:line-length
+k3s_promgraf_kube_prometheus_stack_chart_sha256sum: "a5fae704f2e591e04cb38df3a4c85bf8ef81c9a165d3b98d7e77f59a5ae8069d"
+
+
+k3s_promgraf_helm_release_name: kube-prometheus-stack
+
+k3s_promgraf_k8s_namespace: promgraf
+
+
+k3s_promgraf_k8s_helm_values:
+  alertmanager:
+    ingress:
+      enabled: true
+      ingressClassName: haproxy
+
+      annotations:
+        # TODO : replace by allow-list when it will work, until use whitelist
+        # ensure that at least one ip exists in the whitelist, otherwise all ips are allowed
+        haproxy.org/whitelist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten) | join(', ') }}"
+
+        haproxy.org/load-balance: "roundrobin"
+
+        # overrides defaults
+
+
+      # tls
+      issuer:
+        scope: cluster
+        name: letsencrypt
+
+      # TODO : document
+      # One should use its own cert in production
+      # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
+      hosts:
+        - "alertmanager.{{ k8s_base_cluster_domain }}" # adapt to your needs
+  grafana:
+    ingress:
+      enabled: true
+      ingressClassName: haproxy
+
+      annotations:
+        # TODO : replace by allow-list when it will work, until use whitelist
+        # ensure that at least one ip exists in the whitelist, otherwise all ips are allowed
+        haproxy.org/whitelist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten) | join(', ') }}"
+
+        haproxy.org/load-balance: "roundrobin"
+
+        # overrides defaults
+
+
+      # tls
+      issuer:
+        scope: cluster
+        name: letsencrypt
+
+      # TODO : document
+      # One should use its own cert in production
+      # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
+      hosts:
+        - "grafana.{{ k8s_base_cluster_domain }}" # adapt to your needs
+  prometheus:
+    ingress:
+      enabled: true
+      ingressClassName: haproxy
+
+      annotations:
+        # TODO : replace by allow-list when it will work, until use whitelist
+        # ensure that at least one ip exists in the whitelist, otherwise all ips are allowed
+        haproxy.org/whitelist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten) | join(', ') }}"
+
+        haproxy.org/load-balance: "roundrobin"
+
+        # overrides defaults
+
+
+      # tls
+      issuer:
+        scope: cluster
+        name: letsencrypt
+
+      # TODO : document
+      # One should use its own cert in production
+      # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
+      hosts:
+        - "prom.{{ k8s_base_cluster_domain }}" # adapt to your needs
+
+k3s_promgraf_helm_show_commands: true
+
+# kube config
+k3s_promgraf_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
+...

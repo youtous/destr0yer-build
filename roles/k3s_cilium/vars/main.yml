@@ -1,3 +1,3 @@
 ---
-cilium_chart_archive_name: "cilium-{{ cilium_chart_version }}.tgz"
+cilium_chart_archive_name: "{{ cilium_chart_download_url | basename }}"
 ...
