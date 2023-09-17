@@ -1,4 +1,7 @@
 ---
+- name: Pre-flight checks
+  ansible.builtin.import_tasks: pre_flight_check.yml
+
 - name: Create build directory
   ansible.builtin.tempfile:
     state: directory
@@ -43,6 +46,7 @@
     K8S_AUTH_API_KEY: "{{ k8s_service_account_admin_token }}"
   with_items:
     - "smtp_auth.j2.yml"
+    - "auth_manifest.j2.yml"
 
 - name: Cleanup build directory
   ansible.builtin.file:

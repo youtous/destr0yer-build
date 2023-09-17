@@ -13,24 +13,29 @@ certmanager_k8s_helm_values:
   installCRDs: true
   namespace: "{{ certmanager_k8s_namespace }}"
 
-# Cluster Cert issuer
+# Cluster Cert issuer (use let's encrypt in a connected environment)
 certmanager_k8s_cluster_cert_issuer:
   apiVersion: cert-manager.io/v1
   kind: ClusterIssuer
   metadata:
     name: letsencrypt
   spec:
-    acme:
-      email: myemail@company.com
-      server: https://acme-staging-v02.api.letsencrypt.org/directory
-      privateKeySecretRef:
-        # Secret used to store the account's private key.
-        name: le-cluster-issuer-account-key
-      # Add a ACME HTTP01 challenge solver
-      solvers:
-        - http01:
-            ingress:
-              ingressClassName: haproxy
+    # In development mode we don't use let's encrypt due to local connectivity limitation
+    # on a staging/production, please use the acme provider of your choice: ZeroSSL, LetsEncrypt
+    #
+    # acme:
+    #   email: myemail@company.com
+    #   server: https://acme-staging-v02.api.letsencrypt.org/directory
+    #   privateKeySecretRef:
+    #     # Secret used to store the account's private key.
+    #     name: le-cluster-issuer-account-key
+    #   # Add a ACME HTTP01 challenge solver
+    #   solvers:
+    #     - http01:
+    #         ingress:
+    #           ingressClassName: haproxy
+
+    selfSigned: {}
 
 certmanager_helm_show_commands: true
 

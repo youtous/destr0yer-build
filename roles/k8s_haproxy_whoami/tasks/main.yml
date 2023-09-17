@@ -13,7 +13,7 @@
   run_once: true
   no_log: true
   kubernetes.core.k8s:
-    state: present
+    state: absent
     template: "auth_manifest.j2.yml"
   environment:
     KUBECONFIG: "{{ k8s_haproxy_whoami_kubeconfig_path }}"

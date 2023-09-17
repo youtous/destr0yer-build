@@ -1,0 +1,12 @@
+---
+# Validate requirements
+
+- name: Check role parameters
+  ansible.builtin.assert:
+    that:
+      - k3s_promgraf_admin_user is defined and k3s_promgraf_admin_user|length
+      - k3s_promgraf_admin_password is defined and k3s_promgraf_admin_password|length
+    msg: "mandatory parameters must be defined an not empty"
+
+
+...

@@ -9,6 +9,10 @@ k8s_dashboard_helm_release_name: kubernetes-dashboard
 
 k8s_dashboard_k8s_namespace: kubernetes-dashboard
 
+k8s_dashboard_domain: "dashboard.{{ k8s_base_cluster_domain }}"
+k8s_dashboard_tls_issuer_name: "letsencrypt"
+k8s_dashboard_tls_secret_name: "dashboard-ingress-tls"
+
 k8s_dashboard_k8s_helm_values:
 
   app:
@@ -31,13 +35,29 @@ k8s_dashboard_k8s_helm_values:
       # tls
       issuer:
         scope: cluster
-        name: letsencrypt
+        name: "{{ k8s_dashboard_tls_issuer_name }}"
 
-      # TODO : document
-      # One should use its own cert in production
-      # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
+      secretName: "{{ k8s_dashboard_tls_secret_name }}" # cert name for certmanager
       hosts:
-        - "dashboard.{{ k8s_base_cluster_domain }}" # adapt to your needs
+        - "{{ k8s_dashboard_domain }}" # adapt to your needs
+  extras:
+    manifests:
+      - apiVersion: cert-manager.io/v1
+        kind: Certificate
+        metadata:
+          name: "{{ k8s_dashboard_tls_secret_name }}"
+          namespace: "{{ k8s_dashboard_k8s_namespace }}"
+        spec:
+          secretName: "{{ k8s_dashboard_tls_secret_name }}"
+          issuerRef:
+            name: "{{ k8s_dashboard_tls_issuer_name }}"
+            kind: ClusterIssuer
+          dnsNames:
+            - "{{ k8s_dashboard_domain }}"
+          privateKey:
+            algorithm: RSA
+            size: 4096
+            rotationPolicy: Always # 🔰 Here.
 
   nginx:
     enabled: false

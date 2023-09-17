@@ -3,9 +3,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   namespace: "{{ k3s_promgraf_k8s_namespace }}"
-  name: "{{ k3s_promgraf_k8s_helm_values.smtp.existingSecret }}"
+  name: "{{ k3s_promgraf_k8s_helm_values.grafana.smtp.existingSecret }}"
 type: Opaque
 data:
-  user: "{{ k3s_promgraf_smtp_user | b64encode}}"
-  password: "{{ k3s_promgraf_smtp_password | b64encode }}"
+  "{{ k3s_promgraf_k8s_helm_values.grafana.smtp.userKey }}": "{{ k3s_promgraf_smtp_user | b64encode}}"
+  "{{ k3s_promgraf_k8s_helm_values.grafana.smtp.passwordKey }}": "{{ k3s_promgraf_smtp_password | b64encode }}"
 ...

@@ -14,8 +14,26 @@ k3s_promgraf_helm_release_name: kube-prometheus-stack
 
 k3s_promgraf_k8s_namespace: promgraf
 
-k3s_promgraf_smtp_user: ""
+k3s_promgraf_basic_auth_secret_name: "promgraf-basic-auth"
+k3s_promgraf_basic_auth_users: "{{ backend_users | default([]) }}"
+# - username: myuser
+#   password: myencryptedpassword
+
+# SMTP paramaters
+k3s_promgraf_smtp_user: "user"
 k3s_promgraf_smtp_password: ""
+k3s_promgraf_smtp_starttls_policy: "MandatoryStartTLS"
+k3s_promgraf_smtp_host: "localhost:25"
+k3s_promgraf_smtp_from_address: "local@local.dv"
+k3s_promgraf_smtp_from_name: "PromGraf"
+k3s_promgraf_alert_to_email: "{{ monitoring_email }}"
+
+# domains
+k3s_promgraf_prometheus_domain: "prom.{{ k8s_base_cluster_domain }}"
+k3s_promgraf_grafana_domain: "grafana.{{ k8s_base_cluster_domain }}"
+k3s_promgraf_alertmanager_domain: "alertmanager.{{ k8s_base_cluster_domain }}"
+
+# Admin login parameters
 k3s_promgraf_admin_user: "admin"
 k3s_promgraf_admin_password: ""
 
@@ -30,6 +48,10 @@ k3s_promgraf_k8s_helm_values:
         # TODO : replace by allow-list when it will work, until use whitelist
         # ensure that at least one ip exists in the whitelist, otherwise all ips are allowed
         haproxy.org/whitelist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten) | join(', ') }}"
+        # protect with additional basic auth
+        haproxy.org/auth-type: basic-auth
+        haproxy.org/auth-realm: "Admin Area"
+        haproxy.org/auth-secret: "{{ k3s_promgraf_basic_auth_secret_name }}"
 
         haproxy.org/load-balance: "roundrobin"
 
@@ -43,13 +65,65 @@ k3s_promgraf_k8s_helm_values:
       # tls
       issuer:
         scope: cluster
-        name: letsencrypt
+        name: "{{ k3s_promgraf_tls_issuer_name }}"
 
-      # TODO : document
-      # One should use its own cert in production
-      # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
+      secretName: "{{ k3s_promgraf_alertmanager_tls_secret_name }}" # cert name for certmanager
       hosts:
-        - "alertmanager.{{ k8s_base_cluster_domain }}" # adapt to your needs
+        - "{{ k3s_promgraf_alertmanager_domain }}" # adapt to your needs
+    ## Alertmanager configuration directives
+    ## ref: https://prometheus.io/docs/alerting/configuration/#configuration-file
+    ##      https://prometheus.io/webtools/alerting/routing-tree-editor/
+    ##
+    config:
+      global:
+        resolve_timeout: 5m
+
+        # The smarthost and SMTP sender used for mail notifications.
+        smtp_from: '{{ k3s_promgraf_smtp_from_name }}'
+        smtp_smarthost: '{{ k3s_promgraf_smtp_host }}'
+        smtp_auth_username: '{{ k3s_promgraf_smtp_user }}'
+        smtp_auth_password: '{{ k3s_promgraf_smtp_password }}'
+        smtp_require_tls: true
+
+      inhibit_rules:
+        - source_matchers:
+            - 'severity = critical'
+          target_matchers:
+            - 'severity =~ warning|info'
+          equal:
+            - 'namespace'
+            - 'alertname'
+        - source_matchers:
+            - 'severity = warning'
+          target_matchers:
+            - 'severity = info'
+          equal:
+            - 'namespace'
+            - 'alertname'
+        - source_matchers:
+            - 'alertname = InfoInhibitor'
+          target_matchers:
+            - 'severity = info'
+          equal:
+            - 'namespace'
+      route:
+        group_by: ['namespace']
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 12h
+        receiver: 'email'
+        routes:
+          - receiver: 'null'
+            matchers:
+              - alertname =~ "InfoInhibitor|Watchdog"
+      receivers:
+        - name: 'null'
+        - name: 'email'
+          email_configs:
+            - to: '{{ k3s_promgraf_alert_to_email }}'
+      templates:
+        - '/etc/alertmanager/config/*.tmpl'
+
   grafana:
     ingress:
       enabled: true
@@ -72,13 +146,30 @@ k3s_promgraf_k8s_helm_values:
       # tls
       issuer:
         scope: cluster
-        name: letsencrypt
+        name: "{{ k3s_promgraf_tls_issuer_name }}"
 
-      # TODO : document
-      # One should use its own cert in production
-      # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
+
+      secretName: "{{ k3s_promgraf_grafana_tls_secret_name }}" # cert name for certmanager
       hosts:
-        - "grafana.{{ k8s_base_cluster_domain }}" # adapt to your needs
+        - "{{ k3s_promgraf_grafana_domain }}" # adapt to your needs
+
+    adminUser: "{{ k3s_promgraf_admin_user }}"
+    adminPassword: "{{ k3s_promgraf_admin_password }}"
+
+    grafana.ini:
+      smtp:
+        enabled: true
+        host: "{{ k3s_promgraf_smtp_host }}"
+        from_address: "{{ k3s_promgraf_smtp_from_address }}"
+        from_name: "{{ k3s_promgraf_smtp_from_name }}"
+        startTLS_policy: "{{ k3s_promgraf_smtp_starttls_policy }}"
+        # SMTP config follows here as per
+        # https://grafana.com/docs/grafana/latest/administration/configuration/#smtp
+
+    smtp:
+      existingSecret: "promgraf-smtp-auth"
+      userKey: "user"
+      passwordKey: "password"
 
   prometheus:
     ingress:
@@ -89,6 +180,10 @@ k3s_promgraf_k8s_helm_values:
         # TODO : replace by allow-list when it will work, until use whitelist
         # ensure that at least one ip exists in the whitelist, otherwise all ips are allowed
         haproxy.org/whitelist: "{{ (trusted_backend_ips + ['127.0.0.1'] | flatten) | join(', ') }}"
+        # protect with additional basic auth
+        haproxy.org/auth-type: basic-auth
+        haproxy.org/auth-realm: "Admin Area"
+        haproxy.org/auth-secret: "{{ k3s_promgraf_basic_auth_secret_name }}"
 
         haproxy.org/load-balance: "roundrobin"
 
@@ -102,21 +197,82 @@ k3s_promgraf_k8s_helm_values:
       # tls
       issuer:
         scope: cluster
-        name: letsencrypt
+        name: "{{ k3s_promgraf_tls_issuer_name }}"
 
-      # TODO : document
       # One should use its own cert in production
-      # secretName: "haproxy-ingress-kubernetes-ingress-default-cert" # cert name for certmanager
+      secretName: "{{ k3s_promgraf_prometheus_tls_secret_name }}" # cert name for certmanager
       hosts:
-        - "prom.{{ k8s_base_cluster_domain }}" # adapt to your needs
+        - "{{ k3s_promgraf_prometheus_domain }}" # adapt to your needs
 
-  adminUser: "{{ k3s_promgraf_admin_user }}"
-  adminPassword: "{{ k3s_promgraf_admin_password }}"
+  extraManifests:
+    - apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: "{{ k3s_promgraf_prometheus_tls_secret_name }}"
+        namespace: "{{ k3s_promgraf_k8s_namespace }}"
+      spec:
+        secretName: "{{ k3s_promgraf_prometheus_tls_secret_name }}"
+        issuerRef:
+          name: "{{ k3s_promgraf_tls_issuer_name }}"
+          kind: ClusterIssuer
+        dnsNames:
+          - "{{ k3s_promgraf_prometheus_domain }}"
+        privateKey:
+          algorithm: RSA
+          size: 4096
+          rotationPolicy: Always # 🔰 Here.
 
-  smtp:
-    existingSecret: "promgraf-smtp-auth"
+    - apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: "{{ k3s_promgraf_grafana_tls_secret_name }}"
+        namespace: "{{ k3s_promgraf_k8s_namespace }}"
+      spec:
+        secretName: "{{ k3s_promgraf_grafana_tls_secret_name }}"
+        issuerRef:
+          name: "{{ k3s_promgraf_tls_issuer_name }}"
+          kind: ClusterIssuer
+        dnsNames:
+          - "{{ k3s_promgraf_grafana_domain }}"
+        privateKey:
+          algorithm: RSA
+          size: 4096
+          rotationPolicy: Always # 🔰 Here.
 
-# TODO: smtp config, check if karma needed,
+    - apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: "{{ k3s_promgraf_alertmanager_tls_secret_name }}"
+        namespace: "{{ k3s_promgraf_k8s_namespace }}"
+      spec:
+        secretName: "{{ k3s_promgraf_alertmanager_tls_secret_name }}"
+        issuerRef:
+          name: "{{ k3s_promgraf_tls_issuer_name }}"
+          kind: ClusterIssuer
+        dnsNames:
+          - "{{ k3s_promgraf_alertmanager_domain }}"
+        privateKey:
+          algorithm: RSA
+          size: 4096
+          rotationPolicy: Always # 🔰 Here.
+
+  ## Deploy node exporter as a daemonset to all nodes
+  ##
+  nodeExporter:
+    enabled: true
+    operatingSystems:
+      linux:
+        enabled: true
+
+# TODO : later, add karma to the stack
+# TODO : later exploit
+# - setup backup
+# - limit storage
+# - audit security
+k3s_promgraf_tls_issuer_name: "letsencrypt"
+k3s_promgraf_prometheus_tls_secret_name: "prometheus-tls-ingress-cert"
+k3s_promgraf_grafana_tls_secret_name: "grafana-tls-ingress-cert"
+k3s_promgraf_alertmanager_tls_secret_name: "alertmanager-tls-ingress-cert"
 
 k3s_promgraf_helm_show_commands: true
 

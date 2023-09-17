@@ -18,6 +18,10 @@ k8s_haproxy_whoami_basic_auth_users: "{{ backend_users | default([]) }}"
 # if set to false, namespace will be deleted with associated resources
 k8s_haproxy_whoami_enabled: true
 
+# letsencrypt
+k8s_haproxy_whoami_tls_secret_name: "whoami-ingress-tls"
+k8s_haproxy_whoami_tls_issuer_name: "letsencrypt"
+
 # kube config
 k8s_haproxy_whoami_kubeconfig_path: "{{ ansible_env.HOME }}/.kube/config"
 k8s_haproxy_whoami_token: "{{ k8s_service_account_admin_token }}"

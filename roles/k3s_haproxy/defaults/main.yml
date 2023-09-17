@@ -1,11 +1,11 @@
 ---
 # HAProxy Ingress variables
 
-haproxy_chart_version: "1.32.2"
+haproxy_chart_version: "1.33.0"
 
 haproxy_chart_download_url:
   "https://github.com/haproxytech/helm-charts/releases/download/kubernetes-ingress-{{ haproxy_chart_version }}/kubernetes-ingress-{{ haproxy_chart_version }}.tgz" # noqa yaml[line-length]
-haproxy_chart_sha265sum: "fce4bbbe55b7f448e2255e591a904994c9c6387fac7dcfb03d9bebc7e89ff4a6"
+haproxy_chart_sha265sum: "cb9ba30407c0f2b28e813880a5ecd4fd52b5b7d054ddd10ef53ea75ea7a44a3f"
 
 haproxy_helm_release_name: haproxy-ingress
 

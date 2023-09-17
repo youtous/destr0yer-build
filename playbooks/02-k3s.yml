@@ -35,10 +35,20 @@
     - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "k3s-service-account"]
 
-- name: Install k3s internal services
+- name: Install k3s internal services - networking
   hosts: k3s_control_node[0]
   roles:
     - k3s_cilium
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["k3s-setup", "k3s-internal-services", "k3s-internal-networking"]
+
+
+- name: Install k3s internal services - APP
+  hosts: k3s_control_node[0]
+  roles:
     - k3s_certmanager
     - k3s_haproxy
     - k8s_haproxy_whoami
@@ -48,7 +58,7 @@
     - ../secret_vars/{{ server_environment }}/all.yml
     - ../task_vars/sudo.yml
     - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
-  tags: ["k3s-setup", "k3s-internal-services"]
+  tags: ["k3s-setup", "k3s-internal-services", "k3s-internal-app"]
 
 - name: Generate service accounts and namespaces
   hosts: k3s_control_node

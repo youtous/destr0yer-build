@@ -41,6 +41,10 @@ metadata:
 
 spec:
   ingressClassName: haproxy
+  tls:
+    - hosts:
+        - "{{ k8s_haproxy_whoami_domain }}"
+      secretName: "{{ k8s_haproxy_whoami_tls_secret_name }}"
   rules:
     - host: "{{ k8s_haproxy_whoami_domain }}"
       http:
@@ -52,6 +56,25 @@ spec:
                 name: whoami-service
                 port:
                   number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: "{{ k8s_haproxy_whoami_tls_secret_name }}"
+  namespace:  "{{ k8s_haproxy_whoami_namespace }}"
+spec:
+  secretName: "{{ k8s_haproxy_whoami_tls_secret_name }}"
+  issuerRef:
+    name: "{{ k8s_haproxy_whoami_tls_issuer_name }}"
+    kind: ClusterIssuer
+  dnsNames:
+    - "{{ k8s_haproxy_whoami_domain }}"
+  metadata:
+    namespace:  "{{ k8s_dashboard_k8s_namespace }}"
+  privateKey:
+    algorithm: RSA # TODO : when 25519 is supported, switch
+    size: 4096
+    rotationPolicy: Always # 🔰 Here.
 ---
 apiVersion: v1
 kind: Service
