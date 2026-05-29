@@ -167,6 +167,7 @@ Detailed ADRs are in [doc/adr/](doc/adr/). Key decisions:
 - **Multi-cluster**: One K3S cluster per geographic zone. Clusters are independent.
 - **Cloud relay**: Public-facing forwarder for mail/web. WireGuard + HAProxy TCP (dual-stack IPv4/IPv6, PROXY protocol v2). No TLS termination on relay. May run K3S in future depending on workload needs.
 - **Zero-trust** (ADR-008): All inbound blocked on bare-metal. SSH restricted to known IPs (entrypoint_ssh). Relay is the only node with public ports.
+- **SSH relay pattern**: Bootstrap-then-lock — cloud provider firewall gates public SSH during initial provisioning, closed after WireGuard validated. Remote admin access via WG UDP pipe (relay = blind DNAT, admin authenticates directly on ctrl by WG key, cloud FW restricts UDP port to admin's static IP). See doc/security.md.
 - **cert-manager**: TLS certificate lifecycle — internal CA (dev) or Let's Encrypt via deSEC DNS-01 (prod)
 - **Garage**: S3-compatible object storage (backend for Loki/backups), admin via `kubectl exec`
 - **Ingress**: HAProxy for all HTTP/HTTPS + TCP (mail). Cilium Gateway API deferred.

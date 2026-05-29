@@ -176,7 +176,7 @@ Audit runs are ephemeral (terminal only, no persistent storage of findings).
 ## Zero-trust checklist
 
 - [x] UFW: `default deny incoming` on all bare-metal nodes
-- [x] SSH: restricted to known IPs + WG subnet
+- [x] SSH: restricted to known IPs + WG subnet (relay: bootstrap-then-lock, see below)
 - [x] K3S API: bind to private IP (`bind-address` + `advertise-address`)
 - [x] Cilium: default-deny in all namespaces
 - [x] PSA: `restricted` profile enforced
@@ -187,6 +187,72 @@ Audit runs are ephemeral (terminal only, no persistent storage of findings).
 - [ ] Relay node UFW: allow public ports from `0.0.0.0/0` only (prod)
 - [ ] SELinux enforcing mode (currently permissive)
 - [ ] LUKS encryption on relay node boot volume
+
+### SSH bootstrap-then-lock (relay)
+
+The relay is the only node with a public IP. SSH uses a two-phase pattern:
+
+1. **Bootstrap** — Cloud provider firewall allows tcp/22 from admin IP.
+   `ssh_entrypoints` in inventory lists both admin IP and WG subnet (defense-in-depth
+   at UFW level). Run `just provision` + `just configure` to establish WireGuard.
+
+2. **Locked** — Verify WG connectivity (`ssh walle@<relay-wg-ip>`), then close tcp/22
+   in the cloud provider firewall (panel, API, or Terraform). No Ansible re-run needed.
+   Inventory stays unchanged — UFW `ssh_entrypoints` remains as a second layer.
+
+**Result:** public SSH never reaches the host. All access goes through the WireGuard
+mesh. The cloud provider firewall is the gate; UFW is defense-in-depth.
+
+**Recovery:** re-open tcp/22 in the cloud provider panel. Instant, no Ansible needed.
+The SSH daemon and UFW rules are still configured and ready.
+
+See `inventories/dev/host_vars/relay.sample.yml` for the inventory pattern.
+
+### Remote admin access — WireGuard UDP pipe
+
+When the admin is not on the local network, SSH to self-hosted nodes goes through
+the relay as a **blind UDP forwarder** (DNAT). The admin authenticates directly on
+ctrl via WireGuard cryptokey routing — the relay never sees cleartext.
+
+**Architecture:**
+
+```
+Admin laptop (10.99.98.100)
+  → WG tunnel to relay:41994 (UDP DNAT, relay is blind)
+  → ctrl wg0 authenticates admin by public key
+  → ctrl forwards to worker/internal nodes via wg0 mesh
+```
+
+**Triple protection (static IP admin):**
+
+1. **Cloud provider FW** — UDP 41994 restricted to admin's static IP only.
+   Port invisible to all other sources.
+2. **WG crypto-stealth** — Without admin's private key, no handshake response.
+   Port scan returns nothing (indistinguishable from closed).
+3. **Ctrl peer verification** — IP `10.99.98.100` is cryptographically bound
+   to admin's key via WG AllowedIPs. Cannot be spoofed.
+
+**Trust model:**
+
+- Relay: **zero-trust** — blind UDP pipe, no WG keys for admin, cannot decrypt
+  or forge traffic. Even root on a compromised relay cannot inject valid WG packets.
+- Ctrl: **trusted** — authenticates admin directly, routes to internal nodes.
+- Workers: **trusted via ctrl** — same physical site, ctrl forwards honestly.
+
+**Filtering on ctrl (defense-in-depth):**
+
+- `wg-filter-relay` iptables: allow `tcp/22` from `10.99.98.100/32` only
+- `ssh_entrypoints` (UFW): includes `10.99.98.100/32`
+- `restrict_user_ssh_ips` (sshd): optional per-user IP restriction
+
+**Scaling:**
+
+- Add admin → new peer on ctrl wg0. Relay unchanged.
+- Revoke admin → remove peer from ctrl wg0. Relay unchanged.
+- Add internal node → already routed via ctrl mesh. Nothing extra.
+
+See `inventories/dev/host_vars/relay.sample.yml` (DNAT rules, cloud FW)
+and `inventories/dev/host_vars/host.sample.yml` (ctrl peer config).
 
 ## Mail workload isolation
 

@@ -89,6 +89,74 @@ relay_haproxy_frontends:
 #     backend_addr: "10.99.99.10:443"
 #     send_proxy: false  # example: backend doesn't support PROXY protocol
 
+# ─── SSH access — bootstrap-then-lock pattern ────────────────────────────────
+# The relay is the only node with a public IP. SSH lifecycle:
+#
+#   Phase 1 (bootstrap):
+#     - Cloud provider firewall: allow tcp/22 from admin IP
+#     - Run `just provision` + `just configure` to set up WireGuard
+#     - ssh_entrypoints below acts as defense-in-depth (UFW layer)
+#
+#   Phase 2 (locked):
+#     - Verify WG: `ssh walle@10.99.99.1` (relay WG IP)
+#     - Close tcp/22 in cloud provider firewall (panel / API / terraform)
+#     - No Ansible re-run needed — inventory stays unchanged
+#     - All SSH now goes through WireGuard mesh only
+#
+#   Recovery:
+#     - Re-open tcp/22 in cloud provider panel (instant, no Ansible needed)
+#
+# ssh_entrypoints keeps both admin IP + WG subnet permanently (defense-in-depth).
+# The cloud provider firewall is the actual gate for public access.
+ssh_entrypoints:
+  - "10.99.99.0/24"  # WireGuard mesh (steady-state access)
+  - "203.0.113.42/32"  # Admin public IP (replace with your IP)
+
+# ─── Remote admin access — WG UDP pipe ────────────────────────────────────────
+# Admin laptop connects via WireGuard DIRECTLY to ctrl (not to relay).
+# Relay is a blind UDP forwarder (DNAT) — no WG config, no keys, no decryption.
+# Admin authenticates on ctrl by WG cryptokey (ctrl has admin's public key as peer).
+#
+# Security layers (triple protection):
+#   1. Cloud provider FW: restrict UDP 41994 to admin's static IP only
+#   2. WG crypto-stealth: no handshake response without admin's private key
+#   3. Ctrl peer verification: IP 10.99.98.100 cryptographically bound to admin key
+#
+# Even if relay is fully compromised (root), attacker cannot forge valid WG packets
+# toward ctrl (would need admin's private key). Relay sees only encrypted UDP blobs.
+#
+# DNAT rules (add to wg-infra post_up or ufw before.rules):
+#   iptables -t nat -A PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:1990
+#   iptables -t nat -A POSTROUTING -o wg-infra -p udp --dport 1990 -d 10.99.99.10 -j MASQUERADE
+#
+# Cloud provider firewall:
+#   - UDP 41993: allow from any (wg-infra, crypto-stealth)
+#   - UDP 41994: allow from admin's static IP ONLY (admin access)
+#   - TCP 22: closed after bootstrap (see SSH section above)
+#
+# Ctrl-side config (see host.sample.yml):
+#   - Admin added as peer on ctrl's wg0 (public key + allowed_ips: 10.99.98.100/32)
+#   - wg-filter-relay: allow tcp/22 from 10.99.98.100/32
+#   - ssh_entrypoints: includes 10.99.98.100/32
+#
+# Admin laptop WG config (reference):
+#   [Interface]
+#   Address = 10.99.98.100/32
+#   PrivateKey = <admin_private_key>
+#
+#   [Peer]
+#   PublicKey = <ctrl_wg0_public_key>
+#   PresharedKey = <psk>
+#   Endpoint = relay.public.ip:41994
+#   AllowedIPs = 10.99.99.0/24, 10.99.98.0/24
+#   PersistentKeepalive = 25
+#
+# Scaling:
+#   - Add admin: new peer on ctrl wg0. Relay unchanged.
+#   - Add internal node: already routed via ctrl. Nothing extra.
+#   - Revoke admin: remove peer from ctrl wg0. Relay unchanged.
+#   - Multi-site: add DNAT port per site on relay.
+
 # ─── UFW rules (consumed by iptables_firewall role) ──────────────────────────
 ufw_additional_rules:
   - {comment: "SMTP", proto: tcp, src: any, dest: any, port: "25", rule: allow, direction: in}

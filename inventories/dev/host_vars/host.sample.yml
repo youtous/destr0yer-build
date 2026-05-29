@@ -182,6 +182,34 @@ host_users: []
 #     private_key: "{{ wireguard_server_private_key }}"
 #     restrict_ips: ["192.168.56.0/24", "10.99.99.0/24"]  # never use "any" — restrict to known peer networks
 #     peers: "{{ wireguard_server_peers }}"
+#
+# ─── Remote admin peer (WG UDP pipe via relay) ────────────────────────────────
+# Admin laptop connects to ctrl's wg0 via a blind DNAT on the relay.
+# The relay forwards UDP 41994 → ctrl:1990 without decrypting.
+# Admin authenticates directly on ctrl by WG cryptokey (zero-trust relay).
+#
+# Add admin as a peer on wg0 (in wireguard_server_peers or inline):
+#     - name: admin-laptop
+#       public_key: "ADMIN_LAPTOP_PUBLIC_KEY"
+#       preshared_key: "{{ vault_admin_laptop_psk }}"
+#       allowed_ips:
+#         - 10.99.98.100/32   # admin IP, cryptographically bound to this key
+#       persistent_keepalive: ""
+#
+# Required ctrl-side config for admin access:
+#   1. wg-filter-relay post_up: add rule before the DROP:
+#        iptables -t filter -A wg-filter-relay -s 10.99.98.100/32 -p tcp --dport 22 -j ACCEPT
+#   2. ssh_entrypoints: add "10.99.98.100/32"
+#   3. Worker AllowedIPs (if admin needs worker access):
+#        allowed_ips: [..., "10.99.98.0/24"]
+#
+# Trust model:
+#   - Relay: zero-trust (blind UDP pipe, no keys, can't forge)
+#   - Ctrl: trusted (authenticates admin directly by WG key)
+#   - Worker: trusted via ctrl (ctrl forwards, same physical site)
+#
+# See relay.sample.yml for the DNAT setup and cloud FW rules.
+# See doc/security.md for full security analysis.
 
 ### WireGuard client — local mesh (if this host connects to another node)
 # wireguard_clients:
