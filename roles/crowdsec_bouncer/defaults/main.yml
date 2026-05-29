@@ -1,4 +1,6 @@
 ---
+crowdsec_bouncer_enabled: true
+
 crowdsec_bouncer_backend: nftables
 
 # LAPI endpoint — auto-discovered from K8S NodePort service

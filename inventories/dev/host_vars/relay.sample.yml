@@ -42,6 +42,9 @@ wireguard_servers:
       # FORWARD + masquerade: relay sends mail outbound via its public IP
       - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
       - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+      # UDP pipe: blind DNAT for admin WG to ctrl (relay never decrypts)
+      - "iptables -t nat -A PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:1990"
+      - "iptables -t nat -A POSTROUTING -o %i -p udp --dport 1990 -d 10.99.99.10 -j MASQUERADE"
     post_down:
       - "iptables -t filter -D INPUT -i %i -j wg-filter-cluster || true"
       - "iptables -F wg-filter-cluster || true"
@@ -51,6 +54,9 @@ wireguard_servers:
       - "ip6tables -X wg-filter-cluster || true"
       - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
       - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
+      # Remove UDP pipe DNAT
+      - "iptables -t nat -D PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:1990 || true"
+      - "iptables -t nat -D POSTROUTING -o %i -p udp --dport 1990 -d 10.99.99.10 -j MASQUERADE || true"
     mtu: ""
 
   - interface: wg-relay-admin
@@ -202,6 +208,10 @@ ssh_entrypoints:
 #   - Revoke admin: remove peer from both. Relay DNAT unchanged.
 #   - Add internal node: already routed via ctrl. Nothing extra.
 #   - Multi-site: add DNAT port per site on relay.
+
+# ─── CrowdSec bouncer ──────────────────────────────────────────────────────
+# Relay has no K3S — no CrowdSec LAPI NodePort to connect to.
+crowdsec_bouncer_enabled: false
 
 # ─── UFW rules (consumed by iptables_firewall role) ──────────────────────────
 ufw_additional_rules:

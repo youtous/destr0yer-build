@@ -1,11 +1,16 @@
 ---
+- name: Skip bouncer setup (disabled on this host)
+  ansible.builtin.debug:
+    msg: "crowdsec_bouncer_enabled is false — skipping CrowdSec firewall bouncer."
+  when: not crowdsec_bouncer_enabled
+
 - name: Skip bouncer setup (API key not configured)
   ansible.builtin.debug:
     msg: "crowdsec_bouncer_api_key is empty — skipping. Deploy CrowdSec LAPI first (just k3s + just deploy), then re-run configure."
-  when: crowdsec_bouncer_api_key | default('') | length == 0
+  when: crowdsec_bouncer_enabled and crowdsec_bouncer_api_key | default('') | length == 0
 
 - name: Configure CrowdSec firewall bouncer
-  when: crowdsec_bouncer_api_key | default('') | length > 0
+  when: crowdsec_bouncer_enabled and crowdsec_bouncer_api_key | default('') | length > 0
   block:
     - name: Ensure keyrings directory exists
       become: true
