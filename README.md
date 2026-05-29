@@ -12,7 +12,7 @@
 > application stack with Kluctl, and expose services through a cloud VPS relay —
 > all from a single `just deploy` command.
 
-**67 Ansible roles · 14 Kluctl components · 37 architecture decisions · 22 integration tests · Zero plaintext secrets.**
+**Dozens of Ansible roles · Kluctl GitOps components · Documented architecture decisions · Full integration test suite · Zero plaintext secrets.**
 
 ```
                           🌐 Internet
@@ -82,8 +82,8 @@
 | 💿 **Backup** | Velero (S3 to Garage) + Kopia (SFTP over WireGuard, btrfs snapshots) |
 | 📧 **Mail** | docker-mailserver (Postfix, Dovecot, DKIM/SPF/DMARC) + MTA-STS + autodiscover |
 | 🏠 **Apps** | Home Assistant, Seafile, Zigbee2MQTT/Mosquitto |
-| 🚀 **Deployment** | Ansible (67 roles for hosts) + Kluctl (14 components for K8S) |
-| ✅ **Testing** | 22 integration tests + firewall audit + CIS benchmark + NSA/CISA scan |
+| 🚀 **Deployment** | Ansible (roles for hosts) + Kluctl (components for K8S) |
+| ✅ **Testing** | Integration tests + firewall audit + CIS benchmark + NSA/CISA scan |
 
 ## ⚡ Five commands to a running cluster
 
@@ -98,7 +98,7 @@ just deploy          # 🚀 Deploy all K8S services via Kluctl
 Then validate:
 
 ```sh
-just test-integration   # ✅ 22 automated checks (nodes, pods, Cilium, DNS, Kyverno, certs, ingress...)
+just test-integration   # ✅ Full cluster validation (nodes, pods, Cilium, DNS, Kyverno, certs, ingress...)
 just test-firewall      # 🔥 UFW rule audit against expected policy
 just audit-cluster      # 🛡️ NSA/CISA + MITRE security scan
 ```
@@ -198,7 +198,7 @@ playbooks/              🎭 Ansible playbooks (host-level)
   00-provision.yml        Bootstrap new servers (run once as root)
   01-configure.yml        System configuration (users, SSH, firewall, packages)
   02-k3s.yml              K3S cluster deployment
-  99-integration-tests.yml  22 automated post-deploy checks
+  99-integration-tests.yml  Automated post-deploy checks
 
 kluctl/                 ☸️ Kluctl deployments (K8S-level)
   .kluctl.yaml            Project config + per-target component toggles
@@ -211,10 +211,10 @@ kluctl/                 ☸️ Kluctl deployments (K8S-level)
   home/                   Home Assistant + Mosquitto + Zigbee2MQTT
   apps/                   Seafile (S3 + MariaDB + OIDC)
 
-roles/                  🔧 67 Ansible roles (host-level)
+roles/                  🔧 Ansible roles (host-level)
 collections/            📦 Ansible collection youtous.destr0yer (reusable roles)
 inventories/            🗂️ Inventory, group_vars, host_vars per environment
-doc/                    📚 37 ADRs, security review, testing strategy
+doc/                    📚 ADRs, security review, testing strategy
 ```
 
 ## 🎮 Commands
@@ -244,7 +244,7 @@ All Ansible runs are logged to `logs/<playbook>-<timestamp>.log` (git-ignored).
 | `just sops-edit <file>` | Edit SOPS-encrypted file (kluctl targets) |
 | **✅ Testing & operations** | |
 | `just lint` | Pre-commit hooks (yamlfmt, ansible-lint) |
-| `just test-integration` | 22 automated checks on the deployed cluster |
+| `just test-integration` | Automated checks on the deployed cluster |
 | `just test-firewall` | UFW rule audit against expected policy |
 | `just audit-node <host>` | CIS K3S benchmark on a node |
 | `just audit-cluster` | NSA/CISA + MITRE security scan |
@@ -266,11 +266,11 @@ All Ansible runs are logged to `logs/<playbook>-<timestamp>.log` (git-ignored).
 ```
 
 - 🚫 **Zero-trust networking** — all inbound blocked on bare-metal, SSH restricted to known IPs
-- 🧅 **Defense in depth** — 6 layers from UFW to application-level auth
-- 🔒 **Egress control** — default-deny on all pods, internet access restricted to 3 components
+- 🧅 **Defense in depth** — multiple layers from UFW to application-level auth
+- 🔒 **Egress control** — default-deny on all pods, internet access restricted to essential components only
 - 📌 **Image security** — all images pinned by SHA256 digest, Kyverno enforces digest-only pulls
 - 🔑 **Secrets** — Ansible Vault (hosts) + SOPS/age (K8S), zero plaintext on disk
-- 🔔 **Alerting** — Prometheus Alertmanager (10 custom rules) + 6 reporting CronJobs (email)
+- 🔔 **Alerting** — Prometheus Alertmanager (custom rules) + reporting CronJobs (email)
 - 📝 **Audit** — K3S API audit log shipped to Loki via Alloy
 
 See [doc/security.md](doc/security.md) for the full gap analysis and network policy matrix.
@@ -336,7 +336,7 @@ The `youtous.destr0yer` collection contains standalone roles:
 
 ## 📚 Documentation
 
-- 📐 [Architecture decisions (37 ADRs)](doc/adr/)
+- 📐 [Architecture decisions (ADRs)](doc/adr/)
 - 🛡️ [Security review](doc/security.md)
 - ✅ [Testing strategy](doc/testing.md)
 - 🕸️ [Network policies egress matrix](kluctl/security/network-policies/README.md)

@@ -2,7 +2,7 @@ name: Lint
 
 on:
   push:
-    branches: [master, k3S]
+    branches: [master]
   pull_request:
     branches: [master]
 
@@ -25,10 +25,13 @@ jobs:
         run: pipenv install --dev
 
       - name: Run pre-commit
+        env:
+          VAULT_PASSWORD: "ci-dummy-password"
         run: pipenv run pre-commit run --all-files --show-diff-on-failure
 
   kluctl-render:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
@@ -43,7 +46,18 @@ jobs:
             "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64"
           chmod +x /usr/local/bin/sops
 
+      - name: Check SOPS key availability
+        id: sops-check
+        run: |
+          if [ -n "${{ secrets.SOPS_AGE_KEY }}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::SOPS_AGE_KEY secret not configured — skipping kluctl render"
+          fi
+
       - name: Render dev target
+        if: steps.sops-check.outputs.available == 'true'
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
         run: kluctl render -t dev --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36

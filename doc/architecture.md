@@ -70,9 +70,9 @@ Ansible (host-level)                Kluctl (K8S-level)
 │ firewall, WireGuard,│            │ home/                │
 │ K3S + Cilium boot,  │            │ apps/                │
 │ Alloy (systemd),    │            │                      │
-│ CrowdSec bouncer    │            │ 14 Kluctl components │
+│ CrowdSec bouncer    │            │ Kluctl components    │
 │                     │            │ SOPS/age secrets     │
-│ 67 Ansible roles    │            │                      │
+│ Ansible roles       │            │                      │
 └─────────────────────┘            └──────────────────────┘
 
 just provision / configure / k3s    just deploy / diff / prune

@@ -161,7 +161,7 @@ Detailed ADRs are in [doc/adr/](doc/adr/). Key decisions:
 - **Debian 13 Trixie**: Kernel 6.12 LTS, nftables native, better eBPF support
 - **Cilium CNI**: eBPF networking, encryption, kube-proxy replacement
 - **HAProxy Ingress**: DaemonSet with hostNetwork, default IngressClass (Traefik disabled in k3s)
-- **OpenEBS hostpath**: Lightweight persistent storage (~180 MB overhead)
+- **OpenEBS hostpath**: Lightweight persistent storage (minimal overhead)
 - **Loki + Alloy**: Centralized logging (replaces archived Elastic stack)
 - **Two-tier VPN** (ADR-005 revised): WireGuard PTP for infra mesh (always-on, no K3S dependency). Headscale deferred to future for human/admin access only.
 - **Multi-cluster**: One K3S cluster per geographic zone. Clusters are independent.
@@ -227,13 +227,13 @@ BECOME_PASS=$(pipenv run ansible-vault view secret_vars/dev/all.yml --vault-pass
 pipenv run ansible ctrl.k3s.dev.local -i inventories/dev/base-nodes.yml -u walle --become -m shell -a "..." -e "ansible_become_pass=$BECOME_PASS" --vault-password-file .vault_password
 ```
 
-## Current state (2026-05-27)
+## Current state
 
-Both VMs operational (5632 MB RAM each, 2 vCPU):
+Both VMs operational:
 - `just configure`: passes on both nodes
 - `just k3s`: passes, K3S cluster operational, operator kubeconfig deployed
 - `just deploy`: kluctl sync + deploy works, all infra + app components deployed
-- `just test-integration`: **22/22 passed**
+- `just test-integration`: **all passed**
 - `just test-firewall`: **passed**
 - Kluctl render: passes offline
 
@@ -244,49 +244,11 @@ Running services (Ingresses):
 - `grafana.k8s.home` — Grafana (observability, OIDC via Authelia when auth_mode=authelia)
 
 Validated subsystems:
-- **Observability**: Prometheus (15 targets), Loki (15 labels), Grafana (3 datasources healthy)
+- **Observability**: Prometheus, Loki, Grafana — all datasources healthy
 - **Velero**: Backup/restore cycle tested (backup → delete → restore → running)
-- **Kopia**: Host-level SFTP backup active on both nodes, systemd timers running (daily 06h, verify Sun 04h)
-- **CrowdSec**: LAPI + agents + HAProxy SPOA bouncer — ban/unban tested end-to-end (403 on ban, 302 on unban)
+- **Kopia**: Host-level SFTP backup active on both nodes, systemd timers running
+- **CrowdSec**: LAPI + agents + HAProxy SPOA bouncer — ban/unban tested end-to-end
 - **Mailserver**: Pods running (SMTP/IMAP responsive), config incomplete without relay/DNS (expected in dev)
-
-Recent changes (2026-05-27):
-- ADRs split into individual files under `doc/adr/` (was monolithic `doc/decisions.md`)
-- ADR-033 (mail dual-cluster) and ADR-034 (DMS migration) added
-- How-it-works docs created for all implemented ADRs
-- Alloy unified as single host agent (logs + metrics via `prometheus.exporter.unix`), node_exporter deprecated
-- K8s Alloy DaemonSet now scrapes kubelet + kube-state-metrics → Prometheus remote_write
-- Loki retention wired to `loki_retention_days` arg
-- Velero S3 wiring fixed (correct Garage endpoint, AWS plugin, credentials)
-- Grafana OIDC via Authelia implemented (conditional on `auth_mode`)
-- Secret audit: all `secrets.*` values now in `kind: Secret` only (garage config, grafana admin, crowdsec bouncer, velero S3 creds)
-- Garage bucket & key provisioning fully manual (CLI) — documented in `secrets-reference.yaml`
-- Garage admin API split into dedicated `garage-admin` Service + NetworkPolicy (port 3903 restricted to garage namespace only)
-- CrowdSec HAProxy SPOA bouncer integrated as sidecar (conditional on `enable_crowdsec`)
-- Prometheus alerts added for CrowdSec LAPI, agent, and SPOA bouncer (conditional on `enable_crowdsec`)
-- ntfy deployment wired via `enable_ntfy` flag (default: false, manifests ready for future activation)
-- Renovate regexManagers extended for Kluctl raw YAML manifests (tag, tag@digest, digest-only patterns)
-- Kopia backup enabled on both dev nodes (SFTP over WireGuard to ctrl)
-- Kopia role fixed: `ssh-keyscan` for SFTP-only servers, `connect` fallback for existing repos
-- Integration tests: namespace exclusions for dev-expected failures (homeassistant, mail), job filter aligned
-- Firewall tests: `wireguard_server` inventory group added (WG port rule only on server, not clients)
-- Kyverno `:latest` images fixed (mailserver, nginx pinned by digest)
-- MariaDB upgraded 10.11 → 11.4 (Seafile, Home Assistant)
-- `cloud_provider_cleanup` role created (replaces legacy `services` role from master branch)
-- CrowdSec host nftables bouncer deployed (bookworm repo for Trixie, Cilium socketLB enabled, NodePort selector fixed)
-- Cilium `socketLB: true` enabled (required for host-to-NodePort connectivity with kube-proxy replacement)
-- Multi-arch registry audit completed (crane-based, 39/42 images OK)
-- CrowdSec bouncer play changed from `hosts: k3s` to `hosts: systems` (no k3s-cluster inventory needed for configure)
-- kube-bench CIS `k3s-cis-1.12` integrated in integration tests (full report + threshold=3)
-- CIS 1.1.9/1.1.10/1.1.20: systemd timer `k3s-harden-permissions` (PKI 600, CNI 600+root:root, 30s after boot + 6h)
-- CIS 1.2.26: `--etcd-cafile` — handled natively by K3S (do NOT set manually, see doc/security.md)
-- CIS 5.1.5: default SA patched (`automountServiceAccountToken: false`) in `02-k3s.yml`
-- CIS 5.1.6: Kyverno `disable-automount-sa-token` mutate policy
-- CIS 5.1.5: Kyverno `restrict-default-service-account` validate+mutate policy
-- UFW pod-CIDR rules for HAProxy hostNetwork (source: `local_container_ips`, ports: 80/443/25/465/587/993)
-- Grafana dashboards: Loki, Alloy, HAProxy Ingress, cert-manager (metrics + ServiceMonitors enabled)
-- Grafana: all datasources/dashboards editable, viewers_can_edit, Prometheus default
-- Garage S3 buckets/keys renamed to match `s3_bucket_prefix` (`k8s-home-`)
 
 ## Known dev limitations
 
@@ -320,17 +282,17 @@ Recent changes (2026-05-27):
 | What | Result |
 |------|--------|
 | Full test loop (`configure` + `k3s` + `deploy`) | Passes on both nodes |
-| Integration tests | 22/22 passed |
+| Integration tests | All passed |
 | Firewall audit | Passed |
-| kube-bench CIS (`k3s-cis-1.9`) | 3 FAIL (threshold=3): 1.2.26 (kine unix socket, no TLS) + 5.1.1 + 5.1.3 (inherent to third-party charts) |
-| Observability (Prometheus + Loki + Grafana) | 15 targets, 15 labels, 3 datasources healthy |
-| Velero backup/restore | Full cycle tested on whoami namespace |
+| kube-bench CIS | Within threshold — residual FAILs are accepted (see below) |
+| Observability (Prometheus + Loki + Grafana) | All datasources healthy, scrape targets OK |
+| Velero backup/restore | Full cycle tested (backup → delete → restore → running) |
 | Kopia host-level backup | Snapshots OK, timers active on both nodes |
-| CrowdSec HAProxy bouncer | Ban/unban tested end-to-end (403/302) |
-| CrowdSec host nftables bouncer | Deployed on both nodes, connected to LAPI via NodePort, end-to-end ban verified |
+| CrowdSec HAProxy bouncer | Ban/unban tested end-to-end |
+| CrowdSec host nftables bouncer | Deployed on both nodes, connected to LAPI via NodePort |
 | Grafana OIDC | Validated via Authelia login |
 | Seafile S3 + OIDC | Validated (encryption is client-side, Garage buckets exist) |
-| Multi-arch registry audit | 39 OK, 1 amd64-only (parsedmarc), 1 missing arm64 (mail-autodiscover) |
+| Multi-arch registry audit | Passed — few amd64-only exceptions (parsedmarc, mail-autodiscover) |
 
 ### ADRs needing live validation (cannot be done offline)
 
