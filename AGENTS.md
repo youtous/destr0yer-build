@@ -114,9 +114,10 @@ All `just` recipes (provision, configure, k3s, deploy, diff, render, prune, test
 - `.env` — Local config (ENV), git-ignored. `ENV` is the single source of truth for environment selection.
 - `.dev/sops-age-key.txt` — SOPS age private key, git-ignored (on GitHub)
 
-**Secrets sync**: Preferred method is a local git fork with secrets committed (vault-encrypted).
-GitHub remote is read-only (`git remote set-url --push origin DISABLED`). Future: push to
-self-hosted Forgejo.
+**Secrets sync**: Local git fork with secrets on `deploy/master` branch (vault-encrypted).
+GitHub remote is read-only (`git remote set-url --push origin DISABLED`). Push protection:
+local pre-push hook blocks `deploy/*` to non-private remotes + GitHub branch rule rejects
+`deploy/**` server-side. Future: push to self-hosted Forgejo.
 
 ## Conventions
 

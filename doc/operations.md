@@ -298,19 +298,22 @@ will serve as the self-hosted remote.
 git remote set-url --push origin DISABLED   # GitHub = read-only (fetch only)
 
 # Remove secret_vars/ from .gitignore (local fork only)
-# Commit vault-encrypted secrets
+# Commit vault-encrypted secrets on the deploy/ branch
+git checkout -b deploy/master
 git add secret_vars/ .dev/sops-age-key.txt
 git commit -m "add vault-encrypted secrets (local only)"
 ```
 
-**Phase 1 (current):** local-only repo, secrets committed locally. Backup via
-regular filesystem backup (Time Machine, restic, etc.) or manual `just push` to
-a synced folder.
+**Branch convention:** secrets live on `deploy/master` (or `deploy/<env>`), never
+on `master`. This makes the boundary explicit and enables push protection rules.
+
+**Phase 1 (current):** local-only repo, secrets on `deploy/master`. Backup via
+regular filesystem backup (Time Machine, restic, etc.).
 
 **Phase 2 (future):** self-hosted Forgejo on the cluster. Add as remote and push:
 ```sh
 git remote add forgejo git@forgejo.k8s.home:youtous/destr0yer-build.git
-git push forgejo --all
+git push forgejo deploy/master
 ```
 
 **Why this works:**
@@ -319,6 +322,41 @@ git push forgejo --all
 - `kluctl/targets/*.enc.yaml` are SOPS/age-encrypted — same
 - GitHub remote stays read-only — no risk of leaking secrets
 - Atomic (code + secrets together in one repo)
+- `deploy/*` prefix = clear visual marker for secret-bearing branches
+
+### Push protection — deploy/* branches
+
+Three layers prevent accidental secret leaks:
+
+**Layer 1 — Local pre-push hook** (`.git/hooks/pre-push`):
+
+Blocks any `deploy/*` branch from being pushed to remotes other than `cold` or
+`forgejo`. Installed automatically — see hook file for allowed remotes list.
+
+```sh
+# This will be BLOCKED by the hook:
+git push origin deploy/master
+# → "BLOCKED: deploy/* branches cannot be pushed to 'origin'"
+
+# This works (private remote):
+git push cold master:deploy/master
+git push forgejo deploy/master
+```
+
+**Layer 2 — GitHub branch protection rule** (server-side):
+
+Add a branch protection rule on GitHub to reject `deploy/*` as a second safety net.
+Settings → Branches → Add rule:
+- Branch name pattern: `deploy/**`
+- Check "Restrict pushes" → allow nobody (or restrict to a bot account)
+
+This ensures that even if the local hook is bypassed (new clone, hook not
+installed), GitHub will refuse the push server-side.
+
+**Layer 3 — Read-only push URL:**
+
+`git remote set-url --push origin DISABLED` makes any `git push origin` fail
+regardless of branch name. Belt-and-suspenders with the hook + GitHub rule.
 
 ## Backup strategy
 
