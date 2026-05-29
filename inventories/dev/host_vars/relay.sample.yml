@@ -53,6 +53,42 @@ wireguard_servers:
       - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
     mtu: ""
 
+  - interface: wg-relay-admin
+    addresses:
+      - 10.99.98.1/24
+    port: "41995"
+    public_key: "RELAY_ADMIN_PUBLIC_KEY_HERE"
+    private_key: "{{ vault_relay_admin_wg_private_key }}"
+    restrict_ips:
+      - "10.99.98.0/24"  # admin subnet only
+    peers:
+      - name: admin-laptop
+        public_key: "ADMIN_LAPTOP_PUBLIC_KEY_HERE"
+        preshared_key: "{{ vault_relay_admin_psk }}"
+        allowed_ips:
+          - 10.99.98.100/32
+        persistent_keepalive: ""
+    pre_up: []
+    pre_down: []
+    post_up:
+      # Admin can only SSH to relay — no forwarding, no internet
+      - "iptables -F wg-filter-admin || true"
+      - "iptables -t filter -N wg-filter-admin || true"
+      - "iptables -t filter -A wg-filter-admin -p tcp --dport 22 -j ACCEPT"
+      - "iptables -t filter -A wg-filter-admin -p icmp -j ACCEPT"
+      - "iptables -t filter -A wg-filter-admin -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+      - "iptables -t filter -A wg-filter-admin -j DROP"
+      - "iptables -t filter -I INPUT -i %i -j wg-filter-admin"
+    post_down:
+      - "iptables -t filter -D INPUT -i %i -j wg-filter-admin || true"
+      - "iptables -F wg-filter-admin || true"
+      - "iptables -X wg-filter-admin || true"
+    mtu: ""
+
+# ─── Fail2ban ────────────────────────────────────────────────────────────────
+fail2ban_trusted_ips:
+  - "10.99.98.100"  # admin laptop (wg-relay-admin)
+
 # ─── HAProxy TCP relay (consumed by cloud_relay role) ────────────────────────
 relay_public_interface: eth0
 relay_backend_ip: "10.99.99.10"
@@ -98,63 +134,73 @@ relay_haproxy_frontends:
 #     - ssh_entrypoints below acts as defense-in-depth (UFW layer)
 #
 #   Phase 2 (locked):
-#     - Verify WG: `ssh walle@10.99.99.1` (relay WG IP)
+#     - Verify WG: `ssh walle@10.99.98.1` (relay admin WG IP)
 #     - Close tcp/22 in cloud provider firewall (panel / API / terraform)
 #     - No Ansible re-run needed — inventory stays unchanged
-#     - All SSH now goes through WireGuard mesh only
+#     - All SSH now goes through wg-relay-admin only
 #
 #   Recovery:
 #     - Re-open tcp/22 in cloud provider panel (instant, no Ansible needed)
 #
-# ssh_entrypoints keeps both admin IP + WG subnet permanently (defense-in-depth).
+# ssh_entrypoints keeps both admin WG subnet + public IP (defense-in-depth).
 # The cloud provider firewall is the actual gate for public access.
 ssh_entrypoints:
-  - "10.99.99.0/24"  # WireGuard mesh (steady-state access)
-  - "203.0.113.42/32"  # Admin public IP (replace with your IP)
+  - "10.99.98.0/24"  # wg-relay-admin subnet (steady-state admin access)
+  - "203.0.113.42/32"  # Admin public IP (bootstrap + recovery only)
 
-# ─── Remote admin access — WG UDP pipe ────────────────────────────────────────
-# Admin laptop connects via WireGuard DIRECTLY to ctrl (not to relay).
-# Relay is a blind UDP forwarder (DNAT) — no WG config, no keys, no decryption.
-# Admin authenticates on ctrl by WG cryptokey (ctrl has admin's public key as peer).
+# ─── Remote admin access — dual WireGuard ─────────────────────────────────────
+# Two separate WG planes for admin access:
 #
-# Security layers (triple protection):
-#   1. Cloud provider FW: restrict UDP 41994 to admin's static IP only
-#   2. WG crypto-stealth: no handshake response without admin's private key
-#   3. Ctrl peer verification: IP 10.99.98.100 cryptographically bound to admin key
+#   wg-relay-admin (port 41995):
+#     Admin laptop → relay SSH directly (for relay management)
+#     Relay decrypts — admin is a peer on this interface.
+#     iptables: SSH only, no forwarding.
 #
-# Even if relay is fully compromised (root), attacker cannot forge valid WG packets
-# toward ctrl (would need admin's private key). Relay sees only encrypted UDP blobs.
+#   UDP pipe (port 41994) — blind DNAT:
+#     Admin laptop → WG to ctrl THROUGH relay (for cluster management)
+#     Relay does NOT decrypt — just DNAT UDP to ctrl:1990.
+#     Admin authenticates on ctrl by WG cryptokey.
 #
-# DNAT rules (add to wg-infra post_up or ufw before.rules):
-#   iptables -t nat -A PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:1990
-#   iptables -t nat -A POSTROUTING -o wg-infra -p udp --dport 1990 -d 10.99.99.10 -j MASQUERADE
+# Why two planes:
+#   - wg-infra compromise (ctrl/worker key leak) doesn't grant relay SSH
+#   - wg-relay-admin compromise doesn't grant cluster access (different keys)
+#   - Independent key rotation per plane
 #
 # Cloud provider firewall:
 #   - UDP 41993: allow from any (wg-infra, crypto-stealth)
-#   - UDP 41994: allow from admin's static IP ONLY (admin access)
+#   - UDP 41994: allow from admin's static IP ONLY (UDP pipe → ctrl)
+#   - UDP 41995: allow from admin's static IP ONLY (wg-relay-admin)
 #   - TCP 22: closed after bootstrap (see SSH section above)
 #
-# Ctrl-side config (see host.sample.yml):
-#   - Admin added as peer on ctrl's wg0 (public key + allowed_ips: 10.99.98.100/32)
-#   - wg-filter-relay: allow tcp/22 from 10.99.98.100/32
-#   - ssh_entrypoints: includes 10.99.98.100/32
+# DNAT rules for UDP pipe (add to wg-infra post_up or ufw before.rules):
+#   iptables -t nat -A PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:1990
+#   iptables -t nat -A POSTROUTING -o wg-infra -p udp --dport 1990 -d 10.99.99.10 -j MASQUERADE
 #
-# Admin laptop WG config (reference):
+# Admin laptop WG config (two peers):
 #   [Interface]
 #   Address = 10.99.98.100/32
 #   PrivateKey = <admin_private_key>
 #
+#   # Peer 1: relay (for relay SSH)
+#   [Peer]
+#   PublicKey = <relay_admin_wg_public_key>
+#   PresharedKey = <relay_psk>
+#   Endpoint = relay.public.ip:41995
+#   AllowedIPs = 10.99.98.1/32
+#   PersistentKeepalive = 25
+#
+#   # Peer 2: ctrl (via UDP pipe through relay)
 #   [Peer]
 #   PublicKey = <ctrl_wg0_public_key>
-#   PresharedKey = <psk>
+#   PresharedKey = <ctrl_psk>
 #   Endpoint = relay.public.ip:41994
-#   AllowedIPs = 10.99.99.0/24, 10.99.98.0/24
+#   AllowedIPs = 10.99.99.0/24
 #   PersistentKeepalive = 25
 #
 # Scaling:
-#   - Add admin: new peer on ctrl wg0. Relay unchanged.
+#   - Add admin: new peer on wg-relay-admin + ctrl wg0. One DNAT per site.
+#   - Revoke admin: remove peer from both. Relay DNAT unchanged.
 #   - Add internal node: already routed via ctrl. Nothing extra.
-#   - Revoke admin: remove peer from ctrl wg0. Relay unchanged.
 #   - Multi-site: add DNAT port per site on relay.
 
 # ─── UFW rules (consumed by iptables_firewall role) ──────────────────────────

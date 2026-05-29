@@ -22,7 +22,7 @@ fail2ban_trusted_ips:
 # Must be true on all nodes running K3S with Cilium CNI.
 hardening_skip_rp_filter: true
 
-# entrypoints ips from where we can access base_destr0yers
+# entrypoints ips from where we can access base systems
 ssh_entrypoints:
   - "192.168.56.1"
 
