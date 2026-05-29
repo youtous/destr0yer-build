@@ -1,0 +1,9 @@
+- name: Install SELinux packages
+  ansible.builtin.import_tasks: install.yml
+
+- name: Configure SELinux
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Set K3S file contexts
+  ansible.builtin.import_tasks: file_contexts.yml
+  when: selinux_k3s_support | bool

@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Weekly btrfs scrub of backup volume
+
+[Timer]
+OnCalendar={{ backup_btrfs_scrub_schedule }}
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

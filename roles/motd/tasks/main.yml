@@ -1,15 +1,14 @@
----
 # This role contains oh-my-fish global installation
 - name: Find motd.d files
-  find:
+  ansible.builtin.find:
     paths: "{{ motd_directory }}"
-    recurse: no
+    recurse: false
     excludes: "{{ motd_file }}"
   register: files_motd
 
 - name: Disable unwanted motd.d
-  become: yes
-  file:
+  become: true
+  ansible.builtin.file:
     path: "{{ item.path }}"
     owner: root
     group: root
@@ -17,26 +16,26 @@
   with_list: "{{ files_motd.files }}"
 
 - name: Copy motd.d script
-  become: yes
-  template:
-    src: files/60-motd.j2.sh
+  become: true
+  ansible.builtin.template:
+    src: templates/60-motd.j2.sh
     dest: "{{ motd_directory }}/{{ motd_file }}"
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx-
 
 - name: Copy motd.d head
-  become: yes
-  copy:
-    src: files/motd.head
+  become: true
+  ansible.builtin.template:
+    src: templates/motd.head.j2
     dest: "/etc/motd.head"
     owner: root
     group: root
     mode: u=rw,g=rw,o=r
 
 - name: Update static motd
-  become: yes
-  template:
+  become: true
+  ansible.builtin.template:
     src: templates/motd.j2
     dest: "/etc/motd"
     owner: root
@@ -44,8 +43,8 @@
     mode: u=rw,g=r,o=r
 
 - name: Add dynamic motd loading to pam.d configuration
-  become: yes
-  lineinfile:
+  become: true
+  ansible.builtin.lineinfile:
     dest: "/etc/pam.d/sshd"
     regexp: "^session    optional     pam_motd.so  motd="
     line: "session    optional     pam_motd.so  motd=/run/motd.dynamic"

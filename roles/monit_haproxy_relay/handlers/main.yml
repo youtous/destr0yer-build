@@ -1,0 +1,5 @@
+- name: Reload monit
+  become: true
+  ansible.builtin.service:
+    name: monit
+    state: reloaded

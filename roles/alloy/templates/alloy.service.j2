@@ -1,0 +1,31 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Grafana Alloy
+Documentation=https://grafana.com/docs/alloy/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/alloy/env
+User={{ alloy_user }}
+Group={{ alloy_group }}
+SupplementaryGroups=systemd-journal
+ExecStart={{ alloy_binary_path }} run \
+  {{ alloy_config_path }} \
+  --storage.path={{ alloy_data_path }}
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths={{ alloy_data_path }}
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+StateDirectory=alloy
+
+[Install]
+WantedBy=multi-user.target

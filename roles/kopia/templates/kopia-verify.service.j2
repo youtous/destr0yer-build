@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Kopia snapshot verification
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/kopia.env
+ExecStart={{ kopia_binary_path }} snapshot verify --verify-files-percent={{ kopia_verify_percent }}

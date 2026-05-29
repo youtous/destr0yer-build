@@ -1,0 +1,342 @@
+# Validate UFW firewall state after a full deploy cycle.
+# Usage:
+#   ansible-playbook playbooks/98-firewall-audit.yml \
+#     -i inventories/dev/base-nodes.yml -i inventories/dev/k3s-cluster.yml
+- name: Validate UFW firewall state
+  hosts: systems
+  gather_facts: false
+  become: true
+  tags:
+    - firewall-audit
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+
+  vars:
+    test_results: []
+
+    firewall_audit_k3s_controllers_ips: >-
+      {{
+        (
+          groups['k3s_control_node'] | default([])
+          | map('extract', hostvars, ['ipv4_private'])
+          | list | flatten | unique
+        )
+        + (
+          groups['k3s_control_node'] | default([])
+          | map('extract', hostvars, ['ipv6_private'])
+          | list | flatten | unique
+        )
+      }}
+    firewall_audit_k3s_nodes_ips: >-
+      {{
+        (
+          (
+            groups['k3s_worker_node'] | default([])
+            | map('extract', hostvars, ['ipv4_private'])
+            | list | flatten | unique
+          )
+          + (
+            groups['k3s_worker_node'] | default([])
+            | map('extract', hostvars, ['ipv6_private'])
+            | list | flatten | unique
+          )
+          + firewall_audit_k3s_controllers_ips
+        ) | flatten | unique
+      }}
+    firewall_audit_private_ips: "{{ dns_allowed_hosts | default([]) | flatten | unique }}"
+    firewall_audit_ssh_source_ips: >-
+      {{
+        (
+          ssh_entrypoints_local_interfaces_ips | default([])
+          + ssh_entrypoints | default([])
+        ) | flatten | unique
+      }}
+
+    firewall_expected_rules:
+      - name: SSH
+        ports: ["{{ sshd_port | default('22') }}"]
+        proto: [tcp]
+        source: ssh_entrypoints
+        groups: [systems]
+        reason: entrypoint_ssh
+      - name: DNSCrypt
+        ports: ["53"]
+        proto: [tcp, udp]
+        source: private_ips
+        groups: [systems]
+        reason: dnscrypt_proxy
+      - name: etcd HA
+        ports: ["2379:2380"]
+        proto: [tcp]
+        source: k3s_controllers
+        groups: [k3s]
+        reason: k3s
+      - name: kube-api
+        ports: ["6443"]
+        proto: [tcp]
+        source: k3s_nodes
+        groups: [k3s]
+        reason: k3s
+      - name: kubelet metrics
+        ports: ["10250"]
+        proto: [tcp]
+        source: k3s_nodes
+        groups: [k3s]
+        reason: k3s
+      - name: Cilium health
+        ports: ["4240"]
+        proto: [tcp]
+        source: k3s_nodes
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: Hubble relay
+        ports: ["4244"]
+        proto: [tcp]
+        source: k3s_nodes
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: Hubble UI
+        ports: ["4245"]
+        proto: [tcp]
+        source: k3s_nodes
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: GENEVE overlay
+        ports: ["6081"]
+        proto: [udp]
+        source: k3s_nodes
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: Cilium agent health
+        ports: ["4250"]
+        proto: [tcp]
+        source: k3s_nodes
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: Cilium pod network DNS
+        ports: ["53"]
+        proto: [tcp, udp]
+        source: cilium_pods
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: Cilium pod network kube-api
+        ports: ["6443"]
+        proto: [tcp]
+        source: cilium_pods
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: Cilium pod network kubelet
+        ports: ["10250"]
+        proto: [tcp]
+        source: cilium_pods
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: HAProxy HTTP
+        ports: ["80"]
+        proto: [tcp]
+        source: any
+        groups: [k3s]
+        reason: haproxy ingress
+      - name: HAProxy HTTPS
+        ports: ["443"]
+        proto: [tcp]
+        source: any
+        groups: [k3s]
+        reason: haproxy ingress
+      - name: Cilium WireGuard encryption
+        ports: ["51871"]
+        proto: [udp]
+        source: k3s_nodes
+        groups: [k3s]
+        reason: k3s_cilium_firewall
+      - name: WireGuard
+        ports: ["{{ (wireguard_servers | default([]) | map(attribute='port') | list | first) | default('51820', true) }}"]
+        proto: [udp]
+        source: any
+        groups: [wireguard_server]
+        reason: wireguard_server
+  tasks:
+    - name: Build applicable expected rules for this host
+      ansible.builtin.set_fact:
+        firewall_applicable_rules: >-
+          {% set result = [] -%} {% for rule in firewall_expected_rules -%}
+            {% if rule.groups | default([]) | intersect(group_names) | length > 0 -%}
+              {% if rule.when is not defined or rule.when -%}
+                {% if result.append(rule) %}{% endif -%}
+              {% endif -%}
+            {% endif -%}
+          {% endfor -%} {{ result }}
+
+    - name: Get UFW status
+      ansible.builtin.command:
+        cmd: ufw status
+      changed_when: false
+      register: ufw_status
+
+    - name: Assert UFW is active
+      ansible.builtin.assert:
+        that:
+          - "'Status: active' in ufw_status.stdout"
+        fail_msg: "UFW is not active: {{ ufw_status.stdout_lines | first | default('unknown') }}"
+        success_msg: UFW is active
+      register: test_ufw_active
+
+    - name: Record UFW active result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'UFW active', 'passed': test_ufw_active is not failed, 'detail': test_ufw_active.msg | default('')}] }}"
+
+    - name: Get UFW verbose status
+      ansible.builtin.command:
+        cmd: ufw status verbose
+      changed_when: false
+      register: ufw_status_verbose
+
+    - name: Parse default policies from verbose output
+      ansible.builtin.set_fact:
+        firewall_default_incoming: "{{ ufw_status_verbose.stdout | regex_search('Default:\\s+(\\w+)\\s+\\(incoming\\)', '\\1') | default('') | first | default('') }}"
+        firewall_default_outgoing: "{{ ufw_status_verbose.stdout | regex_search('Default:\\s+\\w+\\s+\\(incoming\\),\\s+(\\w+)\\s+\\(outgoing\\)', '\\1') | default('') | first | default('') }}"
+        firewall_default_routed: "{{ ufw_status_verbose.stdout | regex_search('Default:.*,\\s+(\\w+)\\s+\\(routed\\)', '\\1') | default('') | first | default('') }}"
+
+    - name: Assert default firewall policies
+      ansible.builtin.assert:
+        that:
+          - firewall_default_incoming == 'deny'
+          - firewall_default_outgoing == 'allow'
+          - firewall_default_routed == 'deny'
+        fail_msg: >-
+          Unexpected default policies (incoming={{ firewall_default_incoming }}, outgoing={{ firewall_default_outgoing }}, routed={{ firewall_default_routed }})
+        success_msg: "Default policies correct (deny in, allow out, deny routed)"
+      register: test_default_policies
+
+    - name: Record default policy result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Default policies', 'passed': test_default_policies is not failed, 'detail': test_default_policies.msg | default('')}] }}"
+
+    - name: Parse UFW ALLOW IN rules
+      ansible.builtin.set_fact:
+        ufw_allow_rules_normalized: >-
+          {% set rules = [] -%} {% for line in ufw_status_verbose.stdout_lines -%}
+            {% if 'ALLOW IN' in line -%}
+              {% set parts = line.split('ALLOW IN') -%}
+              {% set port_spec = parts[0] | trim -%}
+              {% set source_raw = (parts[1].split('#')[0]) | trim -%}
+              {% set port_spec_clean = port_spec | regex_replace('\s*\(v6\)$', '') -%}
+              {% set port = port_spec_clean.split('/')[0] if '/' in port_spec_clean else port_spec_clean -%}
+              {% set proto = port_spec_clean.split('/')[1] if '/' in port_spec_clean else 'any' -%}
+              {% set source = source_raw | regex_replace('\s*\(v6\)$', '') | trim -%}
+              {% if rules.append({'port_spec': port_spec, 'port': port, 'proto': proto, 'source': source}) %}{% endif -%}
+            {% endif -%}
+          {% endfor -%} {{ rules }}
+
+    - name: Resolve source IPs for expected rule matching
+      ansible.builtin.set_fact:
+        firewall_source_ip_map:
+          any: []
+          ssh_entrypoints: "{{ firewall_audit_ssh_source_ips }}"
+          private_ips: "{{ firewall_audit_private_ips }}"
+          k3s_nodes: "{{ firewall_audit_k3s_nodes_ips }}"
+          k3s_controllers: "{{ firewall_audit_k3s_controllers_ips }}"
+          cilium_pods: "{{ k3s_cilium_cluster_pool_ipv4_pod_cidr_list | default(['10.42.0.0/16']) }}"
+
+    - name: Initialize missing expected rules list
+      ansible.builtin.set_fact:
+        firewall_missing_rules: []
+
+    - name: Check each expected firewall rule is present
+      ansible.builtin.set_fact:
+        firewall_missing_rules: "{{ firewall_missing_rules + ([expected_rule] if not expected_rule_present | bool else []) }}"
+      loop: "{{ firewall_applicable_rules }}"
+      loop_control:
+        loop_var: expected_rule
+        label: "{{ expected_rule.name }}"
+      vars:
+        expected_rule_present: >-
+          {% set ns = namespace(matched=0) -%} {% set pairs = expected_rule.ports | product(expected_rule.proto) | list -%} {% for pair in pairs -%} {% set port = pair[0] -%} {% set proto = pair[1] -%} {% set found = namespace(value=false) -%} {% for rule in ufw_allow_rules_normalized -%} {% if rule.port == port and (rule.proto == proto or rule.proto == 'any') -%} {% if expected_rule.source == 'any' and ('anywhere' in (rule.source | lower)) -%} {% set found.value = true -%} {% elif expected_rule.source != 'any' and (rule.source in (firewall_source_ip_map[expected_rule.source] | default([]))) -%} {% set found.value = true -%} {% endif -%} {% endif -%} {% endfor -%} {% if found.value -%} {% set ns.matched = ns.matched + 1 -%} {% endif -%} {% endfor -%} {{ ns.matched == (pairs | length) }}
+
+    - name: Assert all expected ALLOW rules exist
+      ansible.builtin.assert:
+        that:
+          - firewall_missing_rules | length == 0
+        fail_msg: >-
+          Missing ALLOW rules: {{ firewall_missing_rules | map(attribute='name') | list | join(', ') }}
+        success_msg: "All {{ firewall_applicable_rules | length }} expected ALLOW rules present"
+      register: test_expected_rules
+
+    - name: Record expected rules result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Expected ALLOW rules', 'passed': test_expected_rules is not failed, 'detail': test_expected_rules.msg | default('')}] }}"
+
+    - name: Initialize unexpected ALLOW rules list
+      ansible.builtin.set_fact:
+        firewall_unexpected_rules: []
+
+    - name: Flag unexpected ALLOW rules
+      ansible.builtin.set_fact:
+        firewall_unexpected_rules: "{{ firewall_unexpected_rules + ([allow_rule] if not allow_rule_expected | bool else []) }}"
+      loop: "{{ ufw_allow_rules_normalized }}"
+      loop_control:
+        loop_var: allow_rule
+        label: "{{ allow_rule.port_spec }} from {{ allow_rule.source }}"
+      vars:
+        allow_rule_expected: >-
+          {% set ns = namespace(expected=false) -%} {% for expected in firewall_applicable_rules -%} {% if allow_rule.port in expected.ports -%} {% if allow_rule.proto in expected.proto or allow_rule.proto == 'any' -%} {% if expected.source == 'any' and ('anywhere' in (allow_rule.source | lower)) -%} {% set ns.expected = true -%} {% elif expected.source != 'any' and (allow_rule.source in (firewall_source_ip_map[expected.source] | default([]))) -%} {% set ns.expected = true -%} {% endif -%} {% endif -%} {% endif -%} {% endfor -%} {{ ns.expected }}
+
+    - name: Record unexpected rules warning
+      ansible.builtin.set_fact:
+        test_results: >-
+          {{
+            test_results + [{
+              'test': 'Unexpected ALLOW rules',
+              'passed': true,
+              'warning': firewall_unexpected_rules | length > 0,
+              'detail': (
+                'WARNING: ' + (
+                  firewall_unexpected_rules
+                  | map(attribute='port_spec')
+                  | list
+                  | zip(firewall_unexpected_rules | map(attribute='source') | list)
+                  | map('join', ' from ')
+                  | list
+                  | join(', ')
+                )
+                if firewall_unexpected_rules | length > 0
+                else 'None found'
+              )
+            }]
+          }}
+
+    - name: Check iptables backend symlink
+      ansible.builtin.command:
+        cmd: readlink -f /etc/alternatives/iptables
+      changed_when: false
+      register: iptables_backend
+      failed_when: false
+
+    - name: Assert UFW uses nftables backend
+      ansible.builtin.assert:
+        that:
+          - iptables_backend.rc == 0
+          - "'iptables-nft' in iptables_backend.stdout or 'nft' in iptables_backend.stdout"
+        fail_msg: "UFW backend is not nftables: {{ iptables_backend.stdout | default('unknown') }}"
+        success_msg: "UFW uses nftables backend ({{ iptables_backend.stdout }})"
+      register: test_nftables_backend
+
+    - name: Record nftables backend result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'nftables backend', 'passed': test_nftables_backend is not failed, 'detail': test_nftables_backend.msg | default('')}] }}"
+
+    - name: Print firewall audit summary
+      ansible.builtin.debug:
+        msg: |-
+          ========================================
+           Firewall Audit Results ({{ inventory_hostname }})
+          ========================================
+          {% for r in test_results %}
+          {{ '✓' if r.passed else '✗' }}{% if r.warning | default(false) %} ⚠{% endif %} {{ r.test }}: {{ r.detail }}
+          {% endfor %}
+          ========================================
+          Passed: {{ test_results | selectattr('passed') | list | length }}/{{ test_results | length }}{% if test_results | selectattr('warning', 'defined') | selectattr('warning') | list | length %} ({{ test_results | selectattr('warning', 'defined') | selectattr('warning') | list | length }} warning(s)){% endif %}
+
+          ========================================

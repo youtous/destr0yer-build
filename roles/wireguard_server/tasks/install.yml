@@ -1,0 +1,21 @@
+- name: Install wireguard
+  become: true
+  ansible.builtin.apt:
+    name: "{{ wireguard_packages }}"
+    state: present
+    update_cache: true
+  notify:
+    - Restart wireguard
+
+- name: Enable WireGuard kernel module
+  become: true
+  community.general.modprobe:
+    name: wireguard
+    state: present
+  register: wireguard_module_enabled
+  until: wireguard_module_enabled is succeeded
+  retries: 10
+  delay: 10
+  notify:
+    - Restart wireguard
+  failed_when: wireguard_module_enabled is failure

@@ -1,0 +1,31 @@
+# Dev environment overrides.
+# Loaded via deployment.yaml vars: targets/{{ args.environment }}.yaml
+# Prod-ready defaults live in .kluctl.yaml args (all false/secure).
+
+args:
+  trusted_cidrs:
+    - "127.0.0.1/8"
+    - "::1/128"
+    - "10.99.99.0/24"
+    - "192.168.56.0/24"
+  certmanager_issuer_type: "internal-ca"
+  kyverno_validation_action: "Audit"
+  loki_retention_days: 7
+  loki_storage_type: "filesystem"
+  prometheus_retention: "15d"
+  # SMTP: plain SMTP to mailpit on Vagrant host, no TLS
+  smtp_notifier_host: "192.168.56.1"
+  smtp_notifier_port: "1025"
+  smtp_allowed_ports:
+    - "25"
+    - "465"
+    - "587"
+    - "1025"
+  authelia_smtp_scheme: "smtp"
+  authelia_smtp_disable_require_tls: true
+  authelia_smtp_disable_starttls: true
+  authelia_smtp_tls_skip_verify: true
+  authelia_smtp_password_disabled: true
+  authelia_notifier_disable_startup_check: true
+  # Internal CA: skip TLS verify for OIDC token exchange
+  oidc_tls_skip_verify: true

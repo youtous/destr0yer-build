@@ -1,0 +1,85 @@
+# Configure sysctl on the host with various optimizations
+# Write to /etc/sysctl.d/ for proper systemd-sysctl.service loading on Debian 13+
+
+# All values are applied live via sysctl_set + reload — no reboot needed.
+# They persist across reboots via /etc/sysctl.d/90-destr0yer.conf (loaded by systemd-sysctl.service).
+
+- name: Increase max connections
+  become: true
+  ansible.posix.sysctl:
+    name: net.core.somaxconn
+    value: "{{ sysctl_net_core_somaxconn }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/90-destr0yer.conf
+    state: present
+    reload: true
+
+- name: Define unprivileged ports start
+  become: true
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_unprivileged_port_start
+    value: "{{ sysctl_net_ipv4_ip_unprivileged_port_start }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/90-destr0yer.conf
+    state: present
+    reload: true
+
+- name: Configure overcommit memory
+  become: true
+  ansible.posix.sysctl:
+    name: vm.overcommit_memory
+    value: "{{ sysctl_vm_overcommit_memory }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/90-destr0yer.conf
+    state: present
+    reload: true
+
+- name: Increase mmap map count
+  become: true
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "{{ sysctl_vm_max_map_count }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/90-destr0yer.conf
+    state: present
+    reload: true
+
+- name: VM Panic on OOM
+  become: true
+  ansible.posix.sysctl:
+    name: vm.panic_on_oom
+    value: "{{ sysctl_vm_panic_on_oom }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/90-destr0yer.conf
+    state: present
+    reload: true
+
+- name: Kernel Panic
+  become: true
+  ansible.posix.sysctl:
+    name: kernel.panic
+    value: "{{ sysctl_kernel_panic }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/90-destr0yer.conf
+    state: present
+    reload: true
+
+- name: Kernel Panic on oops
+  become: true
+  ansible.posix.sysctl:
+    name: kernel.panic_on_oops
+    value: "{{ sysctl_kernel_panic_on_oops }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/90-destr0yer.conf
+    state: present
+    reload: true
+
+- name: Kernel Keys root max bytes
+  become: true
+  ansible.posix.sysctl:
+    name: kernel.keys.root_maxbytes
+    value: "{{ sysctl_kernel_keys_root_maxbytes }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/90-destr0yer.conf
+    state: present
+    reload: true

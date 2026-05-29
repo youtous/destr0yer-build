@@ -1,0 +1,7 @@
+k8s_operator_name: "operator"
+k8s_operator_namespace: "kube-system"
+
+k8s_operator_server: "https://127.0.0.1:6443"
+k8s_operator_token_duration: "24h"
+
+k8s_operator_kubeconfig_path: /etc/rancher/k3s/k3s.yaml

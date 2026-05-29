@@ -1,0 +1,9 @@
+{
+  "name": "Arch + Claude Code",
+  "build": { "dockerfile": "Containerfile" },
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+  "runArgs": ["--userns=keep-id", "--network=host"],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached,relabel=private",
+  "workspaceFolder": "/workspace"
+}

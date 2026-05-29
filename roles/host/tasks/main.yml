@@ -1,30 +1,21 @@
----
 # This role configures host configuration (hostname, /etc/hosts etc)
 - name: Define hostname
-  become: yes
-  hostname:
+  become: true
+  ansible.builtin.hostname:
     name: "{{ hostname }}"
-  notify:
-    - restart network-manager
 
 - name: Unlock /etc/hosts
-  become: yes
-  file:
+  become: true
+  ansible.builtin.file:
     path: /etc/hosts
     attributes: -i
-  # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes
 
 - name: Setup hosts
-  become: yes
-  template:
+  become: true
+  ansible.builtin.template:
     src: files/hosts.j2
     dest: /etc/hosts
     owner: root
     group: root
-    attributes: i # ensure not writable
+    attributes: i  # ensure not writable
     mode: u=rwx,g=rx,o=rx
-  notify:
-    - restart network-manager
-  # if the Filesystem does not handle ioctl we are maybe on a vm
-  ignore_errors: yes

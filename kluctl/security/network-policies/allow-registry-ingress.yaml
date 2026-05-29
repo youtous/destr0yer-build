@@ -1,0 +1,26 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-registry-ingress
+  namespace: registry
+spec:
+  description: Allow image pulls from K3S nodes (NodePort) and in-cluster consumers
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: registry
+  ingress:
+    - fromEntities:
+        - cluster
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "5000"
+              protocol: TCP
+            - port: "5001"
+              protocol: TCP
+            - port: "5002"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false

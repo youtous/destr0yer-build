@@ -1,0 +1,76 @@
+# This role contains base rules of the firewall
+- name: Install ufw package
+  become: true
+  ansible.builtin.apt:
+    name:
+      - ufw
+
+- name: Configure ufw defaults
+  become: true
+  community.general.ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  with_items:
+    - {direction: 'incoming', policy: 'deny'}
+    - {direction: 'outgoing', policy: 'allow',}
+
+- name: Define ufw logging policy
+  become: true
+  community.general.ufw:
+    logging: "{{ ufw_logging }}"
+
+- name: Insert customs IPv4 rules in before.rules
+  become: true
+  ansible.builtin.blockinfile:
+    dest: "/etc/ufw/before.rules"
+    block: "{{ lookup('file', 'files/before-ipv4.rules') }}"
+    insertbefore: "^# don't delete the 'COMMIT'"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv4 before rules ###"
+  notify:
+    - Restart ufw
+
+- name: Insert customs IPv6 rules in before6.rules
+  become: true
+  ansible.builtin.blockinfile:
+    dest: "/etc/ufw/before6.rules"
+    block: "{{ lookup('file', 'files/before-ipv6.rules') }}"
+    insertbefore: "^# don't delete the 'COMMIT'"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - IPv6 before rules ###"
+  notify:
+    - Restart ufw
+
+- name: Add custom ufw firewall rules
+  become: true
+  community.general.ufw:
+    comment: "{{ item.comment }}"
+    proto: "{{ item.proto }}"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    port: "{{ item.port }}"
+    rule: "{{ item.rule }}"
+    direction: "{{ item.direction }}"
+  with_items: "{{ ufw_additional_rules | default([]) }}"
+
+# IP forwarding is disabled by default
+- name: Set value IPv4 forwarding
+  become: true
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "{{ ipv4_ip_forwarding }}"
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: Set value IPv6 forwarding
+  become: true
+  ansible.posix.sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: "{{ ipv6_ip_forwarding }}"
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: Enable ufw
+  become: true
+  community.general.ufw:
+    state: enabled

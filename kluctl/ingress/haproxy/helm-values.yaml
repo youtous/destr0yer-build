@@ -1,0 +1,167 @@
+# Ingress access control:
+#   Global default: all Ingress restricted to args.trusted_cidrs (infra + local network)
+#   Per-Ingress override (annotation on the Ingress resource):
+#     Restrict to trusted only (explicit, same as default):
+#       haproxy-ingress.github.io/allowlist-source-range: "{{ args.trusted_cidrs | join(',') }}"
+#     Make public (e.g. MTA-STS, mail autodiscover):
+#       haproxy-ingress.github.io/allowlist-source-range: "{{ args.public_cidrs | join(',') }}"
+#     Custom subset (e.g. VPN-only admin panel):
+#       haproxy-ingress.github.io/allowlist-source-range: "10.99.99.0/24"
+controller:
+  priorityClassName: cluster-infra
+  kind: DaemonSet
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+  ingressClassResource:
+    enabled: true
+    default: true
+  config:
+    syslog-endpoint: "stdout"
+    syslog-format: "rfc5424"
+    syslog-length: "8192"
+    syslog-tag: "ingress"
+    # pod_cidr/service_cidr appended: required for Authelia forward-auth callbacks
+    # and internal service-to-service traffic via Ingress. Without them, auth checks
+    # from Authelia's pod IP would be rejected. Risk: any cluster pod can reach Ingresses,
+    # mitigated by Authelia authentication + NetworkPolicies.
+    allowlist-source-range: "{{ (args.trusted_cidrs + [args.pod_cidr, args.service_cidr]) | join(',') }}"
+    # TLS — all Ingresses get a cert from cert-manager by default
+    ssl-redirect: "true"
+    ssl-certificate-default: "cert-manager/default-tls"
+    # HSTS — strict, 1 year, include subdomains
+    hsts: "true"
+    hsts-include-subdomains: "true"
+    hsts-max-age: "31536000"
+    hsts-preload: "false"
+    # Security response headers (applied to all backends)
+    # Values with special chars (parentheses, semicolons) must be double-quoted
+    headers: |
+      X-Content-Type-Options: nosniff
+      X-Frame-Options: SAMEORIGIN
+      Referrer-Policy: strict-origin-when-cross-origin
+      Permissions-Policy: "camera=(), microphone=(), geolocation=()"
+      X-XSS-Protection: "1; mode=block"
+    # Rate limiting — 300 req/s per source IP
+    limit-rps: "300"
+    limit-concurrent: "300"
+    # Timeouts
+    timeout-client: "50s"
+    timeout-server: "50s"
+    timeout-connect: "5s"
+    # Body size limit (override per-Ingress for uploads like Seafile)
+    proxy-body-size: "10m"
+{% if args.mail_relay_wg_ip %}
+    # Accept PROXY protocol from cloud relay on TCP mail frontends.
+    # Only connections from the relay WG IP are expected to carry PROXY headers;
+    # other sources connect normally (conditional expect-proxy).
+    config-tcp-service: |
+      tcp-request connection expect-proxy layer4 if { src {{ args.mail_relay_wg_ip }} }
+{% endif %}
+{% if args.enable_crowdsec %}
+    config-global: |
+      tune.bufsize 65536
+{% endif %}
+    config-frontend: |
+{% if args.auth_mode == "authelia" %}
+      http-request set-var(txn.scheme) str(https) if { ssl_fc }
+      http-request set-var(txn.scheme) str(http) if !{ ssl_fc }
+      http-request set-header X-Forwarded-Method %[method]
+      http-request set-header X-Forwarded-Proto %[var(txn.scheme)]
+      http-request set-header X-Forwarded-Host %[req.hdr(Host)]
+      http-request set-header X-Forwarded-URI %[path]
+{% endif %}
+{% if args.enable_crowdsec %}
+      unique-id-format %[uuid()]
+      unique-id-header X-Unique-ID
+      filter spoe engine crowdsec config /etc/haproxy-custom-files/crowdsec.cfg
+      http-request deny deny_status 403 if { var(txn.crowdsec.remediation) -m str "ban" }
+{% endif %}
+{% if args.enable_crowdsec %}
+    config-sections: |
+      backend crowdsec-spoa
+        mode tcp
+        timeout connect 2s
+        timeout server 60s
+        server spoa 127.0.0.1:9000
+  customFiles:
+    crowdsec.cfg: |
+      [crowdsec]
+      spoe-agent crowdsec-agent
+       messages crowdsec-tcp
+       option var-prefix crowdsec
+       option set-on-error error
+       timeout hello 200ms
+       timeout idle 55s
+       timeout processing 500ms
+       use-backend crowdsec-spoa
+       log global
+      spoe-message crowdsec-tcp
+       args id=unique-id src-ip=src src-port=src_port
+       event on-client-session
+{% endif %}
+  extraArgs:
+    watch-gateway: "false"
+{% if args.enable_crowdsec %}
+  extraContainers:
+    # renovate: datasource=docker depName=crowdsecurity/spoa-bouncer
+    - name: crowdsec-spoa
+      image: docker.io/crowdsecurity/spoa-bouncer:v0.3.0@sha256:9bdf80df34f7eb8d7150836d4ad6d247cd96bd51e2a979f1c7a1b61e2c1a475f
+      env:
+        - name: CROWDSEC_URL
+          value: "http://crowdsec-service.security.svc.cluster.local:8080/"
+        - name: CROWDSEC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: crowdsec-bouncer-key
+              key: apiKey
+        - name: LOG_LEVEL
+          value: "info"
+      ports:
+        - containerPort: 9000
+          name: spoa
+        - containerPort: 6060
+          name: metrics
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+{% endif %}
+  service:
+    type: ClusterIP
+{% if args.enable_mail %}
+  tcp:
+    "25": "mail/mailserver:12525::proxy-protocol"
+    "465": "mail/mailserver:10465::proxy-protocol"
+    "587": "mail/mailserver:10587::proxy-protocol"
+    "993": "mail/mailserver:10993::proxy-protocol"
+    "4190": "mail/mailserver:4190"
+  config-tcp:
+    "4190": |
+      acl trusted_src src {{ args.trusted_cidrs | join(' ') }}
+      tcp-request connection reject if !trusted_src
+{% endif %}
+  stats:
+    enabled: true
+  metrics:
+    enabled: true
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: promgraf
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

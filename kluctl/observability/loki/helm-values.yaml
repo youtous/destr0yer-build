@@ -1,0 +1,119 @@
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+{% if args.loki_storage_type == "s3" %}
+  storage:
+    type: s3
+    bucketNames:
+      chunks: "{{ args.s3_bucket_prefix }}{{ args.loki_s3_bucket }}"
+      ruler: "{{ args.s3_bucket_prefix }}{{ args.loki_s3_bucket }}"
+      admin: "{{ args.s3_bucket_prefix }}{{ args.loki_s3_bucket }}"
+    s3:
+      endpoint: "http://{{ args.s3_endpoint }}"
+      region: "{{ args.s3_region }}"
+      accessKeyId: "${S3_ACCESS_KEY_ID}"
+      secretAccessKey: "${S3_SECRET_ACCESS_KEY}"
+      s3ForcePathStyle: true
+      insecure: true
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+  compactor:
+    retention_enabled: true
+    delete_request_store: s3
+{% else %}
+  storage:
+    type: filesystem
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+  compactor:
+    retention_enabled: true
+    delete_request_store: filesystem
+{% endif %}
+  limits_config:
+    retention_period: "{{ args.loki_retention_days * 24 }}h"
+
+sidecar:
+  image:
+    registry: quay.io
+    repository: kiwigrid/k8s-sidecar
+    tag: 2.7.3
+  resources:
+    requests:
+      cpu: 10m
+      memory: 48Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+singleBinary:
+  replicas: {{ args.replicas_loki }}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+  persistence:
+    size: {{ args.pvc_loki }}
+{% if args.loki_storage_type == "s3" %}
+  extraEnvFrom:
+    - secretRef:
+        name: loki-s3-credentials
+{% endif %}
+
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
+
+gateway:
+  enabled: false
+
+lokiCanary:
+  enabled: false
+
+monitoring:
+  dashboards:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: promgraf
+  rules:
+    enabled: false
+    alerting: false
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+
+test:
+  enabled: false
+
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0

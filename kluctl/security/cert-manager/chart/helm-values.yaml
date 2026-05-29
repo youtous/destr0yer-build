@@ -1,0 +1,45 @@
+installCRDs: true
+
+replicaCount: 1
+global:
+  priorityClassName: cluster-infra
+
+prometheus:
+  servicemonitor:
+    enabled: true
+    labels:
+      release: promgraf
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+webhook:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+cainjector:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+{% if args.certmanager_issuer_type == "letsencrypt" and args.certmanager_dns_provider == "desec" %}
+# deSEC has a minimum TTL of 3600s — query authoritative NS directly
+# to avoid stale resolver caches during DNS-01 challenges.
+extraArgs:
+  - "--dns01-recursive-nameservers-only"
+  - "--dns01-recursive-nameservers=ns1.desec.io:53,ns2.desec.org:53"
+{% endif %}

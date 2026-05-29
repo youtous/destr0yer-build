@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Kopia backup snapshot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/kopia.env
+{% for path in kopia_snapshot_paths %}
+ExecStart={{ kopia_binary_path }} snapshot create {{ path }}
+{% endfor %}

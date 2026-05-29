@@ -1,0 +1,5 @@
+- name: Include OS specific configuration
+  ansible.builtin.include_vars: "{{ ansible_distribution }}.yml"
+
+- name: Include Linux specific tasks
+  ansible.builtin.include_tasks: "Linux.yml"

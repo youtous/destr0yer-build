@@ -1,0 +1,38 @@
+- name: Reverse path filtering (skipped when Cilium manages routing)
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: true
+    reload: true
+  loop:
+    - {name: net.ipv4.conf.all.rp_filter, value: "1"}
+    - {name: net.ipv4.conf.default.rp_filter, value: "1"}
+  loop_control:
+    label: "{{ item.name }}"
+  when: not (hardening_skip_rp_filter | default(false))
+
+- name: Network hardening sysctls
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: true
+    reload: true
+  loop:
+    - {name: net.ipv4.conf.all.accept_redirects, value: "0"}
+    - {name: net.ipv4.conf.default.accept_redirects, value: "0"}
+    - {name: net.ipv6.conf.all.accept_redirects, value: "0"}
+    - {name: net.ipv6.conf.default.accept_redirects, value: "0"}
+    - {name: net.ipv4.conf.all.send_redirects, value: "0"}
+    - {name: net.ipv4.conf.default.send_redirects, value: "0"}
+    - {name: net.ipv4.conf.all.accept_source_route, value: "0"}
+    - {name: net.ipv4.conf.default.accept_source_route, value: "0"}
+    - {name: net.ipv6.conf.all.accept_source_route, value: "0"}
+    - {name: net.ipv6.conf.default.accept_source_route, value: "0"}
+    - {name: kernel.randomize_va_space, value: "2"}
+    - {name: fs.suid_dumpable, value: "0"}
+    - {name: net.ipv4.icmp_ignore_bogus_error_responses, value: "1"}
+    - {name: net.ipv4.tcp_syncookies, value: "1"}
+  loop_control:
+    label: "{{ item.name }}"

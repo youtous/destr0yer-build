@@ -1,0 +1,40 @@
+vars:
+  - file: targets/defaults.yaml
+  - file: targets/{{ args.environment }}.yaml
+  - file: targets/{{ args.environment }}.enc.yaml
+
+# Force kluctl to always claim field ownership on all resources.
+# Without this, kluctl's server-side apply loses ownership of data fields
+# (e.g. ConfigMap contents), making subsequent deploys unable to update them.
+conflictResolution:
+  - fieldPathRegex: ".*"
+    action: force-apply
+
+deployments:
+  - path: namespaces/
+
+  - barrier: true
+
+  - path: namespaces-rbac/
+  - path: observability/monitoring-crds/
+  - include: security/
+
+  - barrier: true
+
+  - include: storage/
+  - include: database/
+  - include: ingress/
+  - path: authelia/
+    when: "{{ args.enable_authelia }}"
+
+  - barrier: true
+
+  - include: observability/
+  - path: whoami/
+    when: "{{ args.enable_whoami }}"
+  - include: mail/
+    when: "{{ args.enable_mail }}"
+  - include: home/
+    when: "{{ args.enable_homeassistant }}"
+  - include: apps/seafile/
+    when: "{{ args.enable_seafile | default(false) }}"

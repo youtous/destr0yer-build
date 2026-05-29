@@ -1,0 +1,6 @@
+helmChart:
+  repo: oci://ghcr.io/irreleph4nt/charts/cert-manager-webhook-desec-http
+  chartVersion: "1.0.1"
+  releaseName: desec-webhook
+  namespace: cert-manager
+  skipPrePull: true

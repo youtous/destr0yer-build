@@ -1,0 +1,24 @@
+# SELinux state: permissive (default) or enforcing.
+# Start with permissive to collect AVC denials without breaking services.
+# Switch to enforcing after validating audit logs on Vagrant.
+selinux_state: permissive
+
+# SELinux policy type (Debian ships "default" which is the refpolicy).
+selinux_policy: default
+
+# Install K3S-specific file contexts and policy support.
+selinux_k3s_support: true
+
+# Install OpenEBS file context for PV data.
+selinux_openebs_support: true
+
+# Reboot automatically if SELinux activation requires filesystem relabeling.
+# First-time activation needs a reboot for /.autorelabel.
+# Set to false if you want to reboot manually (e.g. production).
+selinux_reboot_if_required: true
+
+# Paths for K3S file contexts
+selinux_k3s_binary: /usr/local/bin/k3s
+selinux_k3s_data_dir: /var/lib/rancher
+selinux_k3s_config_dir: /etc/rancher
+selinux_openebs_data_dir: /var/openebs

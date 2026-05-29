@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Hourly btrfs snapshots of backup volume
+
+[Timer]
+OnCalendar={{ backup_btrfs_snapshot_schedule }}
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

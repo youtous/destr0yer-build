@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Config
+clusters:
+  - name: default
+    cluster:
+      certificate-authority-data: "{{ _kube_ca }}"
+      server: "{{ _kube_server }}"
+contexts:
+  - name: default
+    context:
+      cluster: default
+      user: "{{ _kube_user }}"
+current-context: default

@@ -1,0 +1,35 @@
+# users config
+
+common_users:
+  # arbiter is the only sudoer
+  - username: "{{ sudo_user_username }}"
+    name: System's Arbiter
+    groups: ['admin', 'sshusers']
+    uid: 1006
+    home: /home/dev-arbiter
+    profile:
+    ssh_key: "{{ sudo_user_ssh_keys }}"
+    password: "{{ sudo_user_password }}"
+    update_password: "always"
+
+  # app deployer — restricted K8S access for app deployments (no sudo)
+  - username: deployer
+    name: App Deployer
+    groups: ['sshusers']
+    uid: 1007
+    shell: /usr/bin/fish
+    ssh_key: "{{ deployer_ssh_keys }}"
+    password: "!"
+
+common_groups_to_create:
+  - name: admin
+    gid: 10000
+  - name: users
+    gid: 20000
+  - name: sshusers
+    gid: 20500
+
+# computed vars
+all_users: "{{ common_users | default([]) + host_users | default([]) }}"
+all_groups: "{{ common_groups_to_create | default([]) + host_groups_to_create | default([]) }}"
+all_users_to_delete: "{{ common_users_to_delete | default([]) + host_users_to_delete | default([]) }}"

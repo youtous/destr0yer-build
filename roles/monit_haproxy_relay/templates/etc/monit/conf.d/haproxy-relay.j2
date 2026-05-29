@@ -1,0 +1,10 @@
+check program haproxy-relay with path "/usr/bin/podman healthcheck run haproxy-relay"
+  if status != 0 then alert
+  start program = "/bin/systemctl start haproxy-relay.service"
+  stop  program = "/bin/systemctl stop haproxy-relay.service"
+  if 5 restarts within 5 cycles then timeout
+
+{% for fe in relay_haproxy_frontends %}
+check host haproxy-relay-{{ fe.name }} with address 127.0.0.1
+  if failed port {{ fe.bind_port }} type tcp then alert
+{% endfor %}

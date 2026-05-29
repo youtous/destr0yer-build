@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ args.certmanager_desec_token_secret_name }}"
+  namespace: cert-manager
+type: Opaque
+stringData:
+  token: "{{ secrets.desec_token }}"

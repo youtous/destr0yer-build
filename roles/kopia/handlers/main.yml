@@ -1,0 +1,18 @@
+- name: Reload kopia systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable kopia-snapshot timer
+  become: true
+  ansible.builtin.systemd:
+    name: kopia-snapshot.timer
+    state: started
+    enabled: true
+
+- name: Enable kopia-verify timer
+  become: true
+  ansible.builtin.systemd:
+    name: kopia-verify.timer
+    state: started
+    enabled: true

@@ -1,0 +1,20 @@
+exclude_paths:
+  - molecule
+  - archive/
+  - .ansible/
+  - collections/
+  - kluctl/.helm-charts/
+  - kluctl/
+
+offline: false
+
+skip_list:
+  # Pre-existing: all roles use unprefixed variable names. Bulk rename tracked separately.
+  - var-naming[no-role-prefix]
+  # Long Jinja2 expressions in YAML can't be wrapped without breaking templates.
+  # yamlfmt rejoins wrapped lines, making line-length unfixable.
+  - yaml[line-length]
+  # yamlfmt does not add spaces after commas in all contexts.
+  - yaml[commas]
+  # False positive: vars_files as list is valid Ansible but fails JSON schema.
+  - schema[playbook]

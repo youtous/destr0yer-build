@@ -1,0 +1,316 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: custom-alerts
+  namespace: observability
+  labels:
+    release: promgraf
+    app.kubernetes.io/part-of: kube-prometheus-stack
+spec:
+  groups:
+    - name: node-health
+      rules:
+        - alert: NodeHighCPUUsage
+          expr: instance:node_cpu_utilisation:rate5m > 0.5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Node CPU usage above 50%
+            description: >-
+              Node {{ "{{" }} $labels.instance {{ "}}" }} CPU utilisation is
+              {{ "{{" }} $value | humanizePercentage {{ "}}" }} (threshold 50%)
+              for more than 5 minutes.
+
+        - alert: NodeHighMemoryUsage
+          expr: |
+            (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Node memory usage above 80%
+            description: >-
+              Node {{ "{{" }} $labels.instance {{ "}}" }} memory usage is
+              {{ "{{" }} $value | humanizePercentage {{ "}}" }} (threshold 80%)
+              for more than 5 minutes.
+
+        - alert: NodeHighDiskUsage
+          expr: |
+            (
+              node_filesystem_size_bytes{fstype!="", mountpoint!=""}
+              - node_filesystem_avail_bytes{fstype!="", mountpoint!=""}
+            ) / node_filesystem_size_bytes{fstype!="", mountpoint!=""} > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Node disk usage above 85%
+            description: >-
+              Node {{ "{{" }} $labels.instance {{ "}}" }} filesystem
+              {{ "{{" }} $labels.mountpoint {{ "}}" }} is
+              {{ "{{" }} $value | humanizePercentage {{ "}}" }} full (threshold 85%).
+
+        - alert: NodeDiskFillPredicted6h
+          expr: |
+            predict_linear(
+              node_filesystem_avail_bytes{fstype!="", mountpoint!=""}[1h],
+              6 * 3600
+            ) < 0
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: Node disk predicted to fill within 6 hours
+            description: >-
+              Node {{ "{{" }} $labels.instance {{ "}}" }} filesystem
+              {{ "{{" }} $labels.mountpoint {{ "}}" }} is predicted to run out of
+              space within 6 hours based on the last hour of usage.
+
+        - alert: K3SNodeNotReady
+          expr: kube_node_status_condition{condition="Ready", status="true"} == 0
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: K3S node not ready
+            description: >-
+              Node {{ "{{" }} $labels.node {{ "}}" }} has been NotReady for more
+              than 15 minutes.
+
+    - name: pod-health
+      rules:
+        - alert: PodHighCPUUsage
+          expr: |
+            sum by (namespace, pod) (
+              rate(container_cpu_usage_seconds_total{container!="", container!="POD"}[5m])
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Pod CPU usage above 50% of one core
+            description: >-
+              Pod {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.pod {{ "}}" }}
+              is using {{ "{{" }} $value | humanize {{ "}}" }} CPU cores (threshold 0.5 cores).
+
+        - alert: PodHighMemoryUsage
+          expr: |
+            sum by (namespace, pod) (
+              container_memory_working_set_bytes{container!="", container!="POD"}
+            ) > 1e+09
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Pod memory usage above 1 GiB
+            description: >-
+              Pod {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.pod {{ "}}" }}
+              working-set memory is {{ "{{" }} $value | humanize1024 {{ "}}" }}B
+              (threshold 1 GiB).
+
+        - alert: PodOOMKilled
+          expr: |
+            kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: Container OOMKilled
+            description: >-
+              Container {{ "{{" }} $labels.container {{ "}}" }} in pod
+              {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.pod {{ "}}" }}
+              was OOMKilled. Current memory limit may be too low.
+
+        - alert: PodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total[15m]) >= 2
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: Pod container crash looping
+            description: >-
+              Container {{ "{{" }} $labels.container {{ "}}" }} in pod
+              {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.pod {{ "}}" }}
+              has restarted {{ "{{" }} $value | humanize {{ "}}" }} times in the last
+              15 minutes.
+
+    - name: storage-health
+      rules:
+        - alert: PersistentVolumeNearlyFull
+          expr: |
+            (
+              kubelet_volume_stats_capacity_bytes
+              - kubelet_volume_stats_available_bytes
+            ) / kubelet_volume_stats_capacity_bytes > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: PVC nearly full
+            description: >-
+              PVC {{ "{{" }} $labels.namespace {{ "}}" }}/{{ "{{" }} $labels.persistentvolumeclaim {{ "}}" }}
+              on node {{ "{{" }} $labels.node {{ "}}" }} is
+              {{ "{{" }} $value | humanizePercentage {{ "}}" }} full (threshold 85%).
+
+    - name: certificates
+      rules:
+        - alert: CertificateExpiringSoon
+          expr: |
+            (certmanager_certificate_expiration_timestamp_seconds - time()) / 86400 < 14
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: TLS certificate expiring within 14 days
+            description: >-
+              Certificate {{ "{{" }} $labels.name {{ "}}" }} in namespace
+              {{ "{{" }} $labels.namespace {{ "}}" }} expires in
+              {{ "{{" }} $value | humanize {{ "}}" }} days.
+
+    - name: backups
+      rules:
+        - alert: KopiaBackupStale
+          expr: |
+            (time() - kopia_last_backup_timestamp_seconds) > 86400
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Kopia backup is stale on {{ "{{" }} $labels.node {{ "}}" }}
+            description: >-
+              No successful Kopia backup on node {{ "{{" }} $labels.node {{ "}}" }}
+              in the last 24 hours.
+
+        - alert: KopiaBackupFailed
+          expr: |
+            kopia_last_backup_success == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Kopia backup failed on {{ "{{" }} $labels.node {{ "}}" }}
+            description: >-
+              Last Kopia backup on node {{ "{{" }} $labels.node {{ "}}" }}
+              reported failure. Check systemd journal for details.
+
+        - alert: KubeJobFailed
+          expr: |
+            kube_job_status_failed{namespace!=""} > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Job {{ "{{" }} $labels.job_name {{ "}}" }} failed in {{ "{{" }} $labels.namespace {{ "}}" }}
+            description: >-
+              Kubernetes Job {{ "{{" }} $labels.job_name {{ "}}" }} in namespace
+              {{ "{{" }} $labels.namespace {{ "}}" }} has failed.
+              Check logs with: kubectl logs -n {{ "{{" }} $labels.namespace {{ "}}" }} job/{{ "{{" }} $labels.job_name {{ "}}" }}
+{% if args.enable_crowdsec %}
+
+    - name: crowdsec
+      rules:
+        - alert: CrowdSecLAPIDown
+          expr: up{job=~".*crowdsec.*lapi.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: CrowdSec LAPI is down
+            description: >-
+              CrowdSec LAPI has been unreachable for more than 5 minutes.
+              IP ban decisions are no longer being updated.
+
+        - alert: CrowdSecAgentDown
+          expr: up{job=~".*crowdsec.*agent.*"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec agent is down
+            description: >-
+              CrowdSec log agent on {{ "{{" }} $labels.instance {{ "}}" }} has been
+              unreachable for more than 10 minutes. New threats are not being detected.
+
+        - alert: CrowdSecBouncerContainerDown
+          expr: |
+            kube_pod_container_status_ready{
+              namespace="haproxy-ingress",
+              container="crowdsec-spoa"
+            } == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: CrowdSec SPOA bouncer sidecar is not ready
+            description: >-
+              The CrowdSec SPOA bouncer in HAProxy pod
+              {{ "{{" }} $labels.pod {{ "}}" }} has been not-ready for 5 minutes.
+              HAProxy is fail-open — traffic passes without IP ban enforcement.
+
+        - alert: CrowdSecBouncerRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{
+              namespace="haproxy-ingress",
+              container="crowdsec-spoa"
+            }[15m]) >= 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec SPOA bouncer is crash-looping
+            description: >-
+              Container crowdsec-spoa in pod {{ "{{" }} $labels.pod {{ "}}" }}
+              has restarted {{ "{{" }} $value | humanize {{ "}}" }} times in 15 minutes.
+{% endif %}
+
+    - name: loki-health
+      rules:
+        - alert: LokiDown
+          expr: |
+            absent(up{job=~".*loki.*"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Loki is down
+            description: >-
+              No healthy Loki instance detected for 5 minutes.
+              Log ingestion is interrupted — pod logs are being lost.
+
+        - alert: LokiNotIngesting
+          expr: |
+            sum(rate(loki_distributor_bytes_received_total[10m])) == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Loki is not receiving logs
+            description: >-
+              Loki has received zero bytes in the last 15 minutes.
+              Alloy may have lost connectivity or all pods stopped logging.
+
+        - alert: LokiHighLatencyWrite
+          expr: |
+            histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route="loki_api_v1_push"}[5m])) by (le)) > 5
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Loki write latency is high
+            description: >-
+              99th percentile write latency to Loki exceeds 5 seconds for 10 minutes.
+              Possible disk I/O saturation or S3 backend issues.
+
+        - alert: AlloyDown
+          expr: |
+            count(up{job="alloy"} == 1) == 0
+            or absent(up{job="alloy"})
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Alloy (K8s DaemonSet) is down
+            description: >-
+              No Alloy instances are reporting metrics.
+              Pod log collection and forwarding to Loki has stopped.

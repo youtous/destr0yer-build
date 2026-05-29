@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  role_name: logwatch
+  author: youtous
+  description: Install and configure logwatch
+  license: MIT
+  min_ansible_version: "2.18"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - system
+    - monitoring
+    - logwatch
+
+dependencies: []

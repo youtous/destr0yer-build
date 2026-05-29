@@ -1,0 +1,1 @@
+cilium_chart_archive_name: "{{ cilium_chart_download_url | basename }}"

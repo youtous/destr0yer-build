@@ -1,0 +1,72 @@
+# This file describes specific host vars
+hostname: worker.k3s.dev.local
+
+### Unattended upgrades — stagger reboot times across nodes to avoid cluster outage
+unattended_upgrades_automatic_reboot_time: "04:30"
+# ansible_host not set — Ansible uses inventory hostname (worker.k3s.dev.local)
+# which is resolved by ~/.ssh/config (run `just ssh-config` first)
+ipv4:
+  - "192.168.56.11"
+ipv6:
+  - "fde4:8dba:82e1::c2"
+ipv4_private:
+  - "192.168.56.11"
+ipv6_private:
+  - "fde4:8dba:82e1::c2"
+
+host_users: []
+
+### Begin of smtp relay parameters ###
+
+# smtp relay parameters
+relay_email: monitoring-heaven-pascal@k8s.home
+
+# relay disabled on this host
+# relay_user: "{{ relay_email }}"
+# relay_password: "{{ secret_relay_password }}"
+
+### End of smtp relay parameters ###
+
+### Begin of Wireguard client parameters ###
+
+wireguard_clients:
+  - interface: wg0
+    name: "{{ hostname }}"
+    addresses:
+      - 10.99.99.2/24
+      - fdc9:281f:04d7:9ee9::2/64
+    endpoint: "ctrl.k3s.dev.local:1990"
+    persistent_keepalive: "25"
+    mtu: ""
+    allowed_ips:
+      - 10.99.99.0/24
+      - fdc9:281f:04d7:9ee9::/64
+    dns: []
+    server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc="
+    public_key: "VtgEDbhCLKhGMULdFxDliyccRwXv03r69lhY41gWhjA="
+    private_key: "{{ wireguard_client_private_key }}"
+    preshared_key: "{{ wireguard_client_preshared_key }}"
+
+### End of Wireguard client parameters ###
+
+### Swap — per-host, depends on available RAM and workload.
+# 4 GB for a 5.5 GB RAM VM running K3S + Cilium.
+fs_swap_file_size_mb: "4096"
+
+### Begin of Backup parameters ###
+
+# SSH keys for root (used by Kopia SFTP transport)
+users_ssh_keys:
+  - username: root
+    public_key: "{{ root_public_key }}"
+    private_key: "{{ root_private_key }}"
+
+# SFTP via WireGuard mesh IP (ctrl WG address = 10.99.99.1)
+kopia_sftp_host: "10.99.99.1"
+kopia_sftp_user: "backup_worker"
+kopia_sftp_path: "/home"
+kopia_sftp_key: "/root/.ssh/id_ed25519"
+kopia_password: "{{ secret_kopia_password }}"
+kopia_enabled: true
+
+### End of Backup parameters ###

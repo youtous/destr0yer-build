@@ -1,0 +1,7 @@
+helmChart:
+  repo: https://vmware-tanzu.github.io/helm-charts
+  chartName: velero
+  chartVersion: "12.0.1"
+  releaseName: velero
+  namespace: velero
+  skipCRDs: false

@@ -1,0 +1,192 @@
+- name: Configure firewall for k3s needs
+  ansible.builtin.import_tasks: firewall.yml
+
+- name: Install python-kubernetes
+  become: true
+  ansible.builtin.package:
+    name:
+      - python3-kubernetes
+    state: present
+
+- name: Create Rancher and k3s directories if not exists
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=x
+  with_items:
+    - "{{ k3s_var_lib_rancher_path }}"
+    - "{{ k3s_var_lib_k3s_path }}"
+
+- name: Create k3s server logs directory
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "{{ k3s_var_lib_server_path }}/logs"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Deploy K3S audit policy
+  become: true
+  ansible.builtin.copy:
+    src: files/audit.yaml
+    dest: "{{ k3s_var_lib_server_path }}/audit.yaml"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=
+
+- name: Deploy K3S PodSecurity admission config
+  become: true
+  ansible.builtin.copy:
+    src: files/psa.yaml
+    dest: "{{ k3s_var_lib_server_path }}/psa.yaml"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=
+
+- name: Create k3s server and manifests directories if not exists
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+  with_items:
+    - "{{ k3s_var_lib_server_path }}"
+    - "{{ k3s_var_lib_manifests_path }}"
+
+# If you plan to override a manifest, consider disabling the related service as the overriding
+# does not take care of ordre update
+- name: Copy overrided manifests
+  become: true
+  ansible.builtin.template:
+    src: "templates/{{ item.src }}"
+    dest: "{{ k3s_var_lib_manifests_path }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  with_items:
+    - {src: custom-coredns.j2.yaml, dest: custom-coredns.yaml,}
+
+- name: Install k3s and configure
+  ansible.builtin.import_role:
+    name: xanmanning.k3s
+  vars:
+    k3s_state: "{{ k3s_installation_state }}"
+    k3s_release_version: "{{ k3s_installation_release_version }}"
+    k3s_config_file: "{{ k3s_installation_config_file }}"
+    k3s_config_yaml_d_dir: "{{ k3s_installation_config_yaml_d_dir }}"
+    k3s_build_cluster: "{{ k3s_installation_build_cluster }}"
+    k3s_github_url: "{{ k3s_installation_github_url }}"
+    k3s_api_url: "{{ k3s_installation_api_url }}"
+    k3s_airgap: "{{ k3s_installation_airgap }}"
+    k3s_skip_validation: "{{ k3s_installation_skip_validation }}"
+    k3s_skip_env_checks: "{{ k3s_installation_skip_env_checks }}"
+    k3s_skip_post_checks: "{{ k3s_installation_skip_post_checks }}"
+    k3s_install_dir: "{{ k3s_installation_install_dir }}"
+    k3s_install_hard_links: "{{ k3s_installation_install_hard_links }}"
+    k3s_server_config_yaml_d_files: "{{ k3s_installation_server_config_yaml_d_files }}"
+    k3s_agent_config_yaml_d_files: "{{ k3s_installation_agent_config_yaml_d_files }}"
+    k3s_server_manifests_templates: "{{ k3s_installation_server_manifests_templates }}"
+    k3s_server_manifests_urls: "{{ k3s_installation_server_manifests_urls }}"
+    k3s_server_pod_manifests_templates: "{{ k3s_installation_server_pod_manifests_templates }}"
+    k3s_server_pod_manifests_urls: "{{ k3s_installation_server_pod_manifests_urls }}"
+    k3s_use_experimental: "{{ k3s_installation_use_experimental }}"
+    k3s_use_unsupported_config: "{{ k3s_installation_use_unsupported_config }}"
+    k3s_etcd_datastore: "{{ k3s_installation_etcd_datastore }}"
+    k3s_start_on_boot: "{{ k3s_installation_start_on_boot }}"
+    k3s_service_requires: "{{ k3s_installation_service_requires }}"
+    k3s_service_wants: "{{ k3s_installation_service_wants }}"
+    k3s_service_before: "{{ k3s_installation_service_before }}"
+    k3s_service_after: "{{ k3s_installation_service_after }}"
+    k3s_service_env_vars: "{{ k3s_installation_service_env_vars }}"
+    k3s_service_env_file: "{{ k3s_installation_service_env_file }}"
+    k3s_server: "{{ k3s_installation_server }}"
+    k3s_agent: "{{ k3s_installation_agent }}"
+    k3s_become: "{{ k3s_installation_become }}"
+    k3s_registries: "{{ k3s_installation_registries }}"
+    k3s_registration_address: "{{ k3s_installation_registration_address }}"
+
+- name: Deploy K3S hardening script (CIS 1.1.9, 1.1.10, 1.1.20)
+  become: true
+  ansible.builtin.copy:
+    dest: /usr/local/bin/k3s-harden-permissions
+    owner: root
+    group: root
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      # CIS 1.1.20 — PKI certs/keys must be 600
+      find {{ k3s_var_lib_server_path }}/tls -type f \( -name '*.crt' -o -name '*.pem' -o -name '*.key' \) ! -perm 600 -exec chmod 600 {} +
+      # CIS 1.1.9 — CNI config files must be 600
+      find /etc/cni/net.d -type f ! -perm 600 -exec chmod 600 {} + 2>/dev/null
+      find /var/lib/cni -type f ! -name '*.lock' ! -perm 600 -exec chmod 600 {} + 2>/dev/null
+      # CIS 1.1.10 — CNI files must be owned root:root
+      find /etc/cni/net.d -type f ! \( -user root -group root \) -exec chown root:root {} + 2>/dev/null
+      find /var/lib/cni -type f ! \( -user root -group root \) -exec chown root:root {} + 2>/dev/null
+  when: k3s_control_node | default(false)
+  tags: [k3s, hardening]
+
+- name: Deploy K3S hardening service unit (CIS 1.1.9, 1.1.10, 1.1.20)
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/k3s-harden-permissions.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Harden K3S file permissions (CIS 1.1.9, 1.1.10, 1.1.20)
+      After=k3s.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/k3s-harden-permissions
+  when: k3s_control_node | default(false)
+  tags: [k3s, hardening]
+
+- name: Deploy K3S hardening timer (CIS 1.1.9, 1.1.10, 1.1.20)
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/k3s-harden-permissions.timer
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Periodic K3S permission hardening (CIS 1.1.9, 1.1.10, 1.1.20)
+
+      [Timer]
+      OnBootSec=30s
+      OnUnitActiveSec=6h
+
+      [Install]
+      WantedBy=timers.target
+  when: k3s_control_node | default(false)
+  tags: [k3s, hardening]
+
+- name: Enable K3S hardening timer (CIS 1.1.9, 1.1.10, 1.1.20)
+  become: true
+  ansible.builtin.systemd:
+    name: k3s-harden-permissions.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: k3s_control_node | default(false)
+  tags: [k3s, hardening]
+
+- name: Remove old k3s-harden-pki units if present
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/k3s-harden-pki.service
+    - /etc/systemd/system/k3s-harden-pki.timer
+    - /usr/local/bin/k3s-harden-pki
+  when: k3s_control_node | default(false)
+  tags: [k3s, hardening]

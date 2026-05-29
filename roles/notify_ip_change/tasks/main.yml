@@ -1,0 +1,67 @@
+- name: Install required packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - dnsutils
+      - jq
+      - mailutils
+
+- name: Create notify-ip-change directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ notify_change_ip_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=
+
+- name: Remove legacy ruby script
+  become: true
+  ansible.builtin.file:
+    path: "{{ notify_change_ip_directory }}/notify-ip-change.rb"
+    state: absent
+
+- name: Deploy notify-ip-change script
+  become: true
+  ansible.builtin.template:
+    src: notify-ip-change.sh.j2
+    dest: "{{ notify_change_ip_directory }}/notify-ip-change.sh"
+    owner: root
+    group: root
+    mode: u=rwx,g=,o=
+
+- name: Deploy notify-ip-change systemd service
+  become: true
+  ansible.builtin.template:
+    src: notify-ip-change.service.j2
+    dest: /etc/systemd/system/notify-ip-change.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload notify-ip-change systemd
+
+- name: Deploy notify-ip-change systemd timer
+  become: true
+  ansible.builtin.template:
+    src: notify-ip-change.timer.j2
+    dest: /etc/systemd/system/notify-ip-change.timer
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - Reload notify-ip-change systemd
+    - Enable notify-ip-change timer
+
+- name: Ensure notify-ip-change timer is started
+  become: true
+  ansible.builtin.systemd:
+    name: notify-ip-change.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Remove legacy cron job
+  become: true
+  ansible.builtin.cron:
+    name: "check and notify ip changes"
+    state: absent

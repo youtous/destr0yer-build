@@ -1,0 +1,13 @@
+- name: UFW Allow ssh clients - ALLOW tcp/ssh
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "{{ sshd_port | quote }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "standard ssh connection"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ ssh_entrypoints_local_interfaces_ips | default([]) + ssh_entrypoints | default([]) | flatten }}"

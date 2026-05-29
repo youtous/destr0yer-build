@@ -1,0 +1,166 @@
+# Parsedmarc — one CronJob per mailserver domain
+# Each domain needs a dmarc@ account in secrets.mailserver_domains[].parsedmarc_password
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: parsedmarc-reports
+  namespace: mail
+  labels:
+    app.kubernetes.io/name: parsedmarc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "{{ args.storage_class }}"
+  resources:
+    requests:
+      storage: {{ args.pvc_parsedmarc }}
+{% for domain in secrets.mailserver_domains %}
+{% if domain.parsedmarc_password is defined %}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: parsedmarc-creds-{{ domain.domain | replace('.', '-') }}
+  namespace: mail
+  labels:
+    app.kubernetes.io/name: parsedmarc
+    app.kubernetes.io/instance: "{{ domain.domain }}"
+type: Opaque
+stringData:
+  imap-password: "{{ domain.parsedmarc_password }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: parsedmarc-config-{{ domain.domain | replace('.', '-') }}
+  namespace: mail
+  labels:
+    app.kubernetes.io/name: parsedmarc
+    app.kubernetes.io/instance: "{{ domain.domain }}"
+data:
+  parsedmarc.ini: |
+    [general]
+    save_aggregate = True
+    save_forensic = True
+    output = /data/reports/{{ domain.domain }}
+
+    [imap]
+    host = mailserver.mail.svc.cluster.local
+    port = 993
+    ssl = True
+    user = {{ domain.parsedmarc_user | default("dmarc") }}@{{ domain.domain }}
+    password = %(IMAP_PASSWORD)s
+
+    [mailbox]
+    watch = False
+
+    [smtp]
+    host = %(SMTP_HOST)s
+    port = %(SMTP_PORT)s
+    user = %(SMTP_USER)s
+    password = %(SMTP_PASS)s
+    from = parsedmarc@{{ domain.domain }}
+    to = {{ args.admin_email }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: parsedmarc-{{ domain.domain | replace('.', '-') }}
+  namespace: mail
+  labels:
+    app.kubernetes.io/name: parsedmarc
+    app.kubernetes.io/instance: "{{ domain.domain }}"
+spec:
+  schedule: "{{ args.schedule_parsedmarc }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: parsedmarc
+            app.kubernetes.io/instance: "{{ domain.domain }}"
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            fsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            # renovate: datasource=docker depName=patschi/parsedmarc
+            # upstream only publishes :latest (no version tags), pinned by digest
+            - name: parsedmarc
+              image: docker.io/patschi/parsedmarc:latest@sha256:6b8480b5214eef05502e2cce726b4790d0412d3ce7c6d0200a1fdfa1c14953f8
+              command: ["sh", "-c"]
+              args:
+                - |
+                  sed -e "s|%(IMAP_PASSWORD)s|$IMAP_PASSWORD|g" \
+                      -e "s|%(SMTP_HOST)s|$SMTP_HOST|g" \
+                      -e "s|%(SMTP_PORT)s|$SMTP_PORT|g" \
+                      -e "s|%(SMTP_USER)s|$SMTP_USER|g" \
+                      -e "s|%(SMTP_PASS)s|$SMTP_PASS|g" \
+                      /config/parsedmarc.ini > /tmp/parsedmarc.ini
+                  exec parsedmarc -c /tmp/parsedmarc.ini
+              env:
+                - name: IMAP_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: parsedmarc-creds-{{ domain.domain | replace('.', '-') }}
+                      key: imap-password
+                - name: SMTP_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: host
+                - name: SMTP_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: port
+                - name: SMTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: username
+                - name: SMTP_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: password
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                  readOnly: true
+                - name: reports
+                  mountPath: /data/reports
+                - name: tmp
+                  mountPath: /tmp
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+          volumes:
+            - name: config
+              configMap:
+                name: parsedmarc-config-{{ domain.domain | replace('.', '-') }}
+            - name: reports
+              persistentVolumeClaim:
+                claimName: parsedmarc-reports
+            - name: tmp
+              emptyDir: {}
+{% endif %}
+{% endfor %}

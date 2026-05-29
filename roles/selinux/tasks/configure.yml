@@ -1,0 +1,52 @@
+- name: Check if SELinux is enabled in kernel
+  become: true
+  ansible.builtin.command:
+    cmd: getenforce
+  register: selinux_runtime
+  changed_when: false
+  failed_when: false
+
+- name: Activate SELinux at boot (selinux-activate)
+  become: true
+  ansible.builtin.command:
+    cmd: selinux-activate
+  when: selinux_runtime.stdout | default('Disabled') == 'Disabled'
+  register: selinux_activated
+  changed_when: selinux_activated.rc == 0
+  notify: Reboot for SELinux relabel
+
+- name: Gather SELinux facts
+  ansible.builtin.setup:
+    filter: ansible_selinux
+
+- name: Set SELinux mode
+  become: true
+  ansible.posix.selinux:
+    policy: "{{ selinux_policy }}"
+    state: "{{ selinux_state }}"
+  when: ansible_facts.selinux.status | default('disabled') == 'enabled'
+
+- name: Set SELinux mode in config for next boot
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: "SELINUX={{ selinux_state }}"
+    create: true
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+
+- name: Set SELinux policy type in config
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUXTYPE='
+    line: "SELINUXTYPE={{ selinux_policy }}"
+    create: true
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+
+- name: Flush handlers to reboot if activation was needed
+  ansible.builtin.meta: flush_handlers

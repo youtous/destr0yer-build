@@ -1,0 +1,46 @@
+{# Ingress-only policy. Garage egress is currently blocked by default-deny
+   (single-node, no cross-site replication). When multi-zone replication is
+   enabled (ADR-010/012), add a CiliumNetworkPolicy allowing Garage egress
+   to the remote Garage node via WireGuard mesh (port 3901 RPC). #}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: garage-admin-access
+  namespace: garage
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: garage
+  policyTypes:
+    - Ingress
+  ingress:
+    # S3 API (3900) + S3 Web (3902) — restricted to known consumers
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: velero
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: seafile
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: homeassistant
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: registry
+      ports:
+        - port: 3900
+          protocol: TCP
+        - port: 3902
+          protocol: TCP
+    # Admin API (3903) — restricted to garage namespace only
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: garage
+      ports:
+        - port: 3903
+          protocol: TCP

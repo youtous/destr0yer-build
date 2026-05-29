@@ -1,0 +1,132 @@
+# network configuration
+
+# Network configuration
+domain_name: home.dev
+domain_search: []
+nameservers:  # use DNSCrypt-proxy
+  - '127.0.0.1'
+  - '::1'
+
+# IPs which should never be banned (fail2ban + CrowdSec whitelist).
+# Use specific IPs, not broad subnets — a compromised host on the same
+# network should still be bannable.
+fail2ban_trusted_ips:
+  - "192.168.56.1"  # vagrant host (management workstation)
+  - "192.168.56.10"  # ctrl
+  - "192.168.56.11"  # worker
+  - "10.99.99.1"  # ctrl WG
+  - "10.99.99.2"  # worker WG
+
+# Cilium eBPF routing requires rp_filter=0 and resets it at runtime.
+# Skip rp_filter in the hardening role to avoid idempotence fight.
+# Must be true on all nodes running K3S with Cilium CNI.
+hardening_skip_rp_filter: true
+
+# entrypoints ips from where we can access base_destr0yers
+ssh_entrypoints:
+  - "192.168.56.1"
+
+# HAProxy Ingress (hostNetwork DaemonSet) — public-facing ports.
+# Prod: restrict src to relay WG IP(s). Dev: local + WG networks.
+#
+# WHY pod CIDR rules? HAProxy binds on the node (hostNetwork: true).
+# Pod-to-node traffic traverses the host firewall (UFW), unlike pod-to-ClusterIP
+# which stays in Cilium eBPF. Without these rules, in-cluster health checks
+# (Gatus), OIDC callbacks (Grafana → Authelia via Ingress), and MX loopback
+# (pod sends mail to own domain → node IP → HAProxy → mailserver) will timeout.
+# The pod CIDR comes from local_container_ips (defined in k3s_preset.yml).
+ufw_additional_rules:
+  # --- External access (LAN / WG) ---
+  - comment: "HAProxy HTTP"
+    proto: "tcp"
+    src: "192.168.56.0/24"
+    dest: "any"
+    port: "80"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy HTTPS"
+    proto: "tcp"
+    src: "192.168.56.0/24"
+    dest: "any"
+    port: "443"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy SMTP"
+    proto: "tcp"
+    src: "192.168.56.0/24"
+    dest: "any"
+    port: "25"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy SMTPS"
+    proto: "tcp"
+    src: "192.168.56.0/24"
+    dest: "any"
+    port: "465"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy IMAPS"
+    proto: "tcp"
+    src: "192.168.56.0/24"
+    dest: "any"
+    port: "993"
+    rule: "allow"
+    direction: "in"
+  # --- Pod CIDR access (hostNetwork traversal) ---
+  - comment: "HAProxy HTTP (pods)"
+    proto: "tcp"
+    src: "{{ local_container_ips[0] }}"
+    dest: "any"
+    port: "80"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy HTTPS (pods)"
+    proto: "tcp"
+    src: "{{ local_container_ips[0] }}"
+    dest: "any"
+    port: "443"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy SMTP (pods)"
+    proto: "tcp"
+    src: "{{ local_container_ips[0] }}"
+    dest: "any"
+    port: "25"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy SMTPS (pods)"
+    proto: "tcp"
+    src: "{{ local_container_ips[0] }}"
+    dest: "any"
+    port: "465"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy submission (pods)"
+    proto: "tcp"
+    src: "{{ local_container_ips[0] }}"
+    dest: "any"
+    port: "587"
+    rule: "allow"
+    direction: "in"
+  - comment: "HAProxy IMAPS (pods)"
+    proto: "tcp"
+    src: "{{ local_container_ips[0] }}"
+    dest: "any"
+    port: "993"
+    rule: "allow"
+    direction: "in"
+
+# allow container networks (and eventually other networks such as vpn) to query the local dns server
+# also allow private ips to reach the dns (loop)
+all_private_ips: "{{ (ipv4_private | default([])) + (ipv6_private | default([])) | list | flatten }}"
+dns_allowed_hosts: "{{ (local_container_ips | default([])) + all_private_ips | list | flatten }}"
+
+# ensure that dnscrypt proxy also listen on private ips for K3s loop
+dnscrypt_proxy_listen_addresses: "{{ ['127.0.0.1:53', '[::1]:53'] + (all_private_ips | ansible.utils.ipwrap | product([':53']) | map('join') | list) | flatten }}"
+
+# Dev-only: cloak *.k8s.home to the ctrl node IP where HAProxy
+# Ingress runs with hostNetwork.  This lets in-cluster pods (CoreDNS
+# forward -> dnscrypt-proxy) resolve Ingress FQDNs for server-side
+# OIDC token exchange (Grafana, Home Assistant, Seafile …).
+dnscrypt_cloaking_rules:
+  - "*.k8s.home  192.168.56.10"

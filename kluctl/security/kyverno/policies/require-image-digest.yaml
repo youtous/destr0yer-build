@@ -1,0 +1,23 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-image-digest
+spec:
+  validationFailureAction: "{{ args.kyverno_validation_action }}"
+  rules:
+    - name: require-digest
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [mail, security]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, cilium, openebs, kyverno, cert-manager]
+      validate:
+        message: "Critical workloads must use image digest (image@sha256:...)."
+        pattern:
+          spec:
+            containers:
+              - image: "*@sha256:*"

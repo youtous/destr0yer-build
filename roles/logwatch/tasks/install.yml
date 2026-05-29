@@ -1,39 +1,21 @@
----
-- name: Copy apt preferences | logwatch # use testing version to fix systemd journal bug
-  become: yes
-  copy:
-    src: "files/apt/preferences.d/{{ item }}"
-    dest: "{{ apt_directory }}/preferences.d/{{ item }}"
-    owner: root
-    group: root
-    mode: u=rw,g=r,o=r
-  with_items:
-    - 45-logwatch
-  when: ansible_os_family == "Debian" and ansible_lsb.major_release|int < 11
-
-- name: Remove speficics pinning preferences
-  become: yes
-  file:
-    path: "{{ apt_directory }}/preferences.d/{{ item }}"
+- name: Remove legacy apt pinning (was needed for Debian < 11)
+  become: true
+  ansible.builtin.file:
+    path: "{{ apt_directory }}/preferences.d/45-logwatch"
     state: absent
-  with_items:
-    - 45-logwatch
-  when: ansible_os_family == "Debian" and ansible_lsb.major_release|int >= 11
 
 - name: Install logwatch
-  become: yes
-  apt:
-    update_cache: yes
+  become: true
+  ansible.builtin.apt:  # noqa package-latest
+    update_cache: true
     name:
       - logwatch
       - cron
     state: latest
 
-
 - name: Enable cron
-  become: yes
-  service:
+  become: true
+  ansible.builtin.service:
     name: cron
     state: started
-    enabled: yes
-...
+    enabled: true

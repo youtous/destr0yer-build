@@ -1,0 +1,26 @@
+{# Dedicated mailserver account for K8s service notifications.
+   secrets.smtp_notifier_username / smtp_notifier_password in SOPS (targets/dev.enc.yaml)
+   must match the mailserver account provisioned for notifications. #}
+{%- set smtp_namespaces = ['observability', 'security', 'velero'] %}
+{%- if args.enable_mail | default(true) %}
+  {%- set smtp_namespaces = smtp_namespaces + ['mail'] %}
+{%- endif %}
+{%- for ns in smtp_namespaces %}
+{% if not loop.first %}
+---
+{% endif %}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: smtp-notifier
+  namespace: {{ ns }}
+  labels:
+    app.kubernetes.io/component: smtp-notifier
+type: Opaque
+stringData:
+  host: "{{ args.smtp_notifier_host }}"
+  port: "{{ args.smtp_notifier_port }}"
+  username: "{{ secrets.smtp_notifier_username }}"
+  password: "{{ secrets.smtp_notifier_password }}"
+  from: "{{ args.noreply_email }}"
+{%- endfor %}

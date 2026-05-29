@@ -1,0 +1,228 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry
+  namespace: registry
+  labels:
+    app.kubernetes.io/name: registry
+    app.kubernetes.io/component: pull-through-cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: registry
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: registry
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        # renovate: datasource=docker depName=library/registry versioning=docker
+        - name: docker-io
+          image: registry:3.1.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: docker-io
+              containerPort: 5000
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config-docker
+              mountPath: /etc/distribution
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/registry
+              subPath: docker-io
+          livenessProbe:
+            httpGet:
+              path: /v2/
+              port: docker-io
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /v2/
+              port: docker-io
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+        # renovate: datasource=docker depName=library/registry versioning=docker
+        - name: ghcr-io
+          image: registry:3.1.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: ghcr-io
+              containerPort: 5001
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config-ghcr
+              mountPath: /etc/distribution
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/registry
+              subPath: ghcr-io
+          livenessProbe:
+            httpGet:
+              path: /v2/
+              port: ghcr-io
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /v2/
+              port: ghcr-io
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 24Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+        # renovate: datasource=docker depName=library/registry versioning=docker
+        - name: quay-io
+          image: registry:3.1.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: quay-io
+              containerPort: 5002
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config-quay
+              mountPath: /etc/distribution
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/registry
+              subPath: quay-io
+          livenessProbe:
+            httpGet:
+              path: /v2/
+              port: quay-io
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /v2/
+              port: quay-io
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 24Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+        # renovate: datasource=docker depName=library/registry versioning=docker
+        - name: k8s-io
+          image: registry:3.1.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: k8s-io
+              containerPort: 5003
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config-k8s
+              mountPath: /etc/distribution
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/registry
+              subPath: k8s-io
+          livenessProbe:
+            httpGet:
+              path: /v2/
+              port: k8s-io
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /v2/
+              port: k8s-io
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 24Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      volumes:
+        - name: config-docker
+          configMap:
+            name: registry-config
+        - name: config-ghcr
+          configMap:
+            name: registry-config-ghcr
+        - name: config-quay
+          configMap:
+            name: registry-config-quay
+        - name: config-k8s
+          configMap:
+            name: registry-config-k8s
+        - name: data
+          persistentVolumeClaim:
+            claimName: registry-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: registry
+  labels:
+    app.kubernetes.io/name: registry
+spec:
+  type: NodePort
+  externalTrafficPolicy: Local
+  selector:
+    app.kubernetes.io/name: registry
+  ports:
+    - name: docker-io
+      port: 5000
+      targetPort: docker-io
+      nodePort: 15000
+      protocol: TCP
+    - name: ghcr-io
+      port: 5001
+      targetPort: ghcr-io
+      nodePort: 15001
+      protocol: TCP
+    - name: quay-io
+      port: 5002
+      targetPort: quay-io
+      nodePort: 15002
+      protocol: TCP
+    - name: k8s-io
+      port: 5003
+      targetPort: k8s-io
+      nodePort: 15003
+      protocol: TCP

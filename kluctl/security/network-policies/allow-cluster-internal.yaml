@@ -1,0 +1,314 @@
+{# smtp_notifier_host is an external FQDN if it's not an IP and not intra-cluster.
+   IPs start with a digit, intra-cluster names contain .svc.cluster.local. #}
+{%- set smtp_is_external_fqdn = 'svc.cluster.local' not in args.smtp_notifier_host and args.smtp_notifier_host[0] not in '0123456789' %}
+{# --- Broad cluster egress ---
+   Namespaces where pods operate cluster-wide (scrape all targets, manage CRDs
+   across namespaces, backup any PV, provision storage). Restricting these to
+   specific destinations would break their core functionality.
+   DB pods (MariaDB instances) live in app namespaces, not in 'database'.
+   The 'database' namespace only hosts the MariaDB operator. #}
+{% set cluster_wide_namespaces = [
+  'observability',
+  'security',
+  'kyverno',
+  'openebs',
+  'velero',
+  'database',
+] %}
+{% for ns in cluster_wide_namespaces %}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-cluster-egress
+  namespace: {{ ns }}
+spec:
+  description: "Allow egress to all in-cluster services — pods operate cluster-wide"
+  endpointSelector: {}
+  egress:
+    - toEntities:
+        - cluster
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{% endfor %}
+{# --- Scoped egress: authelia ---
+   SMTP: mail namespace (in-cluster DMS) + host (Mailpit/IP relay).
+   External SMTP: toFQDNs derived from smtp_notifier_host when it's a FQDN.
+   NTP: disabled — Authelia trusts the host clock (chronyd on nodes). #}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-authelia-egress
+  namespace: authelia
+spec:
+  description: "Authelia: SMTP egress (mail ns + host{% if smtp_is_external_fqdn %} + {{ args.smtp_notifier_host }}{% endif %})"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: authelia
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: mail
+      toPorts:
+        - ports:
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+{%- if smtp_is_external_fqdn %}
+    - toFQDNs:
+        - matchName: "{{ args.smtp_notifier_host }}"
+      toPorts:
+        - ports:
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+{%- endif %}
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{# --- Scoped egress: seafile ---
+   Needs: intra-namespace (Redis 6379, MariaDB 3306), Garage S3 (3900).
+   No kube-apiserver: Seafile is an app, not an operator.
+   S3 is direct service-to-service in dev (garage.garage.svc.cluster.local:3900).
+   In prod multi-cluster, S3 will go via ingress/internet — replace the garage
+   egress rule with a toFQDNs or toEntities rule.
+   Internet egress for pip install handled by allow-internet-seafile.yaml. #}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-seafile-egress
+  namespace: seafile
+spec:
+  description: "Seafile: egress to same namespace (DB, Redis) and Garage (S3)"
+  endpointSelector: {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: seafile
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: garage
+      toPorts:
+        - ports:
+            - port: "3900"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{# --- Scoped egress: homeassistant ---
+   Intra-namespace: HA <-> mosquitto <-> zigbee2mqtt, MariaDB.
+   Host:443: OIDC token exchange via HAProxy ingress (hostNetwork) to Authelia.
+   Garage:3900: backup CronJobs need S3 access.
+   No internet: HACS installed via init container, no cloud integrations.
+   If HACS or internet integrations are needed, add toEntities: world temporarily. #}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-homeassistant-egress
+  namespace: homeassistant
+spec:
+  description: "Home Assistant: intra-ns + host:443 (OIDC) + garage:3900 (backups)"
+  endpointSelector: {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: homeassistant
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: garage
+      toPorts:
+        - ports:
+            - port: "3900"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{# --- Scoped egress: gatus ---
+   HTTP checks: toFQDNs generated from gatus_endpoints (surgical per-domain).
+   Host entity: internal services behind HAProxy + SMTP (Mailpit in dev).
+   Infra checks (CoreDNS, registry) are intra-cluster via allow-cluster-egress.
+   Prod external SMTP: toFQDNs from smtp_egress_fqdns. #}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-gatus-egress
+  namespace: observability
+spec:
+  description: "Gatus: check targets (toFQDNs) + host (HAProxy + SMTP)"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: gatus
+  egress:
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "80"
+              protocol: TCP
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+{%- set ns = namespace(fqdns=[]) %}
+{%- for ep in args.gatus_endpoints %}
+{%- if '://' in ep.url %}
+{%- set h = ep.url.split('://')[1].split('/')[0].split(':')[0] %}
+{%- else %}
+{%- set h = ep.url.split(':')[0] %}
+{%- endif %}
+{%- if 'svc.cluster.local' not in h and h not in ns.fqdns %}
+{%- set ns.fqdns = ns.fqdns + [h] %}
+{%- endif %}
+{%- endfor %}
+{%- if ns.fqdns | length > 0 %}
+    - toFQDNs:
+{%- for fqdn in ns.fqdns %}
+        - matchName: "{{ fqdn }}"
+{%- endfor %}
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "80"
+              protocol: TCP
+{%- endif %}
+{%- if smtp_is_external_fqdn %}
+    - toFQDNs:
+        - matchName: "{{ args.smtp_notifier_host }}"
+      toPorts:
+        - ports:
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+{%- endif %}
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{# --- Scoped egress: grafana ---
+   OIDC token exchange with Authelia goes through HAProxy Ingress (hostNetwork).
+   SMTP alerts via mailpit also on host. #}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-grafana-egress
+  namespace: observability
+spec:
+  description: "Grafana: egress to host for OIDC token exchange"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  egress:
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{# --- Scoped egress: alertmanager ---
+   Sends alert emails via SMTP. In dev: mailpit on host:1025.
+   Prod external SMTP: toFQDNs from smtp_egress_fqdns (no toEntities: world). #}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-alertmanager-egress
+  namespace: observability
+spec:
+  description: "Alertmanager: SMTP alerts (host{% if smtp_is_external_fqdn %} + {{ args.smtp_notifier_host }}{% endif %})"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: alertmanager
+  egress:
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+{%- if smtp_is_external_fqdn %}
+    - toFQDNs:
+        - matchName: "{{ args.smtp_notifier_host }}"
+      toPorts:
+        - ports:
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+{%- endif %}
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{# --- Scoped egress: testssl ---
+   Scan targets: toFQDNs generated from testssl_hosts — surgical per-domain access.
+   Host entity: internal services behind HAProxy + SMTP reports (Mailpit in dev).
+   No toEntities: world — scan destinations are explicitly listed. #}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-testssl-egress
+  namespace: observability
+spec:
+  description: "testssl: scan targets (toFQDNs) + host (HAProxy + SMTP)"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: testssl
+  egress:
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+{%- if args.testssl_hosts | length > 0 %}
+    - toFQDNs:
+{%- for entry in args.testssl_hosts %}
+        - matchName: "{{ entry.host.split(':') | first }}"
+{%- endfor %}
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "25"
+              protocol: TCP
+{%- endif %}
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{# --- Scoped egress: whoami ---
+   Passive HTTP server. No outbound connections needed. Only DNS is allowed
+   (via the separate allow-dns policy). #}

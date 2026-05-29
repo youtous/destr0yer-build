@@ -1,0 +1,105 @@
+global
+    log stdout format raw local0 {{ relay_haproxy_log_level }}
+    stats socket /run/haproxy/admin.sock mode 660 level admin
+    stats timeout 30s
+
+    # Hardening
+    ssl-default-bind-options no-sslv3 no-tlsv10 no-tlsv11
+    tune.bufsize 16384
+    tune.maxrewrite 1024
+
+{% if relay_haproxy_prometheus_enabled | default(false) %}
+    # Prometheus metrics (scraped by Alloy on the cluster side via WireGuard)
+frontend ft_prometheus
+    bind {{ relay_haproxy_prometheus_bind }}:{{ relay_haproxy_prometheus_port }}
+    mode http
+    http-request use-service prometheus-exporter if { path /metrics }
+    no log
+{% endif %}
+
+defaults
+    mode tcp
+    log global
+    option tcplog
+    option dontlognull
+    timeout connect {{ relay_haproxy_timeout_connect }}
+    timeout client {{ relay_haproxy_timeout_client }}
+    timeout server {{ relay_haproxy_timeout_server }}
+    timeout client-fin 10s
+    timeout server-fin 10s
+    retries 3
+    maxconn {{ relay_haproxy_maxconn }}
+
+# ─── Rate limiting (stick-tables) ─────────────────────────────────────────────
+# Shared table: track connections per source IP (30s window)
+# Used by all frontends for per-IP connection limiting and rate limiting.
+
+backend st_per_ip
+    stick-table type ip size 100k expire 30s store conn_cur,conn_rate(10s),sess_rate(10s)
+
+backend st_per_ip6
+    stick-table type ipv6 size 100k expire 30s store conn_cur,conn_rate(10s),sess_rate(10s)
+
+# ─── TCP frontends (mail ports) ─────────────────────────────────────────────
+{% for fe in relay_haproxy_frontends %}
+
+frontend ft_{{ fe.name }}
+    bind :{{ fe.bind_port }}
+{% if relay_haproxy_ipv6 %}
+    bind [::]:{{ fe.bind_port }} v6only
+{% endif %}
+
+    # Per-IP rate limiting (evaluated at connection time, before any data)
+    tcp-request connection track-sc0 src table st_per_ip if { src 0.0.0.0/0 }
+    tcp-request connection track-sc0 src table st_per_ip6 if { src ::/0 }
+    tcp-request connection reject if { sc0_conn_cur gt {{ relay_haproxy_max_conn_per_ip }} }
+    tcp-request connection reject if { sc0_conn_rate gt {{ relay_haproxy_conn_rate_limit }} }
+
+    default_backend bk_{{ fe.name }}
+
+backend bk_{{ fe.name }}
+    server cluster {{ fe.backend_addr }} send-proxy-v2 check inter 10s fall 3 rise 2
+{% endfor %}
+
+# ─── HTTPS SNI routing (if configured) ──────────────────────────────────────
+{% if relay_haproxy_sni_routes | length > 0 %}
+
+frontend ft_https_sni
+    bind :{{ relay_haproxy_sni_port }}
+{% if relay_haproxy_ipv6 %}
+    bind [::]:{{ relay_haproxy_sni_port }} v6only
+{% endif %}
+
+    # Per-IP rate limiting
+    tcp-request connection track-sc0 src table st_per_ip if { src 0.0.0.0/0 }
+    tcp-request connection track-sc0 src table st_per_ip6 if { src ::/0 }
+    tcp-request connection reject if { sc0_conn_cur gt {{ relay_haproxy_sni_max_conn_per_ip | default(relay_haproxy_max_conn_per_ip) }} }
+    tcp-request connection reject if { sc0_conn_rate gt {{ relay_haproxy_sni_conn_rate_limit | default(relay_haproxy_conn_rate_limit) }} }
+
+    tcp-request inspect-delay 5s
+    tcp-request content accept if { req_ssl_hello_type 1 }
+{% for route in relay_haproxy_sni_routes %}
+    use_backend bk_sni_{{ route.sni | replace('.', '_') }} if { req_ssl_sni -i {{ route.sni }} }
+{% endfor %}
+    default_backend bk_sni_reject
+
+{% for route in relay_haproxy_sni_routes %}
+backend bk_sni_{{ route.sni | replace('.', '_') }}
+    mode tcp
+    server cluster {{ route.backend_addr }}{{ ' send-proxy-v2' if route.send_proxy | default(true) }} check inter 10s fall 3 rise 2
+{% endfor %}
+
+backend bk_sni_reject
+    mode tcp
+    timeout server 5s
+
+{% if relay_haproxy_http_redirect | default(true) %}
+frontend ft_http_redirect
+    bind :80
+{% if relay_haproxy_ipv6 %}
+    bind [::]:80 v6only
+{% endif %}
+    mode http
+    http-request redirect scheme https code 301
+{% endif %}
+{% endif %}

@@ -1,0 +1,36 @@
+# Set to true once backup_storage SFTP is validated (see T30)
+kopia_enabled: false
+
+# renovate: datasource=github-releases depName=kopia/kopia
+kopia_version: "0.23.0"
+
+kopia_binary_path: "/usr/local/bin/kopia"
+
+# SFTP repository target
+kopia_sftp_host: ""
+kopia_sftp_user: ""
+kopia_sftp_path: "/home"
+kopia_sftp_key: "/root/.ssh/id_ed25519"
+kopia_sftp_retries: 6
+kopia_sftp_retry_delay: 15
+kopia_password: ""
+
+kopia_snapshot_paths:
+  - /etc
+  - /home
+  - /root/.ssh
+  - /var/lib/rancher/k3s/server
+  - /var/openebs/local
+
+kopia_snapshot_schedule: "*-*-* 06:00:00"
+kopia_verify_schedule: "Sun *-*-* 04:00:00"
+kopia_verify_percent: 5
+
+kopia_retention_latest: 7
+kopia_retention_daily: 7
+kopia_retention_weekly: 4
+kopia_retention_monthly: 6
+
+kopia_notification_email: "{{ monitoring_email | default('') }}"
+kopia_smtp_host: "localhost"
+kopia_smtp_port: 25

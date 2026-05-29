@@ -1,0 +1,9 @@
+kopia_arch_map:
+  x86_64: "x64"
+  aarch64: "arm64"
+kopia_arch: "{{ kopia_arch_map[ansible_architecture] | default('x64') }}"
+
+kopia_download_url: >-
+  https://github.com/kopia/kopia/releases/download/v{{ kopia_version }}/kopia-{{ kopia_version }}-linux-{{ kopia_arch }}.tar.gz
+kopia_checksum_url: >-
+  https://github.com/kopia/kopia/releases/download/v{{ kopia_version }}/checksums.txt

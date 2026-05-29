@@ -1,0 +1,57 @@
+- name: Restart DNSCrypt-proxy
+  become: true
+  ansible.builtin.systemd:
+    name: dnscrypt-proxy
+    state: restarted
+  listen:
+    - Restart dnscrypt-proxy
+    - Restart DNSCrypt-proxy
+
+- name: Make sure DNSCrypt-proxy service is running after restart
+  ansible.builtin.command: systemctl is-active dnscrypt-proxy  # noqa command-instead-of-module
+  changed_when: false
+  listen:
+    - Restart dnscrypt-proxy
+    - Restart DNSCrypt-proxy
+
+- name: Restart NetworkManager
+  become: true
+  ansible.builtin.systemd:
+    name: NetworkManager
+    state: restarted
+  notify: Restart postfix
+
+- name: Make sure NetworkManager service is running after restart
+  ansible.builtin.command: systemctl is-active NetworkManager  # noqa command-instead-of-module
+  changed_when: false
+  listen: Restart NetworkManager
+
+- name: Make sure DNS are available after restart
+  ansible.builtin.command: dig A youtous.me
+  changed_when: false
+  listen:
+    - Restart dnscrypt-proxy
+    - Restart DNSCrypt-proxy
+    - Restart NetworkManager
+
+- name: Populate service facts
+  ansible.builtin.service_facts:
+  listen: Restart postfix
+
+# postfix needs to be restarted in order to enable copy of the /etc/resolv.conf in chrooted environment
+# https://serverfault.com/questions/661621/why-do-i-have-to-manually-copy-etc-services-and-etc-resolv-conf-into-var-spoo
+- name: Restart postfix if it exists
+  become: true
+  ansible.builtin.systemd:
+    name: postfix
+    state: restarted
+  listen: Restart postfix
+  when: ansible_facts.services is defined and "postfix.service" in ansible_facts.services
+  failed_when: false
+
+- name: Make sure postfix service is running after restart
+  ansible.builtin.command: systemctl is-active postfix  # noqa command-instead-of-module
+  changed_when: false
+  listen: Restart postfix
+  when: ansible_facts.services is defined and "postfix.service" in ansible_facts.services
+  failed_when: false

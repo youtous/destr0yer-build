@@ -1,0 +1,7 @@
+- name: Deploy monit backup configuration
+  become: true
+  ansible.builtin.template:
+    src: "templates/etc/monit/conf.d/backup.j2"
+    dest: "/etc/monit/conf.d/backup"
+    mode: "u=r"
+  notify: Reload monit

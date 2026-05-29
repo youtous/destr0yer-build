@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ntfy-config
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: ntfy
+data:
+  server.yml: |
+    base-url: "https://ntfy.{{ args.cluster_domain }}"
+    listen-http: ":8080"
+    cache-file: "/var/cache/ntfy/cache.db"
+    cache-duration: "24h"
+    behind-proxy: true
+    keepalive-interval: "45s"
+    log-level: "info"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ntfy-cache
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: ntfy
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: "{{ args.storage_class }}"
+  resources:
+    requests:
+      storage: {{ args.pvc_ntfy }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntfy
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: ntfy
+spec:
+  replicas: {{ args.replicas_ntfy }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ntfy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ntfy
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        # renovate: datasource=docker depName=binwiederhier/ntfy
+        - name: ntfy
+          image: docker.io/binwiederhier/ntfy:v2.23.0@sha256:b32b4221a64ec2e7c000f0782b2feef24022e1a09a24e531640f4cbba6cfa1e6
+          args: ["serve"]
+          ports:
+            - containerPort: 8080
+              name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/ntfy/server.yml
+              subPath: server.yml
+              readOnly: true
+            - name: cache
+              mountPath: /var/cache/ntfy
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+      volumes:
+        - name: config
+          configMap:
+            name: ntfy-config
+        - name: cache
+          persistentVolumeClaim:
+            claimName: ntfy-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: ntfy
+spec:
+  selector:
+    app.kubernetes.io/name: ntfy
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ntfy
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: ntfy
+  annotations:
+    cert-manager.io/cluster-issuer: "{{ args.certmanager_issuer | default('cluster-issuer') }}"
+spec:
+  ingressClassName: haproxy
+  tls:
+    - hosts:
+        - "ntfy.{{ args.cluster_domain }}"
+      secretName: ntfy-tls
+  rules:
+    - host: "ntfy.{{ args.cluster_domain }}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ntfy
+                port:
+                  name: http

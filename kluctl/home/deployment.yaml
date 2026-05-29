@@ -1,0 +1,4 @@
+deployments:
+  - path: mosquitto/
+  - path: homeassistant/
+  - path: zigbee2mqtt/

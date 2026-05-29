@@ -1,0 +1,4 @@
+alloy_download_url: >-
+  https://github.com/grafana/alloy/releases/download/v{{ alloy_version }}/alloy-linux-{{ alloy_arch }}.zip
+alloy_checksum_url: >-
+  https://github.com/grafana/alloy/releases/download/v{{ alloy_version }}/SHA256SUMS

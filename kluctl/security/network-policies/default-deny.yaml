@@ -1,0 +1,13 @@
+{% for ns in args.app_namespaces + args.infra_namespaces %}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny
+  namespace: {{ ns }}
+spec:
+  description: Deny all ingress and egress by default
+  endpointSelector: {}
+  ingress: []
+  egress: []
+{% endfor %}

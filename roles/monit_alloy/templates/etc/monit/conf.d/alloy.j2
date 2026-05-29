@@ -1,0 +1,5 @@
+check program alloy with path "/bin/systemctl is-active --quiet alloy.service"
+  if status != 0 then alert
+  start program = "/bin/systemctl start alloy.service"
+  stop  program = "/bin/systemctl stop alloy.service"
+  if 5 restarts within 5 cycles then timeout

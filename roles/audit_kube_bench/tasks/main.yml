@@ -1,0 +1,16 @@
+- name: Check if kube-bench is present
+  ansible.builtin.stat:
+    path: "{{ kube_bench_binary_path }}"
+  register: kube_bench_present
+
+- name: Get current kube-bench version
+  ansible.builtin.command: "{{ kube_bench_binary_path }} version"
+  when: kube_bench_present.stat.exists
+  changed_when: false
+  failed_when: false
+  register: kube_bench_current_version
+
+- name: Install kube-bench
+  ansible.builtin.import_tasks: install.yml
+  when: >-
+    not kube_bench_present.stat.exists or kube_bench_version not in (kube_bench_current_version.stdout | default(''))

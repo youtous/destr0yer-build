@@ -1,0 +1,7 @@
+- name: Setup HAProxy relay Monit configuration
+  become: true
+  ansible.builtin.template:
+    src: "templates/etc/monit/conf.d/haproxy-relay.j2"
+    dest: "/etc/monit/conf.d/haproxy-relay"
+    mode: u=rw,g=r,o=
+  notify: Reload monit

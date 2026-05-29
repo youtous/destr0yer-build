@@ -1,0 +1,83 @@
+# Implemented parameters are from https://docs.ansible.com/ansible/latest/collections/community/general/ufw_module.html#parameters
+# /!\ Please note that aliases of the ufw_module are NOT supported
+#     Non-listed parameters are NOT supported and therefore NOT implemented
+#
+# All the parameters are optional (same behavior as the ufw_module).
+# List of the supported parameters
+#
+# ufw_rule_parameters:
+#   comment:
+#   direction:
+
+#   from_port:
+
+#   interface:
+
+#   proto:
+#   route:
+#   rule:
+
+#   # only when ufw_rules_criteria == to_ip
+#   from_ip:
+
+#   # only when ufw_rules_criteria == from_ip
+#   to_ip:
+
+#   to_port:
+ufw_rule_parameters: {}
+
+# criteria to loop_on and check diff between current and target state
+# can either be `from_ips` or `to_ips`
+ufw_rules_criteria: "from_ips"
+
+# when ufw_rules_criteria == from_ips otherwise must be empty
+# list of (src) from_ip for the rule, any ip not listed in the list will be removed from the firewall
+ufw_rule_from_ips: []
+
+# when ufw_rules_criteria == to_ips otherwise must be empty
+# list of dest_ip for the the, any ip not listed in the list will be removed from the firewall
+ufw_rule_to_ips: []
+
+# json_query used for matching existing rules
+#
+# To identify the existing rules on the system that are part of the target state,
+# the matching filter we use a json_query to select the rules.
+# e.g. comment == "my comment" AND direction == "incoming" AND port == "22"
+#
+# keys absent from `ufw_rule_parameters` will be skipped, you can modify the query to fit your needs
+#
+# The filter is built onpon jmespath, you can use all the jmespath supported expression (https://jmespath.org/specification.html)
+# to create the
+ufw_rule_matching_query_template: >-
+  {% if ufw_rule_parameters.comment is defined %}comment == `{{ ufw_rule_parameters.comment }}` && {% endif %}
+  {% if ufw_rule_parameters.direction is defined %}action_direction == `{{ ufw_rule_parameters.direction | upper }}` && {% endif %}
+  {% if ufw_rule_parameters.rule is defined %}action == `{{ ufw_rule_parameters.rule | upper }}` && {% endif %}
+  {% if ufw_rule_parameters.direction is defined and (ufw_rule_parameters.direction | upper) == "IN" %}
+  {% if ufw_rule_parameters.interface is defined %}from_interface == `{{ ufw_rule_parameters.interface }}` && {% endif %}
+  {% endif %}
+  {% if ufw_rule_parameters.direction is defined and (ufw_rule_parameters.direction | upper) == "OUT" %}
+  {% if ufw_rule_parameters.interface is defined %}to_interface == `{{ ufw_rule_parameters.interface }}` && {% endif %}
+  {% endif %}
+  {% if ufw_rule_parameters.from_port is defined %}
+  {% if ':' in ufw_rule_parameters.from_port %}
+  from_port_ranges[0].start == `{{ ufw_rule_parameters.from_port.split(':')[0] | int }}` && from_port_ranges[0].end == `{{ ufw_rule_parameters.from_port.split(':')[1] | int }}` &&
+  {% else %}
+  from_ports[0] == `{{ ufw_rule_parameters.from_port | int }}` &&
+  {% endif %}
+  {% endif %}
+  {% if ufw_rule_parameters.to_port is defined %}
+  {% if ':' in ufw_rule_parameters.to_port %}
+  to_port_ranges[0].start == `{{ ufw_rule_parameters.to_port.split(':')[0] | int }}` && to_port_ranges[0].end == `{{ ufw_rule_parameters.to_port.split(':')[1] | int }}` &&
+  {% else %}
+  to_ports[0] == `{{ ufw_rule_parameters.to_port | int }}` &&
+  {% endif %}
+  {% endif %}
+  {% if ufw_rules_criteria == 'from_ips' and ufw_rule_parameters.to_ip is defined %}
+  to_ip == `{{ ufw_rule_parameters.to_ip | ansible.utils.ipaddr('address') }}` && to_ip_prefix == `{{ ufw_rule_parameters.to_ip | ansible.utils.ipaddr('prefix') }}` &&
+  {% endif %}
+  {% if ufw_rules_criteria == 'to_ips' and ufw_rule_parameters.from_ip is defined %}
+  from_ip == `{{ ufw_rule_parameters.from_ip | ansible.utils.ipaddr('address') }}` && from_ip_prefix == `{{ ufw_rule_parameters.from_ip | ansible.utils.ipaddr('prefix') }}` &&
+  {% endif %}
+  {% if ufw_rule_parameters.proto is defined %}to_transport == `{{ ufw_rule_parameters.proto }}` && {% endif %}
+# display some additionnal ufw information for debugging
+ufw_smart_display_states: true

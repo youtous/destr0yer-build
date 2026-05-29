@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: default-tls
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: haproxy-ingress
+    app.kubernetes.io/component: default-tls
+spec:
+  secretName: default-tls
+  issuerRef:
+    name: {{ args.certmanager_issuer | default("cluster-issuer") }}
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.{{ args.cluster_domain }}"
+  duration: 8760h
+  renewBefore: 720h

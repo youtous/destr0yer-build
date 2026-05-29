@@ -1,0 +1,26 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-registry-internet
+  namespace: registry
+spec:
+  description: "Registry pull-through cache needs to reach upstream registries"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: registry
+  egress:
+    - toEntities:
+        - cluster
+    - toFQDNs:
+        - matchName: registry-1.docker.io
+        - matchName: auth.docker.io
+        - matchName: production.cloudflare.docker.com
+        - matchName: ghcr.io
+        - matchName: quay.io
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false

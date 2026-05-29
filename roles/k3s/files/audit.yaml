@@ -1,0 +1,25 @@
+apiVersion: audit.k8s.io/v1
+kind: Policy
+omitStages:
+  - "RequestReceived"
+rules:
+  # Log auth failures at Metadata level
+  - level: Metadata
+    resources:
+      - group: "authentication.k8s.io"
+        resources: ["tokenreviews"]
+
+  # Log secret access at Metadata level
+  - level: Metadata
+    resources:
+      - group: ""
+        resources: ["secrets"]
+
+  # Log pod exec/attach at RequestResponse level
+  - level: RequestResponse
+    resources:
+      - group: ""
+        resources: ["pods/exec", "pods/attach"]
+
+  # Everything else at Metadata level
+  - level: Metadata

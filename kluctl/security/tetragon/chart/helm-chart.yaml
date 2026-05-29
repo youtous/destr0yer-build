@@ -1,0 +1,7 @@
+helmChart:
+  repo: https://helm.cilium.io
+  chartName: tetragon
+  chartVersion: "1.7.0"
+  releaseName: tetragon
+  namespace: security
+  skipCRDs: false

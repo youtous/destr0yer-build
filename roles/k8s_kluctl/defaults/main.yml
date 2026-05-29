@@ -1,0 +1,8 @@
+# renovate: datasource=github-releases depName=kluctl/kluctl
+k8s_kluctl_version: "v2.27.0"
+
+k8s_kluctl_checksums:
+  amd64: "7b325b5c0e422da49bb54fb8a3ca3d7fddfcdeb220b9f0d4bc36625ece2eb9ae"
+  arm64: "aee6a10aa9472b362812645aa11ed10d8c2791a7ad67d9ed35b1356e039a2418"
+
+k8s_kluctl_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"

@@ -1,0 +1,45 @@
+- name: Create HAProxy config directory
+  become: true
+  ansible.builtin.file:
+    path: /etc/haproxy
+    state: directory
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+
+- name: Deploy HAProxy config
+  become: true
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Restart HAProxy container
+
+- name: Ensure Quadlet directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/containers/systemd
+    state: directory
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+
+- name: Deploy HAProxy Quadlet unit
+  become: true
+  ansible.builtin.template:
+    src: haproxy-podman.service.j2
+    dest: /etc/containers/systemd/haproxy-relay.container
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Restart HAProxy container
+
+- name: Enable and start HAProxy container service
+  become: true
+  ansible.builtin.systemd:
+    name: haproxy-relay
+    enabled: true
+    state: started
+    daemon_reload: true

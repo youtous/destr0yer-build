@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+# Send the latest daily btrfs snapshot to the cold backup target.
+set -euo pipefail
+
+SNAP_DIR="{{ backup_btrfs_snapshot_dir }}"
+COLD_TARGET="{{ backup_btrfs_cold_target }}"
+
+LATEST=$(ls -1d "$SNAP_DIR/daily-"* 2>/dev/null | sort | tail -1)
+if [ -z "$LATEST" ]; then
+    echo "No daily snapshot found to send" >&2
+    exit 1
+fi
+
+mkdir -p "$COLD_TARGET"
+btrfs send "$LATEST" | btrfs receive "$COLD_TARGET/"
+echo "Sent $LATEST to $COLD_TARGET"

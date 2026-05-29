@@ -1,0 +1,185 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: drift-detection
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: drift-detection
+    app.kubernetes.io/component: monitoring
+spec:
+  schedule: "{{ args.schedule_drift_detection }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: drift-detection
+        spec:
+          restartPolicy: Never
+          serviceAccountName: drift-detection
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            # renovate: datasource=docker depName=alpine/k8s
+            - name: detect
+              image: docker.io/alpine/k8s@sha256:692239d739589247c4a791205ed9619c28ae85a21286e19a6211c04a62c56668  # 1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+                  DISCRIMINATOR="destr0yer-{{ target.name }}"
+                  REPORT=""
+                  DRIFT_COUNT=0
+
+                  {% set managed_namespaces = args.app_namespaces + args.infra_namespaces %}
+                  NAMESPACES="{{ managed_namespaces | join(' ') }}"
+
+                  for NS in $NAMESPACES; do
+                    ORPHANS=$(kubectl get deploy,sts,ds,svc,ingress,configmap,secret -n "$NS" \
+                      --selector="!kluctl.io/discriminator" \
+                      --no-headers 2>/dev/null | grep -v "^$" \
+                      | grep -v "default-token" \
+                      | grep -v "kube-root-ca.crt" \
+                      | grep -v "\-tls " \
+                      | grep -v "\-db\b\|\-db-" \
+                      | grep -v "secret/prometheus-promgraf-\|prometheus-.*-rulefiles\|prometheus-.*-thanos\|prometheus-.*-web-config\|prometheus-.*-tls-assets\|prometheus-operated" \
+                      | grep -v "kyverno-.*-tls-" \
+                      | grep -v "cert-manager-webhook-ca\|internal-ca-keypair" \
+                      | grep -v "mariadb-operator-webhook-cert" \
+                      | grep -v "cilium-gateway-" \
+                      | grep -v "reloader-meta-info" \
+                      | grep -v "velero-repo-credentials" \
+                      | grep -v "promgraf-.*-admission" \
+                      || true)
+
+                    if [ -n "$ORPHANS" ]; then
+                      COUNT=$(echo "$ORPHANS" | wc -l)
+                      DRIFT_COUNT=$((DRIFT_COUNT + COUNT))
+                      REPORT="${REPORT}\n--- ${NS} (${COUNT} unmanaged) ---\n${ORPHANS}\n"
+                    fi
+                  done
+
+                  MODIFIED=$(kubectl get deploy,sts -A \
+                    -l "kluctl.io/discriminator=$DISCRIMINATOR" \
+                    -o json 2>/dev/null | jq -r '
+                    [.items[] | select(.metadata.annotations["kubectl.kubernetes.io/last-applied-configuration"] != null) |
+                     select(.metadata.generation > 1) |
+                     "\(.metadata.namespace)/\(.kind)/\(.metadata.name) (gen:\(.metadata.generation))"] | .[]' || true)
+
+                  if [ -n "$MODIFIED" ]; then
+                    MOD_COUNT=$(echo "$MODIFIED" | wc -l)
+                    DRIFT_COUNT=$((DRIFT_COUNT + MOD_COUNT))
+                    REPORT="${REPORT}\n--- Modified resources (generation > 1) ---\n${MODIFIED}\n"
+                  fi
+
+                  if [ "$DRIFT_COUNT" -eq 0 ]; then
+                    echo "No drift detected — skipping report."
+                    exit 0
+                  fi
+
+                  {
+                    printf 'Subject: [Drift] %s unmanaged/modified resources - %s\r\n' "$DRIFT_COUNT" "$(date +%Y-%m-%d)"
+                    printf 'From: %s\r\n' "$SMTP_FROM"
+                    printf 'To: %s\r\n' "$SMTP_TO"
+                    printf 'Content-Type: text/plain; charset=utf-8\r\n'
+                    printf '\r\n'
+                    printf 'Cluster Drift Detection Report\n'
+                    printf '===============================\n\n'
+                    printf 'Discriminator: %s\n' "$DISCRIMINATOR"
+                    printf 'Checked namespaces: %s\n' "$NAMESPACES"
+                    printf 'Total drift items: %s\n\n' "$DRIFT_COUNT"
+                    printf '%b\n' "$REPORT"
+                    printf '\n---\n'
+                    printf 'Action: run "just deploy" to reconcile\n'
+                    printf 'Cluster: {{ args.cluster_domain }}\n'
+                    printf 'Generated: %s\n' "$NOW"
+                  } | curl -sf --url "smtp://${SMTP_HOST}:${SMTP_PORT}" \
+                      --user "${SMTP_USER}:${SMTP_PASS}" \
+                      --mail-from "$SMTP_FROM" \
+                      --mail-rcpt "$SMTP_TO" \
+                      --upload-file -
+
+                  echo "Drift report sent (${DRIFT_COUNT} items)"
+              env:
+                - name: SMTP_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: host
+                - name: SMTP_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: port
+                - name: SMTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: username
+                - name: SMTP_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: password
+                - name: SMTP_FROM
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: from
+                - name: SMTP_TO
+                  value: "{{ args.admin_email }}"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: drift-detection
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: drift-detection
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: drift-detection
+  labels:
+    app.kubernetes.io/name: drift-detection
+rules:
+  - apiGroups: ["", "apps", "networking.k8s.io"]
+    resources: ["deployments", "statefulsets", "daemonsets", "services", "ingresses", "configmaps", "secrets"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: drift-detection
+  labels:
+    app.kubernetes.io/name: drift-detection
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: drift-detection
+subjects:
+  - kind: ServiceAccount
+    name: drift-detection
+    namespace: observability

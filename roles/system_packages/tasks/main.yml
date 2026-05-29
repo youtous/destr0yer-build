@@ -1,0 +1,31 @@
+# This role contains system packages installation
+- name: Install system packages
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    name: "{{ system_packages }}"
+
+- name: Enable default services
+  become: true
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  with_items: "{{ system_services_enabled_by_default }}"
+
+# USB disk SMART monitoring
+- name: Install smartmontools for USB disk health monitoring
+  become: true
+  ansible.builtin.apt:
+    name: smartmontools
+    state: present
+  when: usb_storage_smart_enabled | default(false)
+
+- name: Deploy SMART check scripts for USB disks
+  become: true
+  ansible.builtin.template:
+    src: smart-check.sh.j2
+    dest: "/usr/local/bin/smart-check-{{ item.name }}.sh"
+    mode: "u=rwx,g=rx,o=rx"
+  loop: "{{ usb_storage_smart_devices | default([]) }}"
+  when: usb_storage_smart_enabled | default(false)

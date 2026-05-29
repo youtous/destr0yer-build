@@ -1,0 +1,59 @@
+{% if args.certmanager_issuer_type == "internal-ca" %}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-bootstrap
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: "Internal CA"
+  secretName: internal-ca-keypair
+  duration: 87600h  # 10 years
+  renewBefore: 8760h  # 1 year
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-bootstrap
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cluster-issuer
+spec:
+  ca:
+    secretName: internal-ca-keypair
+{% elif args.certmanager_issuer_type == "letsencrypt" %}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cluster-issuer
+spec:
+  acme:
+    email: "{{ args.certmanager_acme_email }}"
+    server: "{{ args.certmanager_acme_server }}"
+    privateKeySecretRef:
+      name: cluster-issuer-account-key
+    solvers:
+      - selector:
+          dnsZones:
+            - "{{ args.certmanager_acme_dns_zone }}"
+        dns01:
+          cnameStrategy: Follow
+          webhook:
+            groupName: "{{ args.certmanager_desec_group_name }}"
+            solverName: desec
+            config:
+              apiKeySecretRef:
+                key: token
+                name: "{{ args.certmanager_desec_token_secret_name }}"
+{% endif %}

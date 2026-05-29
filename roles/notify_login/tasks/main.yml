@@ -1,0 +1,55 @@
+# This role sends an email notification on every successful SSH login
+- name: Remove legacy upstream SSH login notification script
+  become: true
+  ansible.builtin.file:
+    path: "{{ notify_login_legacy_script_path }}"
+    state: absent
+
+- name: Remove legacy upstream SSH login PAM hook
+  become: true
+  ansible.builtin.lineinfile:
+    path: "{{ notify_login_pam_file }}"
+    regexp: '^session\s+optional\s+pam_exec\.so\s+{{ notify_login_legacy_script_path | regex_escape }}\s*$'
+    state: absent
+
+- name: Enable SSH login email notifications
+  when: notify_login_enabled | bool
+  block:
+    - name: Install mail client for login notifications
+      become: true
+      ansible.builtin.apt:
+        name: mailutils
+        state: present
+
+    - name: Deploy SSH login notification script
+      become: true
+      ansible.builtin.template:
+        src: notify-ssh-login.sh.j2
+        dest: "{{ notify_login_script_path }}"
+        owner: root
+        group: root
+        mode: "u=rwx,g=rx,o=rx"
+
+    - name: Enable SSH login notification in PAM
+      become: true
+      ansible.builtin.lineinfile:
+        path: "{{ notify_login_pam_file }}"
+        regexp: '^session\s+optional\s+pam_exec\.so\s+{{ notify_login_script_path | regex_escape }}\s*$'
+        line: "session    optional     pam_exec.so {{ notify_login_script_path }}"
+        insertafter: '^@include common-session'
+
+- name: Disable SSH login email notifications
+  when: not (notify_login_enabled | bool)
+  block:
+    - name: Remove SSH login notification PAM hook
+      become: true
+      ansible.builtin.lineinfile:
+        path: "{{ notify_login_pam_file }}"
+        regexp: '^session\s+optional\s+pam_exec\.so\s+{{ notify_login_script_path | regex_escape }}\s*$'
+        state: absent
+
+    - name: Remove SSH login notification script
+      become: true
+      ansible.builtin.file:
+        path: "{{ notify_login_script_path }}"
+        state: absent

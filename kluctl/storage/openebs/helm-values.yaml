@@ -1,0 +1,15 @@
+localpv:
+  basePath: /var/openebs/local
+  enabled: true
+
+hostpathClass:
+  enabled: true
+  name: openebs-hostpath
+  isDefaultClass: true
+  reclaimPolicy: Retain
+  basePath: /var/openebs/local
+  volumeBindingMode: WaitForFirstConsumer
+  allowVolumeExpansion: true
+
+analytics:
+  enabled: false

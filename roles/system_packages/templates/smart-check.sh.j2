@@ -1,0 +1,10 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# SMART health check for USB disk: {{ item.name }}
+set -euo pipefail
+DEV="/dev/disk/by-id/{{ item.by_id }}"
+if [ ! -e "$DEV" ]; then
+  echo "CRITICAL: device $DEV not found"
+  exit 2
+fi
+exec smartctl -d {{ item.smartctl_device_type }} -H "$DEV"

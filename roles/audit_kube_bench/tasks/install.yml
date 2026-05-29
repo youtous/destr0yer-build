@@ -1,0 +1,59 @@
+- name: Create temporary build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: kube_bench_build
+  register: kube_bench_tmp_dir
+
+- name: Download kube-bench checksums
+  ansible.builtin.get_url:
+    url: "{{ kube_bench_checksum_url }}"
+    dest: "{{ kube_bench_tmp_dir.path }}/checksums.txt"
+    mode: "u=rw"
+
+- name: Extract expected checksum for kube-bench archive
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail && grep 'kube-bench_{{ kube_bench_version }}_linux_{{ kube_bench_arch }}.tar.gz' {{ kube_bench_tmp_dir.path }}/checksums.txt | awk '{print $1}'
+    executable: /bin/bash
+  changed_when: false
+  register: kube_bench_expected_checksum
+
+- name: Download kube-bench archive
+  ansible.builtin.get_url:
+    url: "{{ kube_bench_download_url }}"
+    dest: "{{ kube_bench_tmp_dir.path }}/kube-bench.tar.gz"
+    checksum: "sha256:{{ kube_bench_expected_checksum.stdout }}"
+    mode: "u=rw"
+
+- name: Extract kube-bench archive
+  ansible.builtin.unarchive:
+    src: "{{ kube_bench_tmp_dir.path }}/kube-bench.tar.gz"
+    dest: "{{ kube_bench_tmp_dir.path }}"
+    remote_src: true
+
+- name: Install kube-bench binary
+  become: true
+  ansible.builtin.copy:
+    src: "{{ kube_bench_tmp_dir.path }}/kube-bench"
+    dest: "{{ kube_bench_binary_path }}"
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+    remote_src: true
+
+- name: Install kube-bench configuration
+  become: true
+  ansible.builtin.copy:
+    src: "{{ kube_bench_tmp_dir.path }}/cfg/"
+    dest: "/etc/kube-bench/cfg/"
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    directory_mode: "u=rwx,g=rx,o=rx"
+    remote_src: true
+
+- name: Cleanup build directory
+  become: true
+  ansible.builtin.file:
+    state: absent
+    path: "{{ kube_bench_tmp_dir.path }}"

@@ -1,0 +1,31 @@
+{# HAProxy can reach all pods in app/infra namespaces.
+   This is broad but acceptable: HAProxy is the trust boundary (DaemonSet, hostNetwork).
+   Exception: mail namespace — docker-mailserver uses restrict-mail-ingress (port-locked).
+   The allow-ingress policy in mail ns excludes docker-mailserver to avoid OR-merge
+   that would bypass the port restrictions in restrict-mail-ingress. #}
+{% for ns in args.app_namespaces + args.infra_namespaces %}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: {{ ns }}
+spec:
+  description: Allow HAProxy ingress controller to reach backend pods
+{% if ns == "mail" %}
+  endpointSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: NotIn
+        values: ["docker-mailserver"]
+{% else %}
+  endpointSelector: {}
+{% endif %}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: {{ args.haproxy_ingress_namespace }}
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{% endfor %}

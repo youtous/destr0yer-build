@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Btrfs scrub of backup volume
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/btrfs scrub start -B {{ backup_root_directory }}
+ExecStartPost=/usr/bin/touch /var/lib/btrfs-scrub-ok
+IOSchedulingClass=idle
+Nice=19

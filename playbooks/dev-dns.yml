@@ -1,0 +1,36 @@
+# Dev-only playbook: configure DNS resolution for k8s.home services
+# on the local machine via /etc/hosts.
+#
+# Usage: just dev-dns
+#
+# Adds entries like:
+#   192.168.56.10 k8s.home grafana.k8s.home auth.k8s.home
+#
+# VMs get their /etc/hosts from the `host` role during `just configure`.
+# In production, real DNS records handle this.
+
+- name: Configure dev DNS on local machine
+  hosts: localhost
+  connection: local
+  become: true
+  gather_facts: false
+  vars:
+    dev_cluster_ip: "192.168.56.10"
+    dev_cluster_domain: "k8s.home"
+    dev_service_subdomains:
+      - grafana
+      - auth
+      - s3
+      - mail
+      - ha
+  tasks:
+    - name: Add k8s.home and VM entries to /etc/hosts
+      ansible.builtin.blockinfile:
+        path: /etc/hosts
+        unsafe_writes: true
+        block: |
+          {{ dev_cluster_ip }} {{ dev_cluster_domain }} {% for sub in dev_service_subdomains %}{{ sub }}.{{ dev_cluster_domain }} {% endfor %}
+
+          192.168.56.10 ctrl.k3s.dev.local
+          192.168.56.11 worker.k3s.dev.local
+        marker: "### {mark} ANSIBLE MANAGED - destr0yer dev DNS ###"

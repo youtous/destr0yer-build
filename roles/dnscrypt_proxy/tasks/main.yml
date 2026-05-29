@@ -1,0 +1,74 @@
+- name: Populate service facts
+  ansible.builtin.service_facts:
+
+- name: List of enabled services
+  ansible.builtin.set_fact:
+    enabled_services: "{{ ansible_facts | community.general.json_query('services[*].name') }}"
+
+- name: Ensure any local other DNS local service is stopped and disabled
+  become: true
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  when: item in enabled_services
+  with_items:
+    - systemd-resolved
+    - bind9
+
+- name: Install dnscrypt-proxy via apt
+  become: true
+  ansible.builtin.apt:
+    name: dnscrypt-proxy
+    state: present
+    update_cache: true
+
+- name: Ensure DNSCrypt-proxy configuration directories exist
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=x
+  with_items:
+    - "{{ dnscrypt_configuration_path }}"
+
+- name: Configure DNSCrypt-proxy
+  become: true
+  ansible.builtin.template:
+    src: "templates/config/{{ item.src }}"
+    dest: "{{ dnscrypt_configuration_path }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  with_items:
+    - src: blocked-names.txt.j2
+      dest: blocked-names.txt
+    - src: cloaking-rules.txt.j2
+      dest: cloaking-rules.txt
+    - src: forwarding-rules.txt.j2
+      dest: forwarding-rules.txt
+    - src: blocked-ips.txt.j2
+      dest: blocked-ips.txt
+    - src: allowed-ips.txt.j2
+      dest: allowed-ips.txt
+    - src: allowed-names.txt.j2
+      dest: allowed-names.txt
+    - src: dnscrypt-proxy.toml.j2
+      dest: dnscrypt-proxy.toml
+  notify: Restart DNSCrypt-proxy
+
+- name: Configure NetworkManager for DNSCrypt-proxy
+  ansible.builtin.import_tasks: network-manager.yml
+
+- name: Install DNSCrypt-proxy firewall rules
+  ansible.builtin.import_tasks: firewall.yml
+
+- name: Enable DNSCrypt-proxy
+  become: true
+  ansible.builtin.systemd:
+    name: dnscrypt-proxy
+    enabled: true
+    state: started
+    masked: false

@@ -1,0 +1,47 @@
+# renovate: datasource=docker depName=archlinux versioning=docker
+FROM archlinux:base-devel
+
+# Non-root user with fish as default shell
+RUN useradd -m -s /usr/bin/fish vscode && \
+    echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+RUN pacman -Syu --noconfirm git fish openssh vim rsync
+
+# Generate host keys AS ROOT and fix permissions
+RUN ssh-keygen -A && \
+    chmod 600 /etc/ssh/ssh_host_*_key && \
+    chmod 644 /etc/ssh/ssh_host_*_key.pub
+
+USER vscode
+WORKDIR /home/vscode
+
+# Bootstrap paru
+RUN git clone https://aur.archlinux.org/paru-git.git /tmp/paru-git && \
+    cd /tmp/paru-git && makepkg -si --noconfirm && rm -rf /tmp/paru-git
+
+RUN paru -S --noconfirm asdf-vm just claude-code reflector cursor-cli podman fuse-overlayfs slirp4netns age
+
+ENV ASDF_DATA_DIR=/home/vscode/.asdf
+ENV PATH=/home/vscode/.asdf/shims:/opt/asdf-vm/bin:$PATH
+
+RUN mkdir -p ~/.config/fish && echo 'cd /workspace' >> ~/.config/fish/config.fish
+
+RUN mkdir -p ~/.config/fish/conf.d && \
+    printf 'set -gx ASDF_DATA_DIR $HOME/.asdf\nfish_add_path /opt/asdf-vm/bin\nfish_add_path $HOME/.asdf/shims\n' \
+    > ~/.config/fish/conf.d/asdf.fish
+
+# Ensure asdf paths are available in bash/sh too (used by just, cursor-agent, etc.)
+# bash_profile is sourced by bash --login (which just uses via `set shell := ["bash", "-lc"]`)
+RUN printf 'export ASDF_DATA_DIR="$HOME/.asdf"\nexport PATH="$HOME/.asdf/shims:/opt/asdf-vm/bin:$PATH"\n[[ -f ~/.bashrc ]] && . ~/.bashrc\n' > ~/.bash_profile
+
+# Inject SSH public key
+RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh
+ARG SSH_PUBLIC_KEY
+RUN echo "$SSH_PUBLIC_KEY" > ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+
+WORKDIR /workspace
+
+# sshd must run as root (it drops privileges itself after auth)
+USER root
+EXPOSE 2222
+CMD ["/usr/sbin/sshd", "-D", "-p", "2222", "-o", "PermitRootLogin=no"]

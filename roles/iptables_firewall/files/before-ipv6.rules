@@ -1,0 +1,19 @@
+# Drop XMAS et NULL scans
+-A ufw6-before-input -p tcp --tcp-flags FIN,URG,PSH FIN,URG,PSH -j DROP
+-A ufw6-before-input -p tcp --tcp-flags ALL ALL -j DROP
+-A ufw6-before-input -p tcp --tcp-flags ALL NONE -j DROP
+-A ufw6-before-input -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+
+# Drop silently broadcast packets
+-A ufw6-before-input -m pkttype --pkt-type broadcast -j DROP
+
+# Accept everything on local loop
+-A ufw6-before-input -i lo -j ACCEPT
+
+# Prevent DDoS with limits
+-A ufw6-before-forward -p tcp --syn -m limit --limit 1/second -j ACCEPT
+-A ufw6-before-forward -p udp -m limit --limit 1/second -j ACCEPT
+-A ufw6-before-forward -p icmpv6 --icmpv6-type echo-request -m limit --limit 1/second -j ACCEPT
+
+# Block port scanning
+-A ufw6-before-forward -p tcp --tcp-flags SYN,ACK,FIN,RST RST -m limit --limit 1/s -j ACCEPT

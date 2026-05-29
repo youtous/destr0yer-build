@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Check and notify on public IP changes
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart={{ notify_change_ip_directory }}/notify-ip-change.sh
+StandardOutput=append:{{ notify_change_ip_log_file }}
+StandardError=append:{{ notify_change_ip_log_file }}

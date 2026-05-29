@@ -1,0 +1,33 @@
+- name: Create build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: build
+  register: tmp_dir_build
+
+- name: Download kluctl release and verify checksum
+  ansible.builtin.get_url:
+    url: "{{ k8s_kluctl_download_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ k8s_kluctl_archive_name }}"
+    checksum: "sha256:{{ k8s_kluctl_checksum }}"
+    mode: u=rw,g=,o=
+
+- name: Extract downloaded release
+  ansible.builtin.unarchive:
+    src: "{{ tmp_dir_build.path }}/{{ k8s_kluctl_archive_name }}"
+    dest: "{{ tmp_dir_build.path }}"
+    remote_src: true
+
+- name: Copy kluctl binary
+  become: true
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ tmp_dir_build.path }}/kluctl"
+    dest: "{{ k8s_kluctl_path }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
+- name: Remove the temporary build directory
+  ansible.builtin.file:
+    path: "{{ tmp_dir_build.path }}"
+    state: absent

@@ -1,20 +1,9 @@
----
-# This role install glances from pip
-- name: Install build requierements
-  become: yes
-  apt:
+- name: Install glances and dependencies
+  become: true
+  ansible.builtin.apt:
     name:
-      - python3-dev
-
-# our ssh client needs to be upgraded in order to support secure cyphers
-- name: Install glances at latest version
-  become: yes
-  pip:
-    executable: pip3
-    name:
-      - psutil
       - glances
-      - py-cpuinfo
-    state: latest
-    extra_args: --upgrade
-...
+      - python3-psutil
+      - python3-jinja2
+      - lm-sensors
+    state: present

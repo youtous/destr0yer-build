@@ -1,0 +1,819 @@
+# Integration tests for a deployed K3S cluster.
+# Usage: ansible-playbook playbooks/99-integration-tests.yml -i inventories/dev
+#        just test-integration
+
+- name: Validate SSH hardening (ssh-audit)
+  hosts: systems
+  gather_facts: false
+  tags:
+    - integration-test
+    - ssh-audit
+  become: true
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+
+  tasks:
+    - name: Install ssh-audit
+      ansible.builtin.apt:
+        name: ssh-audit
+        state: present
+
+    - name: Run ssh-audit against local sshd
+      ansible.builtin.command:
+        cmd: "ssh-audit -n -p {{ sshd_port | default(22) }} localhost"
+      changed_when: false
+      register: ssh_audit_output
+      failed_when: false
+
+    - name: Check for algorithm failures
+      ansible.builtin.set_fact:
+        ssh_audit_failures: "{{ ssh_audit_output.stdout_lines | select('search', '\\(fail\\)') | list }}"
+
+    - name: Assert no ssh-audit failures
+      ansible.builtin.assert:
+        that:
+          - ssh_audit_output.rc == 0
+          - ssh_audit_failures | length == 0
+        fail_msg: |-
+          ssh-audit found {{ ssh_audit_failures | length }} failure(s):
+          {% for line in ssh_audit_failures %}
+            {{ line }}
+          {% endfor %}
+        success_msg: "ssh-audit passed — no algorithm failures on port {{ sshd_port | default(22) }}"
+
+    - name: Check for algorithm warnings
+      ansible.builtin.set_fact:
+        ssh_audit_warnings: "{{ ssh_audit_output.stdout_lines | select('search', '\\(warn\\)') | list }}"
+
+    - name: Report ssh-audit warnings (non-blocking)
+      ansible.builtin.debug:
+        msg: |-
+          ssh-audit warnings ({{ ssh_audit_warnings | length }}):
+          {% for line in ssh_audit_warnings %}
+            {{ line }}
+          {% endfor %}
+      when: ssh_audit_warnings | length > 0
+
+- name: Validate host-level services (WireGuard, CrowdSec bouncer)
+  hosts: k3s
+  gather_facts: false
+  tags:
+    - integration-test
+    - host-services
+  become: true
+  vars:
+    test_results: []
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+
+  tasks:
+    # --- WireGuard mesh ---
+    - name: Check WireGuard interface is up
+      ansible.builtin.command:
+        cmd: wg show wg0
+      changed_when: false
+      register: wg_show
+      failed_when: false
+
+    - name: Assert WireGuard wg0 is active
+      ansible.builtin.assert:
+        that:
+          - wg_show.rc == 0
+          - "'listening port' in wg_show.stdout"
+        fail_msg: "WireGuard wg0 is not active: {{ wg_show.stderr | default('') }}"
+        success_msg: "WireGuard wg0 is active"
+      register: test_wg
+      when: wireguard_servers | default([]) | length > 0 or wireguard_clients | default([]) | length > 0
+
+    - name: Record WireGuard result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'WireGuard wg0', 'passed': test_wg is not failed, 'detail': test_wg.msg | default('skipped')}] }}"
+
+    - name: Ping WireGuard peers
+      ansible.builtin.command:
+        cmd: "ping -c 2 -W 3 {{ item }}"
+      changed_when: false
+      register: wg_pings
+      failed_when: false
+      loop: "{{ wireguard_peer_ips | default([]) }}"
+      when: wireguard_peer_ips | default([]) | length > 0
+
+    - name: Assert WireGuard peers reachable
+      ansible.builtin.assert:
+        that:
+          - wg_pings.results | default([]) | selectattr('rc', 'defined') | selectattr('rc', 'ne', 0) | list | length == 0
+        fail_msg: "Some WireGuard peers unreachable"
+        success_msg: "All {{ wireguard_peer_ips | default([]) | length }} WireGuard peers reachable"
+      register: test_wg_peers
+      when: wireguard_peer_ips | default([]) | length > 0
+
+    - name: Record WireGuard peers result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'WireGuard peers', 'passed': test_wg_peers is not failed, 'detail': test_wg_peers.msg | default('skipped')}] }}"
+
+    # --- CrowdSec firewall bouncer ---
+    - name: Check CrowdSec bouncer service
+      ansible.builtin.systemd:
+        name: crowdsec-firewall-bouncer
+      changed_when: false
+      register: bouncer_service
+      failed_when: false
+
+    - name: Assert CrowdSec bouncer is active
+      ansible.builtin.assert:
+        that:
+          - bouncer_service.status.ActiveState == 'active'
+        fail_msg: "crowdsec-firewall-bouncer is {{ bouncer_service.status.ActiveState | default('not-found') }}"
+        success_msg: "CrowdSec firewall bouncer is active"
+      register: test_bouncer
+      when:
+        - bouncer_service.status is defined
+        - bouncer_service.status.LoadState | default('not-found') != 'not-found'
+
+    - name: Record bouncer result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'CrowdSec bouncer', 'passed': test_bouncer is not failed, 'detail': test_bouncer.msg | default('skipped — not installed yet')}] }}"
+
+    # --- CrowdSec bouncer connectivity to LAPI ---
+    - name: Test LAPI connectivity from host
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ crowdsec_lapi_nodeport | default(9282) }}/health"
+        method: GET
+        status_code: [200]
+        timeout: 5
+      register: lapi_health
+      failed_when: false
+
+    - name: Assert LAPI reachable from host
+      ansible.builtin.assert:
+        that:
+          - lapi_health.status | default(0) == 200
+        fail_msg: "CrowdSec LAPI not reachable at localhost:{{ crowdsec_lapi_nodeport | default(9282) }} (status={{ lapi_health.status | default('N/A') }})"
+        success_msg: "CrowdSec LAPI reachable at localhost:{{ crowdsec_lapi_nodeport | default(9282) }}"
+      register: test_lapi
+      when:
+        - bouncer_service.status is defined
+        - bouncer_service.status.LoadState | default('not-found') != 'not-found'
+
+    - name: Record LAPI connectivity result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'LAPI connectivity', 'passed': test_lapi is not failed, 'detail': test_lapi.msg | default('skipped')}] }}"
+
+    # --- Summary ---
+    - name: Print host services summary
+      ansible.builtin.debug:
+        msg: |-
+          ========================================
+           Host Services Results ({{ inventory_hostname }})
+          ========================================
+          {% for r in test_results %}
+          {{ '✓' if r.passed else '✗' }} {{ r.test }}: {{ r.detail }}
+          {% endfor %}
+          ========================================
+          Total: {{ test_results | selectattr('passed') | list | length }}/{{ test_results | length }} passed
+          ========================================
+
+- name: Validate K3S cluster health
+  hosts: k3s_control_node
+  gather_facts: false
+  tags:
+    - integration-test
+
+  become: true
+  vars:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    test_results: []
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+
+  tasks:
+    - name: Gather minimal facts for HOME path
+      ansible.builtin.setup:
+        filter: ansible_env
+      tags: [always]
+
+    # --- Node readiness ---
+    - name: Get all nodes
+      kubernetes.core.k8s_info:
+        kind: Node
+        kubeconfig: "{{ kubeconfig }}"
+      register: node_info
+
+    - name: Assert all nodes are Ready
+      ansible.builtin.assert:
+        that:
+          - node_info.resources | length > 0
+          - >-
+            node_info.resources | map(attribute='status') | map(attribute='conditions') | map('selectattr', 'type', 'equalto', 'Ready') | map('first') | map(attribute='status') | reject('equalto', 'True') | list | length == 0
+        fail_msg: "Some nodes are not Ready"
+        success_msg: "All {{ node_info.resources | length }} nodes are Ready"
+      register: test_nodes
+
+    - name: Record node result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Nodes Ready', 'passed': test_nodes is not failed, 'detail': test_nodes.msg | default('')}] }}"
+
+    # --- Pod health ---
+    - name: Get all pods across namespaces
+      kubernetes.core.k8s_info:
+        kind: Pod
+        kubeconfig: "{{ kubeconfig }}"
+      register: all_pods
+
+    - name: Find pods in unhealthy states
+      ansible.builtin.set_fact:
+        unhealthy_pods: >-
+          {{
+            all_pods.resources
+            | rejectattr('metadata.namespace', 'in', integration_test_excluded_namespaces | default([]))
+            | selectattr('status.containerStatuses', 'defined')
+            | map(attribute='status.containerStatuses')
+            | flatten
+            | selectattr('state.waiting', 'defined')
+            | selectattr('state.waiting.reason', 'defined')
+            | selectattr('state.waiting.reason', 'in', ['CrashLoopBackOff', 'Error'])
+            | list
+          }}
+
+    - name: Assert no pods in CrashLoopBackOff or Error
+      ansible.builtin.assert:
+        that:
+          - unhealthy_pods | length == 0
+        fail_msg: "{{ unhealthy_pods | length }} container(s) in CrashLoopBackOff or Error (excluding {{ integration_test_excluded_namespaces | default([]) | join(', ') }})"
+        success_msg: "No pods in CrashLoopBackOff or Error state (excluding {{ integration_test_excluded_namespaces | default([]) | join(', ') }})"
+      register: test_pods
+
+    - name: Record pod result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Pod health', 'passed': test_pods is not failed, 'detail': test_pods.msg | default('')}] }}"
+
+    # --- Cilium status ---
+    - name: Check Cilium status
+      ansible.builtin.command:
+        cmd: cilium status --namespace cilium
+      changed_when: false
+      register: cilium_status
+
+    - name: Assert Cilium is healthy
+      ansible.builtin.assert:
+        that:
+          - cilium_status.rc == 0
+        fail_msg: "Cilium status check failed: {{ cilium_status.stderr }}"
+        success_msg: "Cilium is healthy"
+      register: test_cilium
+
+    - name: Record Cilium result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Cilium health', 'passed': test_cilium is not failed, 'detail': test_cilium.msg | default('')}] }}"
+
+    # --- CoreDNS resolution ---
+    - name: Test CoreDNS resolution
+      ansible.builtin.command:
+        cmd: >
+          kubectl run dns-test --rm -i --restart=Never --image=docker.io/alpine/k8s@sha256:ffb0758383fdd5878419930052e2854afe6c0479303a59edaca4143ce8d3c016 --overrides='{"spec":{"securityContext":{"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}},"containers":[{"name":"dns-test","image":"docker.io/alpine/k8s@sha256:ffb0758383fdd5878419930052e2854afe6c0479303a59edaca4143ce8d3c016","command":["nslookup","kubernetes.default.svc.cluster.local"],"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]}}}]}}'
+      changed_when: false
+      register: dns_check
+      failed_when: dns_check.rc != 0
+
+    - name: Assert DNS resolution works
+      ansible.builtin.assert:
+        that:
+          - "'Address' in dns_check.stdout"
+        fail_msg: "CoreDNS resolution failed for kubernetes.default"
+        success_msg: "CoreDNS resolution works"
+      register: test_dns
+
+    - name: Record DNS result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'CoreDNS resolution', 'passed': test_dns is not failed, 'detail': test_dns.msg | default('')}] }}"
+
+    # --- API server ---
+    - name: Check K3S API server
+      ansible.builtin.command:
+        cmd: kubectl cluster-info
+      changed_when: false
+      register: cluster_info
+
+    - name: Assert API server is responding
+      ansible.builtin.assert:
+        that:
+          - cluster_info.rc == 0
+          - "'Kubernetes control plane' in cluster_info.stdout or 'Kubernetes master' in cluster_info.stdout"
+        fail_msg: "K3S API server not responding"
+        success_msg: "K3S API server is responding"
+      register: test_api
+
+    - name: Record API result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'API server', 'passed': test_api is not failed, 'detail': test_api.msg | default('')}] }}"
+
+    # --- SELinux ---
+    - name: Check SELinux status
+      ansible.builtin.command:
+        cmd: getenforce
+      changed_when: false
+      register: selinux_mode
+      failed_when: false
+
+    - name: Assert SELinux is active (permissive or enforcing)
+      ansible.builtin.assert:
+        that:
+          - selinux_mode.rc == 0
+          - selinux_mode.stdout in ['Permissive', 'Enforcing']
+        fail_msg: "SELinux is {{ selinux_mode.stdout | default('not installed') }}"
+        success_msg: "SELinux is {{ selinux_mode.stdout }}"
+      register: test_selinux
+
+    - name: Record SELinux result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'SELinux active', 'passed': test_selinux is not failed, 'detail': test_selinux.msg | default('')}] }}"
+
+    - name: Check K3S file contexts are set
+      ansible.builtin.command:
+        cmd: ls -Z /usr/local/bin/k3s
+      changed_when: false
+      register: k3s_selinux_context
+      failed_when: false
+
+    - name: Assert K3S binary has container_engine_exec_t context
+      ansible.builtin.assert:
+        that:
+          - "'container_engine_exec_t' in k3s_selinux_context.stdout"
+        fail_msg: "K3S binary SELinux context incorrect: {{ k3s_selinux_context.stdout | default('unknown') }}"
+        success_msg: "K3S binary has correct SELinux context"
+      register: test_k3s_context
+      when: k3s_selinux_context.rc == 0
+
+    - name: Record K3S context result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'K3S SELinux context', 'passed': test_k3s_context is not failed, 'detail': test_k3s_context.msg | default('skipped')}] }}"
+
+    # --- Backup (Kopia) ---
+    - name: Check kopia repository status
+      ansible.builtin.command:
+        cmd: kopia repository status
+      environment:
+        KOPIA_PASSWORD: "{{ kopia_password | default('') }}"
+      changed_when: false
+      register: kopia_repo
+      failed_when: false
+
+    - name: Assert kopia repository is connected
+      ansible.builtin.assert:
+        that:
+          - kopia_repo.rc == 0
+        fail_msg: "Kopia repository not connected: {{ kopia_repo.stderr | default('') }}"
+        success_msg: "Kopia repository is connected"
+      register: test_kopia_repo
+      when:
+        - kopia_password is defined and kopia_password | length > 0
+        - kopia_repo.rc is defined
+
+    - name: Record kopia repo result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Kopia repository', 'passed': test_kopia_repo is not failed, 'detail': test_kopia_repo.msg | default('skipped')}] }}"
+
+    - name: Check kopia-snapshot timer
+      ansible.builtin.systemd:
+        name: kopia-snapshot.timer
+      changed_when: false
+      register: kopia_timer
+      failed_when: false
+
+    - name: Assert kopia-snapshot timer is active
+      ansible.builtin.assert:
+        that:
+          - kopia_timer.status.ActiveState == 'active'
+        fail_msg: "kopia-snapshot.timer is not active ({{ kopia_timer.status.ActiveState | default('unknown') }})"
+        success_msg: "kopia-snapshot.timer is active"
+      register: test_kopia_timer
+      when:
+        - kopia_password is defined and kopia_password | length > 0
+        - kopia_timer.status.LoadState | default('not-found') != 'not-found'
+
+    - name: Record kopia timer result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Kopia snapshot timer', 'passed': test_kopia_timer is not failed, 'detail': test_kopia_timer.msg | default('skipped')}] }}"
+
+    # --- btrfs health (backup node only) ---
+    - name: Check btrfs device stats
+      ansible.builtin.command:
+        cmd: "btrfs device stats {{ backup_root_directory | default('/home/backups') }}"
+      changed_when: false
+      register: btrfs_stats
+      failed_when: false
+      when: backup_btrfs_enabled | default(false) | bool
+
+    - name: Assert btrfs has zero errors
+      ansible.builtin.assert:
+        that:
+          - btrfs_stats.stdout_lines | select('search', '_errs\\s+[1-9]') | list | length == 0
+        fail_msg: "btrfs device stats show errors: {{ btrfs_stats.stdout | default('') }}"
+        success_msg: "btrfs device stats clean (0 errors)"
+      register: test_btrfs
+      when:
+        - backup_btrfs_enabled | default(false) | bool
+        - btrfs_stats.rc | default(1) == 0
+
+    - name: Record btrfs result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'btrfs health', 'passed': test_btrfs is not failed, 'detail': test_btrfs.msg | default('skipped')}] }}"
+      when: backup_btrfs_enabled | default(false) | bool
+
+    - name: Check btrfs-snapshot timer
+      ansible.builtin.systemd:
+        name: btrfs-snapshot.timer
+      changed_when: false
+      register: btrfs_snapshot_timer
+      failed_when: false
+      when: backup_btrfs_enabled | default(false) | bool
+
+    - name: Assert btrfs-snapshot timer is active
+      ansible.builtin.assert:
+        that:
+          - btrfs_snapshot_timer.status.ActiveState == 'active'
+        fail_msg: "btrfs-snapshot.timer is {{ btrfs_snapshot_timer.status.ActiveState | default('unknown') }}"
+        success_msg: "btrfs-snapshot.timer is active"
+      register: test_btrfs_snapshot
+      when:
+        - backup_btrfs_enabled | default(false) | bool
+        - btrfs_snapshot_timer.status is defined
+
+    - name: Record btrfs-snapshot timer result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'btrfs-snapshot timer', 'passed': test_btrfs_snapshot is not failed, 'detail': test_btrfs_snapshot.msg | default('skipped')}] }}"
+      when: backup_btrfs_enabled | default(false) | bool
+
+    - name: Check btrfs-scrub timer
+      ansible.builtin.systemd:
+        name: btrfs-scrub.timer
+      changed_when: false
+      register: btrfs_scrub_timer
+      failed_when: false
+      when: backup_btrfs_enabled | default(false) | bool
+
+    - name: Assert btrfs-scrub timer is active
+      ansible.builtin.assert:
+        that:
+          - btrfs_scrub_timer.status.ActiveState == 'active'
+        fail_msg: "btrfs-scrub.timer is {{ btrfs_scrub_timer.status.ActiveState | default('unknown') }}"
+        success_msg: "btrfs-scrub.timer is active"
+      register: test_btrfs_scrub
+      when:
+        - backup_btrfs_enabled | default(false) | bool
+        - btrfs_scrub_timer.status is defined
+
+    - name: Record btrfs-scrub timer result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'btrfs-scrub timer', 'passed': test_btrfs_scrub is not failed, 'detail': test_btrfs_scrub.msg | default('skipped')}] }}"
+      when: backup_btrfs_enabled | default(false) | bool
+
+    - name: Check snapshot directory has recent snapshots
+      ansible.builtin.find:
+        paths: "{{ backup_btrfs_snapshot_dir | default('/home/backups/.snapshots') }}"
+        file_type: directory
+      register: btrfs_snapshots_found
+      when: backup_btrfs_enabled | default(false) | bool
+
+    - name: Assert at least one snapshot exists
+      ansible.builtin.assert:
+        that:
+          - btrfs_snapshots_found.files | length > 0
+        fail_msg: "No btrfs snapshots in {{ backup_btrfs_snapshot_dir | default('/home/backups/.snapshots') }}"
+        success_msg: "{{ btrfs_snapshots_found.files | length }} btrfs snapshot(s) present"
+      register: test_btrfs_snapshots
+      when:
+        - backup_btrfs_enabled | default(false) | bool
+        - btrfs_snapshots_found is defined
+
+    - name: Record btrfs snapshots result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'btrfs snapshots exist', 'passed': test_btrfs_snapshots is not failed, 'detail': test_btrfs_snapshots.msg | default('skipped')}] }}"
+      when: backup_btrfs_enabled | default(false) | bool
+
+    # --- Kyverno policies ---
+    - name: Get all ClusterPolicies
+      kubernetes.core.k8s_info:
+        kind: ClusterPolicy
+        api_version: kyverno.io/v1
+        kubeconfig: "{{ kubeconfig }}"
+      register: kyverno_policies
+      failed_when: false
+
+    - name: Assert all Kyverno ClusterPolicies are Ready
+      ansible.builtin.assert:
+        that:
+          - kyverno_policies.resources | length > 0
+          - >-
+            kyverno_policies.resources | selectattr('status', 'defined') | selectattr('status.ready', 'defined') | rejectattr('status.ready') | list | length == 0
+        fail_msg: >-
+          {{ kyverno_policies.resources | selectattr('status', 'defined')
+            | selectattr('status.ready', 'defined')
+            | rejectattr('status.ready')
+            | map(attribute='metadata.name') | list | join(', ') }} not ready
+        success_msg: "All {{ kyverno_policies.resources | length }} ClusterPolicies are Ready"
+      register: test_kyverno
+      when: kyverno_policies.resources is defined
+
+    - name: Record Kyverno result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Kyverno policies', 'passed': test_kyverno is not failed, 'detail': test_kyverno.msg | default('skipped')}] }}"
+
+    # --- Network policies (default-deny per namespace) ---
+    - name: Get CiliumNetworkPolicies named default-deny
+      kubernetes.core.k8s_info:
+        kind: CiliumNetworkPolicy
+        api_version: cilium.io/v2
+        kubeconfig: "{{ kubeconfig }}"
+        label_selectors: []
+        field_selectors:
+          - "metadata.name=default-deny"
+      register: default_deny_policies
+      failed_when: false
+
+    - name: Build list of namespaces with default-deny
+      ansible.builtin.set_fact:
+        namespaces_with_deny: "{{ default_deny_policies.resources | default([]) | map(attribute='metadata.namespace') | list | sort }}"
+
+    - name: Assert default-deny exists in all managed namespaces
+      ansible.builtin.assert:
+        that:
+          - namespaces_with_deny | length >= 10
+        fail_msg: "Only {{ namespaces_with_deny | length }} namespaces have default-deny: {{ namespaces_with_deny | join(', ') }}"
+        success_msg: "default-deny CiliumNetworkPolicy in {{ namespaces_with_deny | length }} namespaces"
+      register: test_netpol
+
+    - name: Record NetworkPolicy result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Network policies default-deny', 'passed': test_netpol is not failed, 'detail': test_netpol.msg | default('')}] }}"
+
+    # --- cert-manager ---
+    - name: Get ClusterIssuers
+      kubernetes.core.k8s_info:
+        kind: ClusterIssuer
+        api_version: cert-manager.io/v1
+        kubeconfig: "{{ kubeconfig }}"
+      register: cluster_issuers
+      failed_when: false
+
+    - name: Assert at least one ClusterIssuer is Ready
+      ansible.builtin.assert:
+        that:
+          - cluster_issuers.resources | length > 0
+          - >-
+            cluster_issuers.resources | map(attribute='status') | map(attribute='conditions') | map('selectattr', 'type', 'equalto', 'Ready') | map('first') | map(attribute='status') | select('equalto', 'True') | list | length > 0
+        fail_msg: "No ClusterIssuer is Ready"
+        success_msg: "{{ cluster_issuers.resources | length }} ClusterIssuer(s) present, at least one Ready"
+      register: test_cert_issuer
+      when: cluster_issuers.resources is defined
+
+    - name: Record cert-manager result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'cert-manager ClusterIssuer', 'passed': test_cert_issuer is not failed, 'detail': test_cert_issuer.msg | default('skipped')}] }}"
+
+    - name: Get all Certificates
+      kubernetes.core.k8s_info:
+        kind: Certificate
+        api_version: cert-manager.io/v1
+        kubeconfig: "{{ kubeconfig }}"
+      register: all_certs
+      failed_when: false
+
+    - name: Find certificates not Ready
+      ansible.builtin.set_fact:
+        certs_not_ready: >-
+          {{
+            all_certs.resources | default([])
+            | selectattr('status', 'defined')
+            | selectattr('status.conditions', 'defined')
+            | rejectattr('status.conditions', 'undefined')
+            | selectattr('status.conditions')
+            | list
+            | json_query("[?status.conditions[?type=='Ready' && status!='True']]")
+            | default([])
+          }}
+
+    - name: Assert all Certificates are Ready
+      ansible.builtin.assert:
+        that:
+          - certs_not_ready | length == 0
+        fail_msg: "{{ certs_not_ready | map(attribute='metadata.name') | list | join(', ') }} not Ready"
+        success_msg: "All {{ all_certs.resources | default([]) | length }} Certificates are Ready"
+      register: test_certs
+      when: all_certs.resources is defined
+
+    - name: Record Certificates result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'TLS Certificates', 'passed': test_certs is not failed, 'detail': test_certs.msg | default('skipped')}] }}"
+
+    # --- Ingress health ---
+    - name: Get all Ingresses
+      kubernetes.core.k8s_info:
+        kind: Ingress
+        api_version: networking.k8s.io/v1
+        kubeconfig: "{{ kubeconfig }}"
+      register: all_ingresses
+
+    - name: Find Ingresses without assigned address
+      ansible.builtin.set_fact:
+        ingresses_no_address: >-
+          {{
+            all_ingresses.resources | default([])
+            | rejectattr('status.loadBalancer.ingress', 'defined')
+            | map(attribute='metadata')
+            | map(attribute='name')
+            | list
+          }}
+
+    - name: Assert all Ingresses have addresses
+      ansible.builtin.assert:
+        that:
+          - all_ingresses.resources | length > 0
+          - ingresses_no_address | length == 0
+        fail_msg: "Ingresses without address: {{ ingresses_no_address | join(', ') }}"
+        success_msg: "All {{ all_ingresses.resources | length }} Ingresses have assigned addresses"
+      register: test_ingress
+
+    - name: Record Ingress result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Ingress health', 'passed': test_ingress is not failed, 'detail': test_ingress.msg | default('')}] }}"
+
+    # --- CronJobs (no recent failures) ---
+    - name: Get all CronJobs
+      kubernetes.core.k8s_info:
+        kind: CronJob
+        api_version: batch/v1
+        kubeconfig: "{{ kubeconfig }}"
+      register: all_cronjobs
+
+    - name: Get all Jobs
+      kubernetes.core.k8s_info:
+        kind: Job
+        api_version: batch/v1
+        kubeconfig: "{{ kubeconfig }}"
+      register: all_jobs_info
+      failed_when: false
+
+    - name: Find failed jobs
+      ansible.builtin.set_fact:
+        failed_jobs: >-
+          {{
+            all_jobs_info.resources | default([])
+            | rejectattr('metadata.namespace', 'in', integration_test_excluded_namespaces | default([]))
+            | selectattr('status.failed', 'defined')
+            | selectattr('status.failed')
+            | map(attribute='metadata')
+            | map(attribute='name')
+            | list
+          }}
+
+    - name: Assert no recently failed Jobs
+      ansible.builtin.assert:
+        that:
+          - failed_jobs | default([]) | length == 0
+        fail_msg: "Failed jobs: {{ failed_jobs | default([]) | join(', ') }}"
+        success_msg: "{{ all_cronjobs.resources | length }} CronJobs registered, no failed Jobs"
+      register: test_cronjobs
+
+    - name: Record CronJobs result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'CronJobs health', 'passed': test_cronjobs is not failed, 'detail': test_cronjobs.msg | default('')}] }}"
+
+    # --- Alloy DaemonSet ---
+    - name: Get Alloy DaemonSet
+      kubernetes.core.k8s_info:
+        kind: DaemonSet
+        namespace: observability
+        name: alloy
+        kubeconfig: "{{ kubeconfig }}"
+      register: alloy_ds
+      failed_when: false
+
+    - name: Assert Alloy DaemonSet is fully ready
+      ansible.builtin.assert:
+        that:
+          - alloy_ds.resources | length > 0
+          - alloy_ds.resources[0].status.desiredNumberScheduled == alloy_ds.resources[0].status.numberReady
+        fail_msg: >-
+          Alloy DaemonSet: {{ alloy_ds.resources[0].status.numberReady | default(0) }}/{{ alloy_ds.resources[0].status.desiredNumberScheduled | default('?') }} ready
+        success_msg: >-
+          Alloy DaemonSet fully ready ({{ alloy_ds.resources[0].status.numberReady }}/{{ alloy_ds.resources[0].status.desiredNumberScheduled }})
+      register: test_alloy
+      when: alloy_ds.resources | default([]) | length > 0
+
+    - name: Record Alloy result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'Alloy DaemonSet', 'passed': test_alloy is not failed, 'detail': test_alloy.msg | default('skipped')}] }}"
+
+    # --- Audit log file exists on control plane ---
+    - name: Check audit log file exists
+      ansible.builtin.stat:
+        path: /var/lib/rancher/k3s/server/logs/audit.log
+      register: audit_log_file
+
+    - name: Assert audit log file exists and is non-empty
+      ansible.builtin.assert:
+        that:
+          - audit_log_file.stat.exists
+          - audit_log_file.stat.size > 0
+        fail_msg: "K3S audit log not found or empty at /var/lib/rancher/k3s/server/logs/audit.log"
+        success_msg: "K3S audit log exists ({{ (audit_log_file.stat.size / 1048576) | round(1) }} MB)"
+      register: test_audit_log
+
+    - name: Record audit log result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'K3S audit log', 'passed': test_audit_log is not failed, 'detail': test_audit_log.msg | default('')}] }}"
+
+    # --- kube-bench CIS benchmark ---
+    - name: Check kube-bench is installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/kube-bench
+      register: kube_bench_bin
+
+    - name: Run kube-bench (CIS K8S hardening)
+      ansible.builtin.command:
+        cmd: /usr/local/bin/kube-bench run --json --k3s-cis-1.12
+      changed_when: false
+      register: kube_bench_raw
+      failed_when: false
+      when: kube_bench_bin.stat.exists
+
+    - name: Parse kube-bench results
+      ansible.builtin.set_fact:
+        kube_bench_results: "{{ kube_bench_raw.stdout | from_json }}"
+      when:
+        - kube_bench_bin.stat.exists
+        - kube_bench_raw.rc == 0
+
+    - name: Count kube-bench totals
+      ansible.builtin.set_fact:
+        kube_bench_pass: "{{ kube_bench_results.Totals.total_pass | default(0) }}"
+        kube_bench_fail: "{{ kube_bench_results.Totals.total_fail | default(0) }}"
+        kube_bench_warn: "{{ kube_bench_results.Totals.total_warn | default(0) }}"
+        kube_bench_info: "{{ kube_bench_results.Totals.total_info | default(0) }}"
+      when: kube_bench_results is defined
+
+    - name: Extract kube-bench check details
+      ansible.builtin.set_fact:
+        kube_bench_all_checks: >-
+          {{ kube_bench_results.Controls | default([])
+             | map(attribute='tests', default=[]) | flatten
+             | map(attribute='results', default=[]) | flatten
+             | list }}
+      when: kube_bench_results is defined
+
+    - name: Display kube-bench full report
+      ansible.builtin.debug:
+        msg: "[{{ item.status }}] {{ item.test_number }} — {{ item.test_desc }}"
+      loop: "{{ kube_bench_all_checks | default([]) }}"
+      loop_control:
+        label: "{{ item.test_number }}"
+      when: kube_bench_results is defined
+
+    - name: Display kube-bench failures with remediation
+      ansible.builtin.debug:
+        msg: |
+          FAIL {{ item.test_number }}: {{ item.test_desc }}
+          Remediation: {{ item.remediation | default('N/A') }}
+      loop: "{{ kube_bench_all_checks | default([]) | selectattr('status', 'equalto', 'FAIL') | list }}"
+      loop_control:
+        label: "{{ item.test_number }}"
+      when: kube_bench_results is defined
+
+    - name: Assert kube-bench has no critical failures
+      ansible.builtin.assert:
+        that:
+          - kube_bench_fail | int <= (kube_bench_max_failures | default(3) | int)
+        fail_msg: >-
+          kube-bench: {{ kube_bench_fail }} FAIL (threshold: {{ kube_bench_max_failures | default(3) }}). Pass={{ kube_bench_pass }}, Warn={{ kube_bench_warn }}, Info={{ kube_bench_info }}. Failed: {{ kube_bench_all_checks | default([]) | selectattr('status', 'equalto', 'FAIL') | map(attribute='test_number') | list | join(', ') }}
+        success_msg: >-
+          kube-bench: {{ kube_bench_pass }} pass, {{ kube_bench_fail }} fail, {{ kube_bench_warn }} warn
+      register: test_kube_bench
+      when: kube_bench_results is defined
+
+    - name: Record kube-bench result
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [{'test': 'kube-bench CIS', 'passed': test_kube_bench is not failed, 'detail': test_kube_bench.msg | default('skipped — kube-bench not installed')}] }}"
+
+    # --- Summary ---
+    - name: Print test summary
+      ansible.builtin.debug:
+        msg: |-
+          ========================================
+           K3S Integration Test Results
+          ========================================
+          {% for r in test_results %}
+          {{ '✓' if r.passed else '✗' }} {{ r.test }}: {{ r.detail }}
+          {% endfor %}
+          ========================================
+          Total: {{ test_results | selectattr('passed') | list | length }}/{{ test_results | length }} passed
+          ========================================

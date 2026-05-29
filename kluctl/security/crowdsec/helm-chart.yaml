@@ -1,0 +1,7 @@
+helmChart:
+  repo: https://crowdsecurity.github.io/helm-charts
+  chartName: crowdsec
+  chartVersion: "0.24.0"
+  releaseName: crowdsec
+  namespace: security
+  skipCRDs: false

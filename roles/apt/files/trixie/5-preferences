@@ -1,0 +1,15 @@
+Package: *
+Pin: release o=Debian,a=stable
+Pin-Priority: 500
+
+Package: *
+Pin: release o=Debian,a=stable-security
+Pin-Priority: 500
+
+Package: *
+Pin: release o=Debian,a=stable-updates
+Pin-Priority: 500
+
+Package: *
+Pin: release o=Debian,a=trixie-backports
+Pin-Priority: 100

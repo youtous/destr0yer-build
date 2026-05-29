@@ -1,0 +1,234 @@
+# vim: ts=2 sw=2 et
+# Host-specific variables — copy as <hostname>.yml
+# Secrets go in secret_vars/<env>/<hostname>.yml (vault-encrypted)
+# SSH connection uses ~/.ssh/config (run `just ssh-config` to set up dev hosts)
+
+hostname: host.example.local
+ipv4:
+  - "192.168.56.10"
+ipv6:
+  - "fde4:8dba:82e1::c1"
+ipv4_private:
+  - "192.168.56.10"
+ipv6_private:
+  - "fde4:8dba:82e1::c1"
+
+### Disk partitioning (production)
+#
+# Filesystem selection per use case:
+#
+#   Mount                    | FS    | Why
+#   ─────────────────────────┼───────┼──────────────────────────────────────────
+#   /var/lib/rancher         | XFS   | containerd overlayfs2 (official recommendation),
+#                            |       | etcd WAL, high metadata IOPS, low fragmentation
+#   /var/openebs             | XFS   | Database PVs (PostgreSQL, MariaDB) — sequential
+#                            |       | I/O performance, no COW overhead
+#   /mnt/disks/garage-data   | btrfs | Object storage — checksumming (bit rot detection),
+#                            |       | transparent zstd compression (~30% space savings),
+#                            |       | COW is fine for write-once S3 objects
+#   /home/backups (backup)   | btrfs | Snapshots (immutable, instant), checksumming,
+#                            |       | compression, btrfs send/receive for cold backups
+#
+# Do NOT use btrfs for /var/lib/rancher or /var/openebs:
+#   - containerd on btrfs uses the "btrfs" storage driver (less tested than overlayfs+xfs)
+#   - COW causes fragmentation on database workloads (etcd, PostgreSQL)
+#   - nodatacow (chattr +C) disables COW but also disables checksumming
+#
+# Sizing guideline (data disk/partition):
+#   /var/lib/rancher  — 40% (images, etcd, manifests)
+#   /var/openebs      — 60% (application PVs: mail, databases, etc.)
+#   Garage disk       — dedicated (USB SSD or second internal disk, separate from above)
+#
+# Example with a second internal disk (/dev/sdb) for K3S + OpenEBS:
+#
+# disk_partitions_to_create:
+#   - device: /dev/sdb
+#     part_number: 1
+#     flags: [lvm]
+#     name: "k3s_data"
+#
+# volume_groups_to_create:
+#   - pvs: "/dev/disk/by-partlabel/{{ 'k3s_data' | hash('md5') }}"
+#     vg: "vg-k3s"
+#
+# logical_volume_groups_to_create:
+#   - vg: "vg-k3s"
+#     lv: "lv-rancher"
+#     size: "40%VG"
+#   - vg: "vg-k3s"
+#     lv: "lv-openebs"
+#     size: "60%VG"
+#
+# filesystems_to_create:
+#   - dev: /dev/mapper/vg--k3s-lv--rancher
+#     fstype: xfs
+#     mount_path: /var/lib/rancher
+#     mount_opts: "defaults,noatime"
+#     luks:
+#       enabled: true
+#       name: crypt-k3s
+#       keyfile: /root/.luks/crypt-k3s.key
+#   - dev: /dev/mapper/vg--k3s-lv--openebs
+#     fstype: xfs
+#     mount_path: /var/openebs
+#     mount_opts: "defaults,noatime"
+#     luks:
+#       enabled: true
+#       name: crypt-openebs
+#       keyfile: /root/.luks/crypt-openebs.key
+#
+# LUKS options (all optional, shown with defaults):
+#   luks.keyfile_size: 4096       # keyfile size in bytes
+#   luks.cipher: aes-xts-plain64  # LUKS cipher
+#   luks.key_size: 512            # key size in bits (AES-256-XTS)
+#
+# Requirement: root partition must itself be encrypted (FDE).
+# Keyfiles stored on root are protected by FDE at rest.
+
+### Backup node (btrfs) — NO LVM
+# btrfs has its own volume management (subvolumes, snapshots, RAID).
+# Using LVM under btrfs is discouraged — skip volume_groups/logical_volume_groups.
+# Stack: partition → LUKS → btrfs (direct, no LVM layer)
+#
+# disk_partitions_to_create:
+#   - device: /dev/sdb
+#     part_number: 1
+#     name: "backups"
+#
+# filesystems_to_create:
+#   - dev: /dev/disk/by-partlabel/backups
+#     fstype: btrfs
+#     opts: "-f"
+#     mount_path: /home/backups
+#     mount_opts: "defaults,noatime,compress=zstd:3"
+#     luks:
+#       enabled: true
+#       name: crypt-backups
+#       keyfile: /root/.luks/crypt-backups.key
+
+# Swap — per-host, set according to available RAM and workload.
+# Disabled by default in role (size 0). Set per host_vars for hosts that need it.
+# Rule of thumb: match RAM size for homelab nodes with < 8 GB RAM.
+# swappiness is set in role defaults (10 = prefer RAM, swap under pressure only).
+fs_swap_file_size_mb: "4096"
+
+### USB disk storage (Garage S3 data)
+# Dedicated disk for Garage object storage. Uses btrfs for:
+#   - Checksumming: detects bit rot on USB/SSD (critical for data integrity)
+#   - zstd compression: ~30% space savings on S3 objects (free performance)
+#   - No LVM layer needed (btrfs manages its own volumes)
+#
+# Do NOT use XFS here — Garage benefits from btrfs integrity features.
+# Do NOT use btrfs for /var/lib/rancher or /var/openebs — use XFS (see above).
+#
+# Identify your disk:  ls -la /dev/disk/by-id/ | grep usb
+# Check SMART compat:  smartctl -d sat -i /dev/disk/by-id/<your-device>
+# See doc/usb-storage.md for full guide.
+#
+# Optional: partition a blank USB disk first
+# disk_partitions_to_create:
+#   - device: /dev/disk/by-id/usb-Samsung_T7_S7A1NJ0X12345-0:0
+#     part_number: 1
+#     name: "garage_data"
+#
+# Format + mount (by-id path is stable across reboots, nofail = boot without disk)
+# filesystems_to_create:
+#   - dev: /dev/disk/by-id/usb-Samsung_T7_S7A1NJ0X12345-0:0-part1
+#     fstype: btrfs
+#     opts: "-f -L garage-data"
+#     mount_path: /mnt/disks/garage-data
+#     mount_path_mode: "u=rwx,g=rx,o=rx"
+#     mount_opts: "defaults,noatime,nofail,compress=zstd:3,autodefrag"
+#
+# SMART health monitoring (requires smartmontools)
+# usb_storage_smart_enabled: true
+# usb_storage_smart_devices:
+#   - name: garage-data
+#     by_id: usb-Samsung_T7_S7A1NJ0X12345-0:0
+#     smartctl_device_type: sat   # sat | sntrealtek | auto
+#
+# Filesystem space alerts (processed by base monit role)
+# monit_filesystems:
+#   - { mnt: "/mnt/disks/garage-data", usage_alerts: ["85%", "95%"] }
+
+### Unattended upgrades — REQUIRED: stagger reboot times across cluster nodes
+### to avoid simultaneous outage after kernel updates.
+# unattended_upgrades_automatic_reboot_time: "04:00"
+
+### Host-specific users (in addition to the shared sudo user)
+host_users: []
+# - username: operator
+#   name: Additional operator
+#   groups: ['users', 'sshusers']
+#   uid: 10020
+#   ssh_key: "{{ operator_ssh_keys }}"
+#   password: "{{ operator_password }}"
+#   update_password: "always"
+#   restrict_ips: ['192.168.56.1']
+
+### SMTP relay (if this host relays mail)
+# relay_email: monitoring@example.com
+# relay_user: "{{ relay_email }}"
+# relay_password: "{{ secret_relay_password }}"
+
+### WireGuard server (if this host is a WireGuard endpoint)
+# wireguard_server_external_interface: eth0
+# wireguard_servers:
+#   - interface: wg0
+#     addresses:
+#       - 10.99.99.1/24
+#     port: "1990"
+#     public_key: ""
+#     private_key: "{{ wireguard_server_private_key }}"
+#     restrict_ips: ["192.168.56.0/24", "10.99.99.0/24"]  # never use "any" — restrict to known peer networks
+#     peers: "{{ wireguard_server_peers }}"
+
+### WireGuard client — local mesh (if this host connects to another node)
+# wireguard_clients:
+#   - interface: wg0
+#     name: "{{ hostname }}"
+#     addresses:
+#       - 10.99.99.2/24
+#     endpoint: "ctrl.example.local:1990"
+#     persistent_keepalive: "25"
+#     allowed_ips:
+#       - 10.99.99.0/24
+#     server_public_key: ""
+#     public_key: ""
+#     private_key: "{{ wireguard_client_private_key }}"
+#     preshared_key: "{{ wireguard_client_preshared_key }}"
+
+### WireGuard client — cloud relay tunnel (self-hosted → relay)
+# The relay is the WG server (public IP, non-standard port).
+# The self-hosted node is the client (behind NAT, initiates connection).
+# persistent_keepalive keeps the tunnel alive through NAT.
+#
+# Security: do NOT use a public DNS name for the endpoint.
+# Use raw IP or /etc/hosts entry (see ADR-005 "Endpoint hardening").
+# Example /etc/hosts: `203.0.113.42  relay-infra`
+# Managed by the system role's `hosts_entries` variable.
+#
+# wireguard_clients:
+#   - interface: wg-infra
+#     name: ctrl
+#     addresses:
+#       - 10.99.99.10/24
+#     endpoint: "relay-infra:41993"  # resolved via /etc/hosts, non-standard port
+#     persistent_keepalive: "25"
+#     allowed_ips:
+#       - 10.99.99.0/24  # route relay subnet through tunnel
+#     server_public_key: "RELAY_PUBLIC_KEY"
+#     public_key: "CTRL_PUBLIC_KEY"
+#     private_key: "{{ vault_wg_infra_private_key }}"
+#     preshared_key: "{{ vault_wg_infra_psk }}"
+
+### Backup (Kopia SFTP over WireGuard)
+# users_ssh_keys:
+#   - username: root
+#     public_key: "{{ root_public_key }}"
+#     private_key: "{{ root_private_key }}"
+# kopia_sftp_host: "10.99.99.1"  # backup server WG IP
+# kopia_sftp_user: "backup_hostname"
+# kopia_sftp_path: "/home"
+# kopia_sftp_key: "/root/.ssh/id_ed25519"
+# kopia_password: "{{ secret_kopia_password }}"

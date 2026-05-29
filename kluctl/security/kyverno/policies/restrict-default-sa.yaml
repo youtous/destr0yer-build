@@ -1,0 +1,48 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-default-service-account
+  annotations:
+    policies.kyverno.io/title: Restrict default ServiceAccount usage
+    policies.kyverno.io/description: >-
+      CIS 5.1.5 — Ensures the default ServiceAccount is not actively used.
+      Patches default SAs to disable automountServiceAccountToken, and
+      validates that pods do not use the default SA.
+spec:
+  validationFailureAction: "{{ args.kyverno_validation_action }}"
+  rules:
+    - name: patch-default-sa-automount
+      match:
+        any:
+          - resources:
+              kinds: [ServiceAccount]
+              names: [default]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, kube-public, kube-node-lease]
+      mutate:
+        patchStrategicMerge:
+          automountServiceAccountToken: false
+
+    - name: validate-no-default-sa
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, cilium, openebs, kyverno, cert-manager, observability, haproxy-ingress, security, velero, database]
+{% raw %}
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.serviceAccountName || 'default' }}"
+            operator: Equals
+            value: default
+      validate:
+        message: >-
+          CIS 5.1.5: Pods should not use the default ServiceAccount.
+          Create a dedicated ServiceAccount for this workload.
+        deny: {}
+{% endraw %}

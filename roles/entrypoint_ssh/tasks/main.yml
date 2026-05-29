@@ -1,0 +1,11 @@
+# This role contains settings that will only allow SSH connections from
+# a specific authoritative server
+- name: Generate list of allowed ssh entrypoints
+  become: true
+  ansible.builtin.blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - ssh entrypoint ip whitelist ###"
+
+- name: Configure firewall ssh
+  ansible.builtin.import_tasks: firewall.yml

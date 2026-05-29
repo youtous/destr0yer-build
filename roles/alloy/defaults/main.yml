@@ -1,0 +1,17 @@
+# renovate: datasource=github-releases depName=grafana/alloy
+alloy_version: "1.16.1"
+alloy_binary_path: "/usr/local/bin/alloy"
+alloy_config_path: "/etc/alloy/config.alloy"
+alloy_data_path: "/var/lib/alloy"
+alloy_loki_endpoint: "http://localhost:3100/loki/api/v1/push"
+alloy_prometheus_endpoint: ""
+alloy_enabled: true
+
+alloy_user: "alloy"
+alloy_group: "alloy"
+alloy_cluster_name: "{{ server_environment | default('dev') }}"
+
+alloy_arch_map:
+  x86_64: "amd64"
+  aarch64: "arm64"
+alloy_arch: "{{ alloy_arch_map[ansible_architecture] | default('amd64') }}"

@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+set -gx KUBECONFIG ~/.kube/app-deployer.yaml
+
+if status is-interactive
+    echo "K3S app-deployer: KUBECONFIG=~/.kube/app-deployer.yaml"
+    echo "  Run 'kubectl auth can-i --list' to see your permissions."
+    echo "  No cluster-admin access — use '{{ sudo_user_username }}' for infra operations."
+end

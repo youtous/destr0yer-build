@@ -1,0 +1,252 @@
+fullnameOverride: mailserver
+
+image:
+  # renovate: datasource=docker depName=mailserver/docker-mailserver
+  # SECURITY: DMS 15.1.0 ships Dovecot 2.3.19, vulnerable to CVE-2026-27857/27858 (DoS).
+  # Requires authenticated IMAP user — mitigated by:
+  #   1. Pod memory limits (1024Mi) — caps DoS impact
+  #   2. CiliumNetworkPolicy restrict-mail-ingress — only HAProxy can reach mail ports
+  #   3. user-patches.sh runs apt-get upgrade on every start — pulls Debian security backports
+  #   4. CronJob mailserver-restart — weekly restart (Mon 04:00 UTC) forces patch application
+  # Upgrade to DMS v16 (Debian 13 base) when released for native Dovecot fix.
+  tag: "15.1.0@sha256:af51b15dd3fc72153c0e90eb7692bb5e3a463212d87959a80fa7aa89b617d44a"
+
+deployment:
+  annotations:
+    secret.reloader.stakater.com/reload: "mailserver-tls"
+  env:
+    OVERRIDE_HOSTNAME: "{{ args.mail_hostname }}"
+    LOG_LEVEL: info
+    POSTMASTER_ADDRESS: "postmaster@{{ args.mail_domain }}"
+
+    # Rspamd handles DKIM signing/verification, DMARC, SPF, spam filtering, greylisting.
+    # Legacy standalone modules MUST stay disabled to avoid conflicts with Rspamd.
+    # DKIM keys: per-domain via secrets.mailserver_domains[].dkim_private_b64
+    # DMARC reports: parsedmarc CronJob (see parsedmarc/)
+    ENABLE_RSPAMD: 1
+    ENABLE_RSPAMD_REDIS: 1
+    RSPAMD_LEARN: 1
+    RSPAMD_GREYLISTING: 0
+    RSPAMD_HFILTER: 1
+    RSPAMD_HFILTER_HOSTNAME_UNKNOWN_SCORE: 6
+    ENABLE_OPENDKIM: 0
+    ENABLE_OPENDMARC: 0
+    ENABLE_POLICYD_SPF: 0
+    ENABLE_SPAMASSASSIN: 0
+    ENABLE_AMAVIS: 0
+
+    # Disabled features
+    ENABLE_CLAMAV: 0
+    ENABLE_POSTGREY: 0
+    ENABLE_FAIL2BAN: 0
+    ENABLE_FETCHMAIL: 0
+    ENABLE_POP3: 0
+    ENABLE_SRS: 0
+
+    # Enabled features
+    ENABLE_IMAP: 1
+    ENABLE_MANAGESIEVE: 1
+    SPOOF_PROTECTION: 1
+    POSTSCREEN_ACTION: enforce
+    TLS_LEVEL: modern
+    ENABLE_QUOTAS: 1
+
+    # Limits
+    POSTFIX_MAILBOX_SIZE_LIMIT: 1073741824
+    POSTFIX_MESSAGE_SIZE_LIMIT: 12000000
+
+    # Network — all relay must authenticate via SASL
+    PERMIT_DOCKER: none
+
+    # Reporting
+    PFLOGSUMM_TRIGGER: logrotate
+    PFLOGSUMM_RECIPIENT: "{{ args.admin_email }}"
+    LOGWATCH_INTERVAL: weekly
+    LOGWATCH_RECIPIENT: "{{ args.admin_email }}"
+
+  securityContext:
+    runAsNonRoot: false
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
+    privileged: false
+    runAsNonRoot: false
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1024Mi
+
+service:
+  type: ClusterIP
+
+proxyProtocol:
+  enabled: true
+  # Must include pod CIDR: HAProxy ingress sends mail traffic with PROXY protocol
+  # from its pod IP. Without this, mailserver rejects all proxied connections.
+  # Risk: a compromised pod could forge PROXY headers to spoof source IPs.
+  # Mitigated by NetworkPolicies restricting mail port access to HAProxy pods only.
+  trustedNetworks: "{{ args.pod_cidr }}"
+
+persistent_volume_claims:
+  mail-config:
+    enabled: true
+    size: 10Mi
+    storageClass: "{{ args.storage_class }}"
+  mail-data:
+    enabled: true
+    size: {{ args.pvc_mailserver_data }}
+    storageClass: "{{ args.storage_class }}"
+  mail-state:
+    enabled: true
+    size: {{ args.pvc_mailserver_state }}
+    storageClass: "{{ args.storage_class }}"
+  mail-log:
+    enabled: true
+    size: {{ args.pvc_mailserver_log }}
+    storageClass: "{{ args.storage_class }}"
+
+persistence:
+  mail-config:
+    volumeName: mail-config
+    mountPath: /tmp/docker-mailserver
+  mail-data:
+    volumeName: mail-data
+    mountPath: /var/mail
+  mail-state:
+    volumeName: mail-state
+    mountPath: /var/mail-state
+  mail-log:
+    volumeName: mail-log
+    mountPath: /var/log/mail
+
+monitoring:
+  service:
+    scrape: "true"
+  pod:
+    scrape: "true"
+
+rspamd:
+  ingress:
+    enabled: false
+
+configMaps:
+  user-patches.sh:
+    create: true
+    path: user-patches.sh
+    data: |
+      #!/bin/bash
+      # CVE-2026-27857/27858 mitigation: DMS 15.1.0 ships Dovecot 2.3.19 (vulnerable).
+      # Debian backports security fixes — apt upgrade pulls them on every restart.
+      apt-get update -qq && apt-get upgrade -y -qq --no-install-recommends \
+        -o Dpkg::Options::="--force-confold" 2>&1 | tail -5
+
+  postfix-main.cf:
+    create: true
+    path: postfix-main.cf
+    data: |
+      # TLS hardening
+      smtp_tls_ciphers = high
+      smtpd_tls_ciphers = high
+      tls_preempt_cipherlist = yes
+      smtp_tls_mandatory_ciphers = high
+      smtpd_tls_mandatory_ciphers = high
+      smtpd_tls_security_level = may
+      smtp_tls_security_level = may
+      tls_ssl_options = NO_COMPRESSION, NO_RENEGOTIATION
+      # Postscreen DNSBL
+      postscreen_dnsbl_sites = zen.spamhaus.org*3, bl.mailspike.net, b.barracudacentral.org*2, list.dnswl.org=127.0.[0..255].0*-2, list.dnswl.org=127.0.[0..255].1*-3, list.dnswl.org=127.0.[0..255].[2..3]*-4
+      # Access maps for sender/recipient restrictions
+      smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination, check_recipient_access hash:/tmp/docker-mailserver/postfix-receive-access.cf
+      smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, check_sender_access hash:/tmp/docker-mailserver/postfix-send-access.cf
+
+  postfix-accounts.cf:
+    create: true
+    path: postfix-accounts.cf
+    data: |
+      {% for domain in secrets.mailserver_domains %}
+      {% for account in domain.accounts %}
+      {{ account.username }}@{{ domain.domain }}|{BLF-CRYPT}{{ account.bcrypt_password }}
+      {% endfor %}
+      {% endfor %}
+
+  postfix-virtual.cf:
+    create: true
+    path: postfix-virtual.cf
+    data: |
+      {% for domain in secrets.mailserver_domains %}
+      {% for alias in domain.aliases %}
+      {{ alias.alias }} {{ alias.to }}
+      {% endfor %}
+      {% endfor %}
+
+  dovecot-quotas.cf:
+    create: true
+    path: dovecot-quotas.cf
+    data: |
+      {% for domain in secrets.mailserver_domains %}
+      {% for account in domain.accounts %}
+      {% if account.quota_mb is defined %}
+      {{ account.username }}@{{ domain.domain }}:{{ account.quota_mb }}M
+      {% endif %}
+      {% endfor %}
+      {% endfor %}
+
+  rspamd-dkim-signing.conf:
+    create: true
+    path: "rspamd/override.d/dkim_signing.conf"
+    data: |
+      sign_authenticated = true;
+      sign_local = true;
+      use_domain = "header";
+      use_redis = false;
+      use_esld = true;
+      {% for domain in secrets.mailserver_domains %}
+      {% if domain.dkim_private_b64 is defined %}
+      domain {
+          {{ domain.domain }} {
+              path = "/tmp/docker-mailserver/rspamd/dkim/{{ domain.domain }}.private";
+              selector = "mail";
+          }
+      }
+      {% endif %}
+      {% endfor %}
+
+  postfix-receive-access.cf:
+    create: true
+    path: postfix-receive-access.cf
+    data: |
+      {% for domain in secrets.mailserver_domains %}
+      {% if domain.receive_bans is defined %}
+      {% for ban in domain.receive_bans %}
+      {{ ban }} REJECT Recipient blocked
+      {% endfor %}
+      {% endif %}
+      {% endfor %}
+
+  postfix-send-access.cf:
+    create: true
+    path: postfix-send-access.cf
+    data: |
+      {% for domain in secrets.mailserver_domains %}
+      {% if domain.send_bans is defined %}
+      {% for ban in domain.send_bans %}
+      {{ ban }} REJECT Sender blocked
+      {% endfor %}
+      {% endif %}
+      {% endfor %}
+
+certificate: mailserver-tls
+
+secrets:
+  {% for domain in secrets.mailserver_domains %}
+  {% if domain.dkim_private_b64 is defined %}
+  dkim-{{ domain.domain | replace('.', '-') }}:
+    name: dkim-{{ domain.domain | replace('.', '-') }}
+    create: true
+    path: "rspamd/dkim/{{ domain.domain }}.private"
+    data: "{{ domain.dkim_private_b64 }}"
+  {% endif %}
+  {% endfor %}

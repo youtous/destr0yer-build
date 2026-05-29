@@ -1,0 +1,17 @@
+# SOPS configuration for encrypting Kluctl secrets with age.
+#
+# Setup:
+#   1. just sops-init          — generates age keypair in .dev/sops-age-key.txt
+#   2. Copy the public key below (replace the placeholder)
+#   3. Add SOPS_AGE_KEY_FILE to .env:
+#        echo 'SOPS_AGE_KEY_FILE=.dev/sops-age-key.txt' >> .env
+#   4. Store the private key in vault for other machines:
+#        cp .dev/sops-age-key.txt secret_vars/dev/sops-age-key.yml
+#        just vault-encrypt secret_vars/dev/sops-age-key.yml
+#
+# On a new machine:
+#   just sops-unlock            — extracts the key from vault into .dev/
+
+creation_rules:
+  - path_regex: ^kluctl/.*\.enc\.yaml$
+    age: "age13u685ul92gp4k55vj0m2aadnjteghgthyjz0x59la3rz8kka7c3sq79j22"

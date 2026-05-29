@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5  # v5.5.0
+        with:
+          go-version: "stable"
+
+      - name: Install changelog tool
+        # renovate: datasource=github-releases depName=rcmachado/changelog
+        run: go install github.com/rcmachado/changelog@v0.7.0
+
+      - name: Extract release notes
+        id: notes
+        run: |
+          NOTES=$(~/go/bin/changelog show ${{ github.ref_name }} 2>/dev/null || echo "Release ${{ github.ref_name }}")
+          echo "notes<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$NOTES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631  # v2.2.2
+        with:
+          body: ${{ steps.notes.outputs.notes }}
+          generate_release_notes: false

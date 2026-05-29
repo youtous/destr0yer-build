@@ -1,7 +1,2 @@
 ---
-- name: restart network-manager
-  become: yes
-  systemd:
-    name: networking
-    state: restarted
-...
+# No handlers needed — resolv.conf is read directly by applications, no service restart required

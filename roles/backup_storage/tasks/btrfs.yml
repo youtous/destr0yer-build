@@ -1,0 +1,130 @@
+- name: Install btrfs-progs
+  become: true
+  ansible.builtin.apt:
+    name: btrfs-progs
+    state: present
+
+- name: Create snapshot directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ backup_btrfs_snapshot_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "u=rwx"
+
+- name: Deploy btrfs snapshot script
+  become: true
+  ansible.builtin.template:
+    src: btrfs-snapshot.sh.j2
+    dest: /usr/local/sbin/btrfs-snapshot.sh
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx"
+
+- name: Deploy btrfs snapshot systemd service
+  become: true
+  ansible.builtin.template:
+    src: btrfs-snapshot.service.j2
+    dest: /etc/systemd/system/btrfs-snapshot.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload systemd
+
+- name: Deploy btrfs snapshot systemd timer
+  become: true
+  ansible.builtin.template:
+    src: btrfs-snapshot.timer.j2
+    dest: /etc/systemd/system/btrfs-snapshot.timer
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - Reload systemd
+    - Enable btrfs-snapshot timer
+
+- name: Deploy btrfs scrub systemd service
+  become: true
+  ansible.builtin.template:
+    src: btrfs-scrub.service.j2
+    dest: /etc/systemd/system/btrfs-scrub.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload systemd
+
+- name: Deploy btrfs scrub systemd timer
+  become: true
+  ansible.builtin.template:
+    src: btrfs-scrub.timer.j2
+    dest: /etc/systemd/system/btrfs-scrub.timer
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - Reload systemd
+    - Enable btrfs-scrub timer
+
+- name: Deploy btrfs cold send script
+  become: true
+  ansible.builtin.template:
+    src: btrfs-cold-send.sh.j2
+    dest: /usr/local/sbin/btrfs-cold-send.sh
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx"
+  when: backup_btrfs_cold_enabled | bool
+
+- name: Deploy btrfs cold send systemd service
+  become: true
+  ansible.builtin.template:
+    src: btrfs-cold-send.service.j2
+    dest: /etc/systemd/system/btrfs-cold-send.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  when: backup_btrfs_cold_enabled | bool
+  notify: Reload systemd
+
+- name: Deploy btrfs cold send systemd timer
+  become: true
+  ansible.builtin.template:
+    src: btrfs-cold-send.timer.j2
+    dest: /etc/systemd/system/btrfs-cold-send.timer
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  when: backup_btrfs_cold_enabled | bool
+  notify:
+    - Reload systemd
+    - Enable btrfs-cold-send timer
+
+- name: Ensure btrfs-snapshot timer is started
+  become: true
+  ansible.builtin.systemd:
+    name: btrfs-snapshot.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Ensure btrfs-scrub timer is started
+  become: true
+  ansible.builtin.systemd:
+    name: btrfs-scrub.timer
+    state: started
+    enabled: true
+
+- name: Ensure btrfs-cold-send timer is started
+  become: true
+  ansible.builtin.systemd:
+    name: btrfs-cold-send.timer
+    state: started
+    enabled: true
+  when: backup_btrfs_cold_enabled | bool
+
+- name: Remove legacy frozen backup cron
+  become: true
+  ansible.builtin.cron:
+    name: "frozen-backup"
+    state: absent

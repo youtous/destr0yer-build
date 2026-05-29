@@ -1,0 +1,39 @@
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  capabilities:
+    drop: ["ALL"]
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+metrics:
+  enabled: {{ args.mariadb_operator_metrics | default(false) }}
+  serviceMonitor:
+    enabled: {{ args.mariadb_operator_metrics | default(false) }}
+webhook:
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    capabilities:
+      drop: ["ALL"]
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  cert:
+    certManager:
+      enabled: true
+      issuerRef:
+        name: {{ args.certmanager_issuer | default("cluster-issuer") }}
+        kind: ClusterIssuer
+certController:
+  enabled: false

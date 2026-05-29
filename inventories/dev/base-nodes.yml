@@ -1,0 +1,50 @@
+all:
+  children:
+
+    systems:
+      hosts:
+        ctrl.k3s.dev.local:
+        worker.k3s.dev.local:
+
+    ### Per host application ###
+
+    # hosts that will be able to deliver mails using an smtp relay
+    smtp_relays:
+      hosts:
+        ctrl.k3s.dev.local:
+        worker.k3s.dev.local:
+
+    # hosts that will be backed-up on a backup_storage
+    backed_up_hosts:
+      hosts:
+        ctrl.k3s.dev.local:
+        worker.k3s.dev.local:
+
+    # hosts where ip is monitored
+    watch_ip:
+    # hosts:
+    #  ctrl.k3s.dev.local:
+
+    # hosts with specific interfaces configuration
+    interfaces:
+
+    # hosts used as backup server
+    backup_storage:
+      hosts:
+        ctrl.k3s.dev.local:
+
+    # hosts using Wireguard (full mesh: ctrl=server, worker=client)
+    wireguard_peers:
+      hosts:
+        ctrl.k3s.dev.local:
+        worker.k3s.dev.local:
+
+    # hosts running a WireGuard server (listening port open in firewall)
+    wireguard_server:
+      hosts:
+        ctrl.k3s.dev.local:
+
+    # cloud relay (HAProxy TCP + masquerade) — test on ctrl in dev
+    relay:
+      hosts:
+        ctrl.k3s.dev.local:

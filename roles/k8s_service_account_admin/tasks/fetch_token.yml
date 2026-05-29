@@ -1,0 +1,21 @@
+- name: Fetch the token for the Service Account and set it as fact
+  become: true
+  ansible.builtin.command: >
+    kubectl --namespace={{ k8s_service_account_admin_namespace }} create token {{ k8s_service_account_admin_name }} --duration={{ k8s_service_account_admin_token_duration }}
+  run_once: true
+  no_log: true
+  changed_when: false
+  register: _service_account_token
+  failed_when: _service_account_token.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_service_account_admin_kubeconfig_path }}"
+
+- name: "[INFO] Short-lived kube admin token generated"
+  ansible.builtin.debug:
+    verbosity: 0
+    msg: >
+      A short-lived cluster-admin token (TTL: {{ k8s_service_account_admin_token_duration }}) was generated. Do not store it permanently — regenerate when needed with: {{ _service_account_token.cmd | join(' ') }}. For emergency break-glass, generate a long-lived token manually and store it in the vault.
+- name: Setting host facts with admin token
+  no_log: true
+  ansible.builtin.set_fact:
+    k8s_service_account_admin_token: "{{ _service_account_token.stdout }}"

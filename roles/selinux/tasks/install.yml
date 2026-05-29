@@ -1,0 +1,7 @@
+- name: Install SELinux packages
+  become: true
+  ansible.builtin.apt:
+    name: "{{ selinux_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600

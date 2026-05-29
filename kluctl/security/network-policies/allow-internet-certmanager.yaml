@@ -1,0 +1,32 @@
+{% if args.certmanager_issuer_type == "letsencrypt" %}
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-certmanager-acme
+  namespace: cert-manager
+spec:
+  description: "cert-manager ACME + DNS-01 provider egress"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: cert-manager
+  egress:
+    - toFQDNs:
+{%- for fqdn in args.certmanager_egress_fqdns %}
+{%- if '*' in fqdn %}
+        - matchPattern: "{{ fqdn }}"
+{%- else %}
+        - matchName: "{{ fqdn }}"
+{%- endif %}
+{%- endfor %}
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{% endif %}

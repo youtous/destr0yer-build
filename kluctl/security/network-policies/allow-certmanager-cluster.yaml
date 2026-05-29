@@ -1,0 +1,14 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-certmanager-cluster
+  namespace: cert-manager
+spec:
+  description: "cert-manager needs K8S API access for certificate lifecycle"
+  endpointSelector: {}
+  egress:
+    - toEntities:
+        - cluster
+  enableDefaultDeny:
+    ingress: false
+    egress: false

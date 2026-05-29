@@ -1,0 +1,49 @@
+name: Lint
+
+on:
+  push:
+    branches: [master, k3S]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
+        with:
+          python-version-file: '.tool-versions'
+
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        run: pipenv install --dev
+
+      - name: Run pre-commit
+        run: pipenv run pre-commit run --all-files --show-diff-on-failure
+
+  kluctl-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Install kluctl
+        run: curl -sSL https://kluctl.io/install.sh | bash
+
+      - name: Install SOPS
+        run: |
+          SOPS_VERSION="3.9.4"
+          curl -sSLo /usr/local/bin/sops \
+            "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64"
+          chmod +x /usr/local/bin/sops
+
+      - name: Render dev target
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: kluctl render -t dev --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36

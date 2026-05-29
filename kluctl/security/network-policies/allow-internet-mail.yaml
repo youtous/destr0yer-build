@@ -1,0 +1,24 @@
+{% if args.enable_mail %}
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-mail-internet
+  namespace: mail
+spec:
+  description: "Mailserver SMTP outbound to world (MX delivery, cannot be FQDN-locked)"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: docker-mailserver
+  egress:
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+{%- for p in args.smtp_allowed_ports %}
+            - port: "{{ p }}"
+              protocol: TCP
+{%- endfor %}
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{% endif %}

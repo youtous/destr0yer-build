@@ -1,186 +1,363 @@
-# Destr0yer playbooks
+# 🏴‍☠️ destr0yer-build — Secure K3S Cluster with Ansible
 
-## Daily usage recommendations
+[![CI](https://github.com/youtous/destr0yer-build/actions/workflows/lint.yml/badge.svg)](https://github.com/youtous/destr0yer-build/actions/workflows/lint.yml)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Debian - 13 (Trixie)](https://img.shields.io/badge/Debian-13_(Trixie)-a80030)](https://www.debian.org/releases/trixie/releasenotes)
+[![K3S](https://img.shields.io/badge/K3S-v1.36-326CE5?logo=kubernetes&logoColor=white)](https://k3s.io/)
+[![Cilium](https://img.shields.io/badge/Cilium-1.19-F8C517?logo=cilium&logoColor=white)](https://cilium.io/)
+[![Licence](https://img.shields.io/github/license/youtous/destr0yer-build)](https://github.com/youtous/destr0yer-build/blob/master/LICENSE)
 
- -  **When one of the host ip is changed**, playbook should be completely re-run.
+> 🛡️ A production-grade, zero-trust **self-hosted Kubernetes platform** for bare-metal
+> servers. Provision hardened **Debian 13** nodes with Ansible, deploy a full
+> application stack with Kluctl, and expose services through a cloud VPS relay —
+> all from a single `just deploy` command.
 
-## Installation
-*Tested on Debian 10 Buster only.*
-
-Please fork this repo for each different server configuration.
-
-### Requirements
-- SSH access
-- Python
-- python-jmespath
-
-#### VM only
- _*Commands :*_ 
-- Start machines using `vagrant up`.
-- Stop machines using `vagrant halt`.
-- Update /etc/hosts using `vagrant hostmanager`
-
-[vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager) plugin is used for name resolution.
-
-If logs grows due to systemd not capable to generate a MAC address, see https://github.com/systemd/systemd/issues/3374#issuecomment-452718898
-## Ansible Playbooks
-
-### Playbooks description :
-- **destr0yers** : this play setup debian based systems with a secured base configuration. Use it as a _base_.
-- **the-swarm** : this play setup a Docker Swarm network using several nodes. It use TLS for communications between nodes (requires CA setup).
-Use it for Docker infrastructures.
-
-- Edit secrets using : `env EDITOR=vim ansible-vault edit secret_vars/all.yml --vault-password-file ./.vault_password`
-
-#### Deployment of a new node
-1. First configuration a new hosts: `ansible-playbook -i hosts/destr0yers.yml  destr0yers.yml --vault-password-file ./.vault_password --tag="new-systems"`
-2. Launch the recipe using: `ansible-playbook -i hosts/destr0yers.yml destr0yers.yml --vault-password-file ./.vault_password`
-3. Launch the docker recipe using: `ansible-playbook -i hosts/swarm-nodes.yml the-swarm.yml --vault-password-file ./.vault_password`
- 
-### Save `secrets` and `certs`
-Using `make` and the **Makefile** you can easily save secrets and certs in a safe place. For instance a private _Nextcloud_.
-- `make push` - save secrets and certs
-- `make pull` - restore secrets and certs
-
-_Create a `.env` as `.env.sample` in order to configure save path and cluster name which must be unique._
-
-### Hosts
-Hosts are located in `hosts/{hosts groups list}.yml`. Use separate files for separate clusters.
-
-## How to start?
-### Generate ssh keys
-For each account present on the server, a couple of public and private key is required. Generate it using `ssh-keygen -q -t ed25519 -C "" -N ""`
-and save it in the secret vault.
-
-### Generate GPG keys for backup encryption
-Backups requires to be encrypted using GPG.
-In order to make it work, keys must be generated.
-
-_We follow this guide: https://github.com/Oefenweb/ansible-duply-backup#advance-configuration-gpg-enabled_
-1. Generate a new GPG key using: `gpg --full-gen-key` _(choose RSA and RSA, 4096bits, never expires)_
-2. Export the public key using: `gpg --output {public key name}.pub.asc --armor --export {the name you entered previously}`
-3. Export the private key using: `gpg --output {private key name}.sec.asc --armor --export-secret-key {the name you entered previously}`
-4. Save the public and the private key in the host secret vault.
-5. Define this key as encryption key for the backup in `host_vars`. **/!\\** don't forget to set the names and the ownertrust.
-6. Save the _ownertrust_, the _both keys_ and the _passphrase_ in a **safe place**. 
-7. When the export is completed, **delete the GPG key from the host machine**.
-
-
-### Create CA for swarm or elastic cluster
-
-**Script:** a dedicated scrip has been created for this task. It create a client certificate signed by a root authority (X509 standard).
-Use `./generate-X509-certificate.rb`
-
-**REMINDER :** add the expiration date as a comment and as a calendar event.
-
-Using a personal Root CA is useful for swarm mode over TLS.
-Details of the procedure are available on : https://gist.github.com/fntlnz/cf14feb5a46b2eda428e000157447309
-**Important :** use a secure encryption for root CA using `openssl genrsa -chacha20...`
-
-To sum up :
-- Root CA 
-    1. RootCA (private ! and encrypted using chacha20) : `openssl genrsa -chacha20 -out certs/heaven.youtous.me-rootCA.key 4096`
-    2. Root CERTIFICATE (crt) (to be shared and renewed in 2500 days) : `openssl req -x509 -new -nodes -key certs/heaven.youtous.me-rootCA.key -sha256 -days 2500 -out certs/heaven.youtous.me-rootCA.crt`
-- For each server :
-    1. Certificate key (private ! but not encrypted) : `openssl genrsa -out certs/heaven-pascal.youtous.dv.key 4096`
-    2. Certificate signing (csr) : `openssl req -new -key certs/heaven-pascal.youtous.dv.key -out certs/heaven-pascal.youtous.dv.csr`
-    3. Generate the CERTIFICATE (crt) (to be renewed in 1024 days) : `openssl x509 -req -in certs/heaven-pascal.youtous.dv.csr -CA certs/heaven.youtous.me-rootCA.crt -CAkey certs/heaven.youtous.me-rootCA.key -CAcreateserial -out certs/heaven-pascal.youtous.dv.crt -days 1024 -sha256`
-    4. Next time, don't use `-CAcreateserial` but `-CAserial certs/heaven.youtous.me-rootCA.srl` (http://users.skynet.be/pascalbotte/art/server-cert.htm)
-    5. On the certificate has been generated, it to host secrets, there is no need to save it.
-
-*Notes :*
- - chacha20 is currently secured enough and resists against timing guess attacks
- - All digest are broken (https://stackoverflow.com/questions/800685/which-cryptographic-hash-function-should-i-choose/817121#817121) 
-
-### Use elastic for logging
-
-Two options are available for log forwarding :
-- setup an elastic cluster using docker-elastic (see dedicated `roles/docker-elastic/README.md`)
-- forward logs using _logstash_ and _wireguard_
-
-The following instructions will detail this last option:
-0. On the server node, add a new (peer) wireguard client targeting the new server, see `roles/wireguard-server/README.md`
-1. On the client node, setup a wireguard client connection
-```yaml
-wireguard_clients:
-  - interface: wg-elastic
-    name: "{{ hostname }} elastic"
-    addresses: # client address + network
-      - 10.101.101.2/24
-    endpoint: "logstash.castle.youtous.me:1991" # vpn server address
-    persistent_keepalive: "" # only used when behind a NAT
-    mtu: "" # optional mtu
-    allowed_ips: # which traffic to redirect to the vpn?
-      - 10.101.101.0/24
-    dns: [] # optional DNS ips to use for this VPN
-    server_public_key: "server public key=" # public key of the server
-    public_key: "client public key=" # client keys
-    private_key: "{{ wireguard_elastic_client_private_key }}"
-    preshared_key: "{{ wireguard_elastic_client_preshared_key }}"
-```
-2. Add the client peer ip on the wireguard server to allowed external logstash using
-```yaml
-logstash_external_allowed_ip4s: # vpn for logstash data exchange
-  - "10.101.101.2" # myclient hostname
-```
-
-When wireguard tunnel is setup, elastic cluster must be configured:
-1. On the elastic master node: generate a client certificate and key used by the client node for submitting data to the elastic receiver.
-```yaml
-# on the forwarder node
-logstash_client_forwarder_CA_certificate: "" # CA shared with the logstash receiver, this is required when used as a forwarder
-logstash_client_forwarder_node_certificate: ""
-logstash_client_forwarder_node_private_key: ""
-```
-2. On the elastic client node: generate a rootCA used for generating certificates in the swarm cluster.
-```yaml
-logstash_CA_certificate: | # usually logstash-rootCA.crt
-logstash_node_private_key: | # usually logstash-node-hostname.key
-logstash_node_certificate: | # usually logstash-node-hostname.crt
-```
-See `docker-elastic` for detailed instructions.
-
-### Examples
-#### DockerSwarm hosts
-Swarm comes with several admin applications which require domains,
-here is a list of the required domains :
+**67 Ansible roles · 14 Kluctl components · 37 architecture decisions · 22 integration tests · Zero plaintext secrets.**
 
 ```
-# prom domains
-192.168.100.10  prom.prom.heaven-pascal.youtous.dv
-192.168.100.10  unsee.prom.heaven-pascal.youtous.dv
-192.168.100.10  alerts.prom.heaven-pascal.youtous.dv
-192.168.100.10  graph.prom.heaven-pascal.youtous.dv
-
-# traefik domains
-192.168.100.10  traefik.heaven-pascal.youtous.dv
-192.168.100.10  consul.heaven-pascal.youtous.dv
-
-# portainer
-192.168.100.10  portainer.heaven-pascal.youtous.dv
-
-# elastic stack
-192.168.100.10  kibana.heaven-pascal.youtous.dv
-192.168.100.10  elasticsearch.heaven-pascal.youtous.dv
-192.168.100.10  logstash.heaven-pascal.youtous.dv
-
-# nextcloud
-192.168.100.10  cloud.heaven-pascal.youtous.dv
-
-# mailserver
-192.168.100.10 mail.heaven-pascal.youtous.dv
-192.168.100.10 autodiscover.heaven-pascal.youtous.dv
-192.168.100.10 autoconfig.heaven-pascal.youtous.dv
-
+                          🌐 Internet
+                             │
+                     ┌───────┴───────┐
+                     │  Cloud Relay  │   VPS: WireGuard + HAProxy TCP
+                     │  (untrusted)  │   Layer-4 only, never decrypts
+                     └───┬───────┬───┘
+                         │       │
+                    SMTP │       │ HTTPS
+                   :465  │       │ :443
+            ═════════════╪═══════╪══════════ 🔒 WireGuard mesh ════════
+                         │       │
+          ┌──────────────┴───────┴──────────────┐
+          │          K3S Cluster (bare-metal)    │
+          │                                     │
+          │  ┌─── Ingress (HAProxy) ──────────┐ │
+          │  │ 🌍 who    📊 grafana   🔐 auth │ │
+          │  │ 🏠 ha     📧 mail     📁 seafile│ │
+          │  └──────┬─────────────────────────┘ │
+          │         │ 🔑 Authelia SSO (2FA)     │
+          │         ▼                           │
+          │  ┌─── 📦 Applications ────────────┐ │
+          │  │ Grafana    Home Assistant       │ │
+          │  │ Seafile    Zigbee2MQTT/MQTT     │ │
+          │  │ Mailserver (DKIM/SPF/DMARC)    │ │
+          │  └────────────────────────────────┘ │
+          │  ┌─── 👁️ Observability ────────────┐ │
+          │  │ Prometheus + Alertmanager       │ │
+          │  │ Loki + Alloy (logs + metrics)   │ │
+          │  │ Gatus (health) + testssl (TLS)  │ │
+          │  └────────────────────────────────┘ │
+          │  ┌─── 🛡️ Security ─────────────────┐ │
+          │  │ Cilium eBPF (CNI + encryption)  │ │
+          │  │ Kyverno (admission policies)    │ │
+          │  │ CrowdSec (threat detection)     │ │
+          │  │ Tetragon (runtime enforcement)  │ │
+          │  │ cert-manager (TLS lifecycle)    │ │
+          │  └────────────────────────────────┘ │
+          │  ┌─── 💾 Storage & Backup ─────────┐ │
+          │  │ OpenEBS hostpath (local PVCs)   │ │
+          │  │ Garage S3 (object storage)      │ │
+          │  │ Velero + Kopia (3-layer backup) │ │
+          │  │ Registry (pull-through cache)   │ │
+          │  └────────────────────────────────┘ │
+          └─────────┬───────────┬───────────────┘
+                  ctrl node   worker node
+                 (Debian 13)  (Debian 13)
+                    🔥 UFW + fail2ban + SELinux
+                    🔒 WireGuard + dnscrypt-proxy
+                    📊 Kopia + Monit + Alloy
 ```
 
-### Other commands
-- `bcrypt-passwd.sh` : helps to create a bcrypt password; requires `htpasswd` to be installed.
+## ✨ What's included
 
-## Ansible 3rd Roles
+| Layer | Components |
+|-------|------------|
+| 🐧 **Host OS** | Debian 13 Trixie, kernel 6.12 LTS, nftables, SELinux |
+| 🌐 **Networking** | Cilium eBPF (kube-proxy replacement, WireGuard encryption) |
+| 🚪 **Ingress** | HAProxy (HTTP/HTTPS/TCP, HSTS, security headers, IP allowlist) |
+| 🔐 **TLS** | cert-manager — internal CA (dev) or Let's Encrypt DNS-01 via deSEC (prod) |
+| 🪪 **Identity** | Authelia SSO + TOTP 2FA, OIDC provider for Grafana/Seafile |
+| 🔒 **VPN** | WireGuard PTP mesh (always-on infra), Headscale planned (admin) |
+| 💾 **Storage** | OpenEBS hostpath + Garage S3 + multi-arch registry pull-through cache |
+| 👁️ **Observability** | Prometheus + Alertmanager + Grafana + Loki + Alloy + Gatus + testssl |
+| 🛡️ **Security** | Kyverno policies, CrowdSec LAPI + nftables bouncer, Tetragon eBPF, fail2ban |
+| 💿 **Backup** | Velero (S3 to Garage) + Kopia (SFTP over WireGuard, btrfs snapshots) |
+| 📧 **Mail** | docker-mailserver (Postfix, Dovecot, DKIM/SPF/DMARC) + MTA-STS + autodiscover |
+| 🏠 **Apps** | Home Assistant, Seafile, Zigbee2MQTT/Mosquitto |
+| 🚀 **Deployment** | Ansible (67 roles for hosts) + Kluctl (14 components for K8S) |
+| ✅ **Testing** | 22 integration tests + firewall audit + CIS benchmark + NSA/CISA scan |
 
-Install requirements using
-`ansible-galaxy install -r requirements.yml`
+## ⚡ Five commands to a running cluster
 
-*See requirements.yml*
-*Ansible version:* _2.8_ 
+```sh
+just setup           # 📦 Install tools + deps
+just provision       # 🔧 Bootstrap bare-metal nodes
+just configure       # 🛡️ Harden OS, firewall, WireGuard, monitoring
+just k3s             # ☸️ Deploy K3S + Cilium
+just deploy          # 🚀 Deploy all K8S services via Kluctl
+```
+
+Then validate:
+
+```sh
+just test-integration   # ✅ 22 automated checks (nodes, pods, Cilium, DNS, Kyverno, certs, ingress...)
+just test-firewall      # 🔥 UFW rule audit against expected policy
+just audit-cluster      # 🛡️ NSA/CISA + MITRE security scan
+```
+
+## 📋 Requirements
+
+System packages (install via your package manager, not asdf):
+- [just](https://github.com/casey/just) — command runner
+- [Vagrant](https://www.vagrantup.com/) + [libvirt](https://vagrant-libvirt.github.io/vagrant-libvirt/) — local dev VMs (optional)
+- QEMU/KVM — hypervisor for Vagrant (`qemu-system`, `libvirt`, `virt-manager`)
+
+Managed by asdf (installed via `just setup`):
+- [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev/) — tool version management
+- [pipenv](https://pipenv.pypa.io/) — Python dependency management
+- All tools in `.tool-versions` (python, helm, k9s, yq, jq, kluctl, sops, kubescape)
+
+## 🏁 Getting started
+
+```sh
+git clone https://github.com/youtous/destr0yer-build.git
+cd destr0yer-build
+
+just setup           # Install everything
+cp .env.sample .env  # Local config
+just vault-login     # Set vault password
+```
+
+### 🧪 Development environment
+
+#### DevContainer (recommended)
+
+Open in VS Code or Claude Code — Arch Linux container with all tools pre-installed.
+Uses `--network=host` to reach Vagrant VMs.
+
+#### Vagrant (local test cluster)
+
+```sh
+just ssh-keygen      # 🔑 Generate dev SSH key (.dev/, git-ignored)
+
+# Add the dev public key to your vault:
+just vault-edit secret_vars/dev/all.yml
+# sudo_user_ssh_keys:
+#   - "ssh-ed25519 AAAA... destr0yer-dev"   # paste from .dev/id_ed25519.pub
+
+just ssh-config      # 📝 Write SSH config (User=walle by default)
+just vagrant-up      # 🖥️ Start 2 Debian Trixie VMs
+
+# Phase 1 — provision (as vagrant, creates the walle sudo user)
+just ssh_user=vagrant provision --user=vagrant --extra-vars='nameservers=["1.1.1.1"]'
+
+# Phase 2 — everything else runs as walle
+just configure && just k3s && just deploy
+
+# Phase 3 — post-deploy steps (need running cluster from above)
+# a) Garage S3: create buckets + keys, store in SOPS (see kluctl/targets/secrets-reference.yaml)
+# b) CrowdSec: register bouncer key, store in vault (see doc/operations.md)
+just deploy                    # redeploy after adding Garage S3 keys to SOPS
+just configure --tags crowdsec # activate host bouncer after adding API key to vault
+
+just test-integration   # ✅ Validate the cluster
+just vagrant-halt       # 💤 Stop VMs
+```
+
+> 💡 **SSH user lifecycle**: `just provision` creates the `walle` sudo user.
+> All subsequent commands default to `walle`. Override with `just ssh_user=vagrant k9s`.
+
+### 🏭 Production deployment
+
+Same commands, different inventory:
+
+```sh
+just env=prod provision --user=root
+just env=prod configure
+just env=prod k3s
+just env=prod deploy
+```
+
+### 🎛️ Per-cluster component toggles
+
+Infrastructure (security, storage, ingress, observability) is always deployed.
+Application components are opt-in per cluster via `.kluctl.yaml`:
+
+| Component | Toggle | Default |
+|-----------|--------|---------|
+| 🔐 Authelia (SSO) | `enable_authelia` | `true` |
+| 📧 Mailserver | `enable_mail` | `true` |
+| 🏠 Home Assistant | `enable_homeassistant` | `true` |
+| 📁 Seafile | `enable_seafile` | `true` |
+| 🧪 Whoami (test) | `enable_whoami` | `true` |
+| 🛡️ CrowdSec | `enable_crowdsec` | `true` |
+| 📢 ntfy | `enable_ntfy` | `false` |
+
+## 📁 Project structure
+
+```
+playbooks/              🎭 Ansible playbooks (host-level)
+  00-provision.yml        Bootstrap new servers (run once as root)
+  01-configure.yml        System configuration (users, SSH, firewall, packages)
+  02-k3s.yml              K3S cluster deployment
+  99-integration-tests.yml  22 automated post-deploy checks
+
+kluctl/                 ☸️ Kluctl deployments (K8S-level)
+  .kluctl.yaml            Project config + per-target component toggles
+  security/               Kyverno, CrowdSec, Tetragon, cert-manager, NetworkPolicies
+  observability/          Prometheus, Grafana, Loki, Alloy, Gatus, testssl
+  storage/                OpenEBS, Garage S3, registry pull-through, Velero
+  ingress/                HAProxy Ingress (HSTS, forward auth, allowlist)
+  authelia/               Authelia SSO (OIDC, file-based users, 2FA)
+  mail/                   docker-mailserver + MTA-STS + autodiscover + parsedmarc
+  home/                   Home Assistant + Mosquitto + Zigbee2MQTT
+  apps/                   Seafile (S3 + MariaDB + OIDC)
+
+roles/                  🔧 67 Ansible roles (host-level)
+collections/            📦 Ansible collection youtous.destr0yer (reusable roles)
+inventories/            🗂️ Inventory, group_vars, host_vars per environment
+doc/                    📚 37 ADRs, security review, testing strategy
+```
+
+## 🎮 Commands
+
+All Ansible runs are logged to `logs/<playbook>-<timestamp>.log` (git-ignored).
+
+| Command | Description |
+|---------|-------------|
+| **🔧 Host-level (Ansible)** | |
+| `just setup` | Install all tools, Python deps, and Galaxy roles |
+| `just provision` | Bootstrap new servers (run once as root) |
+| `just configure` | System configuration (firewall, SSH, WireGuard, monitoring) |
+| `just k3s` | Deploy K3S cluster |
+| **☸️ K8S-level (Kluctl)** | |
+| `just deploy` | Deploy all K8S components |
+| `just deploy-only observability/loki` | Deploy a specific component |
+| `just diff` | Preview changes before applying |
+| `just render` | Render templates offline (no cluster needed) |
+| `just prune` | Remove orphaned K8S resources |
+| **🖥️ Cluster access** | |
+| `just k9s` | Open k9s on ctrl (RBAC-limited operator kubeconfig) |
+| `just kubectl get pods -A` | Run kubectl on ctrl |
+| `just kubectl-admin ...` | 🚨 Break-glass admin kubeconfig (emergency only) |
+| `just garage status` | Run garage CLI inside garage-0 pod |
+| **🔐 Secrets** | |
+| `just vault-edit <file>` | Edit Ansible Vault file (host-level secrets) |
+| `just sops-edit <file>` | Edit SOPS-encrypted file (kluctl targets) |
+| **✅ Testing & operations** | |
+| `just lint` | Pre-commit hooks (yamlfmt, ansible-lint) |
+| `just test-integration` | 22 automated checks on the deployed cluster |
+| `just test-firewall` | UFW rule audit against expected policy |
+| `just audit-node <host>` | CIS K3S benchmark on a node |
+| `just audit-cluster` | NSA/CISA + MITRE security scan |
+
+## 🛡️ Security model
+
+```
+🌐 Internet ──▶ 🔥 UFW (deny all) ──▶ 🔒 WireGuard (encrypted mesh)
+                                              │
+                              🕸️ Cilium NetworkPolicy (default-deny per namespace)
+                                              │
+                              📋 Kyverno (digest-only images, resource limits, PSA restricted)
+                                              │
+                              🚨 CrowdSec (threat detection) + Tetragon (runtime eBPF)
+                                              │
+                              🔐 Authelia (SSO + 2FA forward auth)
+                                              │
+                                          📦 Application
+```
+
+- 🚫 **Zero-trust networking** — all inbound blocked on bare-metal, SSH restricted to known IPs
+- 🧅 **Defense in depth** — 6 layers from UFW to application-level auth
+- 🔒 **Egress control** — default-deny on all pods, internet access restricted to 3 components
+- 📌 **Image security** — all images pinned by SHA256 digest, Kyverno enforces digest-only pulls
+- 🔑 **Secrets** — Ansible Vault (hosts) + SOPS/age (K8S), zero plaintext on disk
+- 🔔 **Alerting** — Prometheus Alertmanager (10 custom rules) + 6 reporting CronJobs (email)
+- 📝 **Audit** — K3S API audit log shipped to Loki via Alloy
+
+See [doc/security.md](doc/security.md) for the full gap analysis and network policy matrix.
+
+## 🔑 Secrets management
+
+Two independent encrypted stores — no sync needed between them:
+
+| Store | Scope | Encryption | Tool |
+|-------|-------|------------|------|
+| 🏰 Ansible Vault | Host-level (SSH keys, passwords, WireGuard) | AES-256 | `just vault-edit` |
+| 🔐 SOPS + age | K8S-level (Kluctl secrets, S3 keys, OIDC) | X25519 | `just sops-edit kluctl/targets/<env>.enc.yaml` |
+
+```sh
+just vault-login                            # Set vault password
+just vault-edit secret_vars/<env>/all.yml   # Edit host-level secrets
+just sops-edit kluctl/targets/<env>.enc.yaml  # Edit K8S-level secrets
+just sops-init                              # First-time: generate age keypair
+just push / just pull                       # Backup/restore secrets
+```
+
+See [doc/operations.md](doc/operations.md#secrets-management) for detailed procedures.
+
+## 🌍 Accessing services
+
+Services run on the `k8s.home` domain. Add entries to `/etc/hosts` pointing to
+the cluster ingress IP.
+
+| Service | URL | Auth |
+|---------|-----|------|
+| 📊 Grafana | `https://grafana.k8s.home` | OIDC via Authelia (or admin login) |
+| 🔐 Authelia | `https://auth.k8s.home` | File-based users + TOTP 2FA |
+| 🏠 Home Assistant | `https://ha.k8s.home` | Native (setup wizard) |
+| 📁 Seafile | `https://seafile.k8s.home` | OIDC via Authelia |
+| 🧪 Whoami | `https://who.k8s.home` | Authelia forward auth |
+| 📋 Gatus | `https://status.k8s.home` | Status page |
+
+## 📝 Post-deploy operations
+
+Some components require one-time manual steps after `just deploy`.
+Full procedures: [doc/operations.md](doc/operations.md).
+
+| Step | Action | Details |
+|------|--------|---------|
+| 1 | Garage S3 layout + buckets + keys | `just garage status` → assign layout → create keys/buckets → `just sops-edit` → `just deploy` |
+| 2 | Authelia first login | Visit `https://auth.k8s.home`, register TOTP 2FA |
+| 3 | Grafana data sources | Visit `https://grafana.k8s.home`, verify Prometheus + Loki |
+| 4 | Velero backups | `just kubectl get backupstoragelocations -n velero` (phase = Available) |
+| 5 | Home Assistant | Visit `https://ha.k8s.home`, complete onboarding wizard |
+| 6 | CrowdSec bouncer | Generate key from LAPI, store in vault, `just configure --tags crowdsec` |
+| 7 | Mailserver DNS (prod) | MX, SPF, DKIM, DMARC, MTA-STS records |
+| 8 | cert-manager deSEC (prod) | Store deSEC token in SOPS, delegate `_acme-challenge` CNAME |
+
+## 📦 Reusable Ansible collection
+
+The `youtous.destr0yer` collection contains standalone roles:
+
+| Role | Description |
+|------|-------------|
+| 🔥 `youtous.destr0yer.ufw_smart_rules` | Declarative UFW firewall reconciliation |
+| 👤 `youtous.destr0yer.users` | User, group, and SSH key management |
+| 📋 `youtous.destr0yer.logwatch` | Logwatch installation and configuration |
+
+## 📚 Documentation
+
+- 📐 [Architecture decisions (37 ADRs)](doc/adr/)
+- 🛡️ [Security review](doc/security.md)
+- ✅ [Testing strategy](doc/testing.md)
+- 🕸️ [Network policies egress matrix](kluctl/security/network-policies/README.md)
+- 💾 [USB disk storage](doc/usb-storage.md)
+- 🔐 [Certificate management](doc/certificates.md)
+- 📖 [Operations guide](doc/operations.md)
+- 🌐 [Proposal: White hole relay pattern](doc/proposal-white-hole-extended.md)
+- 📢 [Proposal: ntfy push notifications](doc/proposal-ntfy-push-notifications.md)
+- 🤖 [AI onboarding (CLAUDE.md)](CLAUDE.md)
+
+## 🗺️ Roadmap
+
+- [ ] 🦾 ARM64 full stack validation
+- [ ] 💾 OpenEBS Mayastor (multi-node replicated storage)
+- [ ] 📧 Mailserver DNS + cloud relay end-to-end
+- [ ] 🔄 DR test: etcd snapshot restore
+- [ ] 📢 ntfy + Alertmanager notification pipeline
+- [ ] 🔐 Let's Encrypt via deSEC (prod)
+- [ ] 💾 Garage multi-site replication (2-zone layout over WireGuard)
+- [ ] 🌐 Cilium Gateway API (when HAProxy limits reached)
+
+## 📜 Licence
+
+[GPLv3](LICENSE) — Author [@youtous](https://github.com/youtous)

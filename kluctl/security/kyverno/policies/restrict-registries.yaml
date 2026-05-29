@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-image-registries
+spec:
+  validationFailureAction: "{{ args.kyverno_validation_action }}"
+  rules:
+    - name: validate-registries
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, cilium, openebs, kyverno, cert-manager, haproxy-ingress, observability, security, garage, homeassistant, authelia, whoami, mail]
+      validate:
+        message: "Images should come from the internal registry or approved upstream registries."
+        pattern:
+          spec:
+            containers:
+              - image: "*.*/*"

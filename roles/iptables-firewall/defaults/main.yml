@@ -1,5 +1,0 @@
----
-ufw_logging: "off"
-ipv4_ip_forwarding: "0"
-ipv6_ip_forwarding: "0"
-...

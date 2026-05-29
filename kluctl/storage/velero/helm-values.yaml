@@ -1,0 +1,46 @@
+snapshotsEnabled: false
+
+initContainers:
+  - name: velero-plugin-for-aws
+    # renovate: datasource=docker depName=velero/velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.14.1
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: aws
+      bucket: "{{ args.s3_bucket_prefix }}velero-backups"
+      default: true
+      credential:
+        name: velero-s3-credentials
+        key: cloud
+      config:
+        s3Url: "http://{{ args.s3_endpoint }}"
+        region: "{{ args.s3_region }}"
+        s3ForcePathStyle: "true"
+  defaultVolumesToFsBackup: true
+
+credentials:
+  existingSecret: velero-s3-credentials
+
+schedules:
+  daily-backup:
+    schedule: "{{ args.schedule_velero_backup }}"
+    template:
+      ttl: "0s"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+containerSecurityContext:
+  runAsUser: 65532
+  runAsNonRoot: true

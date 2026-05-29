@@ -1,0 +1,7 @@
+deployments:
+  - path: crds/
+
+  - barrier: true
+
+  - path: operator/
+    waitReadiness: true

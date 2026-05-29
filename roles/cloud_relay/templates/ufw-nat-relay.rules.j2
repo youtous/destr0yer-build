@@ -1,0 +1,6 @@
+# NAT rules for cloud relay — outbound masquerade for WG traffic.
+# Inserted into /etc/ufw/before.rules by Ansible.
+*nat
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -o {{ relay_public_interface }} -s {{ relay_wg_subnet }} -j MASQUERADE
+COMMIT

@@ -1,0 +1,30 @@
+# Quadlet container unit — managed by podman-systemd
+# Placed in /etc/containers/systemd/ and auto-generated into a systemd unit.
+# See: podman-systemd.unit(5)
+
+[Container]
+ContainerName=haproxy-relay
+Image={{ relay_haproxy_image }}
+Network=host
+ReadOnly=true
+NoNewPrivileges=true
+
+AddCapability=NET_BIND_SERVICE
+DropCapability=ALL
+
+Volume=/etc/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro,Z
+Tmpfs=/run/haproxy
+
+HealthCmd=haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg
+HealthInterval=30s
+HealthRetries=3
+HealthStartPeriod=10s
+
+[Service]
+Restart=always
+RestartSec=5
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=1000
+
+[Install]
+WantedBy=multi-user.target default.target

@@ -1,0 +1,53 @@
+system_packages:
+  - cron
+  - attr
+  - curl
+  - network-manager  # manage network systemd's way
+  - wget
+  - curl
+  - dnsutils
+  - screenfetch
+  - zip
+  - unzip
+  - screen
+  - geoip-database
+  - gnupg
+  - iperf3
+  - rsync
+  - sqlite3
+  - tar
+  - htop
+  - iftop
+  - sysstat
+  - fish
+  - git
+  - nmap
+  - ca-certificates
+  - time
+  - sudo
+  - ncdu
+  - tree
+  - duf
+  - grc  # colorization
+  - bat  # color cat!
+  - podman
+  - uidmap  # rootless subuid mapping
+  - fuse-overlayfs  # rootless overlay storage
+  - slirp4netns  # rootless networking
+
+# services to enable by default
+system_services_enabled_by_default:
+  - cron
+
+# enable sysstat
+system_enable_sysstat: true
+
+# USB disk SMART monitoring — enable when USB storage devices are present
+usb_storage_smart_enabled: false
+usb_storage_smart_devices: []
+# - name: garage-data
+#   by_id: usb-Samsung_T7_S7A1NJ0X12345-0:0
+#   smartctl_device_type: sat  # sat | sntrealtek | auto
+# SMART check interval in monit cycles (1 cycle = 60s by default)
+# 1440 cycles = every 24 hours
+usb_storage_smart_check_cycles: 1440

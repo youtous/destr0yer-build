@@ -1,0 +1,22 @@
+# K3S host-level prerequisites and service endpoints.
+# Variables here are needed by host-level roles (alloy, crowdsec_bouncer,
+# iptables_firewall) that run BEFORE or independently of the k3s group inventory.
+
+sysctl_vm_overcommit_memory: 1
+
+# allow unprivileged containers to bind any node port
+sysctl_net_ipv4_ip_unprivileged_port_start: 20
+
+# Pod network CIDRs trusted by host-level services (UFW rules, fail2ban whitelist).
+# Must match k3s_installation_server.cluster-cidr in group_vars/k3s/main.yml.
+local_container_ips:
+  - '10.42.0.0/16'  # K3S pod CIDR
+
+# Alloy — push logs to Loki via NodePort on ctrl
+alloy_loki_endpoint: "http://192.168.56.10:13100/loki/api/v1/push"
+# Alloy — push host metrics to Prometheus via NodePort on ctrl
+alloy_prometheus_endpoint: "http://192.168.56.10:13090/api/v1/write"
+
+# CrowdSec firewall bouncer — connects to LAPI via fixed NodePort
+# Service: crowdsec-lapi-nodeport (kluctl/security/crowdsec/lapi-nodeport.yaml)
+crowdsec_lapi_nodeport: 9282

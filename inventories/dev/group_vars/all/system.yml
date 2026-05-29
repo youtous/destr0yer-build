@@ -1,0 +1,14 @@
+# system configuration
+
+###  Beginning of destr0yers vars  ###
+users_default_shell: "/usr/bin/fish"
+
+# Time configuration
+timezone: "Etc/UTC"
+
+# Email that will receive all notifications, useful for monitoring
+monitoring_email: "monitoring+devstage@k8s.home"
+
+# SMTP relay — in dev, mailpit runs on the VM host (192.168.56.1:1025)
+relay_server: "192.168.56.1"
+relay_port: 1025

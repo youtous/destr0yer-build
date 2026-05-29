@@ -1,0 +1,11 @@
+# Swap configuration — wraps geerlingguy.swap role.
+# Swap is per-host: set fs_swap_file_size_mb in host_vars for hosts that need it.
+# Disabled by default (size 0). Recommended for resource-constrained homelabs.
+
+fs_swap_file_path: /swapfile
+fs_swap_file_size_mb: '0'
+fs_swap_swappiness: '10'
+fs_swap_file_state: "{{ 'absent' if (fs_swap_file_size_mb | int == 0) else 'present' }}"
+fs_swap_file_create_command: "dd if=/dev/zero of={{ fs_swap_file_path }} bs=1M count={{ fs_swap_file_size_mb }}"
+
+fs_swap_test_mode: false

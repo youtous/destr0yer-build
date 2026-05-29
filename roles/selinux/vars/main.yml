@@ -1,0 +1,9 @@
+selinux_packages:
+  - selinux-basics
+  - selinux-policy-default
+  - selinux-utils
+  - policycoreutils
+  - policycoreutils-python-utils
+  - python3-selinux
+  - python3-semanage
+  - auditd

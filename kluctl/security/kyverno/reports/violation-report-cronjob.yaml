@@ -1,0 +1,167 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kyverno-violation-report
+  namespace: security
+  labels:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: violation-report
+spec:
+  schedule: "{{ args.schedule_kyverno_report }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: kyverno
+            app.kubernetes.io/component: violation-report
+        spec:
+          restartPolicy: Never
+          serviceAccountName: kyverno-report-reader
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            # renovate: datasource=docker depName=alpine/k8s
+            - name: report
+              image: docker.io/alpine/k8s@sha256:692239d739589247c4a791205ed9619c28ae85a21286e19a6211c04a62c56668  # 1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+                  NS_REPORTS=$(kubectl get policyreport -A -o json 2>/dev/null || echo '{"items":[]}')
+                  CL_REPORTS=$(kubectl get clusterpolicyreport -o json 2>/dev/null || echo '{"items":[]}')
+
+                  NS_FAIL=$(echo "$NS_REPORTS" | jq '[.items[].results[]? | select(.result=="fail")] | length')
+                  NS_WARN=$(echo "$NS_REPORTS" | jq '[.items[].results[]? | select(.result=="warn")] | length')
+                  CL_FAIL=$(echo "$CL_REPORTS" | jq '[.items[].results[]? | select(.result=="fail")] | length')
+                  CL_WARN=$(echo "$CL_REPORTS" | jq '[.items[].results[]? | select(.result=="warn")] | length')
+
+                  TOTAL=$((NS_FAIL + NS_WARN + CL_FAIL + CL_WARN))
+
+                  if [ "$TOTAL" -eq 0 ]; then
+                    echo "No policy violations — skipping report."
+                    exit 0
+                  fi
+
+                  NS_DETAILS=$(echo "$NS_REPORTS" | jq -r '
+                    [.items[] | .metadata.namespace as $ns |
+                     .results[]? | select(.result=="fail" or .result=="warn") |
+                     "  [\(.result | ascii_upcase)] \($ns)/\(.resources[0].kind // "?")/\(.resources[0].name // "?"): \(.policy)/\(.rule)"
+                    ] | .[0:80] | .[]')
+
+                  CL_DETAILS=$(echo "$CL_REPORTS" | jq -r '
+                    [.items[] |
+                     .results[]? | select(.result=="fail" or .result=="warn") |
+                     "  [\(.result | ascii_upcase)] \(.resources[0].kind // "?")/\(.resources[0].name // "?"): \(.policy)/\(.rule)"
+                    ] | .[0:40] | .[]')
+
+                  {
+                    printf 'Subject: [Kyverno] %s policy violations - %s\r\n' "$TOTAL" "$(date +%Y-%m-%d)"
+                    printf 'From: %s\r\n' "$SMTP_FROM"
+                    printf 'To: %s\r\n' "$SMTP_TO"
+                    printf 'Content-Type: text/plain; charset=utf-8\r\n'
+                    printf '\r\n'
+                    printf 'Kyverno Policy Violation Report\n'
+                    printf '================================\n\n'
+                    printf 'Namespaced: %s fail, %s warn\n' "$NS_FAIL" "$NS_WARN"
+                    printf 'Cluster:    %s fail, %s warn\n' "$CL_FAIL" "$CL_WARN"
+                    printf 'Total:      %s\n\n' "$TOTAL"
+                    printf '--- Namespaced ---\n%s\n\n' "$NS_DETAILS"
+                    printf '--- Cluster-wide ---\n%s\n\n' "$CL_DETAILS"
+                    printf '---\nMode: {{ args.kyverno_validation_action }}\n'
+                    printf 'Cluster: {{ args.cluster_domain }}\n'
+                    printf 'Generated: %s\n' "$NOW"
+                  } | curl -sf --url "smtp://${SMTP_HOST}:${SMTP_PORT}" \
+                      --user "${SMTP_USER}:${SMTP_PASS}" \
+                      --mail-from "$SMTP_FROM" \
+                      --mail-rcpt "$SMTP_TO" \
+                      --upload-file -
+
+                  echo "Report sent (${TOTAL} violations)"
+              env:
+                - name: SMTP_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: host
+                - name: SMTP_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: port
+                - name: SMTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: username
+                - name: SMTP_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: password
+                - name: SMTP_FROM
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: from
+                - name: SMTP_TO
+                  value: "{{ args.admin_email }}"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kyverno-report-reader
+  namespace: security
+  labels:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: violation-report
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno-report-reader
+  labels:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: violation-report
+rules:
+  - apiGroups: ["wgpolicyk8s.io"]
+    resources: ["policyreports", "clusterpolicyreports"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno-report-reader
+  labels:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: violation-report
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kyverno-report-reader
+subjects:
+  - kind: ServiceAccount
+    name: kyverno-report-reader
+    namespace: security

@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Create btrfs snapshot of backup volume
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/btrfs-snapshot.sh hourly
+ExecStartPost=/usr/bin/touch /var/lib/btrfs-snapshot-ok

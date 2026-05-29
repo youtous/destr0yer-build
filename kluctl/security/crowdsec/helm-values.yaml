@@ -1,0 +1,155 @@
+container_runtime: containerd
+podSecurityContext:
+  runAsNonRoot: false
+containerSecurityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+
+agent:
+  acquisition:
+    - namespace: haproxy-ingress
+      podName: "haproxy-ingress-*"
+      program: haproxy
+      poll_without_inotify: true
+    - namespace: authelia
+      podName: "authelia-*"
+      program: authelia
+      poll_without_inotify: true
+    - namespace: mail
+      podName: "mailserver-*"
+      program: postfix
+      poll_without_inotify: true
+    - namespace: mail
+      podName: "mailserver-*"
+      program: dovecot
+      poll_without_inotify: true
+  additionalAcquisition: []
+  env:
+    - name: COLLECTIONS
+      value: >-
+        crowdsecurity/linux
+        crowdsecurity/haproxy
+        crowdsecurity/http-cve
+        crowdsecurity/base-http-scenarios
+        crowdsecurity/postfix
+        crowdsecurity/dovecot
+        LePresidente/authelia
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+config:
+  config.yaml.local: |
+    api:
+      client:
+        unregister_on_exit: true
+      server:
+        auto_registration:
+          enabled: true
+          token: "${REGISTRATION_TOKEN}"
+          # Ranges allowed to auto-register as CrowdSec agents.
+          # Must include pod/service CIDRs so DaemonSet agents can register from any node.
+          allowed_ranges:
+            - "127.0.0.1/32"
+            - "{{ args.pod_cidr }}"
+            - "{{ args.service_cidr }}"
+    db_config:
+      flush:
+        agents_autodelete:
+          login_password: 60m
+        bouncers_autodelete:
+          api_key: 24h
+  profiles.yaml: |
+    name: default_ip_remediation
+    filters:
+      - Alert.Remediation == true && Alert.GetScope() == "Ip"
+    decisions:
+      - type: ban
+        duration: {{ args.crowdsec_ban_duration }}
+    on_success: break
+  scenarios:
+    postfix-sasl-bf.yaml: |
+      type: leaky
+      name: custom/postfix-sasl-bf
+      description: "Detect SMTP AUTH (SASL) brute-force — not covered by crowdsecurity/postfix"
+      filter: "evt.Parsed.program startsWith 'postfix/' && evt.Parsed.message contains 'SASL' && evt.Parsed.message contains 'authentication failed'"
+      leakspeed: "8h"
+      capacity: 3
+      groupby: evt.Meta.source_ip
+      blackhole: 4h
+      labels:
+        service: smtp
+        type: bruteforce
+        remediation: true
+        behavior: "smtp:bruteforce"
+        label: "Postfix SMTP AUTH Bruteforce"
+
+  parsers:
+    s02-enrich:
+      whitelist-infra.yaml: |
+        name: whitelist-infra
+        description: "Whitelist infrastructure networks"
+        whitelist:
+          reason: "infra network"
+          cidr:
+{% for cidr in args.trusted_cidrs %}
+            - "{{ cidr }}"
+{% endfor %}
+            # pod_cidr/service_cidr intentionally NOT whitelisted here.
+            # CrowdSec must be able to detect and ban compromised pods performing
+            # brute-force or exploit attempts from within the cluster.
+
+lapi:
+  dashboard:
+    enabled: false
+  env:
+    - name: BOUNCER_KEY_firewall
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec-bouncer-key
+          key: apiKey
+    - name: COLLECTIONS
+      value: >-
+        crowdsecurity/linux
+        crowdsecurity/haproxy
+        crowdsecurity/http-cve
+        crowdsecurity/base-http-scenarios
+        crowdsecurity/postfix
+        crowdsecurity/dovecot
+        LePresidente/authelia
+{% if args.crowdsec_online_api %}
+    - name: ENROLL_KEY
+      value: "{{ secrets.crowdsec_enroll_key }}"
+    - name: ENROLL_INSTANCE_NAME
+      value: "{{ args.environment }}"
+    - name: ENROLL_TAGS
+      value: "k8s {{ args.environment }}"
+{% else %}
+    - name: DISABLE_ONLINE_API
+      value: "true"
+{% endif %}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  service:
+    type: ClusterIP
+  persistentVolume:
+    data:
+      enabled: true
+      size: {{ args.pvc_crowdsec }}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi

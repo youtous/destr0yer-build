@@ -1,0 +1,75 @@
+// {{ ansible_managed }}
+
+// ============================================================================
+// Logs: journald → Loki
+// ============================================================================
+
+loki.source.journal "system" {
+  forward_to = [loki.write.default.receiver]
+  relabel_rules = loki.relabel.journal.rules
+  labels = {
+    job  = "journal",
+    host = env("HOSTNAME"),
+  }
+}
+
+loki.relabel "journal" {
+  forward_to = []
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "hostname"
+  }
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+}
+
+loki.write "default" {
+  endpoint {
+    url = env("LOKI_ENDPOINT")
+  }
+  external_labels = {
+    cluster = env("CLUSTER_NAME"),
+    node    = env("HOSTNAME"),
+  }
+}
+
+// ============================================================================
+// Metrics: prometheus.exporter.unix → scrape → remote_write
+// Replaces standalone node_exporter — same metric names (node_*)
+// ============================================================================
+{% if alloy_prometheus_endpoint %}
+
+prometheus.exporter.unix "host" {
+}
+
+prometheus.scrape "host" {
+  targets    = prometheus.exporter.unix.host.targets
+  forward_to = [prometheus.relabel.host.receiver]
+  scrape_interval = "30s"
+  job_name        = "node"
+}
+
+prometheus.relabel "host" {
+  forward_to = [prometheus.remote_write.default.receiver]
+  rule {
+    target_label = "node"
+    replacement  = env("HOSTNAME")
+  }
+  rule {
+    target_label = "cluster"
+    replacement  = env("CLUSTER_NAME")
+  }
+}
+
+prometheus.remote_write "default" {
+  endpoint {
+    url = env("PROMETHEUS_ENDPOINT")
+  }
+}
+{% endif %}

@@ -1,0 +1,209 @@
+prometheus:
+  prometheusSpec:
+    priorityClassName: cluster-infra
+    retention: "{{ args.prometheus_retention }}"
+    enableRemoteWriteReceiver: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "{{ args.storage_class }}"
+          resources:
+            requests:
+              storage: {{ args.pvc_prometheus }}
+
+grafana:
+  priorityClassName: cluster-infra
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  ingress:
+    enabled: true
+    ingressClassName: haproxy
+    annotations:
+      cert-manager.io/cluster-issuer: "{{ args.certmanager_issuer | default('cluster-issuer') }}"
+    hosts:
+      - "{{ args.grafana_domain }}"
+    tls:
+      - hosts:
+          - "{{ args.grafana_domain }}"
+        secretName: grafana-tls
+  sidecar:
+    datasources:
+      watchMethod: SLEEP
+      defaultDatasourceEnabled: true
+      isDefaultDatasource: true
+      editable: true
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki.observability.svc:3100
+      access: proxy
+      isDefault: false
+      version: 1
+      editable: true
+{% if args.auth_mode == "authelia" %}
+  grafana.ini:
+    server:
+      root_url: "https://{{ args.grafana_domain }}"
+    users:
+      allow_sign_up: false
+      viewers_can_edit: true
+    auth:
+      signout_redirect_url: "https://{{ args.authelia_domain }}/logout"
+      disable_login_form: true
+    auth.generic_oauth:
+      enabled: true
+      name: Authelia
+      client_id: grafana
+      scopes: openid profile email groups
+      auth_url: "https://{{ args.authelia_domain }}/api/oidc/authorization"
+      token_url: "https://{{ args.authelia_domain }}/api/oidc/token"
+      api_url: "https://{{ args.authelia_domain }}/api/oidc/userinfo"
+      login_attribute_path: preferred_username
+      email_attribute_path: email
+      groups_attribute_path: groups
+      name_attribute_path: name
+      use_pkce: true
+      allow_sign_up: true
+      auto_login: false
+      role_attribute_path: "contains(groups[*], 'admins') && 'Admin' || 'Viewer'"
+      role_attribute_strict: true
+      allow_assign_grafana_admin: true
+      skip_org_role_sync: false
+      tls_skip_verify_insecure: {{ args.oidc_tls_skip_verify | default(false) }}
+  envFromSecret: grafana-oidc-secret
+  assertNoLeakedSecrets: false
+{% else %}
+  grafana.ini:
+    users:
+      viewers_can_edit: true
+{% endif %}
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: crowdsec
+          folder: Security
+          type: file
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards/crowdsec
+        - name: cilium
+          folder: Network
+          type: file
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards/cilium
+        - name: alloy
+          folder: Collectors
+          type: file
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards/alloy
+        - name: ingress
+          folder: Ingress
+          type: file
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards/ingress
+        - name: certificates
+          folder: Certificates
+          type: file
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards/certificates
+  dashboards:
+    crowdsec:
+      crowdsec-metrics:
+        gnetId: 21419
+        revision: 1
+        datasource: Prometheus
+    cilium:
+      cilium-agent:
+        gnetId: 16611
+        revision: 1
+        datasource: Prometheus
+      cilium-operator:
+        gnetId: 16612
+        revision: 1
+        datasource: Prometheus
+      cilium-hubble:
+        gnetId: 16613
+        revision: 1
+        datasource: Prometheus
+    alloy:
+      alloy-resources:
+        # renovate: depName=grafana/alloy datasource=github-releases versioning=semver extractVersion=^v(?<version>.*)$
+        url: https://raw.githubusercontent.com/grafana/alloy/v1.16.1/operations/alloy-mixin/rendered/dashboards/alloy-resources.json
+        datasource: Prometheus
+      alloy-cluster-overview:
+        # renovate: depName=grafana/alloy datasource=github-releases versioning=semver extractVersion=^v(?<version>.*)$
+        url: https://raw.githubusercontent.com/grafana/alloy/v1.16.1/operations/alloy-mixin/rendered/dashboards/alloy-cluster-overview.json
+        datasource: Prometheus
+    ingress:
+      haproxy-ingress:
+        gnetId: 12056
+        revision: 4
+        datasource: Prometheus
+    certificates:
+      cert-manager:
+        gnetId: 22908
+        revision: 1
+        datasource: Prometheus
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    priorityClassName: cluster-infra
+  config:
+    global:
+      smtp_from: "{{ args.alertmanager_from_email }}"
+      smtp_smarthost: "{{ args.smtp_notifier_host }}:{{ args.smtp_notifier_port }}"
+      smtp_auth_username: "{{ secrets.smtp_notifier_username }}"
+      smtp_auth_password: "{{ secrets.smtp_notifier_password }}"
+      smtp_require_tls: false
+    route:
+      receiver: email
+      group_by: ['alertname', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+    receivers:
+      - name: "null"
+      - name: email
+        email_configs:
+          - to: "{{ args.admin_email }}"
+            send_resolved: true
+
+prometheusOperator:
+  admissionWebhooks:
+    certManager:
+      enabled: true
+      issuerRef:
+        name: {{ args.certmanager_issuer | default("cluster-issuer") }}
+        kind: ClusterIssuer
+    patch:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+
+nodeExporter:
+  enabled: false

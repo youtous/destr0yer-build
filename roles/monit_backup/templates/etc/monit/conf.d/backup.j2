@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+
+{% if kopia_sftp_host is defined and kopia_sftp_host | length > 0 %}
+# Kopia backup timer is active
+check program kopia_timer with path "/bin/systemctl is-active --quiet kopia-snapshot.timer"
+  if status != 0 then alert
+{% endif %}
+
+{% if backup_btrfs_enabled | default(false) | bool %}
+# Backup filesystem space
+check filesystem backup_fs with path {{ backup_root_directory | default('/home/backups') }}
+  if space usage > 80% for 3 cycles then alert
+  if space usage > 95% then alert
+
+# btrfs snapshot timer is active
+check program btrfs_snapshot_timer with path "/bin/systemctl is-active --quiet btrfs-snapshot.timer"
+  if status != 0 then alert
+
+# btrfs snapshot freshness (must run successfully every hour)
+check file btrfs_snapshot_ok with path /var/lib/btrfs-snapshot-ok
+  if timestamp > 2 hours then alert
+
+# btrfs scrub timer is active
+check program btrfs_scrub_timer with path "/bin/systemctl is-active --quiet btrfs-scrub.timer"
+  if status != 0 then alert
+
+# btrfs scrub health (touch file created by ExecStartPost on success)
+check file btrfs_scrub_ok with path /var/lib/btrfs-scrub-ok
+  if timestamp > 8 days then alert
+{% endif %}

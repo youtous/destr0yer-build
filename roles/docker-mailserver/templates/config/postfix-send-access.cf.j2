@@ -1,8 +1,0 @@
-# Managed by Ansible
-
-# this file is used to restrict access of sending emails
-{% for user in mailserver_send_restricted %}
-{{ user }}       REJECT
-{% endfor %}
-
-# IMPORTANT, KEEP A NEW LINE AT THE END OF THIS FILE.

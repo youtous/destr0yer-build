@@ -1,0 +1,12 @@
+deployments:
+  - include: cert-manager/
+  - include: kyverno/
+
+  - barrier: true
+
+  - include: namespace-defaults/
+  - path: network-policies/
+  - include: tetragon/
+  - path: crowdsec/
+    when: "{{ args.enable_crowdsec }}"
+  - path: reloader/

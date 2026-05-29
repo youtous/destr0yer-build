@@ -1,0 +1,118 @@
+- name: Deploy kopia environment file
+  become: true
+  ansible.builtin.template:
+    src: kopia-env.j2
+    dest: /etc/kopia.env
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+
+- name: Check if kopia repository is already configured
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ kopia_binary_path }} repository status"
+  environment:
+    KOPIA_PASSWORD: "{{ kopia_password }}"
+  changed_when: false
+  failed_when: false
+  register: kopia_repo_status
+  retries: "{{ kopia_sftp_retries }}"
+  delay: "{{ kopia_sftp_retry_delay }}"
+
+- name: Scan SFTP target host key
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      ssh-keyscan -p {{ hostvars[kopia_sftp_host]['sshd_port'] | default(22) }}
+      {{ kopia_sftp_host }}
+  register: kopia_sftp_host_key_scan
+  retries: "{{ kopia_sftp_retries }}"
+  delay: "{{ kopia_sftp_retry_delay }}"
+  until: kopia_sftp_host_key_scan.rc == 0
+  changed_when: false
+  when: kopia_repo_status.rc != 0
+
+- name: Accept host key for SFTP target
+  become: true
+  ansible.builtin.known_hosts:
+    name: "{{ kopia_sftp_host }}"
+    key: "{{ item }}"
+    path: /root/.ssh/known_hosts
+  loop: "{{ kopia_sftp_host_key_scan.stdout_lines | select('match', '^[^#]') | list }}"
+  when: kopia_repo_status.rc != 0
+
+- name: Create kopia SFTP repository
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      {{ kopia_binary_path }} repository create sftp
+      --path={{ kopia_sftp_path }}
+      --host={{ kopia_sftp_host }}
+      --username={{ kopia_sftp_user }}
+      --keyfile={{ kopia_sftp_key }}
+      --known-hosts=/root/.ssh/known_hosts
+  environment:
+    KOPIA_PASSWORD: "{{ kopia_password }}"
+  when: kopia_repo_status.rc != 0
+  changed_when: true
+  failed_when: false
+  register: kopia_create_result
+  retries: "{{ kopia_sftp_retries }}"
+  delay: "{{ kopia_sftp_retry_delay }}"
+
+- name: Connect to existing kopia SFTP repository
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      {{ kopia_binary_path }} repository connect sftp
+      --path={{ kopia_sftp_path }}
+      --host={{ kopia_sftp_host }}
+      --username={{ kopia_sftp_user }}
+      --keyfile={{ kopia_sftp_key }}
+      --known-hosts=/root/.ssh/known_hosts
+  environment:
+    KOPIA_PASSWORD: "{{ kopia_password }}"
+  when:
+    - kopia_repo_status.rc != 0
+    - kopia_create_result.rc != 0
+  changed_when: true
+  retries: "{{ kopia_sftp_retries }}"
+  delay: "{{ kopia_sftp_retry_delay }}"
+
+- name: Set global retention policy
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      {{ kopia_binary_path }} policy set --global
+      --keep-latest={{ kopia_retention_latest }}
+      --keep-daily={{ kopia_retention_daily }}
+      --keep-weekly={{ kopia_retention_weekly }}
+      --keep-monthly={{ kopia_retention_monthly }}
+  environment:
+    KOPIA_PASSWORD: "{{ kopia_password }}"
+  changed_when: false
+
+- name: Ensure snapshot source paths exist
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "u=rwx,g=rx,o=rx"
+  loop: "{{ kopia_snapshot_paths }}"
+  failed_when: false
+  changed_when: false
+
+- name: Configure email notifications
+  become: true
+  ansible.builtin.command:
+    cmd: >
+      {{ kopia_binary_path }} notification profile configure email
+      --profile-name=default
+      --smtp-server={{ kopia_smtp_host }}
+      --smtp-port={{ kopia_smtp_port }}
+      --mail-to={{ kopia_notification_email }}
+      --mail-from=kopia@{{ ansible_hostname }}
+  environment:
+    KOPIA_PASSWORD: "{{ kopia_password }}"
+  when: kopia_notification_email | length > 0
+  changed_when: false

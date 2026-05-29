@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Weekly kopia snapshot verification
+
+[Timer]
+OnCalendar={{ kopia_verify_schedule }}
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,49 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: roles/dnscrypt_proxy/templates/config/db/.*
+
+      - id: end-of-file-fixer
+        exclude: roles/dnscrypt_proxy/templates/config/db/.*
+
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+        exclude: (\.j2\.(yaml|yml)$|^kluctl/)
+      - id: check-toml
+      - id: check-json
+        exclude: backup_es_kibana_opendistro\/.*.json$
+
+      - id: check-symlinks
+      - id: detect-private-key
+
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.21.0
+    hooks:
+      - id: yamlfmt
+        exclude: >-
+          (?x)^(
+            .*\.j2$|
+            .*\.j2\.(yaml|yml)$|
+            kluctl/\.helm-charts/.*|
+            \.ansible/.*|
+            archive/.*|
+            roles/.*|
+            collections/.*
+          )$
+
+  - repo: https://github.com/ansible/ansible-lint.git
+    rev: v25.4.0
+    hooks:
+      - id: ansible-lint
+        pass_filenames: false
+        always_run: true
+        entry: "ansible-lint"
+        args:
+          - "--profile=production"
+        additional_dependencies:
+          - "ansible-core>=2.18"
+          - "yamllint>=1.26"
+          - "jmespath"
+        exclude: \.j2.(yaml|yml)$

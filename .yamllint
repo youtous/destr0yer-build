@@ -1,0 +1,25 @@
+extends: default
+
+rules:
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  line-length:
+    max: 200
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: false
+  trailing-spaces: disable
+  truthy:
+    check-keys: false
+  empty-lines:
+    max: 1
+  document-start: disable
+  document-end: disable
+  braces:
+    max-spaces-inside: 1
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true

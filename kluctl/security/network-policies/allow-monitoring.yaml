@@ -1,0 +1,36 @@
+{% for ns in args.app_namespaces + args.infra_namespaces %}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-prometheus-scrape
+  namespace: {{ ns }}
+spec:
+  description: Allow Prometheus to scrape metrics from pods
+  endpointSelector: {}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: {{ args.prometheus_namespace }}
+            app.kubernetes.io/name: prometheus
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{% endfor %}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-prometheus-egress
+  namespace: {{ args.prometheus_namespace }}
+spec:
+  description: Allow Prometheus to reach scrape targets across the cluster
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  egress:
+    - toEntities:
+        - cluster
+  enableDefaultDeny:
+    ingress: false
+    egress: false

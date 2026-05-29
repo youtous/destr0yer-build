@@ -1,0 +1,163 @@
+# Global k3s configuration for nodes (workers and controllers)
+# See: https://docs.k3s.io/cli/agent#node
+
+# Pull-through registry cache (ADR-015).
+# NodePort services expose proxies on each node — K3S pulls via localhost.
+# First deploy requires direct internet access; mirrors kick in after registry pods are running.
+k3s_installation_registries:
+  mirrors:
+    docker.io:
+      endpoint:
+        - "http://localhost:15000"
+    ghcr.io:
+      endpoint:
+        - "http://localhost:15001"
+    quay.io:
+      endpoint:
+        - "http://localhost:15002"
+    registry.k8s.io:
+      endpoint:
+        - "http://localhost:15003"
+
+# address of the k3s control plane (should be a loadbalancer or a vip)
+# until multiple addresses are supported (see https://github.com/k3s-io/k3s/issues/7325)
+# this vip / url should be HA otherwise workers won't be able to work in the cluster
+k3s_installation_registration_address: "{{ groups['k3s_control_node'] | map('extract', hostvars, ['ipv4_private']) | list | flatten | unique | first }}"
+
+k3s_installation_server:
+  bind-address: "{{ ipv4_private | first }}"
+  advertise-address: "{{ ipv4_private | first }}"
+  tls-san:
+    - "{{ k3s_installation_registration_address }}"
+    - "{{ hostvars[groups['k3s_control_node'][0]]['hostname'] }}"
+  secrets-encryption: true
+  protect-kernel-defaults: true
+  selinux: true
+
+  # etcd snapshots (every 6h, 10 retained, compressed)
+  etcd-snapshot-schedule-cron: "0 */6 * * *"
+  etcd-snapshot-retention: 10
+  etcd-snapshot-compress: true
+  etcd-arg:
+    - 'auto-compaction-mode=periodic'
+    - 'auto-compaction-retention=1h'
+    - 'quota-backend-bytes=2147483648'
+
+  # CoreDNS ClusterIP — must be within the service CIDR (10.43.0.0/16).
+  # K3S default service-cidr is 10.43.0.0/16, mapped to kluctl args.service_cidr.
+  cluster-dns: "10.43.0.10"
+
+  kube-apiserver-arg:
+    - 'admission-control-config-file=/var/lib/rancher/k3s/server/psa.yaml'
+    - 'audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log'
+    - 'audit-policy-file=/var/lib/rancher/k3s/server/audit.yaml'
+    - 'audit-log-maxage=30'
+    - 'audit-log-maxbackup=10'
+    - 'audit-log-maxsize=100'
+    - 'request-timeout=300s'
+    - 'service-account-lookup=true'
+    - 'service-node-port-range=1024-16000'  # allow self hosting w/o LB; privileged ports (mail, etc.) use HAProxy/DNAT
+  kube-controller-manager-arg:
+    - 'terminated-pod-gc-threshold=10'
+    - 'use-service-account-credentials=true'
+  kubelet-arg:
+    - 'streaming-connection-idle-timeout=5m'
+    - 'make-iptables-util-chains=true'
+    - 'node-ip={{ ipv4_private | first }},{{ ipv6_private | first }}'  # ensure to use the private ip to communicate within the clister
+
+  # network — canonical source for pod CIDR. Referenced by:
+  # - Cilium IPAM (clusterPoolIPv4PodCIDRList below) — must match
+  # - local_container_ips in group_vars/all/k3s_preset.yml — must match
+  # - kluctl args.pod_cidr in .kluctl.yaml — must match
+  cluster-cidr: "10.42.0.0/16"  # TODO: add ipv6 stack
+  node-ip: "{{ ipv4_private | first }}"
+  node-external-ip: "{{ ipv4 | first }}"
+
+  # cillium requirements
+  disable-network-policy: true  # controlled by cilium (https://docs.cilium.io/en/stable/installation/k3s/)
+  flannel-backend: 'none'  # This needs to be in quotes
+  disable:
+    - traefik
+    - servicelb
+    - coredns  # replaced by custom manifest (roles/k3s/templates/coredns.override.j2.yaml) that forwards to dnscrypt-proxy on host
+    - local-storage
+
+k3s_installation_agent:
+  protect-kernel-defaults: true
+  selinux: true
+  kubelet-arg:
+    - 'streaming-connection-idle-timeout=5m'
+    - 'make-iptables-util-chains=true'
+    - 'node-ip={{ ipv4_private | first }}'  # ensure to use the private ip to communicate within the clister
+
+  node-name: "{{ hostname }}"
+  with-node-id: false
+
+  # network
+  node-ip: "{{ ipv4_private | first }}"
+  node-external-ip: "{{ ipv4 | first }}"
+
+# renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator
+# Keep in sync with kluctl/observability/monitoring-crds/helm-chart.yaml (appVersion)
+cilium_prometheus_operator_version: "v0.90.1"
+
+# configure cilium to match k3s cidr
+cilium_k8s_helm_values:
+  kubeProxyReplacement: true
+
+  k8sServiceHost: "{{ ipv4_private | first }}"
+  k8sServicePort: 6443
+
+  global:
+    encryption:
+      enabled: true
+      nodeEncryption: true
+
+  # Socket-level LB: intercepts connect()/sendmsg() via eBPF on cgroups to
+  # translate ClusterIP/NodePort addresses at the syscall level. Required for
+  # host processes (e.g. crowdsec-firewall-bouncer) to reach NodePort services,
+  # because with kubeProxyReplacement the TC/XDP hooks don't process traffic
+  # originating from the host to its own IP.
+  socketLB:
+    enabled: true
+  loadBalancer:
+    mode: dsr  # see https://docs.cilium.io/en/latest/network/kubernetes/kubeproxy-free/#direct-server-return-dsr
+    dsrDispatch: geneve
+  routingMode: "tunnel"
+  tunnelProtocol: "geneve"
+
+  operator:
+    replicas: 1  # 3 in case of HA
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+
+  ipam:
+    mode: "cluster-pool"
+
+    operator:
+      clusterPoolIPv4PodCIDRList: "10.42.0.0/16"  # must match cluster-cidr above — Cilium allocates pod IPs from this range
+      clusterPoolIPv4MaskSize: 24  # mask size for each node
+
+  prometheus:
+    enabled: true
+    port: 19090
+    serviceMonitor:
+      enabled: true
+
+  hubble:
+    metrics:
+      enabled:
+        - dns
+        - drop
+        - tcp
+        - flow
+        - icmp
+        - port-distribution
+        - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
+      serviceMonitor:
+        enabled: true
+
+  gatewayAPI:
+    enabled: false

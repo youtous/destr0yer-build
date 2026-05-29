@@ -1,0 +1,21 @@
+# Kernel tuning — override per host_vars if needed.
+# These values are applied live (sysctl_set + reload) and persisted in
+# /etc/sysctl.d/90-destr0yer.conf. No reboot required.
+
+# Memory management — safe with swap enabled.
+# overcommit_memory=0: heuristic (default, works with or without swap).
+# panic_on_oom=0: no kernel panic on OOM, let OOM killer handle it.
+sysctl_vm_overcommit_memory: '0'
+sysctl_vm_panic_on_oom: '0'
+sysctl_vm_max_map_count: '262144'
+
+# Network
+sysctl_net_core_somaxconn: '4096'
+sysctl_net_ipv4_ip_unprivileged_port_start: '1024'
+
+# Kernel panic behavior — auto-reboot after 10s on panic/oops.
+# Consider disabling panic_on_oops (set to 0) on resource-constrained VMs
+# where spurious oops during heavy I/O can cause reboot loops.
+sysctl_kernel_panic: '10'
+sysctl_kernel_panic_on_oops: '1'
+sysctl_kernel_keys_root_maxbytes: '25000000'

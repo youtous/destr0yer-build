@@ -1,0 +1,36 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-user-namespaces
+  annotations:
+    policies.kyverno.io/title: Enforce user namespaces
+    policies.kyverno.io/description: >-
+      Injects hostUsers: false on all pods that do not require host-level access.
+      This maps container UID 0 to a non-privileged host UID, mitigating container
+      escape vulnerabilities (runc CVE-2025-31133, CVE-2025-52565, CVE-2025-52881).
+spec:
+  validationFailureAction: "{{ args.kyverno_validation_action }}"
+  rules:
+    - name: add-host-users-false
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, cilium, haproxy-ingress]
+{% raw %}
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.hostNetwork || false }}"
+            operator: NotEquals
+            value: true
+          - key: "{{ request.object.spec.hostPID || false }}"
+            operator: NotEquals
+            value: true
+      mutate:
+        patchStrategicMerge:
+          spec:
+            hostUsers: false
+{% endraw %}

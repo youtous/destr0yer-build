@@ -1,0 +1,65 @@
+# This role configures automatic security updates via unattended-upgrades
+- name: Preflight | Ensure unattended_upgrades_automatic_reboot_time is defined per host
+  ansible.builtin.assert:
+    that:
+      - unattended_upgrades_automatic_reboot_time is defined
+      - unattended_upgrades_automatic_reboot_time | length > 0
+    fail_msg: >-
+      unattended_upgrades_automatic_reboot_time must be set in host_vars for {{ inventory_hostname }}.
+      Stagger reboot times across cluster nodes to avoid simultaneous outage
+      (e.g. ctrl=04:00, worker=04:30).
+  when: unattended_upgrades_automatic_reboot | bool
+
+- name: Install unattended-upgrades and apt-listchanges
+  become: true
+  ansible.builtin.apt:
+    name:
+      - unattended-upgrades
+      - apt-listchanges
+      - needrestart
+    state: present
+
+- name: Configure needrestart to automatic mode
+  become: true
+  ansible.builtin.template:
+    src: templates/needrestart-unattended.conf.j2
+    dest: /etc/needrestart/conf.d/50-unattended.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Configure unattended-upgrades
+  become: true
+  ansible.builtin.template:
+    src: templates/50unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - Restart unattended-upgrades
+
+- name: Configure APT periodic updates
+  become: true
+  ansible.builtin.template:
+    src: templates/20auto-upgrades.j2
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - Restart unattended-upgrades
+
+- name: Enable unattended-upgrades service
+  become: true
+  ansible.builtin.systemd:
+    name: unattended-upgrades
+    enabled: true
+    state: started
+
+- name: Verify unattended-upgrades configuration is valid
+  become: true
+  ansible.builtin.command: unattended-upgrades --dry-run
+  register: unattended_dry_run
+  changed_when: false
+  failed_when: unattended_dry_run.rc != 0

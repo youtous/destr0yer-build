@@ -1,9 +1,8 @@
----
 # sshd port /!\ be careful, changing this port will not handle ansible break connection
 sshd_port: 22
 
 algorithms_files_to_remove:
-  - /etc/ssh/moduli # no DH used, this file is not useful anymore
+  - /etc/ssh/moduli  # no DH used, this file is not useful anymore
   - /etc/ssh/ssh_host_dsa_key.pub
   - /etc/ssh/ssh_host_dsa_key
   - /etc/ssh/ssh_host_ecdsa_key.pub
@@ -11,3 +10,9 @@ algorithms_files_to_remove:
 
 rsa_key_size: 4096
 key_generated_flag_file: "/etc/ssh/ansible-generated-keys"
+
+# SSH forwarding — disabled by default (hardening).
+# Enable per-environment in group_vars for kubectl tunnels, SFTP, etc.
+sshd_allow_tcp_forwarding: "no"
+sshd_allow_stream_local_forwarding: "no"
+sshd_permit_tunnel: "no"

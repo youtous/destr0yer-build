@@ -1,0 +1,82 @@
+# K3S file contexts — labels K3S paths so containerd and kubelet
+# operate correctly under SELinux. Uses types from the container
+# module shipped with selinux-policy-default on Debian 13.
+#
+# In permissive mode, incorrect labels are logged but not enforced.
+# Setting them now ensures a smooth transition to enforcing mode.
+
+- name: Refresh SELinux facts after potential reboot
+  ansible.builtin.setup:
+    filter: ansible_selinux
+
+- name: Set file context for K3S binary
+  become: true
+  community.general.sefcontext:
+    target: "{{ selinux_k3s_binary }}"
+    setype: container_engine_exec_t
+    state: present
+  notify: Restore K3S file contexts
+  when: ansible_facts.selinux.status | default('disabled') == 'enabled'
+
+- name: Set file context for K3S data directory
+  become: true
+  community.general.sefcontext:
+    target: "{{ selinux_k3s_data_dir }}(/.*)?"
+    setype: container_var_lib_t
+    state: present
+  notify: Restore K3S file contexts
+  when: ansible_facts.selinux.status | default('disabled') == 'enabled'
+
+- name: Set file context for K3S server logs
+  become: true
+  community.general.sefcontext:
+    target: "{{ selinux_k3s_data_dir }}/k3s/server/logs(/.*)?"
+    setype: container_log_t
+    state: present
+  notify: Restore K3S file contexts
+  when: ansible_facts.selinux.status | default('disabled') == 'enabled'
+
+- name: Set file context for K3S config directory
+  become: true
+  community.general.sefcontext:
+    target: "{{ selinux_k3s_config_dir }}(/.*)?"
+    setype: container_config_t
+    state: present
+  notify: Restore K3S file contexts
+  when: ansible_facts.selinux.status | default('disabled') == 'enabled'
+
+- name: Set file context for OpenEBS data directory
+  become: true
+  community.general.sefcontext:
+    target: "{{ selinux_openebs_data_dir }}(/.*)?"
+    setype: container_file_t
+    state: present
+  notify: Restore OpenEBS file contexts
+  when:
+    - selinux_openebs_support | bool
+    - ansible_facts.selinux.status | default('disabled') == 'enabled'
+
+- name: Ensure K3S directories exist before restorecon
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+  loop:
+    - "{{ selinux_k3s_data_dir }}"
+    - "{{ selinux_k3s_config_dir }}"
+  when: ansible_facts.selinux.status | default('disabled') == 'enabled'
+
+- name: Ensure OpenEBS directory exists before restorecon
+  become: true
+  ansible.builtin.file:
+    path: "{{ selinux_openebs_data_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+  when:
+    - selinux_openebs_support | bool
+    - ansible_facts.selinux.status | default('disabled') == 'enabled'

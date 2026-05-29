@@ -1,0 +1,16 @@
+all:
+  children:
+    k3s:
+      children:
+        # See https://github.com/PyratLabs/ansible-role-k3s/tree/main#grouphost-variables
+        k3s_control_node:
+          vars:
+            k3s_control_node: true
+          hosts:
+            ctrl.k3s.dev.local:
+
+        k3s_worker_node:
+          vars:
+            k3s_control_node: false
+          hosts:
+            worker.k3s.dev.local:

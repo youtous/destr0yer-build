@@ -1,0 +1,17 @@
+# see https://docs.k3s.io/installation/requirements#inbound-rules-for-k3s-server-nodes
+
+- name: "UFW Allow HA embedded etcd (controllers only) - ALLOW tcp/{{ k3s_ufw_embedded_etcd_port_range }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "{{ k3s_ufw_embedded_etcd_port_range }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_controllers_ips }}"
+
+# kube-api (6443) and kubelet (10250) rules are consolidated in
+# k3s_cilium_firewall (merges node IPs + pod CIDR into a single rule set).

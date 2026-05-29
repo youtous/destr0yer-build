@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Monthly btrfs cold send of latest daily snapshot
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/btrfs-cold-send.sh

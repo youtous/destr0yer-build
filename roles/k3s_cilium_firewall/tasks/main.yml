@@ -1,0 +1,94 @@
+# see https://docs.cilium.io/en/stable/operations/system_requirements/
+
+- name: "UFW allow cilium requirements firewall - udp/6081 GENEVE overlay"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "6081"
+      rule: "allow"
+      proto: "udp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium requirements firewall - tcp/4240 health check"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "4240"
+      rule: "allow"
+      proto: "tcp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium requirements firewall - tcp/4250 Mutual Authentication port"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "4250"
+      rule: "allow"
+      proto: "tcp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+- name: "UFW allow cilium requirements firewall - udp/51871 WireGuard encryption tunnel endpoint"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "51871"
+      rule: "allow"
+      proto: "udp"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips }}"
+
+#### K3s services (consolidated: node IPs + pod CIDR)
+
+- name: "UFW Allow kube api (nodes + pods) - ALLOW tcp/{{ k3s_ufw_kube_api_port }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "{{ k3s_ufw_kube_api_port }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips + k3s_cilium_allowed_k8s_service_access | flatten | unique }}"
+
+- name: "UFW Allow Kubelet metrics (nodes + pods) - ALLOW tcp/{{ k3s_ufw_kubelet_metrics_port }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "{{ k3s_ufw_kubelet_metrics_port }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_all_nodes_ips + k3s_cilium_allowed_k8s_service_access | flatten | unique }}"
+
+- name: "UFW Allow host dns access (cilium service network) - ALLOW {{ k3s_ufw_host_dns_port }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "{{ k3s_ufw_host_dns_port }}"
+      rule: "allow"
+      direction: in
+      comment: cilium extended rule
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ k3s_cilium_allowed_k8s_service_access }}"

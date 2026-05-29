@@ -1,0 +1,8 @@
+deployments:
+  - path: openebs/
+
+  - barrier: true
+
+  - path: garage/
+  - path: registry/
+  - path: velero/

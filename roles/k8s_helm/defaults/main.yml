@@ -1,0 +1,6 @@
+# renovate: datasource=github-releases depName=helm/helm
+k8s_helm_version: 'v3.17.3'
+
+k8s_helm_version_sha256sum: 'ee88b3c851ae6466a3de507f7be73fe94d54cbf2987cbaa3d1a3832ea331f2cd'
+k8s_helm_os: "linux"
+k8s_helm_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"

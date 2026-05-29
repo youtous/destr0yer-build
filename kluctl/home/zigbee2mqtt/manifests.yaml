@@ -1,0 +1,172 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zigbee2mqtt-config
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+data:
+  configuration.yaml: |
+    homeassistant: true
+    permit_join: false
+    mqtt:
+      base_topic: zigbee2mqtt
+      server: mqtt://mosquitto.homeassistant.svc.cluster.local:1883
+    serial:
+      port: {{ args.zigbee2mqtt_usb_device_path }}
+    frontend:
+      port: 8080
+    advanced:
+      log_level: info
+      last_seen: ISO_8601
+      network_key: GENERATE
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zigbee2mqtt-data
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: "{{ args.storage_class }}"
+  resources:
+    requests:
+      storage: {{ args.pvc_zigbee2mqtt }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zigbee2mqtt
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zigbee2mqtt
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zigbee2mqtt
+    spec:
+      initContainers:
+        # renovate: datasource=docker depName=alpine/k8s
+        - name: init-config
+          image: docker.io/alpine/k8s@sha256:692239d739589247c4a791205ed9619c28ae85a21286e19a6211c04a62c56668  # 1.36.1
+          command: ["sh", "-c", "[ -s /data/configuration.yaml ] || cp /config/configuration.yaml /data/configuration.yaml"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+      containers:
+        # renovate: datasource=docker depName=koenkk/zigbee2mqtt
+        - name: zigbee2mqtt
+          image: docker.io/koenkk/zigbee2mqtt:2.10.1
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: TZ
+              value: "{{ args.timezone }}"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+{% if args.homeassistant_usb_passthrough | default(false) %}
+            - name: usb
+              mountPath: {{ args.zigbee2mqtt_usb_device_path }}
+{% endif %}
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+{% if args.homeassistant_usb_passthrough | default(false) %}
+      securityContext:
+        privileged: true
+{% endif %}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: zigbee2mqtt-data
+        - name: config
+          configMap:
+            name: zigbee2mqtt-config
+{% if args.homeassistant_usb_passthrough | default(false) %}
+        - name: usb
+          hostPath:
+            path: {{ args.zigbee2mqtt_usb_device_path }}
+{% endif %}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zigbee2mqtt
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+spec:
+  selector:
+    app.kubernetes.io/name: zigbee2mqtt
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zigbee2mqtt
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt
+  annotations:
+    cert-manager.io/cluster-issuer: "{{ args.certmanager_issuer | default('cluster-issuer') }}"
+    haproxy-ingress.github.io/ssl-redirect: "true"
+{% if args.auth_mode == "authelia" %}
+    haproxy-ingress.github.io/auth-url: "http://authelia.authelia.svc.cluster.local/api/authz/forward-auth"
+    haproxy-ingress.github.io/auth-signin: "https://{{ args.authelia_domain }}/?rd=https://z2m.{{ args.cluster_domain }}"
+    haproxy-ingress.github.io/auth-method: HEAD
+    haproxy-ingress.github.io/auth-headers-request: "*"
+    haproxy-ingress.github.io/auth-headers-succeed: "Remote-User,Remote-Groups,Remote-Name,Remote-Email"
+    haproxy-ingress.github.io/auth-headers-fail: "-"
+{% elif args.auth_mode == "basic" %}
+    haproxy-ingress.github.io/auth-secret: zigbee2mqtt-basic-auth
+    haproxy-ingress.github.io/auth-realm: "Zigbee2MQTT"
+{% endif %}
+spec:
+  ingressClassName: haproxy
+  tls:
+    - hosts:
+        - "z2m.{{ args.cluster_domain }}"
+      secretName: zigbee2mqtt-tls
+  rules:
+    - host: "z2m.{{ args.cluster_domain }}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: zigbee2mqtt
+                port:
+                  number: 8080

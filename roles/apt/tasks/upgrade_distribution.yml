@@ -1,0 +1,13 @@
+# Distribution upgrade checks.
+# Only Trixie (Debian 13) is supported — older upgrade paths removed.
+# This file is kept as a hook for future dist-upgrades (e.g. trixie → forky).
+
+- name: Verify running on supported distribution
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution_release in ['trixie']
+    fail_msg: >-
+      Unsupported distribution: {{ ansible_distribution_release }}.
+      This playbook targets Debian 13 (Trixie) only.
+      Migrate the host before running again.
+    success_msg: "Running on {{ ansible_distribution }} {{ ansible_distribution_release }}"

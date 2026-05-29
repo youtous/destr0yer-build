@@ -1,0 +1,20 @@
+galaxy_info:
+  role_name: ufw_smart_rules
+  author: youtous
+  description: Manage ufw firewall using a single target state and reconcile the existing one
+  license: MIT
+  min_ansible_version: "2.18"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - ufw
+    - firewall
+    - deployment
+    - management
+
+dependencies: []

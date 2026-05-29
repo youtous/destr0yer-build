@@ -1,6 +1,0 @@
-
-check process postgresql11 with pidfile /var/run/postgresql/11-main.pid
-  group postgres
-  start program = "/bin/systemctl start postgresql"
-  stop  program = "/bin/systemctl stop postgresql"
-  if 5 restarts within 5 cycles then timeout

@@ -1,0 +1,426 @@
+# destr0yer-build
+
+Ansible playbooks for provisioning and managing a hardened K3S Kubernetes cluster.
+
+## Quick reference
+
+- **Stack**: Ansible + K3S + Cilium CNI + Cilium Gateway API + HAProxy Ingress (TCP) + cert-manager + Authelia
+- **Target OS**: Debian 13 (Trixie)
+- **Dev env**: Vagrant + KVM/libvirt (local), DevContainer (Claude Code)
+- **Python**: 3.13 via asdf, dependencies via pipenv
+- **CI**: GitHub Actions (lint + release)
+- **Language**: English for all code, comments, docs, and commit messages
+
+## Repository structure
+
+```
+playbooks/          Ansible playbooks (00-provision, 01-configure, 02-k3s, dev-dns)
+roles/              Ansible roles (k3s_*, k8s_*, system, networking, monitoring, cloud_relay, cloud_provider_cleanup)
+collections/        Ansible collection youtous.destr0yer (ufw_smart_rules, users, logwatch)
+kluctl/             Kluctl deployments (K8S-level: security, storage, database, observability, mail, apps, home)
+inventories/dev/    Inventory files and group_vars/host_vars
+secret_vars/        Ansible Vault encrypted secrets (git-ignored except samples)
+certs/              TLS certificates (git-ignored except .keep)
+archive/            (removed — Swarm code lives in git history only)
+doc/                Architecture decisions, guides, and documentation
+logs/               Ansible run logs (git-ignored, one file per run)
+```
+
+## Key commands
+
+```sh
+# Ansible (host-level) — all runs logged to logs/<playbook>-<timestamp>.log
+just setup           # Install all tools + deps + galaxy roles
+just vault-login     # Set vault password in env
+just provision       # Run 00-provision playbook
+just configure       # Run 01-configure playbook
+just k3s             # Run 02-k3s playbook
+# Kluctl (K8S-level) — runs on ctrl as operator user (no root, no admin kubeconfig)
+just sync            # Sync workspace to ctrl (~/destr0yer-build/) for SSH debugging
+just render          # Render templates offline (local, no cluster needed)
+just diff            # Preview K8S changes (via Ansible on ctrl)
+just deploy          # Deploy all K8S components (via Ansible on ctrl)
+just deploy-only observability/loki  # Deploy specific component
+just deploy-manual   # Sync workspace + print kluctl command for manual SSH execution
+just prune           # Remove orphaned K8S resources
+
+# Interactive cluster access — operator kubeconfig (~/.kube/operator.yaml, RBAC-limited)
+just k9s             # Open k9s on ctrl via SSH
+just kubectl get pods -A   # Run kubectl on ctrl via SSH
+just kubectl-admin ...     # Break-glass: sudo breakglass-kubectl (emergency only)
+just garage status   # Run garage CLI inside garage-0 pod
+
+# Secrets
+just vault-edit secret_vars/<env>/all.yml   # Edit Ansible Vault secrets
+just sops-edit kluctl/targets/<env>.enc.yaml  # Edit SOPS-encrypted K8S secrets
+
+# Dev tools
+just dev-dns         # Add k8s.home DNS entries to local /etc/hosts
+just mailpit         # Start mailpit SMTP catcher via podman on host
+just mailpit-stop    # Stop mailpit container
+
+# Shared
+just lint            # Run pre-commit hooks (must always pass)
+just push / pull     # Sync secrets/certs to/from backup location
+
+# Version management
+./scripts/check-versions.sh                # List all component versions
+./scripts/check-versions.sh --check-updates # Check for newer versions (needs helm, crane, curl, jq)
+
+# Validation (in container, no VMs needed)
+just render                              # Uses ENV from .env (default: dev)
+just render --include-tag security       # Render subset
+
+# Integration testing (needs Vagrant VMs running)
+just test-integration
+just test-firewall
+```
+
+## Environment variable — single source of truth
+
+A single variable `ENV` in `.env` drives the entire stack:
+
+| What it controls | How |
+|-----------------|-----|
+| Ansible inventory path | `inventories/$ENV/` |
+| Kluctl target | `targets/$ENV.yaml` + `targets/$ENV.enc.yaml` |
+| SSH hosts | derived from inventory (e.g. `ctrl.k3s.$ENV.local`) |
+
+```sh
+# Set once in .env (loaded by justfile via `set dotenv-load`)
+ENV=dev
+
+# Override per-command
+just env=prod deploy
+just env=prod render
+
+# Or export for the whole session
+export ENV=prod
+just deploy
+```
+
+All `just` recipes (provision, configure, k3s, deploy, diff, render, prune, test-*) read `ENV` and route to the correct inventory and kluctl target automatically.
+
+## Sensitive files — never commit unencrypted
+
+- `secret_vars/*.yml` — Ansible Vault encrypted
+- `kluctl/targets/*.enc.yaml` — SOPS encrypted (age key). Contains:
+  - `secrets.grafana_admin_password` — Grafana admin password
+  - `secrets.garage_rpc_secret` — Garage inter-node RPC key
+  - `secrets.garage_admin_token` — Garage admin API token (port 3903, not exposed via ingress)
+  - `secrets.authelia_jwt_secret` — Authelia JWT HMAC key
+  - `secrets.authelia_session_key` — Authelia session encryption key
+  - `secrets.authelia_storage_key` — Authelia storage encryption key
+- `certs/` — TLS certs and private keys, git-ignored
+- `.vault_password` — Script that reads VAULT_PASSWORD from env, git-ignored
+- `.env` — Local config (ENV, CLUSTER_NAME, SAVE_PATH), git-ignored. `ENV` is the single source of truth for environment selection.
+- `.dev/sops-age-key.txt` — SOPS age private key, git-ignored
+
+## Conventions
+
+- Roles are prefixed by scope: `k3s_*` (cluster), `k8s_*` (kubernetes tools), `monit_*` (monitoring)
+- Youtous-authored roles live in `collections/ansible_collections/youtous/destr0yer/roles/` and are referenced by FQCN (e.g. `youtous.destr0yer.ufw_smart_rules`)
+- All container images must be pinned to specific versions, never use `:latest`
+- All images in custom manifests (CronJobs, init containers, sidecars) must be pinned by digest (`@sha256:...`) with the tag in a trailing comment (`# v1.2.3`)
+- **Utility image**: `docker.io/alpine/k8s` is the single utility image for all CronJobs, init containers, and helper pods. Do not introduce `busybox`, `curlimages/curl`, `alpine/curl`, or bare `alpine` — use `alpine/k8s` instead. Rationale: one image to track/update, reduced attack surface (Alpine-based, minimal), and it bundles kubectl, helm, curl, jq, bash, wget. Pin to the version matching the K3S cluster (e.g. `1.36.x` for K3S v1.36). Exception: app-specific images that need their own CLI (e.g. `crowdsecurity/crowdsec` for `cscli`).
+- Never use Bitnami images (deprecated, unreliable tags) — prefer upstream images
+- Ansible collections are version-pinned in `requirements.yml`
+- External roles are pinned by commit SHA in `requirements.yml`
+- All documentation and code in English
+- Kluctl uses target args for env-specific behavior (e.g. `kyverno_validation_action: Audit|Enforce`)
+- Pre-commit must always pass — fix failures even if they seem out of scope
+- USB disk storage uses existing `filesystems_to_create` from `disks_lvm_management` — no separate role. SMART monitoring via `smartmontools` + `monit_usb_storage`. See [doc/usb-storage.md](doc/usb-storage.md)
+- **UFW rules**: If a port is a dependency of an Ansible role, the role manages its own rule via `ufw_smart_rules` (self-contained). `ufw_additional_rules` in inventory is only for ports not managed by any Ansible role (e.g. HAProxy Ingress ports deployed via Kluctl).
+
+### Secrets in Kluctl manifests — zero plaintext rule
+
+**Every `secrets.*` value must end up in a `kind: Secret` resource.** No exceptions.
+
+Checklist when writing or reviewing a Kluctl manifest that uses `secrets.*`:
+
+1. **Never put `secrets.*` in a ConfigMap** — if the config file contains a secret (e.g. `garage.toml` with `admin_token`), make the whole resource a `kind: Secret` instead.
+2. **Never use `value: "{{ secrets.* }}"` in a pod env var** — always use `valueFrom.secretKeyRef` pointing to a K8s Secret.
+3. **Never inline credentials in Helm values** — use the chart's `existingSecret` / `secretKeyRef` pattern. Create the Secret separately and reference it by name.
+4. **Secrets must not cross namespaces** — if a Job needs a secret from another namespace, move the Job to the namespace that owns the secret. Never duplicate a Secret into another namespace.
+5. **Garage admin token stays in `garage` namespace** — all admin operations (bucket creation, key provisioning) are manual via `garage` CLI. See `kluctl/targets/secrets-reference.yaml` for the full procedure.
+6. **Helm charts that create their own Secrets** (e.g. Authelia `value:` fields, Velero `credentials.existingSecret`) are acceptable — the chart internally wraps them in `kind: Secret`. When in doubt, check the rendered output with `kluctl render`.
+
+Quick audit command — run after any change that touches `secrets.*`:
+```sh
+# Rendered manifests must never have secrets.* in non-Secret resources
+RENDERED=$(SOPS_AGE_KEY_FILE=.dev/sops-age-key.txt kluctl render -t dev --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36 2>&1 | grep "Rendered into" | awk '{print $3}')
+# Check: no ConfigMap should contain sensitive-looking values
+rg -l 'kind: ConfigMap' "$RENDERED" | xargs rg -l 'token|password|secret|credential|api_key|private.key' || echo "OK — no leaks"
+```
+
+## Architecture decisions
+
+Detailed ADRs are in [doc/adr/](doc/adr/). Key decisions:
+
+- **K3S over Docker Swarm**: Migration complete. Legacy Swarm code removed (git history)
+- **Debian 13 Trixie**: Kernel 6.12 LTS, nftables native, better eBPF support
+- **Cilium CNI**: eBPF networking, encryption, kube-proxy replacement
+- **HAProxy Ingress**: DaemonSet with hostNetwork, default IngressClass (Traefik disabled in k3s)
+- **OpenEBS hostpath**: Lightweight persistent storage (~180 MB overhead)
+- **Loki + Alloy**: Centralized logging (replaces archived Elastic stack)
+- **Two-tier VPN** (ADR-005 revised): WireGuard PTP for infra mesh (always-on, no K3S dependency). Headscale deferred to future for human/admin access only.
+- **Multi-cluster**: One K3S cluster per geographic zone. Clusters are independent.
+- **Cloud relay**: Public-facing forwarder for mail/web. WireGuard + HAProxy TCP (dual-stack IPv4/IPv6, PROXY protocol v2). No TLS termination on relay. May run K3S in future depending on workload needs.
+- **Zero-trust** (ADR-008): All inbound blocked on bare-metal. SSH restricted to known IPs (entrypoint_ssh). Relay is the only node with public ports.
+- **cert-manager**: TLS certificate lifecycle — internal CA (dev) or Let's Encrypt via deSEC DNS-01 (prod)
+- **Garage**: S3-compatible object storage (backend for Loki/backups), admin via `kubectl exec`
+- **Ingress**: HAProxy for all HTTP/HTTPS + TCP (mail). Cilium Gateway API deferred.
+- **CrowdSec**: K8S-level threat detection + HAProxy SPOA bouncer (IP ban at ingress), fail2ban kept on host level. Custom SASL brute-force scenario (`custom/postfix-sasl-bf`). Online API (community blocklist) via `crowdsec_online_api` arg (off in dev, on in prod)
+- **Cloud provider cleanup**: Removes Scaleway/Hetzner/OVH/DigitalOcean services, packages, binaries on first provision
+- **Authelia**: SSO/OIDC provider, file-based users, 2FA (`auth.k8s.home`)
+- **Home Assistant**: Smart home platform (`ha.k8s.home`)
+- **Private registry**: Pull-through cache (multi-arch ARM64+AMD64)
+- **Kopia**: Backup via SFTP over WireGuard to dedicated btrfs backup node
+- **Mailpit**: Dev SMTP catcher — runs on VM host via podman, not inside K8S
+- **Kluctl force-apply** (ADR-037): `--force-apply` by default on all deploys + `conflictResolution` in `deployment.yaml`. Prevents silent SSA field ownership loss that caused config changes to be ignored.
+
+## Testing (see [doc/testing.md](doc/testing.md))
+
+- **Lint** (in container): `just lint` — must pass, always fix failures
+- **Kluctl render** (in container): validates templates without a cluster
+- **Integration** (Vagrant VMs): `just test-integration`
+- **Firewall audit** (Vagrant VMs): `just test-firewall`
+- **Security audit** (manual, maintenance): `just audit-node` + `just audit-cluster`
+- CI: GitHub Actions runs lint on push/PR
+
+## Security (see [doc/security.md](doc/security.md))
+
+Implemented: SELinux (permissive), audit logging, PSA restricted, default-deny NetworkPolicy, Cilium encryption, fail2ban host-level.
+
+Kyverno policies use `args.kyverno_validation_action` — `Audit` in dev, `Enforce` in prod.
+
+## Cluster access model
+
+Three tiers — admin kubeconfig (`/etc/rancher/k3s/k3s.yaml`) stays root-only, never used for routine ops:
+
+```sh
+# 1. Deploy (kluctl as operator user, become: false, operator kubeconfig $HOME/.kube/operator.yaml)
+just deploy                          # all components
+just deploy-only observability/loki  # single component
+just deploy-manual                   # sync + print command for manual SSH execution
+just diff                            # preview changes
+just sync                            # sync workspace to ~/destr0yer-build/ for SSH debugging
+
+# 2. Interactive ops (SSH to ctrl, operator kubeconfig, RBAC-limited, no system:masters)
+just k9s                  # k9s on ctrl
+just kubectl get pods -A  # kubectl on ctrl
+
+# 3. Break-glass (sudo breakglass-kubectl — admin kubeconfig, emergency only)
+just kubectl-admin get nodes
+```
+
+```sh
+# SSH setup (one-time, configures ~/.ssh/config for Vagrant VMs)
+just ssh-config
+
+# SSH to VMs (uses ~/.ssh/config — key .dev/id_ed25519, no User hardcoded)
+ssh ctrl.k3s.dev.local
+ssh worker.k3s.dev.local
+
+# Ansible ad-hoc (needs vault password)
+BECOME_PASS=$(pipenv run ansible-vault view secret_vars/dev/all.yml --vault-password-file .vault_password | grep sudo_user_clear_password | cut -d'"' -f2)
+pipenv run ansible ctrl.k3s.dev.local -i inventories/dev/base-nodes.yml -u walle --become -m shell -a "..." -e "ansible_become_pass=$BECOME_PASS" --vault-password-file .vault_password
+```
+
+## Current state (2026-05-27)
+
+Both VMs operational (5632 MB RAM each, 2 vCPU):
+- `just configure`: passes on both nodes
+- `just k3s`: passes, K3S cluster operational, operator kubeconfig deployed
+- `just deploy`: kluctl sync + deploy works, all infra + app components deployed
+- `just test-integration`: **22/22 passed**
+- `just test-firewall`: **passed**
+- Kluctl render: passes offline
+
+Running services (Ingresses):
+- `who.k8s.home` — whoami (test/health check)
+- `auth.k8s.home` — Authelia SSO
+- `ha.k8s.home` — Home Assistant
+- `grafana.k8s.home` — Grafana (observability, OIDC via Authelia when auth_mode=authelia)
+
+Validated subsystems:
+- **Observability**: Prometheus (15 targets), Loki (15 labels), Grafana (3 datasources healthy)
+- **Velero**: Backup/restore cycle tested (backup → delete → restore → running)
+- **Kopia**: Host-level SFTP backup active on both nodes, systemd timers running (daily 06h, verify Sun 04h)
+- **CrowdSec**: LAPI + agents + HAProxy SPOA bouncer — ban/unban tested end-to-end (403 on ban, 302 on unban)
+- **Mailserver**: Pods running (SMTP/IMAP responsive), config incomplete without relay/DNS (expected in dev)
+
+Recent changes (2026-05-27):
+- ADRs split into individual files under `doc/adr/` (was monolithic `doc/decisions.md`)
+- ADR-033 (mail dual-cluster) and ADR-034 (DMS migration) added
+- How-it-works docs created for all implemented ADRs
+- Alloy unified as single host agent (logs + metrics via `prometheus.exporter.unix`), node_exporter deprecated
+- K8s Alloy DaemonSet now scrapes kubelet + kube-state-metrics → Prometheus remote_write
+- Loki retention wired to `loki_retention_days` arg
+- Velero S3 wiring fixed (correct Garage endpoint, AWS plugin, credentials)
+- Grafana OIDC via Authelia implemented (conditional on `auth_mode`)
+- Secret audit: all `secrets.*` values now in `kind: Secret` only (garage config, grafana admin, crowdsec bouncer, velero S3 creds)
+- Garage bucket & key provisioning fully manual (CLI) — documented in `secrets-reference.yaml`
+- Garage admin API split into dedicated `garage-admin` Service + NetworkPolicy (port 3903 restricted to garage namespace only)
+- CrowdSec HAProxy SPOA bouncer integrated as sidecar (conditional on `enable_crowdsec`)
+- Prometheus alerts added for CrowdSec LAPI, agent, and SPOA bouncer (conditional on `enable_crowdsec`)
+- ntfy deployment wired via `enable_ntfy` flag (default: false, manifests ready for future activation)
+- Renovate regexManagers extended for Kluctl raw YAML manifests (tag, tag@digest, digest-only patterns)
+- Kopia backup enabled on both dev nodes (SFTP over WireGuard to ctrl)
+- Kopia role fixed: `ssh-keyscan` for SFTP-only servers, `connect` fallback for existing repos
+- Integration tests: namespace exclusions for dev-expected failures (homeassistant, mail), job filter aligned
+- Firewall tests: `wireguard_server` inventory group added (WG port rule only on server, not clients)
+- Kyverno `:latest` images fixed (mailserver, nginx pinned by digest)
+- MariaDB upgraded 10.11 → 11.4 (Seafile, Home Assistant)
+- `cloud_provider_cleanup` role created (replaces legacy `services` role from master branch)
+- CrowdSec host nftables bouncer deployed (bookworm repo for Trixie, Cilium socketLB enabled, NodePort selector fixed)
+- Cilium `socketLB: true` enabled (required for host-to-NodePort connectivity with kube-proxy replacement)
+- Multi-arch registry audit completed (crane-based, 39/42 images OK)
+- CrowdSec bouncer play changed from `hosts: k3s` to `hosts: systems` (no k3s-cluster inventory needed for configure)
+- kube-bench CIS `k3s-cis-1.12` integrated in integration tests (full report + threshold=3)
+- CIS 1.1.9/1.1.10/1.1.20: systemd timer `k3s-harden-permissions` (PKI 600, CNI 600+root:root, 30s after boot + 6h)
+- CIS 1.2.26: `--etcd-cafile` — handled natively by K3S (do NOT set manually, see doc/security.md)
+- CIS 5.1.5: default SA patched (`automountServiceAccountToken: false`) in `02-k3s.yml`
+- CIS 5.1.6: Kyverno `disable-automount-sa-token` mutate policy
+- CIS 5.1.5: Kyverno `restrict-default-service-account` validate+mutate policy
+- UFW pod-CIDR rules for HAProxy hostNetwork (source: `local_container_ips`, ports: 80/443/25/465/587/993)
+- Grafana dashboards: Loki, Alloy, HAProxy Ingress, cert-manager (metrics + ServiceMonitors enabled)
+- Grafana: all datasources/dashboards editable, viewers_can_edit, Prometheus default
+- Garage S3 buckets/keys renamed to match `s3_bucket_prefix` (`k8s-home-`)
+
+## Known dev limitations
+
+- **SSH prerequisite**: Run `just ssh-config` once before using any `[dev]` recipe (configures `~/.ssh/config` for Vagrant VMs)
+- **No `ansible_host`**: Inventory relies on SSH config for hostname resolution — do not set `ansible_host` in dev host_vars
+- **Mailpit**: Dev uses mailpit on host (podman) for SMTP catch-all; mailserver role still deploys in K8S for testing
+- **Authelia**: Needs real domain + session config (dev uses internal CA)
+- **DevContainer**: Supports VM access via SSH (rsync included). VMs require local Vagrant+KVM host.
+- **Kopia SFTP timing**: During `just configure`, the firewall role may temporarily block WG connections while reloading. Kopia retries (6x15s) handle this, but the first run on a fresh setup may require a second `just configure` pass for the worker node.
+- **zigbee2mqtt**: CrashLoopBackOff in dev (no USB Zigbee hardware) — excluded from integration tests
+- **parsedmarc**: Intermittent OOMKill on CronJob — excluded from integration tests
+
+## Next steps (priority order)
+
+| # | Task | Complexity | What to do |
+|---|------|-----------|------------|
+| 0 | DR test: etcd restore | Medium | Script etcd snapshot restore on Vagrant |
+| 1 | Mailserver DNS + prod relay | Medium | External DNS (SPF/DKIM/DMARC), prod SMTP TLS/auth, end-to-end test |
+| 2 | ntfy activation + alerting pipeline | Low | Set `enable_ntfy: true`, wire Alertmanager → ntfy for notifications |
+| 3 | Let's Encrypt via deSEC | Low | Add `desec_token` secret + `cluster_domain` in prod target (infra ready) |
+| 4 | ARM64 validation | Medium | Test full stack on ARM64 (Vagrant aarch64 or real hardware) |
+| 5 | OpenEBS Mayastor | Medium | Multi-node replicated storage (replace hostpath for HA workloads) |
+| 6 | Garage multi-site replication | Medium | 2-zone layout across sites, RPC over WireGuard, `toCIDR` NetworkPolicy (ADR-012) |
+| 7 | Zigbee2MQTT USB dongle | Low | Validate USB passthrough to K8S pod on real hardware (ADR-031) |
+| 8 | Seafile client-side encryption | Low | Enable encrypted libraries for sensitive data (ADR-032) |
+| 9 | IPv6 dual-stack | High | K3S dual-stack + relay HAProxy IPv6 binds + UFW/Cilium rules (ADR-036) |
+| 10 | Authelia access control | Medium | Create `users` group, map proper ACL rules (bypass/1FA/2FA), fix current rules that downgrade 2FA for admins |
+
+### Completed validations
+
+| What | Result |
+|------|--------|
+| Full test loop (`configure` + `k3s` + `deploy`) | Passes on both nodes |
+| Integration tests | 22/22 passed |
+| Firewall audit | Passed |
+| kube-bench CIS (`k3s-cis-1.9`) | 3 FAIL (threshold=3): 1.2.26 (kine unix socket, no TLS) + 5.1.1 + 5.1.3 (inherent to third-party charts) |
+| Observability (Prometheus + Loki + Grafana) | 15 targets, 15 labels, 3 datasources healthy |
+| Velero backup/restore | Full cycle tested on whoami namespace |
+| Kopia host-level backup | Snapshots OK, timers active on both nodes |
+| CrowdSec HAProxy bouncer | Ban/unban tested end-to-end (403/302) |
+| CrowdSec host nftables bouncer | Deployed on both nodes, connected to LAPI via NodePort, end-to-end ban verified |
+| Grafana OIDC | Validated via Authelia login |
+| Seafile S3 + OIDC | Validated (encryption is client-side, Garage buckets exist) |
+| Multi-arch registry audit | 39 OK, 1 amd64-only (parsedmarc), 1 missing arm64 (mail-autodiscover) |
+
+### ADRs needing live validation (cannot be done offline)
+
+| ADR | What's needed | Effort |
+|-----|--------------|--------|
+| 012 (Garage S3) | Prod: multi-node replication config | Medium (needs 2nd node) |
+| ~~015 (Registry)~~ | ~~Audit all images for multi-arch~~ — done: 2 single-arch flagged | ~~Done~~ |
+| 023 (DR) | Test etcd snapshot restore on Vagrant | Medium |
+| 024 (cert-manager) | Let's Encrypt via deSEC — blocked until prod DNS setup (wildcard) | Blocked |
+
+### CIS hardening — accepted residual FAILs
+
+| Check | Reason | Fixable? |
+|-------|--------|----------|
+| 5.1.1 | `cluster-admin` bound to Cilium, Kyverno, cert-manager SAs | No — required by charts |
+| 5.1.3 | Wildcard verbs/resources in Cilium, Kyverno ClusterRoles | No — upstream design |
+
+Not yet prioritized:
+- Cilium Gateway API (HAProxy handles all current ingress needs)
+- OpenEBS Mayastor (multi-node replicated storage — see ADR-003 evolution path)
+
+See [doc/operations.md](doc/operations.md) for operational procedures (Kyverno mode, cert-manager, retention, alerts).
+
+## Kluctl deploy workflow
+
+**Prefer `just deploy` or `just deploy-only <path>` to deploy K8S changes.**
+
+Manual rsync + SSH is allowed for debugging, but be aware of the difference:
+- `just deploy` is the **canonical path** — it handles secret sync, SOPS key deployment (with 30 min auto-cleanup), and runs kluctl with the operator kubeconfig (RBAC-limited).
+- Manual rsync + SSH skips secret consistency checks, uses whatever kubeconfig/key is already on the node, and won't auto-cleanup the SOPS key.
+
+What `just deploy` does under the hood:
+1. Syncing secrets from Ansible Vault to SOPS (consistency check)
+2. Syncing the workspace to ctrl via `ansible.posix.synchronize`
+3. Deploying SOPS age key with auto-cleanup (30 min)
+4. Running kluctl with `--force-apply` and the operator kubeconfig (RBAC-limited, not admin)
+
+### Force-apply by default (ADR-037)
+
+All kluctl operations use `--force-apply` to prevent silent SSA field ownership loss. Without it, kluctl's server-side apply can lose ownership of `data`/`spec` fields, causing subsequent deploys to silently skip configuration changes. Combined with `conflictResolution` in `kluctl/deployment.yaml`, this ensures kluctl always remains the sole owner of all deployed fields. See [ADR-037](doc/adr/037-kluctl-force-apply.md) for details.
+
+### Kluctl include filtering — tags, not directories
+
+`just deploy-only <path>` extracts the basename of the path and passes it as `-I <tag>` (kluctl `--include-tag`). Kluctl auto-generates tags from directory names, so `just deploy-only observability/promgraf` uses tag `promgraf`.
+
+**Warning**: kluctl's `-I` flag is `--include-tag`, **not** `--include-deployment-dir`. The `--include-deployment-dir` flag exists but does not correctly match nested deployment includes in kluctl v2.27.0. Always use tag-based filtering.
+
+### Kluctl command result store — disabled
+
+`--write-command-result=false` is set in `playbooks/kluctl-ops.yml`. The full deploy output exceeds the 1MB Kubernetes Secret size limit, causing a write failure at the end of every deploy. Since we capture the complete kluctl output via Ansible (`Show kluctl output` task), the in-cluster result store is redundant.
+
+Impact: `kluctl webui` and `kluctl results` won't have deploy history. If needed in the future, kluctl would need an external result backend (not yet supported) or the deploy scope would need to be reduced to fit under 1MB.
+
+```sh
+just deploy                              # full deploy (all components)
+just deploy-only security/kyverno        # single component (uses tag "kyverno")
+just deploy-only observability/promgraf  # single component (uses tag "promgraf")
+just diff                                # preview without applying
+just prune                               # remove orphaned resources
+just render                              # local render only (no cluster needed)
+```
+
+For debugging a failed deploy interactively on ctrl:
+```sh
+just deploy-manual   # syncs workspace + prints the kluctl command to run via SSH
+just sync            # sync workspace only (for SSH debugging)
+```
+
+## Agent workflow — when to use Cursor vs direct edits
+
+### Do it yourself (Claude Code direct)
+- Edits < 5 files
+- Debugging (read logs, fix a value, retry)
+- Ansible ad-hoc commands / playbook runs
+- Kluctl deploy via `just deploy` / `just deploy-only`
+- Git operations
+- Architecture decisions, doc updates
+- Any feedback loop (fix -> test -> fix)
+
+### Delegate to Cursor Agent (`cursor-agent --model claude-4.6-opus-max`)
+- Bulk mechanical operations (create 10+ files with same pattern)
+- Mass renaming / refactoring across many files
+- Scaffolding (new role structure, new Kluctl component)
+- Renovate annotations on 10+ files
+- Any task where the output doesn't need to be read in detail
+
+### Cursor rules
+- Always use `--model claude-4.6-opus-max --print --yolo`
+- One focused task per request (not 10 tasks in one prompt)
+- Scope files explicitly (READ: ..., MODIFY: ..., FORBIDDEN: ...)
+- Use `timeout 300` wrapper for long tasks
+- After 2 failures on the same task, stop and debug manually
+- System reminders from Cursor-modified files consume context — prefer direct edits for small changes

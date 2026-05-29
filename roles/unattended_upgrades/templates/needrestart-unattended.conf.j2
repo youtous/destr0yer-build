@@ -1,0 +1,3 @@
+# {{ ansible_managed }}
+# Override needrestart to non-interactive mode for unattended-upgrades
+$nrconf{restart} = '{{ unattended_upgrades_needrestart_mode }}';

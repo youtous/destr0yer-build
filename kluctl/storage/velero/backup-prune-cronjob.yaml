@@ -1,0 +1,122 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: velero-backup-prune
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/component: backup-prune
+spec:
+  schedule: "{{ args.schedule_velero_prune }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: velero
+            app.kubernetes.io/component: backup-prune
+        spec:
+          restartPolicy: Never
+          serviceAccountName: velero-backup-pruner
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            # renovate: datasource=docker depName=alpine/k8s
+            - name: prune
+              image: docker.io/alpine/k8s@sha256:692239d739589247c4a791205ed9619c28ae85a21286e19a6211c04a62c56668  # 1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  KEEP={{ args.velero_backup_retention_count }}
+                  echo "Pruning Velero backups, keeping last ${KEEP}..."
+
+                  BACKUPS=$(kubectl get backup.velero.io -n velero \
+                    --sort-by=.status.startTimestamp \
+                    -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.startTimestamp}{"\n"}{end}' \
+                    2>/dev/null | sort -t$'\t' -k2 -r)
+
+                  TOTAL=$(echo "$BACKUPS" | grep -c . || true)
+                  if [ "$TOTAL" -le "$KEEP" ]; then
+                    echo "Only ${TOTAL} backups exist (keep=${KEEP}), nothing to prune."
+                    exit 0
+                  fi
+
+                  TO_DELETE=$(echo "$BACKUPS" | tail -n +$(( KEEP + 1 )) | cut -f1)
+                  DELETED=0
+
+                  for BACKUP in $TO_DELETE; do
+                    echo "Requesting deletion: ${BACKUP}"
+                    kubectl apply -f - <<EOF
+                  apiVersion: velero.io/v1
+                  kind: DeleteBackupRequest
+                  metadata:
+                    name: "prune-${BACKUP}"
+                    namespace: velero
+                  spec:
+                    backupName: "${BACKUP}"
+                  EOF
+                    DELETED=$((DELETED + 1))
+                  done
+
+                  echo "Created ${DELETED} DeleteBackupRequests, kept ${KEEP}."
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: velero-backup-pruner
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/component: backup-prune
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: velero-backup-pruner
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/component: backup-prune
+rules:
+  - apiGroups: ["velero.io"]
+    resources: ["backups"]
+    verbs: ["get", "list"]
+  - apiGroups: ["velero.io"]
+    resources: ["deletebackuprequests"]
+    verbs: ["create", "get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: velero-backup-pruner
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/component: backup-prune
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: velero-backup-pruner
+subjects:
+  - kind: ServiceAccount
+    name: velero-backup-pruner
+    namespace: velero

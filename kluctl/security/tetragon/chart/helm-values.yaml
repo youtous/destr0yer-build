@@ -1,0 +1,39 @@
+podSecurityContext:
+  runAsNonRoot: false
+
+tetragon:
+  image:
+    override: "quay.io/cilium/tetragon@sha256:deda51c3f88e4d26b4d76c99ea207f2b05f9e40c210e0f04a37ca632ab7bf527"  # v1.7.0
+
+export:
+  stdout:
+    enabledCommand: true
+    enabledArgs: true
+    image:
+      override: "quay.io/cilium/hubble-export-stdout@sha256:cf701f96d1c8de30231792e35733e1ab07451e11751ef4f676f482836759da06"  # v1.1.1
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+tetragonOperator:
+  image:
+    override: "quay.io/cilium/tetragon-operator@sha256:074ffbd19208eed79f68e191ed606e05009f910b4bb5148efcf2973e13504b82"  # v1.7.0
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi

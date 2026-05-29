@@ -1,0 +1,10 @@
+# This role contains the default configuration for monitoring dnscrypt-proxy with Monit
+- name: Setup additional Monit configurations
+  become: true
+  ansible.builtin.template:
+    src: "templates/etc/monit/conf.d/{{ item }}.j2"
+    dest: "/etc/monit/conf.d/{{ item }}"
+    mode: "u=r"
+  with_items:
+    - dnscrypt-proxy
+  notify: Reload monit

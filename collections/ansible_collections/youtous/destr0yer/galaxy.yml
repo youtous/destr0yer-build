@@ -1,0 +1,32 @@
+namespace: youtous
+name: destr0yer
+version: 1.0.0
+readme: README.md
+authors:
+  - youtous
+description: >-
+  Reusable Ansible roles for hardened Debian infrastructure:
+  UFW firewall reconciliation, user management, and logwatch.
+license:
+  - MIT
+repository: https://github.com/youtous/destr0yer-build
+documentation: https://github.com/youtous/destr0yer-build/tree/main/collections/ansible_collections/youtous/destr0yer
+issues: https://github.com/youtous/destr0yer-build/issues
+tags:
+  - firewall
+  - ufw
+  - users
+  - security
+  - debian
+  - logwatch
+dependencies:
+  community.general: ">=13.0.0"
+  ansible.posix: ">=2.1.0"
+  ansible.utils: ">=5.0.0"
+build_ignore:
+  - "*.tar.gz"
+  - "**/Vagrantfile"
+  - "**/vagrant-inventory"
+  - "**/test.yml"
+  - "**/tests/"
+  - "**/.galaxy_install_info"

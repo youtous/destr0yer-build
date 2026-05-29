@@ -1,0 +1,20 @@
+# /etc/aliases
+
+mailer-daemon: {{ postmaster_email }}
+postmaster: {{ postmaster_email }}
+nobody: {{ postmaster_email }}
+hostmaster: {{ postmaster_email }}
+usenet: {{ postmaster_email }}
+news: {{ postmaster_email }}
+webmaster: {{ postmaster_email }}
+www: {{ postmaster_email }}
+ftp: {{ postmaster_email }}
+abuse: {{ postmaster_email }}
+noc: {{ postmaster_email }}
+security: {{ postmaster_email }}
+root: {{ postmaster_email }}
+
+# for each user, forward to postmaster
+{% for user in users %}
+{{ user.username }}: {{ postmaster_email }}
+{% endfor %}

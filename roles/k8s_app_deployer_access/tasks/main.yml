@@ -1,0 +1,102 @@
+- name: Resolve deployer user home directory
+  become: false
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && getent passwd {{ k8s_app_deployer_linux_user }} | cut -d: -f6"
+    executable: /bin/bash
+  changed_when: false
+  register: _app_deployer_home
+
+- name: Set deployer kubeconfig path
+  ansible.builtin.set_fact:
+    _app_deployer_kubeconfig_dest: "{{ _app_deployer_home.stdout }}/.kube/app-deployer.yaml"
+
+- name: Ensure deployer .kube directory exists
+  ansible.builtin.file:
+    path: "{{ _app_deployer_home.stdout }}/.kube"
+    state: directory
+    owner: "{{ k8s_app_deployer_linux_user }}"
+    group: "{{ k8s_app_deployer_linux_user }}"
+    mode: u=rwx,g=,o=
+
+- name: Create app-deployer ServiceAccount
+  become: true
+  run_once: true
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: "{{ k8s_app_deployer_name }}"
+        namespace: "{{ k8s_app_deployer_namespace }}"
+      automountServiceAccountToken: false
+  environment:
+    KUBECONFIG: "{{ k8s_app_deployer_kubeconfig_path }}"
+
+- name: Apply app-deployer ClusterRole
+  become: true
+  run_once: true
+  kubernetes.core.k8s:
+    state: present
+    template: clusterrole.j2.yml
+  environment:
+    KUBECONFIG: "{{ k8s_app_deployer_kubeconfig_path }}"
+
+- name: Fetch the kubernetes CA
+  become: true
+  ansible.builtin.command: >
+    kubectl config view --raw -o {% raw %}go-template='{{index ((index (index .clusters 0) "cluster")) "certificate-authority-data" }}'{% endraw %}
+  run_once: true
+  changed_when: false
+  register: _app_deployer_kube_ca
+  failed_when: _app_deployer_kube_ca.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_app_deployer_kubeconfig_path }}"
+
+- name: Generate short-lived app-deployer token
+  become: true
+  ansible.builtin.command: >
+    kubectl --namespace={{ k8s_app_deployer_namespace }} create token {{ k8s_app_deployer_name }} --duration={{ k8s_app_deployer_token_duration }}
+  run_once: true
+  no_log: true
+  changed_when: false
+  register: _app_deployer_token
+  failed_when: _app_deployer_token.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_app_deployer_kubeconfig_path }}"
+
+- name: Generate app-deployer kubeconfig
+  ansible.builtin.template:
+    src: templates/config.j2.yml
+    dest: "{{ _app_deployer_kubeconfig_dest }}"
+    owner: "{{ k8s_app_deployer_linux_user }}"
+    group: "{{ k8s_app_deployer_linux_user }}"
+    mode: u=rw,g=,o=
+  vars:
+    _kube_server: "{{ k8s_app_deployer_server }}"
+    _kube_ca: "{{ _app_deployer_kube_ca.stdout }}"
+    _kube_token: "{{ _app_deployer_token.stdout }}"
+
+- name: Ensure deployer fish config directory exists
+  ansible.builtin.file:
+    path: "{{ _app_deployer_home.stdout }}/.config/fish/conf.d"
+    state: directory
+    owner: "{{ k8s_app_deployer_linux_user }}"
+    group: "{{ k8s_app_deployer_linux_user }}"
+    mode: u=rwx,g=rx,o=rx
+
+- name: Install app-deployer fish config
+  ansible.builtin.template:
+    src: k3s-app-deployer.fish.j2
+    dest: "{{ _app_deployer_home.stdout }}/.config/fish/conf.d/k3s-app-deployer.fish"
+    owner: "{{ k8s_app_deployer_linux_user }}"
+    group: "{{ k8s_app_deployer_linux_user }}"
+    mode: u=rw,g=r,o=r
+
+- name: "[INFO] App-deployer kubeconfig ready"
+  ansible.builtin.debug:
+    verbosity: 0
+    msg: >
+      App-deployer kubeconfig written to {{ _app_deployer_kubeconfig_dest }}
+      (token TTL: {{ k8s_app_deployer_token_duration }}).
+      RoleBindings are managed by Kluctl (kluctl/namespaces/app-deployer-rolebindings.yaml).

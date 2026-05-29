@@ -1,0 +1,8 @@
+# Send an email when a user successfully logs in over SSH
+notify_login_enabled: true
+
+# Email address that receives login notifications
+notify_login_email: "{{ monitoring_email | default('root') }}"
+
+# Subject prefix for notification emails
+notify_login_subject_prefix: "SSH login"

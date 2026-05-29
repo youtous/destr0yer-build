@@ -1,0 +1,57 @@
+# This role contains base system configuration
+- name: "Set timezone to {{ timezone }}"
+  become: true
+  community.general.timezone:
+    name: "{{ timezone }}"
+
+- name: Ensure system folder permissions are correct
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  with_items: "{{ system_folders_write_root_only }}"
+
+- name: Register server environment in /etc/server_environment (dev,prod,test)
+  become: true
+  ansible.builtin.copy:
+    content: "{{ system_configuration_server_environment }}"
+    dest: /etc/server_environment
+    mode: u=rw,g=r,o=r
+
+- name: Set TERM for modern terminal compatibility (ghostty, etc.)
+  become: true
+  ansible.builtin.copy:
+    content: 'export TERM=xterm-256color'
+    dest: /etc/profile.d/term.sh
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+
+- name: Set TERM for fish
+  become: true
+  ansible.builtin.copy:
+    content: 'set -gx TERM xterm-256color'
+    dest: /etc/fish/conf.d/term.fish
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+
+- name: Add /usr/sbin to PATH bash
+  become: true
+  ansible.builtin.copy:
+    src: files/usr-sbin.sh
+    dest: /etc/profile.d/usr-sbin.sh
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx
+
+- name: Add /usr/sbin to PATH fish
+  become: true
+  ansible.builtin.copy:
+    src: files/usr-sbin.fish
+    dest: /etc/fish/conf.d/usr-sbin.fish
+    owner: root
+    group: root
+    mode: u=rw,g=rx,o=rx

@@ -1,0 +1,25 @@
+- name: Reboot for SELinux relabel
+  ansible.builtin.reboot:
+    msg: "Rebooting for SELinux filesystem relabeling (/.autorelabel)"
+    reboot_timeout: 600
+  when: selinux_reboot_if_required | bool
+
+- name: Restore K3S file contexts
+  ansible.builtin.command:
+    cmd: restorecon -R -v {{ item }}
+  loop:
+    - "{{ selinux_k3s_binary }}"
+    - "{{ selinux_k3s_data_dir }}"
+    - "{{ selinux_k3s_config_dir }}"
+  changed_when: true
+  failed_when: false
+  when: ansible_facts.selinux.status | default('disabled') == 'enabled'
+
+- name: Restore OpenEBS file contexts
+  ansible.builtin.command:
+    cmd: restorecon -R -v {{ selinux_openebs_data_dir }}
+  changed_when: true
+  failed_when: false
+  when:
+    - selinux_openebs_support | bool
+    - ansible_facts.selinux.status | default('disabled') == 'enabled'

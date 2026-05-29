@@ -1,0 +1,9 @@
+# for ip restriction, we use DenyUsers in order to keep AllowGroups prevalent
+# it's not the case with AllowUsers which overrides AllowGroups direction
+{% for user in all_users %}
+{% if user.restrict_ips is defined and user.restrict_ips|length > 0 %}
+
+DenyUsers  {{ user.username }}@{% for ip in user.restrict_ips %}!{{ ip }},{% endfor %}!127.0.0.1,*
+
+{% endif %}
+{% endfor %}

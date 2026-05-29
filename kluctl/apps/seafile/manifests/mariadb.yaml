@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seafile-db-backup-s3
+  namespace: seafile
+  labels:
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/part-of: seafile
+type: Opaque
+stringData:
+  access-key-id: "{{ secrets.seafile_s3_key_id }}"
+  secret-access-key: "{{ secrets.seafile_s3_secret_key }}"
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: seafile-db
+  namespace: seafile
+  labels:
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/part-of: seafile
+spec:
+  rootPasswordSecretKeyRef:
+    name: seafile-db-root
+    key: password
+    generate: true
+  passwordSecretKeyRef:
+    name: seafile-db-password
+    key: password
+    generate: true
+
+  podMetadata:
+    annotations:
+      backup.velero.io/backup-volumes-excludes: storage
+
+  # renovate: datasource=docker depName=library/mariadb versioning=docker
+  image: docker.io/library/mariadb:11.4
+
+  port: 3306
+
+  database: seafile_db
+  username: seafile
+
+  storage:
+    size: {{ args.pvc_mariadb }}
+    storageClassName: "{{ args.storage_class }}"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  myCnf: |
+    [mariadb]
+    bind-address=*
+    default_storage_engine=InnoDB
+    binlog_format=row
+    innodb_autoinc_lock_mode=2
+    innodb_buffer_pool_size=128M
+    max_allowed_packet=256M
+    character-set-server=utf8mb4
+    collation-server=utf8mb4_unicode_ci
+
+  connection:
+    healthCheck:
+      interval: 10s
+      retryInterval: 5s
+
+  metrics:
+    enabled: {{ args.mariadb_operator_metrics | default(false) }}
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: ccnet-db
+  namespace: seafile
+spec:
+  mariaDbRef:
+    name: seafile-db
+  characterSet: utf8mb4
+  collate: utf8mb4_general_ci
+  name: ccnet_db
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: seahub-db
+  namespace: seafile
+spec:
+  mariaDbRef:
+    name: seafile-db
+  characterSet: utf8mb4
+  collate: utf8mb4_general_ci
+  name: seahub_db
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: seafile-grants
+  namespace: seafile
+spec:
+  mariaDbRef:
+    name: seafile-db
+  privileges:
+    - ALL PRIVILEGES
+  database: "*"
+  table: "*"
+  username: seafile
+  grantOption: true
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Backup
+metadata:
+  name: seafile-db-backup
+  namespace: seafile
+  labels:
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/part-of: seafile
+spec:
+  mariaDbRef:
+    name: seafile-db
+  schedule:
+    cron: "{{ args.schedule_seafile_mariadb_backup }}"
+    suspend: false
+  maxRetention: "87600h"
+  databases:
+    - seafile_db
+    - ccnet_db
+    - seahub_db
+  storage:
+    s3:
+      bucket: "{{ args.s3_bucket_prefix }}seafile-backups"
+      prefix: mariadb
+      endpoint: "{{ args.s3_endpoint }}"
+      region: "{{ args.s3_region }}"
+      accessKeyIdSecretKeyRef:
+        name: seafile-db-backup-s3
+        key: access-key-id
+      secretAccessKeySecretKeyRef:
+        name: seafile-db-backup-s3
+        key: secret-access-key
+      tls:
+        enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi

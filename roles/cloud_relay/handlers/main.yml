@@ -1,0 +1,12 @@
+- name: Restart HAProxy container
+  become: true
+  ansible.builtin.systemd:
+    name: haproxy-relay
+    state: restarted
+    daemon_reload: true
+
+- name: Restart ufw
+  become: true
+  ansible.builtin.service:
+    name: ufw
+    state: restarted

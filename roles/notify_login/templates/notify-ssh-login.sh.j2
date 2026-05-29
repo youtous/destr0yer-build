@@ -1,0 +1,21 @@
+#!/bin/sh
+# Send an email notification on successful SSH login (invoked by pam_exec in sshd).
+
+if [ "${PAM_TYPE}" != "open_session" ]; then
+  exit 0
+fi
+
+HOSTNAME="$(hostname -f 2>/dev/null || hostname -s)"
+TIMESTAMP="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+USER="${PAM_USER:-unknown}"
+SOURCE_IP="${PAM_RHOST:-unknown}"
+
+{
+  printf 'SSH login notification\n\n'
+  printf 'User:        %s\n' "${USER}"
+  printf 'Source IP:   %s\n' "${SOURCE_IP}"
+  printf 'Hostname:    %s\n' "${HOSTNAME}"
+  printf 'Timestamp:   %s\n' "${TIMESTAMP}"
+} | mail -s "{{ notify_login_subject_prefix }} on ${HOSTNAME} by ${USER}" "{{ notify_login_email }}"
+
+exit 0

@@ -1,0 +1,3 @@
+notify_login_script_path: /usr/local/bin/notify-ssh-login.sh
+notify_login_pam_file: /etc/pam.d/sshd
+notify_login_legacy_script_path: /usr/local/bin/send_mail_on_ssh_login.sh

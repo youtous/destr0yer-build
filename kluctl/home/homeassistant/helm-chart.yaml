@@ -1,0 +1,7 @@
+helmChart:
+  repo: https://pajikos.github.io/home-assistant-helm-chart
+  chartName: home-assistant
+  chartVersion: "0.3.61"
+  releaseName: homeassistant
+  namespace: homeassistant
+  skipCRDs: false

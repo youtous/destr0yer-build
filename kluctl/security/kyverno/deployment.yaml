@@ -1,0 +1,7 @@
+deployments:
+  - path: chart/
+
+  - barrier: true
+
+  - path: policies/
+  - path: reports/

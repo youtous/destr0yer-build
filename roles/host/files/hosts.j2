@@ -8,7 +8,9 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 
+{% if generate_static_host_mapping %}
 # nodes the cluster
 {% for hostnameJ in groups['all'] %}
-{{ hostvars[hostnameJ]['ipv4'][0] }} {{ hostvars[hostnameJ]['hostname'] }}
+{{ hostvars[hostnameJ]['ipv4_private'][0] }} {{ hostvars[hostnameJ]['hostname'] }}
 {% endfor %}
+{% endif %}

@@ -1,0 +1,10 @@
+---
+crowdsec_bouncer_backend: nftables
+
+# LAPI endpoint — auto-discovered from K8S NodePort service
+# Override with the actual NodePort assigned by K8S
+crowdsec_bouncer_lapi_port: "{{ crowdsec_lapi_nodeport }}"
+crowdsec_bouncer_lapi_host: "{{ ipv4_private | first }}"
+
+crowdsec_bouncer_update_frequency: "10s"
+crowdsec_bouncer_log_level: "info"

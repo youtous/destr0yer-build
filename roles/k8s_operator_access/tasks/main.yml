@@ -1,0 +1,92 @@
+- name: Resolve operator user home directory
+  become: false
+  ansible.builtin.shell: echo $HOME
+  changed_when: false
+  register: _operator_home
+
+- name: Set operator kubeconfig path
+  ansible.builtin.set_fact:
+    k8s_operator_kubeconfig_destination: "{{ _operator_home.stdout }}/.kube/operator.yaml"
+
+- name: Ensure kubeconfig directory exists
+  ansible.builtin.file:
+    path: "{{ _operator_home.stdout }}/.kube"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: u=rwx,g=,o=
+
+- name: Create operator ServiceAccount
+  become: true
+  run_once: true
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: "{{ k8s_operator_name }}"
+        namespace: "{{ k8s_operator_namespace }}"
+      automountServiceAccountToken: false
+  environment:
+    KUBECONFIG: "{{ k8s_operator_kubeconfig_path }}"
+
+- name: Apply operator ClusterRole and ClusterRoleBinding
+  become: true
+  run_once: true
+  kubernetes.core.k8s:
+    state: present
+    template: clusterrole.j2.yml
+  environment:
+    KUBECONFIG: "{{ k8s_operator_kubeconfig_path }}"
+
+- name: Fetch the kubernetes CA
+  become: true
+  ansible.builtin.command: >
+    kubectl config view --raw -o {% raw %}go-template='{{index ((index (index .clusters 0) "cluster")) "certificate-authority-data" }}'{% endraw %}
+  run_once: true
+  changed_when: false
+  register: _kube_ca_command
+  failed_when: _kube_ca_command.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_operator_kubeconfig_path }}"
+
+- name: Generate short-lived operator token
+  become: true
+  ansible.builtin.command: >
+    kubectl --namespace={{ k8s_operator_namespace }} create token {{ k8s_operator_name }} --duration={{ k8s_operator_token_duration }}
+  run_once: true
+  no_log: true
+  changed_when: false
+  register: _operator_token
+  failed_when: _operator_token.rc != 0
+  environment:
+    KUBECONFIG: "{{ k8s_operator_kubeconfig_path }}"
+
+- name: Generate operator kubeconfig with token
+  ansible.builtin.template:
+    src: templates/config.j2.yml
+    dest: "{{ k8s_operator_kubeconfig_destination }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: u=rw,g=,o=
+  vars:
+    _kube_server: "{{ k8s_operator_server }}"
+    _kube_ca: "{{ _kube_ca_command.stdout }}"
+    _kube_token: "{{ _operator_token.stdout }}"
+
+- name: "[INFO] Operator kubeconfig ready"
+  ansible.builtin.debug:
+    verbosity: 0
+    msg: >
+      Operator kubeconfig written to {{ k8s_operator_kubeconfig_destination }}
+      (token TTL: {{ k8s_operator_token_duration }}).
+      Regenerate with: just k3s --tags k3s-operator-access
+
+- name: Install K3S operator fish config (KUBECONFIG + breakglass function)
+  become: true
+  ansible.builtin.copy:
+    src: files/k3s-operator.fish
+    dest: /etc/fish/conf.d/k3s-operator.fish
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r

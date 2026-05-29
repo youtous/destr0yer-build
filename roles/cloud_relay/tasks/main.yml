@@ -1,0 +1,31 @@
+# Playbook role order:
+#   - iptables_firewall      # UFW + IP forwarding (creates before.rules)
+#   - wireguard_meta         # WG interface up
+#   - cloud_relay            # HAProxy Quadlet + masquerade in UFW
+#   - monit_haproxy_relay    # monitoring
+
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - relay_haproxy_frontends is defined
+      - relay_haproxy_frontends | length > 0
+    msg: "relay_haproxy_frontends must be defined in inventory (no defaults — ports depend on deployment)"
+
+- name: Verify IP forwarding is enabled
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['proc_sys_net_ipv4_ip_forward'] | default('0') == '1'
+        or (ipv4_ip_forwarding | default('0')) == '1'
+    msg: "IP forwarding must be enabled (configure via iptables_firewall role or host sysctl)"
+
+- name: Deploy NAT masquerade rules in UFW before.rules
+  become: true
+  ansible.builtin.blockinfile:
+    dest: /etc/ufw/before.rules
+    block: "{{ lookup('template', 'ufw-nat-relay.rules.j2') }}"
+    insertbefore: "^\\*filter"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - relay NAT masquerade ###"
+  notify: Restart ufw
+
+- name: HAProxy via podman (Quadlet)
+  ansible.builtin.include_tasks: haproxy-podman.yml

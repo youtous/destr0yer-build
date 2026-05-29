@@ -1,0 +1,5 @@
+deployments:
+  - path: mailserver/
+  - path: mta-sts/
+  - path: autodiscover/
+  - path: parsedmarc/

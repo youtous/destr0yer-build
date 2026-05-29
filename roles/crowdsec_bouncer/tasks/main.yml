@@ -1,0 +1,95 @@
+---
+- name: Skip bouncer setup (API key not configured)
+  ansible.builtin.debug:
+    msg: "crowdsec_bouncer_api_key is empty — skipping. Deploy CrowdSec LAPI first (just k3s + just deploy), then re-run configure."
+  when: crowdsec_bouncer_api_key | default('') | length == 0
+
+- name: Configure CrowdSec firewall bouncer
+  when: crowdsec_bouncer_api_key | default('') | length > 0
+  block:
+    - name: Ensure keyrings directory exists
+      become: true
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "u=rwx,g=rx,o=rx"
+
+    - name: Download CrowdSec repository GPG key
+      become: true
+      ansible.builtin.get_url:
+        url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
+        dest: /etc/apt/keyrings/crowdsec-archive-keyring.asc
+        mode: "u=rw,g=r,o=r"
+
+    - name: Dearmor GPG key
+      become: true
+      ansible.builtin.shell: >
+        gpg --dearmor < /etc/apt/keyrings/crowdsec-archive-keyring.asc
+        > /etc/apt/keyrings/crowdsec-archive-keyring.gpg &&
+        chmod 644 /etc/apt/keyrings/crowdsec-archive-keyring.gpg
+      args:
+        creates: /etc/apt/keyrings/crowdsec-archive-keyring.gpg
+
+    - name: Add CrowdSec repository
+      become: true
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/crowdsec-archive-keyring.gpg] https://packagecloud.io/crowdsec/crowdsec/debian/ bookworm main"
+        state: present
+        filename: crowdsec
+
+    - name: Install crowdsec-firewall-bouncer-nftables
+      become: true
+      ansible.builtin.apt:
+        name: crowdsec-firewall-bouncer-nftables
+        state: present
+        update_cache: true
+
+    - name: "UFW Allow bouncer -> LAPI NodePort tcp/{{ crowdsec_bouncer_lapi_port }}"
+      become: true
+      ansible.builtin.import_role:
+        name: youtous.destr0yer.ufw_smart_rules
+      vars:
+        ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+          to_port: "{{ crowdsec_bouncer_lapi_port }}"
+          to_ip: "{{ crowdsec_bouncer_lapi_host }}"
+          rule: "allow"
+          proto: "tcp"
+          direction: in
+          comment: "CrowdSec bouncer -> LAPI NodePort"
+        ufw_rules_criteria: from_ips  # noqa: var-naming[no-role-prefix]
+        ufw_rule_from_ips:  # noqa: var-naming[no-role-prefix]
+          - "{{ crowdsec_bouncer_lapi_host }}"
+
+    - name: Deploy bouncer configuration
+      become: true
+      ansible.builtin.template:
+        src: crowdsec-firewall-bouncer.yaml.j2
+        dest: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+        owner: root
+        group: root
+        mode: "u=rw"
+      no_log: true
+      notify: Restart crowdsec-firewall-bouncer
+
+    - name: Check if CrowdSec LAPI is reachable
+      ansible.builtin.wait_for:
+        host: "{{ crowdsec_bouncer_lapi_host }}"
+        port: "{{ crowdsec_bouncer_lapi_port }}"
+        timeout: 5
+      register: lapi_check
+      ignore_errors: true
+
+    - name: Enable and start crowdsec-firewall-bouncer
+      become: true
+      ansible.builtin.systemd:
+        name: crowdsec-firewall-bouncer
+        enabled: true
+        state: "{{ 'started' if lapi_check is success else 'stopped' }}"
+        daemon_reload: true
+
+    - name: Warn if LAPI not reachable
+      ansible.builtin.debug:
+        msg: >-
+          CrowdSec bouncer installed and enabled but NOT started — LAPI {{ crowdsec_bouncer_lapi_host }}:{{ crowdsec_bouncer_lapi_port }}
+          is unreachable. Run `just k3s && just deploy` first, then re-run configure or reboot.
+      when: lapi_check is failed

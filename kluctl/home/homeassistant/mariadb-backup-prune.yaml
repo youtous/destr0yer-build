@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mariadb-backup-prune-ha
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: mariadb-backup-prune
+    app.kubernetes.io/part-of: homeassistant
+spec:
+  schedule: "{{ args.schedule_mariadb_backup_prune }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: mariadb-backup-prune
+            app.kubernetes.io/part-of: homeassistant
+        spec:
+          restartPolicy: Never
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            # renovate: datasource=docker depName=alpine
+            - name: prune
+              image: docker.io/alpine:3.22
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  apk add --no-cache aws-cli >/dev/null 2>&1
+
+                  KEEP={{ args.mariadb_backup_retention_count }}
+                  S3_URL="http://${S3_ENDPOINT}"
+                  BUCKET="{{ args.s3_bucket_prefix }}homeassistant-backups"
+                  PREFIX="mariadb"
+
+                  echo "Pruning s3://${BUCKET}/${PREFIX}/ (keep=${KEEP})..."
+                  FILES=$(aws --endpoint-url "$S3_URL" s3 ls "s3://${BUCKET}/${PREFIX}/" 2>/dev/null | sort -r | awk '{print $NF}')
+                  TOTAL=$(echo "$FILES" | grep -c . || true)
+
+                  if [ "$TOTAL" -le "$KEEP" ]; then
+                    echo "Only ${TOTAL} backups, nothing to prune."
+                    exit 0
+                  fi
+
+                  TO_DELETE=$(echo "$FILES" | tail -n +$(( KEEP + 1 )))
+                  DELETED=0
+                  for F in $TO_DELETE; do
+                    aws --endpoint-url "$S3_URL" s3 rm "s3://${BUCKET}/${PREFIX}/${F}"
+                    DELETED=$((DELETED + 1))
+                  done
+                  echo "Pruned ${DELETED} backups, kept ${KEEP}."
+              env:
+                - name: S3_ENDPOINT
+                  value: "{{ args.s3_endpoint }}"
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: homeassistant-db-backup-s3
+                      key: access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: homeassistant-db-backup-s3
+                      key: secret-access-key
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi

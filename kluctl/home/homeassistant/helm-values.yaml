@@ -1,0 +1,143 @@
+configuration:
+  enabled: true
+  forceInit: true
+  trusted_proxies:
+    - "{{ args.pod_cidr }}"
+    - "{{ args.service_cidr }}"
+  initScript: |
+    #!/bin/bash
+    set -e
+    cp /config-templates/configuration.yaml /config/configuration.yaml
+    for f in automations.yaml scripts.yaml scenes.yaml; do
+      [ -f "/config/$f" ] || echo "[]" > "/config/$f"
+    done
+    { printf 'db_url: mysql://homeassistant:'; cat /mnt/db-secret/password; printf '@homeassistant-db:3306/homeassistant?charset=utf8mb4\n'; } > /config/secrets.yaml
+{% if args.auth_mode == "authelia" %}
+    # renovate: datasource=github-releases depName=christiaangoossens/hass-oidc-auth
+    OIDC_VERSION="v1.1.0"
+    OIDC_DIR="/config/custom_components/auth_oidc"
+    if [ ! -f "${OIDC_DIR}/.version-${OIDC_VERSION}" ]; then
+      echo "Installing hass-oidc-auth ${OIDC_VERSION}..."
+      rm -rf "${OIDC_DIR}"
+      mkdir -p "${OIDC_DIR}"
+      wget -q "https://github.com/christiaangoossens/hass-oidc-auth/releases/download/${OIDC_VERSION}/hass-oidc-auth.zip" -O /tmp/oidc.zip
+      unzip -qo /tmp/oidc.zip -d "${OIDC_DIR}/"
+      touch "${OIDC_DIR}/.version-${OIDC_VERSION}"
+      rm -f /tmp/oidc.zip
+    fi
+{% endif %}
+  initContainer:
+    # renovate: datasource=docker depName=alpine/k8s
+    image: docker.io/alpine/k8s@sha256:692239d739589247c4a791205ed9619c28ae85a21286e19a6211c04a62c56668  # 1.36.1
+    volumeMounts:
+      - name: init-volume
+        mountPath: /mnt/init/init.sh
+        subPath: init.sh
+      - name: config-volume
+        mountPath: /config-templates
+      - name: db-secret
+        mountPath: /mnt/db-secret
+        readOnly: true
+  templateConfig: |-
+{% raw %}
+    default_config:
+
+    http:
+      use_x_forwarded_for: true
+      trusted_proxies:
+        {{- range .Values.configuration.trusted_proxies }}
+        - {{ . }}
+        {{- end }}
+
+    recorder:
+      db_url: !secret db_url
+      purge_keep_days: 30
+      commit_interval: 5
+
+    frontend:
+      themes: !include_dir_merge_named themes
+
+    {{- if .Values.oidcEnabled }}
+    auth_oidc:
+      client_id: homeassistant
+      discovery_url: "https://{{ .Values.oidcAuthDomain }}/.well-known/openid-configuration"
+      display_name: Authelia
+      features:
+        default_redirect: true
+        force_https: true
+      roles:
+        admin: admins
+      {{- if .Values.oidcTlsSkipVerify }}
+      network:
+        tls_verify: false
+      {{- end }}
+    {{- end }}
+
+    automation manual: !include automations.yaml
+    automation backup:
+      - alias: "Daily backup at 03:00"
+        trigger:
+          - platform: time
+            at: "03:00:00"
+        action:
+          - action: backup.create
+
+    script: !include scripts.yaml
+    scene: !include scenes.yaml
+{% endraw %}
+
+oidcEnabled: {{ args.auth_mode == "authelia" }}
+oidcAuthDomain: "{{ args.authelia_domain }}"
+oidcTlsSkipVerify: {{ args.oidc_tls_skip_verify | default(false) }}
+
+{% if args.homeassistant_usb_passthrough | default(false) %}
+podSecurityContext:
+  runAsNonRoot: false
+securityContext:
+  privileged: true
+{% else %}
+podSecurityContext:
+  runAsNonRoot: false
+{% endif %}
+
+persistence:
+  enabled: true
+  storageClass: "{{ args.storage_class }}"
+  size: {{ args.pvc_homeassistant }}
+
+ingress:
+  enabled: true
+  className: haproxy
+  annotations:
+    cert-manager.io/cluster-issuer: "{{ args.certmanager_issuer | default('cluster-issuer') }}"
+  tls:
+    - hosts:
+        - "ha.{{ args.cluster_domain }}"
+      secretName: homeassistant-tls
+  hosts:
+    - host: "ha.{{ args.cluster_domain }}"
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+additionalVolumes:
+  - name: db-secret
+    secret:
+      secretName: homeassistant-db-password
+{% if args.homeassistant_usb_passthrough | default(false) %}
+  - name: usb-devices
+    hostPath:
+      path: {{ args.homeassistant_usb_host_path }}
+additionalMounts:
+  - name: usb-devices
+    mountPath: {{ args.homeassistant_usb_host_path }}
+    readOnly: true
+{% endif %}

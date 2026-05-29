@@ -1,0 +1,173 @@
+# vim: ts=2 sw=2 et
+# This file describes specific host vars
+hostname: ctrl.k3s.dev.local
+
+### Unattended upgrades — stagger reboot times across nodes to avoid cluster outage
+unattended_upgrades_automatic_reboot_time: "04:00"
+# ansible_host not set — Ansible uses inventory hostname (ctrl.k3s.dev.local)
+# which is resolved by ~/.ssh/config (run `just ssh-config` first)
+ipv4:  # /!\ When one of the host ip is changed, playbook should be completely re-run
+  - "192.168.56.10"
+ipv6:
+  - "fde4:8dba:82e1::c1"
+ipv4_private:
+  - "192.168.56.10"
+ipv6_private:
+  - "fde4:8dba:82e1::c1"
+
+host_users: []
+
+### Begin of relay-smtp parameters ###
+
+# smtp relay parameters
+relay_email: monitoring-heaven-pascal@k8s.home
+# relay disabled on this host
+# relay_user: "{{ relay_email }}"
+# relay_password: "{{ secret_relay_password }}"
+
+### End of relay-smtp parameters ###
+
+### Begin of Wireguard server parameters ###
+
+# allow VPN clients + K3S pods to access DNS
+dns_allowed_hosts: "{{ ['10.99.99.1/24', 'fdc9:281f:04d7:9ee9::1/64'] + (local_container_ips | default([])) + all_private_ips | list | flatten }}"
+
+wireguard_server_external_interface: eth0
+wireguard_servers:
+  - interface: wg0
+    addresses:  # server address + network
+      - 10.99.99.1/24
+      - fdc9:281f:04d7:9ee9::1/64
+    port: "1990"
+    mtu: ""
+    public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc="
+    private_key: "{{ wireguard_server_private_key }}"
+    restrict_ips:
+      - "192.168.56.0/24"
+      - "10.99.99.0/24"
+    peers: "{{ wireguard_server_peers }}"
+    pre_up: []
+    pre_down: []
+    post_up:
+      # INPUT filter (IPv4): WG peers can only reach ingress ports (mail + web)
+      # ⚠️  WARNING: port 22 is included because in DEV ctrl is both relay AND
+      # backup_storage target. Kopia SFTP from worker needs SSH over the WG tunnel.
+      # In PROD the relay is a separate node — do NOT add port 22 to the relay's
+      # wg-filter-relay. Instead, the K3S node's WG config should allow port 22
+      # only from known backup peers (see relay.sample.yml).
+      - "iptables -F wg-filter-relay || true"
+      - "iptables -t filter -N wg-filter-relay || true"
+      - "iptables -t filter -A wg-filter-relay -p icmp -j ACCEPT"
+      - "iptables -t filter -A wg-filter-relay -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+      - "iptables -t filter -A wg-filter-relay -p tcp -m multiport --dports 22,25,465,587,993,443,80 -j ACCEPT"
+      - "iptables -t filter -A wg-filter-relay -j DROP"
+      - "iptables -t filter -I INPUT -i %i -j wg-filter-relay"
+      # INPUT filter (IPv6): K3S is IPv4-only, drop all IPv6 except ICMP
+      - "ip6tables -F wg-filter-relay || true"
+      - "ip6tables -t filter -N wg-filter-relay || true"
+      - "ip6tables -t filter -A wg-filter-relay -p ipv6-icmp -j ACCEPT"
+      - "ip6tables -t filter -A wg-filter-relay -j DROP"
+      - "ip6tables -t filter -I INPUT -i %i -j wg-filter-relay"
+      # FORWARD: masquerade for outbound (WG peers → internet)
+      - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+    post_down:
+      - "iptables -t filter -D INPUT -i %i -j wg-filter-relay || true"
+      - "iptables -F wg-filter-relay || true"
+      - "iptables -X wg-filter-relay || true"
+      - "ip6tables -t filter -D INPUT -i %i -j wg-filter-relay || true"
+      - "ip6tables -F wg-filter-relay || true"
+      - "ip6tables -X wg-filter-relay || true"
+      - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+      - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {{ wireguard_server_external_interface }} -j MASQUERADE"
+
+# required for VPN server acting as a router
+ipv4_ip_forwarding: "1"
+ipv6_ip_forwarding: "1"
+
+### End of Wireguard server parameters ###
+
+### Swap — per-host, depends on available RAM and workload.
+# 4 GB for a 5.5 GB RAM VM running K3S + Cilium + all workloads.
+# swappiness=10: prefer RAM, swap only under memory pressure.
+fs_swap_file_size_mb: "4096"
+
+### Begin of Disk management parameters ###
+disk_partitions_to_create:
+  - device: /dev/vdb
+    part_number: 1
+    name: "backup_btrfs"
+
+filesystems_to_create:
+  - dev: /dev/vdb1
+    fstype: btrfs
+    opts: "-f"
+    mount_path: /home/backups
+### End of Disk management parameters ###
+
+### Begin of Backup storage parameters ###
+backup_btrfs_enabled: true
+# backup_storage parameters
+backup_users:
+  - username: worker
+    restrict_ips:
+      - "10.99.99.2"
+      - "fdc9:281f:04d7:9ee9::2"
+    ssh_keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH6vcZbXLfRAj2g8RvdU2RRc/EYsMtLZTMEPhvDkAEir root@worker.k3s.dev.local"
+  - username: ctrl
+    restrict_ips:
+      - "10.99.99.1"
+      - "fdc9:281f:04d7:9ee9::1"
+    ssh_keys:
+      - "{{ root_public_key }} root@ctrl.k3s.dev.local"
+
+### End of Backup storage parameters ###
+
+### Begin of Backup parameters ###
+
+# SSH keys for root (used by Kopia SFTP transport)
+users_ssh_keys:
+  - username: root
+    public_key: "{{ root_public_key }}"
+    private_key: "{{ root_private_key }}"
+
+# SFTP via WireGuard mesh IP (ctrl WG address = 10.99.99.1)
+kopia_sftp_host: "10.99.99.1"
+kopia_sftp_user: "backup_ctrl"
+kopia_sftp_path: "/home"
+kopia_sftp_key: "/root/.ssh/id_ed25519"
+kopia_password: "{{ secret_kopia_password }}"
+kopia_enabled: true
+
+### End of Backup parameters ###
+
+### Cloud relay test (HAProxy TCP on ctrl for testing) ###
+# DEV: ctrl is both relay and K3S node. Backends target its own WG IP (10.99.99.1)
+# which hits the K3S ingress via the WG interface — same path as production.
+# In PROD: backend_addr = WG IP of the K3S peer (e.g. 10.99.99.10).
+relay_public_interface: eth1
+relay_wg_interface: wg0
+relay_wg_subnet: "10.99.99.0/24"
+relay_haproxy_ipv6: false
+
+relay_haproxy_frontends:
+  - name: smtp-proxy
+    bind_port: 10025
+    backend_addr: "10.99.99.1:25"
+  - name: smtps-proxy
+    bind_port: 10465
+    backend_addr: "10.99.99.1:465"
+  - name: imaps-proxy
+    bind_port: 10993
+    backend_addr: "10.99.99.1:993"
+
+relay_haproxy_sni_port: 8443
+relay_haproxy_http_redirect: false
+relay_haproxy_sni_routes:
+  - sni: whoami.k8s.home
+    backend_addr: "10.99.99.1:443"
+    send_proxy: false
+  - sni: grafana.k8s.home
+    backend_addr: "10.99.99.1:443"
+    send_proxy: false

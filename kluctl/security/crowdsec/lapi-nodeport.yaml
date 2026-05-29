@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: crowdsec-lapi-nodeport
+  namespace: security
+  labels:
+    app.kubernetes.io/name: crowdsec
+    app.kubernetes.io/component: lapi
+spec:
+  type: NodePort
+  # Cluster policy: LAPI runs on one node but bouncer on all nodes needs access via localhost:9282
+  externalTrafficPolicy: Cluster
+  selector:
+    k8s-app: crowdsec
+    type: lapi
+  ports:
+    - name: lapi
+      port: 8080
+      targetPort: 8080
+      nodePort: 9282
+      protocol: TCP

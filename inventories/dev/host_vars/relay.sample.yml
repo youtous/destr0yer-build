@@ -1,0 +1,99 @@
+# Cloud relay node — sample inventory
+# Copy to inventories/<env>/host_vars/<relay-hostname>.yml and fill in vault values.
+#
+# The relay uses TWO roles:
+#   1. wireguard_meta (WG tunnel to home cluster)
+#   2. cloud_relay (HAProxy TCP + outbound masquerade)
+
+# ─── WireGuard (consumed by wireguard_meta/wireguard_server) ─────────────────
+wireguard_servers:
+  - interface: wg-infra
+    addresses:
+      - 10.99.99.1/24
+    port: "41993"  # Non-standard — avoid 51820 (scanned by bots)
+    public_key: "RELAY_PUBLIC_KEY_HERE"
+    private_key: "{{ vault_relay_wg_private_key }}"
+    restrict_ips:
+      - "any"
+    peers:
+      - name: ctrl
+        public_key: "CTRL_PUBLIC_KEY_HERE"
+        preshared_key: "{{ vault_relay_ctrl_psk }}"
+        allowed_ips:
+          - 10.99.99.10/32
+        persistent_keepalive: ""  # Not needed server-side (client sends keepalive)
+    pre_up: []
+    pre_down: []
+    post_up:
+      # INPUT filter (IPv4): K3S node has no reason to initiate connections to relay
+      - "iptables -F wg-filter-cluster || true"
+      - "iptables -t filter -N wg-filter-cluster || true"
+      - "iptables -t filter -A wg-filter-cluster -p icmp -j ACCEPT"
+      - "iptables -t filter -A wg-filter-cluster -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+      - "iptables -t filter -A wg-filter-cluster -j DROP"
+      - "iptables -t filter -I INPUT -i %i -j wg-filter-cluster"
+      # INPUT filter (IPv6): same rules
+      - "ip6tables -F wg-filter-cluster || true"
+      - "ip6tables -t filter -N wg-filter-cluster || true"
+      - "ip6tables -t filter -A wg-filter-cluster -p ipv6-icmp -j ACCEPT"
+      - "ip6tables -t filter -A wg-filter-cluster -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+      - "ip6tables -t filter -A wg-filter-cluster -j DROP"
+      - "ip6tables -t filter -I INPUT -i %i -j wg-filter-cluster"
+      # FORWARD + masquerade: relay sends mail outbound via its public IP
+      - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+      - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+    post_down:
+      - "iptables -t filter -D INPUT -i %i -j wg-filter-cluster || true"
+      - "iptables -F wg-filter-cluster || true"
+      - "iptables -X wg-filter-cluster || true"
+      - "ip6tables -t filter -D INPUT -i %i -j wg-filter-cluster || true"
+      - "ip6tables -F wg-filter-cluster || true"
+      - "ip6tables -X wg-filter-cluster || true"
+      - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
+      - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
+    mtu: ""
+
+# ─── HAProxy TCP relay (consumed by cloud_relay role) ────────────────────────
+relay_public_interface: eth0
+relay_backend_ip: "10.99.99.10"
+relay_wg_interface: wg-infra
+
+# Phase 1: IPv4 only. Set to true when AAAA records + rDNS are ready.
+relay_haproxy_ipv6: false
+
+# backend_addr uses the WireGuard IP of the K3S node (10.99.99.10).
+# This IP is STABLE — assigned statically in WireGuard AllowedIPs config.
+# Do NOT use Kubernetes ClusterIPs (10.43.x.x) — they are ephemeral and
+# only reachable from within the cluster. The relay connects via WireGuard
+# to the K3S HAProxy Ingress listening on HostPort on the node.
+relay_haproxy_frontends:
+  - name: smtp
+    bind_port: 25
+    backend_addr: "10.99.99.10:25"
+  - name: smtps
+    bind_port: 465
+    backend_addr: "10.99.99.10:465"
+  - name: imaps
+    bind_port: 993
+    backend_addr: "10.99.99.10:993"
+
+# HTTPS — SNI routing (uncomment when ready)
+# send_proxy (default: true) sends PROXY protocol v2 to preserve client IPs.
+# Set send_proxy: false only if the backend does not support PROXY protocol.
+# relay_haproxy_sni_routes:
+#   - sni: grafana.k8s.home
+#     backend_addr: "10.99.99.10:443"
+#   - sni: auth.k8s.home
+#     backend_addr: "10.99.99.10:443"
+#   - sni: seafile.k8s.home
+#     backend_addr: "10.99.99.10:443"
+#     send_proxy: false  # example: backend doesn't support PROXY protocol
+
+# ─── UFW rules (consumed by iptables_firewall role) ──────────────────────────
+ufw_additional_rules:
+  - {comment: "SMTP", proto: tcp, src: any, dest: any, port: "25", rule: allow, direction: in}
+  - {comment: "SMTPS", proto: tcp, src: any, dest: any, port: "465", rule: allow, direction: in}
+  - {comment: "IMAPS", proto: tcp, src: any, dest: any, port: "993", rule: allow, direction: in,}
+  # Uncomment when SNI routing is enabled:
+  # - { comment: "HTTPS", proto: tcp, src: any, dest: any, port: "443", rule: allow, direction: in }
+  # - { comment: "HTTP redirect", proto: tcp, src: any, dest: any, port: "80", rule: allow, direction: in }

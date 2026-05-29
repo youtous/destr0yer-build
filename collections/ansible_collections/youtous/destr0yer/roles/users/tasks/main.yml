@@ -1,0 +1,68 @@
+- name: Creating groups
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    gid: "{{ item.gid | default(omit) }}"
+  loop: "{{ groups_to_create }}"
+  tags: ["users", "groups", "configuration"]
+
+- name: Per-user group creation
+  ansible.builtin.group:
+    name: "{{ item.username }}"
+    gid: "{{ item.gid | default(item.uid) | default(omit) }}"
+  loop: "{{ users }}"
+  when: "'group' not in item and users_create_per_user_group"
+  tags: ["users", "configuration"]
+
+- name: User creation
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    group: "{{ item.group | default(item.username if users_create_per_user_group else users_group) }}"
+    groups: "{{ item.groups | join(',') if 'groups' in item else '' }}"
+    append: "{{ item.append | default(omit) }}"
+    shell: "{{ item.shell if item.shell is defined else users_default_shell }}"
+    password: "{{ item.password if item.password is defined else '!' }}"
+    comment: "{{ item.name if item.name is defined else '' }}"
+    uid: "{{ item.uid | default(omit) }}"
+    home: "{{ item.home | default('/home/' + item.username) }}"
+    createhome: "{{ 'yes' if users_create_homedirs else 'no' }}"
+    generate_ssh_key: "{{ item.generate_ssh_key | default(omit) }}"
+    update_password: "{{ item.update_password | default(omit) }}"
+  loop: "{{ users }}"
+  tags: ["users", "configuration"]
+
+- name: SSH keys
+  ansible.posix.authorized_key:
+    user: "{{ item.username }}"
+    key: "{{ item.ssh_key | join('\n') }}"
+    path: "{{ item.home | default('/home/' + item.username) }}/.ssh/authorized_keys"
+    exclusive: true
+  loop: "{{ users }}"
+  tags: ["users", "configuration"]
+
+- name: Setup user profiles
+  ansible.builtin.blockinfile:
+    block: "{{ item.profile }}"
+    dest: "{{ item.home | default('/home/' + item.username) }}/.profile"
+    owner: "{{ item.username }}"
+    group: "{{ item.group | default(item.username if users_create_per_user_group else users_group) }}"
+    mode: "u=rw,g=r,o=r"
+    create: true
+  when: users_create_homedirs and item.profile is defined
+  loop: "{{ users }}"
+
+- name: Deleted user removal
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    state: absent
+    remove: "{{ item.remove | default(omit) }}"
+    force: "{{ item.force | default(omit) }}"
+  loop: "{{ users_deleted }}"
+  tags: ["users", "configuration"]
+
+- name: Deleted per-user group removal
+  ansible.builtin.group:
+    name: "{{ item.username }}"
+    state: absent
+  loop: "{{ users_deleted }}"
+  when: users_create_per_user_group
+  tags: ["users", "configuration"]

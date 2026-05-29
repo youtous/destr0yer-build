@@ -1,6 +1,0 @@
-# from https://wiki.debian-fr.xyz/Monit#postfix
-
-check process docker with pidfile /run/docker.pid
-  start program = "/bin/systemctl start docker"
-  stop  program = "/bin/systemctl stop docker"
-  if 5 restarts within 5 cycles then timeout

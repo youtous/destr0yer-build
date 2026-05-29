@@ -1,0 +1,30 @@
+# root of the chroot backup system
+backup_root_directory: /home/backups
+
+backup_group_name: "backup-sftp"
+backup_group_gid: 25555
+
+sshd_port: 22
+
+backup_users: []
+#  - username: backup_hostname
+#    ssh_keys: [] # specify host public key
+#    restrict_ips: [] # specify list of allowed ips, no restriction if the list is empty, DO NOT USE DOMAINS, it will not be resolved
+
+# --- btrfs snapshot retention (replaces legacy rsync frozen backup) ---
+backup_btrfs_enabled: false
+backup_btrfs_snapshot_dir: "{{ backup_root_directory }}/.snapshots"
+backup_btrfs_retention_hourly: 24
+backup_btrfs_retention_daily: 7
+backup_btrfs_retention_weekly: 4
+
+# Cold backup via btrfs send (monthly to external media / remote mount)
+backup_btrfs_cold_enabled: false
+backup_btrfs_cold_target: "/mnt/cold-backup"
+backup_btrfs_cold_schedule: "Mon *-*-1 03:00:00"
+
+# btrfs scrub (weekly integrity check)
+backup_btrfs_scrub_schedule: "Sun *-*-* 02:00:00"
+
+# btrfs snapshot schedule (hourly)
+backup_btrfs_snapshot_schedule: "*-*-* *:00:00"

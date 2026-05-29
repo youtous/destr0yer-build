@@ -1,0 +1,46 @@
+# Automatic security updates configuration
+
+# Origins to allow for unattended upgrades (Debian security only by default)
+unattended_upgrades_origins:
+  - "origin=Debian,codename=${distro_codename}-security,label=Debian-Security"
+
+# Blocklisted packages (never auto-upgrade these)
+# K3S-managed packages should be blocklisted if installed via apt
+unattended_upgrades_package_blocklist: []
+
+# Automatically reboot when required (e.g. kernel update)
+unattended_upgrades_automatic_reboot: true
+
+# Reboot time — MUST be defined in host_vars and staggered across cluster nodes
+# to avoid simultaneous outage. No default on purpose: the preflight check will
+# fail if this is not explicitly set per host.
+# Example: ctrl=04:00, worker=04:30
+# unattended_upgrades_automatic_reboot_time: — set in host_vars
+
+# Remove unused kernel-related packages after upgrade
+unattended_upgrades_remove_unused_kernel_packages: true
+
+# Remove unused auto-installed dependencies
+unattended_upgrades_remove_unused_dependencies: true
+
+# Email to send notifications to (empty = no email)
+unattended_upgrades_mail: "{{ monitoring_email | default('') }}"
+
+# Only send email on error (true) or always (false)
+unattended_upgrades_mail_on_error_only: true
+
+# APT periodic settings
+unattended_upgrades_update_package_lists: 1
+unattended_upgrades_unattended_upgrade: 1
+unattended_upgrades_download_upgradeable_packages: 1
+unattended_upgrades_autoclean_interval: 7
+
+# Bandwidth limit in kb/sec (0 = no limit)
+unattended_upgrades_dl_limit: 0
+
+# SyslogEnable
+unattended_upgrades_syslog_enable: true
+
+# needrestart mode: a=automatic, l=list only, i=interactive
+# MUST be automatic to avoid blocking unattended-upgrades
+unattended_upgrades_needrestart_mode: "a"

@@ -1,0 +1,75 @@
+# Derived args computed from cluster_domain.
+# Loaded via vars: in deployment.yaml — templating IS supported here.
+# These become top-level vars; templates using args.X need these in args.
+# Kluctl merges vars into the template context alongside args.
+
+{% set _s3_prefix = args.cluster_domain | replace('.', '-') ~ '-' %}
+{% set _longest_bucket = _s3_prefix ~ 'homeassistant-backups' %}
+{% if _longest_bucket | length > 63 %}{{ ("S3_BUCKET_NAME_TOO_LONG__" ~ (_longest_bucket | length) ~ "_of_63_chars__shorten_cluster_domain") | VALIDATION_ERROR }}{% endif %}
+
+args:
+  s3_bucket_prefix: "{{ _s3_prefix }}"
+  admin_email: "admin@{{ args.cluster_domain }}"
+  grafana_domain: "grafana.{{ args.cluster_domain }}"
+  authelia_domain: "auth.{{ args.cluster_domain }}"
+  seafile_domain: "seafile.{{ args.cluster_domain }}"
+  seafile_admin_email: "admin@{{ args.cluster_domain }}"
+  authelia_admin_email: "admin@{{ args.cluster_domain }}"
+  mail_hostname: "mail.{{ args.cluster_domain }}"
+  mail_domain: "{{ args.cluster_domain }}"
+  autoconfig_domain: "autoconfig.{{ args.cluster_domain }}"
+  autodiscover_domain: "autodiscover.{{ args.cluster_domain }}"
+  certmanager_acme_email: "admin@{{ args.cluster_domain }}"
+  certmanager_acme_dns_zone: "{{ args.cluster_domain }}"
+  certmanager_desec_group_name: "acme.{{ args.cluster_domain }}"
+  testssl_report_email: "admin@{{ args.cluster_domain }}"
+  testssl_from_email: "testssl@{{ args.cluster_domain }}"
+  alertmanager_from_email: "alertmanager@{{ args.cluster_domain }}"
+  authelia_sender_email: "authelia@{{ args.cluster_domain }}"
+  noreply_email: "noreply@{{ args.cluster_domain }}"
+  testssl_hosts:
+    - host: "grafana.{{ args.cluster_domain }}:443"
+    - host: "auth.{{ args.cluster_domain }}:443"
+
+  # Gatus uptime checks — override/extend per target.
+  # Conditional on enable_* flags so disabled services don't cause false alerts.
+  gatus_endpoints:
+{% if args.enable_whoami | default(true) %}
+    - name: whoami
+      group: ingress
+      url: "https://who.{{ args.cluster_domain }}"
+      conditions: ["[STATUS] == any(200, 401, 403)"]
+{% endif %}
+    - name: grafana
+      group: ingress
+      url: "https://grafana.{{ args.cluster_domain }}/api/health"
+      conditions: ["[STATUS] == any(200, 401, 403)"]
+{% if args.enable_authelia | default(true) %}
+    - name: authelia
+      group: ingress
+      url: "https://auth.{{ args.cluster_domain }}/api/health"
+      conditions: ["[STATUS] == 200"]
+{% endif %}
+{% if args.enable_seafile | default(true) %}
+    - name: seafile
+      group: ingress
+      url: "https://seafile.{{ args.cluster_domain }}"
+      conditions: ["[STATUS] == any(200, 401, 403)"]
+{% endif %}
+{% if args.enable_homeassistant | default(true) %}
+    - name: homeassistant
+      group: ingress
+      url: "https://ha.{{ args.cluster_domain }}"
+      conditions: ["[STATUS] == any(200, 401, 403)"]
+{% endif %}
+    - name: coredns
+      group: infra
+      url: "kube-dns.kube-system.svc.cluster.local:53"
+      dns:
+        query-name: "kubernetes.default.svc.cluster.local"
+        query-type: "A"
+      conditions: ["[DNS_RCODE] == NOERROR"]
+    - name: registry-cache
+      group: infra
+      url: "http://registry.registry.svc.cluster.local:5000/v2/"
+      conditions: ["[STATUS] == 200"]

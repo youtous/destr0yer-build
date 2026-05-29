@@ -1,0 +1,31 @@
+- name: Restart sshd
+  become: true
+  ansible.builtin.systemd:
+    name: sshd
+    state: restarted
+
+- name: Reload systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable btrfs-snapshot timer
+  become: true
+  ansible.builtin.systemd:
+    name: btrfs-snapshot.timer
+    state: started
+    enabled: true
+
+- name: Enable btrfs-scrub timer
+  become: true
+  ansible.builtin.systemd:
+    name: btrfs-scrub.timer
+    state: started
+    enabled: true
+
+- name: Enable btrfs-cold-send timer
+  become: true
+  ansible.builtin.systemd:
+    name: btrfs-cold-send.timer
+    state: started
+    enabled: true

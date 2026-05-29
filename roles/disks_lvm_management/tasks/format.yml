@@ -1,0 +1,10 @@
+- name: Format the filesystem
+  become: true
+  community.general.filesystem:
+    fstype: "{{ item.fstype }}"
+    dev: "{{ '/dev/mapper/' + item.luks.name if (item.luks.enabled | default(false)) else item.dev }}"
+    opts: "{{ item.opts | default('') }}"
+    force: "{{ item.force | default(False) }}"
+    resizefs: "{{ item.resizefs | default(False) }}"
+    state: present
+  with_items: "{{ filesystems_to_create }}"

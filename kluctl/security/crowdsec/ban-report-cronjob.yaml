@@ -1,0 +1,107 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crowdsec-ban-report
+  namespace: security
+  labels:
+    app.kubernetes.io/name: crowdsec
+    app.kubernetes.io/component: ban-report
+spec:
+  schedule: "{{ args.schedule_crowdsec_report }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            # renovate: datasource=docker depName=alpine/k8s
+            - name: ban-report
+              image: docker.io/alpine/k8s@sha256:692239d739589247c4a791205ed9619c28ae85a21286e19a6211c04a62c56668  # 1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  LAPI="http://crowdsec-lapi-nodeport.security.svc.cluster.local:8080"
+                  DECISIONS=$(curl -sf -H "X-Api-Key: ${BOUNCER_KEY}" "${LAPI}/v1/decisions" 2>/dev/null || echo "null")
+                  if [ "$DECISIONS" = "null" ] || [ "$DECISIONS" = "" ]; then
+                    echo "No active decisions — nothing to report."
+                    exit 0
+                  fi
+                  COUNT=$(echo "$DECISIONS" | jq 'length')
+                  if [ "$COUNT" -gt 0 ]; then
+                    SUMMARY=$(echo "$DECISIONS" | jq -r '.[] | "\(.type) \(.value) (scope=\(.scope), origin=\(.origin), duration=\(.duration))"')
+                    SMTP_OPTS=""
+                    if [ "${SMTP_PORT}" != "25" ] && [ "${SMTP_PORT}" != "1025" ]; then
+                      SMTP_OPTS="--ssl-reqd"
+                    fi
+                    printf "Subject: [CrowdSec] %s active decisions\nFrom: %s\nTo: %s\nContent-Type: text/plain; charset=utf-8\n\nCrowdSec ban report — %s active decisions\n\n%s\n" \
+                      "$COUNT" "${SMTP_FROM}" "${SMTP_TO}" "$COUNT" "$SUMMARY" | \
+                      curl -sf --url "smtp://${SMTP_HOST}:${SMTP_PORT}" \
+                        ${SMTP_OPTS} \
+                        --user "${SMTP_USER}:${SMTP_PASS}" \
+                        --mail-from "${SMTP_FROM}" --mail-rcpt "${SMTP_TO}" \
+                        --upload-file -
+                    echo "Report sent: ${COUNT} decisions."
+                  else
+                    echo "No active decisions — nothing to report."
+                  fi
+              env:
+                - name: BOUNCER_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: crowdsec-bouncer-key
+                      key: apiKey
+                - name: SMTP_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: host
+                - name: SMTP_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: port
+                - name: SMTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: username
+                - name: SMTP_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: password
+                - name: SMTP_FROM
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: from
+                - name: SMTP_TO
+                  value: "{{ args.admin_email }}"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 65534
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                capabilities:
+                  drop: ["ALL"]
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: crowdsec-bouncer-key
+  namespace: security
+type: Opaque
+stringData:
+  apiKey: "{{ secrets.crowdsec_bouncer_key }}"

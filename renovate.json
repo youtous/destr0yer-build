@@ -1,0 +1,79 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "labels": ["dependencies"],
+  "schedule": ["before 8am on monday"],
+  "timezone": "UTC",
+  "enabledManagers": ["ansible-galaxy", "github-actions", "pip_requirements", "helmv3", "regex"],
+  "packageRules": [
+    {
+      "matchManagers": ["ansible-galaxy"],
+      "groupName": "ansible collections"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "automerge": true
+    },
+    {
+      "description": "Pin Helm chart versions in Kluctl",
+      "matchManagers": ["regex"],
+      "matchFileNames": ["kluctl/**"],
+      "groupName": "kluctl helm charts"
+    }
+  ],
+  "regexManagers": [
+    {
+      "description": "Kluctl helm-chart.yaml version pins",
+      "fileMatch": ["kluctl/.*/helm-chart\\.yaml$"],
+      "matchStrings": ["chartVersion:\\s*\"?(?<currentValue>[^\"\\s]+)\"?\\s*#\\s*renovate:\\s*depName=(?<depName>[^\\s]+)\\s+registryUrl=(?<registryUrl>[^\\s]+)"],
+      "datasourceTemplate": "helm"
+    },
+    {
+      "description": "Kluctl YAML — image: tag@sha256:digest (must be before tag-only rule)",
+      "fileMatch": ["kluctl/.+\\.yaml$"],
+      "matchStrings": ["#\\s*renovate:\\s*datasource=docker\\s+depName=(?<depName>[^\\s]+?)(?:\\s+versioning=(?<versioning>[^\\s]+))?\\s*\\n(?:[^\\n]*\\n){0,2}[^\\n]*image:\\s*\\S+?:(?<currentValue>[a-zA-Z0-9][a-zA-Z0-9._-]*)@(?<currentDigest>sha256:[a-f0-9]+)"],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+    },
+    {
+      "description": "Kluctl YAML — image: digest-only with version in comment (image: foo@sha256:... # 1.2.3)",
+      "fileMatch": ["kluctl/.+\\.yaml$"],
+      "matchStrings": ["#\\s*renovate:\\s*datasource=docker\\s+depName=(?<depName>[^\\s]+)\\s*\\n(?:[^\\n]*\\n){0,2}[^\\n]*image:\\s*\\S+@(?<currentDigest>sha256:[a-f0-9]+)\\s+#\\s*(?<currentValue>\\S+)"],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    },
+    {
+      "description": "Kluctl YAML — image: with tag only (e.g. image: foo/bar:v1.2.3)",
+      "fileMatch": ["kluctl/.+\\.yaml$"],
+      "matchStrings": ["#\\s*renovate:\\s*datasource=docker\\s+depName=(?<depName>[^\\s]+?)(?:\\s+versioning=(?<versioning>[^\\s]+))?\\s*\\n(?:[^\\n]*\\n){0,2}[^\\n]*image:\\s*\\S+?:(?<currentValue>[a-zA-Z0-9][a-zA-Z0-9._-]*)\\s"],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+    },
+    {
+      "description": "Kluctl Helm values — tag: field with optional digest",
+      "fileMatch": ["kluctl/.+\\.yaml$"],
+      "matchStrings": ["#\\s*renovate:\\s*datasource=docker\\s+depName=(?<depName>[^\\s]+?)(?:\\s+versioning=(?<versioning>[^\\s]+))?\\s*\\n(?:[^\\n]*\\n){0,3}\\s*tag:\\s*\"?(?<currentValue>[a-zA-Z0-9][a-zA-Z0-9._-]*)(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"?"],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+    },
+    {
+      "description": "Kluctl Helm values — github-releases in shell scripts",
+      "fileMatch": ["kluctl/.+\\.yaml$"],
+      "matchStrings": ["#\\s*renovate:\\s*datasource=(?<datasource>github-releases)\\s+depName=(?<depName>[^\\s]+)\\s*\\n[^\\n]*=\"(?<currentValue>[^\"]+)\""],
+      "versioningTemplate": "semver"
+    },
+    {
+      "description": "Ansible role defaults container image versions",
+      "fileMatch": ["roles/.*/defaults/main\\.yml$"],
+      "matchStrings": ["# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\s]+)\\n[a-z_]+version:\\s*\"?(?<currentValue>[^\"\\s]+)"],
+      "versioningTemplate": "semver"
+    },
+    {
+      "description": ".tool-versions file",
+      "fileMatch": ["^\\.tool-versions$"],
+      "matchStrings": ["(?<depName>[a-z-]+)\\s+(?<currentValue>\\S+)\\s*#\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)"],
+      "versioningTemplate": "semver"
+    }
+  ]
+}

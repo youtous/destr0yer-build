@@ -1,0 +1,103 @@
+# This role contains postfix settings for relay usage
+- name: Uninstall other mailserver packages
+  become: true
+  ansible.builtin.apt:
+    pkg:
+      - exim4
+      - sendmail
+    state: absent
+    autoremove: true
+
+- name: Install postfix package
+  become: true
+  ansible.builtin.apt:
+    name:
+      - mailutils
+      - libsasl2-modules
+      - postfix
+
+# http://postfix.state-of-mind.de/patrick.koetter/smtpauth/smtp_auth_mailservers.html
+- name: Define /etc/mailname with hostname
+  become: true
+  ansible.builtin.copy:
+    content: "{{ myhostname }}"
+    dest: "/etc/mailname"
+    group: root
+    owner: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - Reload postfix
+
+- name: Copy aliases
+  become: true
+  ansible.builtin.template:
+    src: files/aliases.j2
+    dest: /etc/aliases
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - Newaliases
+
+- name: Copy sasl_passwd
+  become: true
+  ansible.builtin.template:
+    src: files/sasl_passwd.j2
+    dest: "{{ postfix_sasl_file }}"
+    owner: root
+    group: root
+    mode: u=rw,g=,o=
+  notify:
+    - Hash sasl passwd
+  no_log: true
+
+- name: Copy postfix configurations
+  become: true
+  ansible.builtin.template:
+    src: "files/{{ item.src }}"
+    dest: "/etc/postfix/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - Restart postfix
+  with_items:
+    - {src: main.j2.cf, dest: main.cf}
+    - {src: header_check.j2, dest: header_check}
+    - {src: sender_canonical_maps.j2, dest: sender_canonical_maps,}
+
+- name: Change inet smtp port
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/postfix/master.cf
+    regex: '^\w+.*smtpd$'
+    line: "{{ postfix_smtp_port }}      inet  n       -       y       -       -       smtpd"
+  when: postfix_smtp_port != "smtp"
+  notify:
+    - Restart postfix
+
+- name: Secure SASL password file
+  become: true
+  ansible.builtin.file:
+    path: "{{ postfix_sasl_file }}"
+    mode: u=rw,g=,o=
+
+- name: Enable postfix
+  become: true
+  ansible.builtin.service:
+    name: postfix
+    enabled: true
+
+- name: Monit postfix
+  ansible.builtin.import_role:
+    name: monit_postfix
+
+- name: Activate postfix-sasl and postfix jails using fail2ban
+  ansible.builtin.include_role:  # noqa: var-naming[no-role-prefix]
+    name: fail2ban_additional
+  vars:
+    fail2ban_services:
+      - name: postfix
+      - name: postfix-sasl
+        # there is no need to configure /var/log/mail.* with logrotate,
+        # it's already configured with rsyslog

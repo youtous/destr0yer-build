@@ -1,0 +1,6 @@
+# renovate: datasource=github-releases depName=derailed/k9s
+k8s_k9s_version: 'v0.50.18'
+
+k8s_k9s_version_sha256sum: '0b697ed4aa80997f7de4deeed6f1fba73df191b28bf691b1f28d2f45fa2a9e9b'
+k8s_k9s_os: "Linux"
+k8s_k9s_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"

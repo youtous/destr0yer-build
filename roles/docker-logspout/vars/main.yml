@@ -1,5 +1,0 @@
-logspout_compose_file_dest_directory: ~/logspout
-logspout_compose_file_dest_name: docker-compose.logspout.yml
-logspout_compose_file_dest: "{{ logspout_compose_file_dest_directory }}/{{ logspout_compose_file_dest_name }}"
-
-docker_logspout_stack_name: "logspout"

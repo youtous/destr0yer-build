@@ -1,0 +1,25 @@
+---
+- name: Logwatch | Make sure logwatch and its dependencies are installed
+  ansible.builtin.apt:
+    pkg:
+      - logwatch
+    state: present
+
+- name: Logwatch | Configure logwatch (/etc/logwatch/conf/logwatch.conf)
+  ansible.builtin.template:
+    src: etc_logwatch_conf_logwatch.conf.j2
+    dest: /etc/logwatch/conf/logwatch.conf
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+
+- name: Logwatch | Remove logwatch's cronjob
+  ansible.builtin.file:
+    path: /etc/cron.daily/00logwatch
+    state: absent
+
+- name: Logwatch | Configure logwatch's cronjob
+  ansible.builtin.cron:
+    name: logwatch
+    job: /usr/sbin/logwatch
+    special_time: "{{ logwatch_cron_time }}"

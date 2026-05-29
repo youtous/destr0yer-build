@@ -1,0 +1,58 @@
+- name: Deploy kopia snapshot systemd service
+  become: true
+  ansible.builtin.template:
+    src: kopia-snapshot.service.j2
+    dest: /etc/systemd/system/kopia-snapshot.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload kopia systemd
+
+- name: Deploy kopia snapshot systemd timer
+  become: true
+  ansible.builtin.template:
+    src: kopia-snapshot.timer.j2
+    dest: /etc/systemd/system/kopia-snapshot.timer
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - Reload kopia systemd
+    - Enable kopia-snapshot timer
+
+- name: Deploy kopia verify systemd service
+  become: true
+  ansible.builtin.template:
+    src: kopia-verify.service.j2
+    dest: /etc/systemd/system/kopia-verify.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload kopia systemd
+
+- name: Deploy kopia verify systemd timer
+  become: true
+  ansible.builtin.template:
+    src: kopia-verify.timer.j2
+    dest: /etc/systemd/system/kopia-verify.timer
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - Reload kopia systemd
+    - Enable kopia-verify timer
+
+- name: Ensure kopia-snapshot timer is started
+  become: true
+  ansible.builtin.systemd:
+    name: kopia-snapshot.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Ensure kopia-verify timer is started
+  become: true
+  ansible.builtin.systemd:
+    name: kopia-verify.timer
+    state: started
+    enabled: true

@@ -1,0 +1,1 @@
+monit_wireguard_interfaces: ["wg0"]  # interfaces to watch

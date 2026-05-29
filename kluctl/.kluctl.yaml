@@ -1,0 +1,246 @@
+discriminator: "destr0yer-{{ target.name }}"
+
+# Shared arg defaults (prod-ready). Targets override what they need.
+# NOTE: defaults cannot use templating ({{ args.* }}) — only static values.
+# Derived values (domains, emails) go in deployment.yaml vars or target args.
+args:
+  - name: environment
+  - name: cluster_domain
+  # K8s network CIDRs — must match k3s cluster-cidr and Cilium IPAM settings in inventory.
+  # Used by templates that need to trust or scope internal traffic (HAProxy allowlist,
+  # mailserver PROXY protocol, CrowdSec auto_registration). Override per target if non-default.
+  - name: pod_cidr
+    default: "10.42.0.0/16"
+  - name: service_cidr
+    default: "10.43.0.0/16"
+  - name: app_namespaces
+    default:
+      - observability
+      - security
+      - storage
+      - mail
+      - homeassistant
+      - whoami
+      - authelia
+      - seafile
+  - name: infra_namespaces
+    default:
+      - cert-manager
+      - kyverno
+      - openebs
+      - garage
+      - registry
+      - velero
+      - haproxy-ingress
+      - database
+  - name: haproxy_ingress_namespace
+    default: haproxy-ingress
+  - name: prometheus_namespace
+    default: observability
+  # Networks trusted for direct access (HAProxy allowlist, CrowdSec whitelist).
+  # Does NOT include pod/service CIDRs — those are appended by templates that need them.
+  # Override per target to add VPN, LAN, or management networks.
+  - name: trusted_cidrs
+    default:
+      - "127.0.0.1/8"
+      - "::1/128"
+  - name: public_cidrs
+    default:
+      - "0.0.0.0/0"
+      - "::/0"
+  - name: certmanager_issuer_type
+    default: "letsencrypt"
+  - name: certmanager_dns_provider
+    default: "desec"
+  - name: certmanager_acme_server
+    default: "https://acme-v02.api.letsencrypt.org/directory"
+  - name: certmanager_desec_token_secret_name
+    default: "desec-token"
+  - name: certmanager_egress_fqdns
+    default:
+      - "*.api.letsencrypt.org"
+      - "desec.io"
+      - "ns1.desec.io"
+      - "ns2.desec.org"
+  - name: kyverno_validation_action
+    default: "Enforce"
+  - name: loki_retention_days
+    default: 60
+  - name: storage_class
+    default: "openebs-hostpath"
+  # S3 object storage (Garage). Used by Loki, Velero, Seafile, MariaDB backups.
+  # Override per target for remote Garage (e.g. via WG-backed K8S Service).
+  - name: s3_endpoint
+    default: "garage.garage.svc.cluster.local:3900"
+  - name: s3_region
+    default: "garage"
+  - name: s3_bucket_prefix
+    default: ""
+  - name: loki_storage_type
+    default: "s3"
+  - name: loki_s3_bucket
+    default: "loki-chunks"
+  - name: prometheus_retention
+    default: "180d"
+  - name: velero_backup_retention_count
+    default: 14
+  - name: mariadb_backup_retention_count
+    default: 14
+  - name: ha_backup_local_retention_count
+    default: 14
+  - name: enable_authelia
+    default: true
+  - name: enable_mail
+    default: true
+  - name: mail_proxy_ports
+    default:
+      - "12525"
+      - "10465"
+      - "10587"
+      - "10993"
+  - name: enable_homeassistant
+    default: true
+  - name: homeassistant_usb_passthrough
+    default: false
+  - name: homeassistant_usb_host_path
+    default: "/dev/serial/by-id"
+  - name: zigbee2mqtt_usb_device_path
+    default: "/dev/ttyUSB0"
+  - name: enable_whoami
+    default: true
+  - name: enable_seafile
+    default: true
+  - name: auth_mode
+    default: "authelia"
+  - name: smtp_notifier_host
+    default: "mailserver.mail.svc.cluster.local"
+  - name: smtp_notifier_port
+    default: "465"
+  # SMTP ports allowed in network policies. Override per target (e.g. add 1025 for Mailpit).
+  - name: smtp_allowed_ports
+    default:
+      - "25"
+      - "465"
+      - "587"
+  - name: authelia_smtp_scheme
+    default: "submissions"
+  - name: authelia_smtp_disable_require_tls
+    default: false
+  - name: authelia_smtp_disable_starttls
+    default: false
+  - name: authelia_smtp_tls_skip_verify
+    default: false
+  - name: authelia_smtp_password_disabled
+    default: false
+  - name: authelia_notifier_disable_startup_check
+    default: false
+  - name: oidc_tls_skip_verify
+    default: false
+  - name: mariadb_operator_metrics
+    default: false
+  # Cloud relay WireGuard IP — when set, HAProxy ingress accepts PROXY protocol
+  # on TCP mail frontends from this source (conditional expect-proxy).
+  # Empty = no relay, direct connections only.
+  - name: mail_relay_wg_ip
+    default: ""
+  - name: enable_crowdsec
+    default: true
+  # CrowdSec Online API (community blocklist + console enrollment).
+  # Requires: secrets.crowdsec_enroll_key + LAPI egress to api.crowdsec.net (CiliumNetworkPolicy).
+  # Off in dev (no internet in VMs), on in prod.
+  - name: crowdsec_online_api
+    default: true
+  - name: timezone
+    default: "UTC"
+  - name: enable_ntfy
+    default: false
+  # Replica counts — override per target for HA.
+  # Some workloads are singleton by design (StatefulSet, USB-bound, etc.).
+  - name: replicas_default
+    default: 1
+  - name: replicas_authelia
+    default: 1
+  - name: replicas_loki
+    default: 1
+  - name: replicas_whoami
+    default: 1
+  - name: replicas_gatus
+    default: 1
+  - name: replicas_ntfy
+    default: 1
+  - name: replicas_mta_sts
+    default: 1
+  - name: replicas_autodiscover
+    default: 1
+  # CrowdSec ban duration for default IP remediation profile.
+  - name: crowdsec_ban_duration
+    default: "4h"
+  # Cron schedules — override per target to adjust maintenance windows.
+  - name: schedule_velero_backup
+    default: "0 3 * * *"
+  - name: schedule_velero_prune
+    default: "0 5 * * *"
+  - name: schedule_velero_report
+    default: "30 7 * * *"
+  - name: schedule_ha_backup
+    default: "30 3 * * *"
+  - name: schedule_ha_mariadb_backup
+    default: "0 3 * * *"
+  - name: schedule_mariadb_backup_prune
+    default: "30 4 * * *"
+  - name: schedule_seafile_mariadb_backup
+    default: "0 2 * * *"
+  - name: schedule_mailserver_restart
+    default: "0 4 * * 1"
+  - name: schedule_kyverno_report
+    default: "0 7 * * *"
+  - name: schedule_crowdsec_report
+    default: "0 7 * * 1"
+  - name: schedule_tetragon_alert
+    default: "0 8 * * *"
+  - name: schedule_drift_detection
+    default: "0 5 * * 1"
+  - name: schedule_testssl
+    default: "0 3 * * 0"
+  - name: schedule_parsedmarc
+    default: "0 */6 * * *"
+  # PVC sizes — override per target for different storage needs.
+  - name: pvc_prometheus
+    default: "50Gi"
+  - name: pvc_loki
+    default: "10Gi"
+  - name: pvc_garage
+    default: "20Gi"
+  - name: pvc_registry
+    default: "10Gi"
+  - name: pvc_homeassistant
+    default: "5Gi"
+  - name: pvc_seafile
+    default: "5Gi"
+  - name: pvc_mailserver_data
+    default: "10Gi"
+  - name: pvc_mailserver_state
+    default: "1Gi"
+  - name: pvc_mailserver_log
+    default: "1Gi"
+  - name: pvc_mariadb
+    default: "2Gi"
+  - name: pvc_crowdsec
+    default: "1Gi"
+  - name: pvc_ntfy
+    default: "1Gi"
+  - name: pvc_parsedmarc
+    default: "1Gi"
+  - name: pvc_zigbee2mqtt
+    default: "256Mi"
+  - name: pvc_mosquitto
+    default: "256Mi"
+
+targets:
+  - name: dev
+    context: default
+    args:
+      environment: dev
+      cluster_domain: k8s.home
+      timezone: "Europe/Paris"
+      crowdsec_online_api: false

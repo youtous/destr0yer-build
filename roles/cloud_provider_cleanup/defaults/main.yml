@@ -1,0 +1,27 @@
+---
+cloud_provider_cleanup_enabled: true
+
+# Patterns used to find and disable cloud provider services, packages, and binaries.
+# Covers Scaleway, Hetzner, OVH, DigitalOcean. Add patterns as needed.
+
+cloud_provider_service_patterns:
+  - "scw-"
+  - "scaleway-"
+  - "hetzner-"
+  - "ovh-"
+  - "digitalocean-"
+
+cloud_provider_package_patterns:
+  - "scaleway-cli"
+  - "scw"
+  - "scaleway*"
+  - "hcloud*"
+
+cloud_provider_binary_names:
+  - scw
+  - scw-metadata
+  - scaleway-cli
+
+cloud_provider_config_paths:
+  - /root/.config/scw
+  - /root/.scaleway

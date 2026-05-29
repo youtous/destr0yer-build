@@ -1,0 +1,14 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-haproxy-egress
+  namespace: {{ args.haproxy_ingress_namespace }}
+spec:
+  description: "HAProxy needs to reach all backend pods in the cluster"
+  endpointSelector: {}
+  egress:
+    - toEntities:
+        - cluster
+  enableDefaultDeny:
+    ingress: false
+    egress: false

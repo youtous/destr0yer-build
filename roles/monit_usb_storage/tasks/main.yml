@@ -1,0 +1,8 @@
+- name: Setup USB storage SMART Monit configurations
+  become: true
+  ansible.builtin.template:
+    src: "templates/etc/monit/conf.d/usb_storage.j2"
+    dest: "/etc/monit/conf.d/usb_storage"
+    mode: "u=r"
+  notify: Reload monit
+  when: usb_storage_smart_devices | default([]) | length > 0

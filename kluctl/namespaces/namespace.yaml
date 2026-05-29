@@ -1,0 +1,16 @@
+{%- set privileged_namespaces = ['haproxy-ingress', 'observability', 'security', 'homeassistant', 'mail', 'seafile'] %}
+{%- for ns in args.app_namespaces + args.infra_namespaces %}
+{% if not loop.first %}
+---
+{% endif %}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ ns }}
+{%- if ns in privileged_namespaces %}
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+{%- endif %}
+{%- endfor %}

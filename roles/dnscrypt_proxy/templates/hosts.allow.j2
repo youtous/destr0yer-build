@@ -1,0 +1,11 @@
+{% for dns_allowed_host in dns_allowed_hosts %}
+domain : {{ dns_allowed_host }} : allow
+{% endfor %}
+
+# allow localhost interfaces
+domain : localhost : allow
+domain : 127.0.0.1 : allow
+domain : ip6-localhost : allow
+domain : ::1 : allow
+
+domain : ALL : deny

@@ -1,0 +1,32 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disable-automount-sa-token
+  annotations:
+    policies.kyverno.io/title: Disable automount of ServiceAccount tokens
+    policies.kyverno.io/description: >-
+      CIS 5.1.6 — Service Account tokens should only be mounted where necessary.
+      Mutates pods to set automountServiceAccountToken: false unless explicitly
+      set to true by the workload author.
+spec:
+  rules:
+    - name: set-automount-false
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, cilium, openebs, kyverno, cert-manager, observability, haproxy-ingress, security, velero, database]
+{% raw %}
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.automountServiceAccountToken || '' }}"
+            operator: NotEquals
+            value: true
+      mutate:
+        patchStrategicMerge:
+          spec:
+            automountServiceAccountToken: false
+{% endraw %}

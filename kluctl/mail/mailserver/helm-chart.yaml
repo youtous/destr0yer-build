@@ -1,0 +1,7 @@
+helmChart:
+  repo: https://docker-mailserver.github.io/docker-mailserver-helm
+  chartName: docker-mailserver
+  chartVersion: "5.1.1"
+  releaseName: mailserver
+  namespace: mail
+  skipCRDs: false

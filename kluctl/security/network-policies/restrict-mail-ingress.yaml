@@ -1,0 +1,43 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: restrict-mail-ingress
+  namespace: mail
+spec:
+  description: >-
+    Only HAProxy ingress pods may reach mailserver on public mail ports.
+    ManageSieve (4190) restricted to trusted networks (VPN) only.
+    Blocks lateral movement from compromised pods in other namespaces.
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: docker-mailserver
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: {{ args.haproxy_ingress_namespace }}
+            app.kubernetes.io/name: haproxy-ingress
+      toPorts:
+        - ports:
+{%- for port in args.mail_proxy_ports %}
+            - port: "{{ port }}"
+              protocol: TCP
+{%- endfor %}
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: mail
+            app.kubernetes.io/name: parsedmarc
+      toPorts:
+        - ports:
+            - port: "993"
+              protocol: TCP
+    - fromCIDR:
+{%- for cidr in args.trusted_cidrs %}
+        - {{ cidr }}
+{%- endfor %}
+      toPorts:
+        - ports:
+            - port: "4190"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: true
+    egress: false

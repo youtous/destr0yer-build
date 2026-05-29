@@ -1,0 +1,54 @@
+deployments:
+  - path: manifests
+    vars:
+      - values:
+          namespace: observability
+          quota_limits_cpu: "12"
+          quota_limits_memory: 10Gi
+          quota_requests_cpu: "6"
+          quota_requests_memory: 6Gi
+          quota_pods: "40"
+  - path: manifests
+    vars:
+      - values:
+          namespace: security
+          quota_limits_cpu: "6"
+          quota_limits_memory: 4Gi
+          quota_requests_cpu: "3"
+          quota_requests_memory: 2Gi
+  - path: manifests
+    vars:
+      - values:
+          namespace: storage
+  - path: manifests
+    vars:
+      - values:
+          namespace: mail
+  - path: manifests
+    vars:
+      - values:
+          namespace: homeassistant
+  - path: manifests
+    vars:
+      - values:
+          namespace: kyverno
+  - path: manifests
+    vars:
+      - values:
+          namespace: openebs
+  - path: manifests
+    vars:
+      - values:
+          namespace: velero
+  - path: manifests
+    vars:
+      - values:
+          namespace: haproxy-ingress
+  - path: manifests
+    vars:
+      - values:
+          namespace: authelia
+  - path: manifests
+    vars:
+      - values:
+          namespace: whoami

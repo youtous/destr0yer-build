@@ -1,56 +1,32 @@
----
 # This role contains the default policy for fail2ban
-- name: Include default vars
-  include_vars: default.yml
-
 - name: Install fail2ban backend packages
-  become: yes
-  apt:
+  become: true
+  ansible.builtin.apt:
     name:
-      - python-systemd
       - python3-systemd
   notify:
-    - restart fail2ban
+    - Restart fail2ban
 
 - name: Setup fail2ban
-  become: yes
-  import_role:
+  become: true
+  ansible.builtin.import_role:
     name: oefenweb.fail2ban
-  vars:
-    fail2ban_ignoreips: "{{ fail2ban_ignoreips }}"
-    fail2ban_destemail: "{{ fail2ban_destemail }}"
-    fail2ban_services: "{{ fail2ban_services }}"
-
-- name: Update fail2ban using latest version from strech-backport (handle ipv6)
-  become: yes
-  apt:
-    name: fail2ban
-    state: latest
-    default_release: strech-backports
-    update_cache: yes
-  notify:
-    - restart fail2ban
-  when: ansible_os_family == "Debian" and ansible_lsb.major_release|int < 10
 
 - name: Copy fail2ban configurations files
-  become: yes
-  copy:
+  become: true
+  ansible.builtin.copy:
     src: "files/{{ item.src }}"
     dest: "/etc/fail2ban/{{ item.dest }}"
     owner: root
     group: root
     mode: u=rw,g=r,o=r
   notify:
-    - restart fail2ban
+    - Restart fail2ban
   with_items:
-    - { src: filter.d/recidive.conf, dest: filter.d/recidive.conf } # update from upstream, default debian don't match
-
-- name: Monit fail2ban
-  import_role:
-    name: monit-fail2ban
+    - {src: filter.d/recidive.conf, dest: filter.d/recidive.conf,}  # update from upstream, default debian don't match
 
 - name: Configure logrotate for fail2ban
-  import_role:
+  ansible.builtin.import_role:
     name: logrotate
   vars:
     logrotate_applications:

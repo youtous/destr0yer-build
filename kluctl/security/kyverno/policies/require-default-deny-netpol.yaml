@@ -1,0 +1,48 @@
+{# Safety net: every app/infra namespace must have a CiliumNetworkPolicy named
+   'default-deny'. Catches new namespaces added without network isolation. #}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-default-deny-netpol
+  annotations:
+    policies.kyverno.io/title: Require default-deny CiliumNetworkPolicy
+    policies.kyverno.io/description: >-
+      Validates that every namespace with running pods has a CiliumNetworkPolicy
+      named 'default-deny'. Safety net for gaps when namespaces are added
+      without corresponding network isolation.
+spec:
+  validationFailureAction: "{{ args.kyverno_validation_action }}"
+  background: true
+  rules:
+    - name: check-default-deny-exists
+      match:
+        any:
+          - resources:
+              kinds: [Namespace]
+      exclude:
+        any:
+          - resources:
+              names:
+                - kube-system
+                - kube-public
+                - kube-node-lease
+                - cilium
+                - default
+                - kluctl-system
+{% raw %}
+      context:
+        - name: denyPolicies
+          apiCall:
+            urlPath: "/apis/cilium.io/v2/namespaces/{{request.object.metadata.name}}/ciliumnetworkpolicies"
+            jmesPath: "items[?metadata.name == 'default-deny'] | length(@)"
+      validate:
+        message: >-
+          Namespace '{{request.object.metadata.name}}' must have a CiliumNetworkPolicy
+          named 'default-deny'. Deploy network policies via Kluctl before adding workloads.
+        deny:
+          conditions:
+            any:
+              - key: "{{ denyPolicies }}"
+                operator: LessThan
+                value: 1
+{% endraw %}

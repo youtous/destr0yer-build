@@ -1,0 +1,8 @@
+helmChart:
+  repo: https://grafana.github.io/helm-charts
+  chartName: alloy
+  # renovate: datasource=helm depName=alloy registryUrl=https://grafana.github.io/helm-charts
+  chartVersion: "1.8.2"
+  releaseName: alloy
+  namespace: observability
+  skipCRDs: false

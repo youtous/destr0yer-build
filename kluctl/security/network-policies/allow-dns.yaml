@@ -1,0 +1,25 @@
+{% for ns in args.app_namespaces + args.infra_namespaces %}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: {{ ns }}
+spec:
+  description: Allow DNS lookups to CoreDNS
+  endpointSelector: {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{% endfor %}

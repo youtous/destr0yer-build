@@ -1,42 +1,41 @@
----
 # This role contains apt settings
 - name: Remove unwanted sources.d
-  become: yes
-  file:
+  become: true
+  ansible.builtin.file:
     path: "{{ apt_directory }}/sources.list.d/{{ item }}"
     state: absent
   with_items: "{{ apt_remove_sourcesd }}"
 
 - name: Remove patterns sources.d | listing
-  become: yes
-  find:
+  become: true
+  ansible.builtin.find:
     paths: "{{ apt_directory }}/sources.list.d"
-    hidden: yes
-    recurse: yes
+    hidden: true
+    recurse: true
     file_type: any
     patterns: "{{ apt_unwanted_sources_patterns }}"
   register: sources_unwanted_apt_found
 
 - name: Remove unwanted sources.d | removing
-  become: yes
-  file:
+  become: true
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ sources_unwanted_apt_found.files }}"
 
 - name: Copy sources.list
-  become: yes
-  copy:
-    src: "files/sources.list"
+  become: true
+  ansible.builtin.copy:
+    src: "files/{{ apt_distribution_version_target }}/sources.list"
     dest: "{{ apt_directory }}/sources.list"
     owner: root
     group: root
     mode: u=rw,g=r,o=r
 
 - name: Copy apt preferences
-  become: yes
-  copy:
-    src: "files/{{ item }}"
+  become: true
+  ansible.builtin.copy:
+    src: "files/{{ apt_distribution_version_target }}/{{ item }}"
     dest: "{{ apt_directory }}/preferences.d/{{ item }}"
     owner: root
     group: root
@@ -45,57 +44,45 @@
     - 5-preferences
 
 - name: Update apt-cache
-  become: yes
-  apt:
-    update_cache: yes
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
 
 - name: Install debsums
-  become: yes
-  apt:
+  become: true
+  ansible.builtin.apt:
     name: debsums
 
-- name: Install unattended-upgrades package to flag updates requiring reboot
-  become: yes
-  apt:
-    name: unattended-upgrades
-
-- name: Checking if Buster update channel Done
-  stat:
-    path: "{{ apt_buster_flag_path }}"
-  register: buster_channel_flag
-
-- name: Update to Buster stable channel
-  become: yes
-  shell: "apt-get --allow-releaseinfo-change update && touch {{ apt_buster_flag_path|quote }}"
-  when: buster_channel_flag.stat.exists == False
+- name: Check if distribution upgrade is required
+  ansible.builtin.import_tasks: upgrade_distribution.yml
 
 - name: Update and upgrade apt packages
-  become: yes
-  apt:
+  become: true
+  ansible.builtin.apt:
     upgrade: "yes"
-    update_cache: yes
-    cache_valid_time: 86400 #One day
+    update_cache: true
+    cache_valid_time: 86400  # One day
 
 - name: Check if a reboot is needed on all servers
-  become: yes
+  become: true
   register: reboot_required_file
-  stat:
+  ansible.builtin.stat:
     path: /var/run/reboot-required
-    get_md5: no
+    get_checksum: false
 
-- name: Reboot the if kernel updated
-  become: yes
-  reboot:
+- name: Reboot if kernel updated
+  become: true
+  ansible.builtin.reboot:
     msg: "Reboot initiated by Ansible for kernel updates"
     connect_timeout: 5
     reboot_timeout: 300
-    pre_reboot_delay: 0
+    pre_reboot_delay: 60  # we wait the previous host recovered
     post_reboot_delay: 30
     test_command: uptime
-  when: reboot_required_file.stat.exists
+  when: apt_allowed_to_reboot and reboot_required_file.stat.exists
 
 - name: Clean unwanted olderstuff apt
-  become: yes
-  apt:
-    autoremove: yes
-    purge: yes
+  become: true
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true

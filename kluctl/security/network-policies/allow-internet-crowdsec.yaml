@@ -1,0 +1,25 @@
+{% if args.enable_crowdsec and args.crowdsec_online_api %}
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-crowdsec-capi
+  namespace: security
+spec:
+  description: "CrowdSec LAPI: Online API enrollment, community blocklist sync, hub collection downloads"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: crowdsec
+  egress:
+    - toFQDNs:
+        - matchName: api.crowdsec.net
+        - matchName: papi.api.crowdsec.net
+        - matchName: hub.crowdsec.net
+        - matchName: hub-cdn.crowdsec.net
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false
+{% endif %}

@@ -1,0 +1,48 @@
+- name: Create temporary build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: kopia_build
+  register: kopia_tmp_dir
+
+- name: Download kopia checksums
+  ansible.builtin.get_url:
+    url: "{{ kopia_checksum_url }}"
+    dest: "{{ kopia_tmp_dir.path }}/checksums.txt"
+    mode: "u=rw"
+
+- name: Extract expected checksum for kopia archive
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail && grep 'kopia-{{ kopia_version }}-linux-{{ kopia_arch }}.tar.gz' {{ kopia_tmp_dir.path }}/checksums.txt | awk '{print $1}'
+    executable: /bin/bash
+  changed_when: false
+  register: kopia_expected_checksum
+
+- name: Download kopia archive
+  ansible.builtin.get_url:
+    url: "{{ kopia_download_url }}"
+    dest: "{{ kopia_tmp_dir.path }}/kopia.tar.gz"
+    checksum: "sha256:{{ kopia_expected_checksum.stdout }}"
+    mode: "u=rw"
+
+- name: Extract kopia archive
+  ansible.builtin.unarchive:
+    src: "{{ kopia_tmp_dir.path }}/kopia.tar.gz"
+    dest: "{{ kopia_tmp_dir.path }}"
+    remote_src: true
+
+- name: Install kopia binary
+  become: true
+  ansible.builtin.copy:
+    src: "{{ kopia_tmp_dir.path }}/kopia-{{ kopia_version }}-linux-{{ kopia_arch }}/kopia"
+    dest: "{{ kopia_binary_path }}"
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+    remote_src: true
+
+- name: Cleanup build directory
+  become: true
+  ansible.builtin.file:
+    state: absent
+    path: "{{ kopia_tmp_dir.path }}"

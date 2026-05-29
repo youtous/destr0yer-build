@@ -1,0 +1,18 @@
+- name: Check if kluctl is installed
+  ansible.builtin.stat:
+    path: "{{ k8s_kluctl_path }}"
+  register: kluctl_binary_present
+
+- name: Get kluctl installed version
+  ansible.builtin.shell: >
+    set -o pipefail && {{ k8s_kluctl_path }} version 2>/dev/null | grep -oP '\d+\.\d+\.\d+'
+  args:
+    executable: /bin/bash
+  when: kluctl_binary_present.stat.exists
+  changed_when: false
+  failed_when: false
+  register: kluctl_current_version
+
+- name: Install kluctl
+  when: not kluctl_binary_present.stat.exists or (kluctl_current_version.stdout | default('') != k8s_kluctl_version | regex_replace('^v', ''))
+  ansible.builtin.import_tasks: install.yml

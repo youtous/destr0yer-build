@@ -1,0 +1,7 @@
+helmChart:
+  repo: https://kyverno.github.io/kyverno
+  chartName: kyverno
+  chartVersion: "3.8.1"
+  releaseName: kyverno
+  namespace: kyverno
+  skipCRDs: false

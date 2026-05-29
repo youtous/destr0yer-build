@@ -1,11 +1,10 @@
----
 # This role contains the default policy for logwatch
 - name: Install logwatch
-  import_tasks: install.yml
+  ansible.builtin.import_tasks: install.yml
 
 - name: Override logwatch conf service
-  become: yes
-  copy:
+  become: true
+  ansible.builtin.copy:
     src: "files/services/{{ item }}"
     dest: "/etc/logwatch/conf/services/{{ item }}"
     owner: root
@@ -16,8 +15,8 @@
     - fail2ban.conf
 
 - name: Override logwatch conf logfiles
-  become: yes
-  copy:
+  become: true
+  ansible.builtin.copy:
     src: "files/logfiles/{{ item }}"
     dest: "/etc/logwatch/conf/logfiles/{{ item }}"
     owner: root
@@ -27,8 +26,8 @@
     - fail2ban.conf
 
 - name: Create logwatch empty file (used when Journalctl)
-  become: yes
-  copy:
+  become: true
+  ansible.builtin.copy:
     dest: /etc/logwatch/empty
     content: |
       this file is containing
@@ -39,9 +38,9 @@
     mode: u=rw,g=r,o=r
 
 - name: Setup Logwatch
-  become: yes
-  import_role:
-    name: youtous.logwatch
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.logwatch
   vars:
     logwatch_email: "{{ logwatch_conf_email }}"
     logwatch_detail: "{{ logwatch_conf_detail }}"

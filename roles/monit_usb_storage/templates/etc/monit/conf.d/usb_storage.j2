@@ -1,0 +1,6 @@
+{% for device in usb_storage_smart_devices %}
+# SMART health check for USB disk: {{ device.name }}
+check program smart-{{ device.name }} with path "/usr/local/bin/smart-check-{{ device.name }}.sh"
+    every {{ usb_storage_smart_check_cycles | default(120) }} cycles
+    if status != 0 then alert
+{% endfor %}

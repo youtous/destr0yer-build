@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Monthly btrfs cold backup via send
+
+[Timer]
+OnCalendar={{ backup_btrfs_cold_schedule }}
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,18 @@
+- name: Setup host.allow for DNS
+  become: true
+  ansible.builtin.blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'templates/hosts.allow.j2') }}"
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - DNS allowed ip whitelist ###"
+
+- name: UFW Allow DNS clients - tcp,udp/53
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "53"
+      rule: "allow"
+      direction: in
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ dns_allowed_hosts }}"

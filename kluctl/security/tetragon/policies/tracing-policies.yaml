@@ -1,0 +1,38 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: privilege-escalation
+spec:
+  kprobes:
+    - call: "__x64_sys_setuid"
+      syscall: true
+      args:
+        - index: 0
+          type: int
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: Equal
+              values:
+                - "0"
+---
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: sensitive-file-access
+spec:
+  kprobes:
+    - call: "security_file_open"
+      syscall: false
+      args:
+        - index: 0
+          type: file
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: Prefix
+              values:
+                - "/etc/shadow"
+                - "/etc/sudoers"
+                - "/etc/kubernetes"
+                - "/var/run/secrets/kubernetes.io"

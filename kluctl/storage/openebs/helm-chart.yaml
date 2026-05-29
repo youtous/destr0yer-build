@@ -1,0 +1,7 @@
+helmChart:
+  repo: https://openebs.github.io/dynamic-localpv-provisioner
+  chartName: localpv-provisioner
+  chartVersion: "4.5.0"
+  releaseName: openebs
+  namespace: openebs
+  skipCRDs: false

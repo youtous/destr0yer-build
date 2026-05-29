@@ -1,0 +1,25 @@
+- name: Kopia backup client
+  when: kopia_enabled | bool
+  block:
+    - name: Check if kopia is already installed at the desired version
+      ansible.builtin.command:
+        cmd: "{{ kopia_binary_path }} --version"
+      changed_when: false
+      failed_when: false
+      register: kopia_installed_version
+
+    - name: Install kopia
+      ansible.builtin.include_tasks: install.yml
+      when: >
+        kopia_installed_version.rc != 0 or kopia_version not in (kopia_installed_version.stdout | default(''))
+
+    - name: Configure kopia repository and policies
+      ansible.builtin.include_tasks: configure.yml
+
+    - name: Deploy systemd timers for snapshot and verify
+      ansible.builtin.include_tasks: schedule.yml
+
+- name: Kopia backup client is disabled
+  ansible.builtin.debug:
+    msg: "Kopia is disabled (kopia_enabled={{ kopia_enabled }}). Set kopia_enabled=true in inventory to activate."
+  when: not (kopia_enabled | bool)

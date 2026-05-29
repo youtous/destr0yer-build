@@ -1,0 +1,60 @@
+# cloud_relay — HAProxy TCP relay + outbound masquerade
+# WireGuard is configured separately via wireguard_meta/wireguard_server roles.
+
+relay_public_interface: eth0
+relay_wg_interface: wg-infra
+relay_wg_subnet: "10.99.99.0/24"
+
+# Enable IPv6 binds (set to true when AAAA records + rDNS are ready)
+relay_haproxy_ipv6: false
+
+# HAProxy container image (runs via podman Quadlet)
+# haproxytech — maintained by HAProxy Technologies, multi-arch (amd64+arm64)
+# renovate: datasource=docker depName=haproxytech/haproxy-alpine
+relay_haproxy_image: "docker.io/haproxytech/haproxy-alpine:3.3"
+
+# Timeouts
+relay_haproxy_timeout_connect: "5s"
+relay_haproxy_timeout_client: "300s"
+relay_haproxy_timeout_server: "300s"
+
+# Rate limiting (per source IP)
+relay_haproxy_max_conn_per_ip: 200
+relay_haproxy_conn_rate_limit: 120
+
+# Global maxconn
+relay_haproxy_maxconn: 4096
+
+# Logging — "info" filters debug noise; journald rate-limits via systemd unit
+relay_haproxy_log_level: "info"
+
+# Prometheus metrics endpoint — bind to WG interface only (not public).
+# Scraped by Alloy from the cluster side via WireGuard.
+relay_haproxy_prometheus_enabled: false
+relay_haproxy_prometheus_bind: "{{ relay_wg_interface_ip | default('127.0.0.1') }}"
+relay_haproxy_prometheus_port: 8405
+
+# ─── Required (no defaults — must be set in inventory) ───────────────────────
+
+# relay_backend_ip: "10.99.99.10"  # cluster WG IP
+
+# relay_haproxy_frontends:
+#   - name: smtp
+#     bind_port: 25
+#     backend_addr: "10.99.99.10:25"
+#   - name: smtps
+#     bind_port: 465
+#     backend_addr: "10.99.99.10:465"
+#   - name: imaps
+#     bind_port: 993
+#     backend_addr: "10.99.99.10:993"
+
+relay_haproxy_sni_routes: []
+# Example:
+#   - sni: grafana.example.com
+#     backend_addr: "10.99.99.10:443"
+#   - sni: auth.example.com
+#     backend_addr: "10.99.99.10:443"
+
+# SNI frontend listen port (443 in production, override for testing if 443 is taken)
+relay_haproxy_sni_port: 443

@@ -1,0 +1,12 @@
+# Integration and firewall test configuration.
+# Used by playbooks/99-integration-tests.yml and playbooks/98-firewall-audit.yml.
+
+# Namespaces excluded from CrashLoopBackOff checks in integration tests.
+# These contain pods with known incomplete configs in dev (authelia needs
+# real domain, openebs/velero have image pull issues in isolated VMs).
+integration_test_excluded_namespaces:
+  - security
+  - openebs
+  - velero
+  - homeassistant  # zigbee2mqtt needs USB hardware absent in dev
+  - mail  # parsedmarc CronJob has intermittent OOMKill

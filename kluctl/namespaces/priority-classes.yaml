@@ -1,0 +1,17 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: cluster-infra
+value: 1000000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: "Infrastructure services (ingress, auth, cert-manager, monitoring). Evicted last, before system-critical."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: cluster-app
+value: 100000
+globalDefault: true
+preemptionPolicy: PreemptLowerPriority
+description: "Default for application workloads. Evicted before infra services."

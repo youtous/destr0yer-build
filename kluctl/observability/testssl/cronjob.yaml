@@ -1,0 +1,142 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: testssl
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: testssl
+    app.kubernetes.io/component: tls-monitoring
+spec:
+  schedule: "{{ args.schedule_testssl }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: testssl
+        spec:
+          restartPolicy: Never
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          volumes:
+            - name: results
+              emptyDir: {}
+          initContainers:
+            # renovate: datasource=docker depName=ghcr.io/testssl/testssl.sh
+            - name: testssl
+              image: ghcr.io/testssl/testssl.sh@sha256:d655949d41c413a0ce0a66e169c7e691ac846fe44b4b986dbc74fe6f4c1ad2e4  # 3.2
+              command: ["/bin/bash", "-c"]
+              args:
+                - |
+                  REPORT=/results/report.html
+                  FAILED=0
+                  cat > "$REPORT" <<'HEADER'
+                  <html><body style="font-family:monospace;background:#1e1e1e;color:#d4d4d4;padding:20px;">
+                  <h2 style="color:#569cd6;">testssl.sh TLS Report</h2>
+                  HEADER
+                  printf '<p>Scan started: %s</p>\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$REPORT"
+                  {% for entry in args.testssl_hosts %}
+                  echo "=== Testing {{ entry.host }} ==="
+                  testssl.sh --htmlfile /results/part_{{ loop.index }}.html{% if entry.protocol is defined %} --starttls={{ entry.protocol }}{% endif %} {{ entry.host }} 2>&1 || true
+                  if [ -f /results/part_{{ loop.index }}.html ]; then
+                    printf '<h3 style="color:#4ec9b0;">{{ entry.host }}</h3>\n' >> "$REPORT"
+                    cat /results/part_{{ loop.index }}.html >> "$REPORT"
+                  fi
+                  grep -qil "NOT ok" /results/part_{{ loop.index }}.html 2>/dev/null && FAILED=1
+                  {% endfor %}
+                  echo '</body></html>' >> "$REPORT"
+                  echo "=== testssl scan complete ==="
+                  if [ "$FAILED" -eq 1 ]; then
+                    echo "TESTSSL_STATUS=FAILED" >> /results/status
+                  else
+                    echo "TESTSSL_STATUS=OK" >> /results/status
+                  fi
+              volumeMounts:
+                - name: results
+                  mountPath: /results
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+          containers:
+            # renovate: datasource=docker depName=alpine/k8s
+            - name: notify
+              image: docker.io/alpine/k8s@sha256:692239d739589247c4a791205ed9619c28ae85a21286e19a6211c04a62c56668  # 1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  . /results/status
+                  if [ "$TESTSSL_STATUS" = "FAILED" ]; then
+                    SUBJECT="[testssl] [NOT OK] TLS Report - $(date +%Y-%m-%d)"
+                  else
+                    SUBJECT="[testssl] TLS Report - $(date +%Y-%m-%d)"
+                  fi
+                  {
+                    printf 'Subject: %s\r\n' "$SUBJECT"
+                    printf 'From: %s\r\n' "$SMTP_FROM"
+                    printf 'To: %s\r\n' "$SMTP_TO"
+                    printf 'MIME-Version: 1.0\r\n'
+                    printf 'Content-Type: text/html; charset=utf-8\r\n'
+                    printf '\r\n'
+                    cat /results/report.html
+                  } | curl -sf --url "smtp://${SMTP_HOST}:${SMTP_PORT}" \
+                      --user "${SMTP_USER}:${SMTP_PASS}" \
+                      --mail-from "$SMTP_FROM" \
+                      --mail-rcpt "$SMTP_TO" \
+                      --upload-file -
+                  echo "Report sent to $SMTP_TO"
+              env:
+                - name: SMTP_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: host
+                - name: SMTP_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: port
+                - name: SMTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: username
+                - name: SMTP_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: password
+                - name: SMTP_FROM
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: from
+                - name: SMTP_TO
+                  value: "{{ args.admin_email }}"
+              volumeMounts:
+                - name: results
+                  mountPath: /results
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  cpu: 50m
+                  memory: 32Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]

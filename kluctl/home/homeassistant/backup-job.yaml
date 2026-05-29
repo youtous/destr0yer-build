@@ -1,0 +1,78 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: homeassistant-backup-sync
+  namespace: homeassistant
+  labels:
+    app.kubernetes.io/name: homeassistant-backup
+    app.kubernetes.io/part-of: homeassistant
+spec:
+  schedule: "{{ args.schedule_ha_backup }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: homeassistant-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            # renovate: datasource=docker depName=alpine
+            - name: backup-sync
+              image: docker.io/alpine:3.22
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  apk add --no-cache aws-cli >/dev/null 2>&1
+
+                  BACKUP_DIR="/ha-config/backups"
+
+                  if [ ! -d "$BACKUP_DIR" ] || [ -z "$(ls -A $BACKUP_DIR 2>/dev/null)" ]; then
+                    echo "No backups found in $BACKUP_DIR, nothing to sync."
+                    exit 0
+                  fi
+
+                  S3_URL="http://${S3_ENDPOINT}"
+
+                  echo "Syncing backups to S3..."
+                  aws --endpoint-url "$S3_URL" s3 sync "$BACKUP_DIR/" "s3://{{ args.s3_bucket_prefix }}homeassistant-backups/native/"
+
+                  echo "Cleaning local backups, keeping last {{ args.ha_backup_local_retention_count }}..."
+                  ls -1t "$BACKUP_DIR"/*.tar 2>/dev/null | tail -n +$(( {{ args.ha_backup_local_retention_count }} + 1 )) | xargs -r rm -f
+                  find "$BACKUP_DIR" -type d -empty -delete 2>/dev/null || true
+
+                  echo "Backup sync complete."
+                  aws --endpoint-url "$S3_URL" s3 ls "s3://{{ args.s3_bucket_prefix }}homeassistant-backups/native/"
+              env:
+                - name: S3_ENDPOINT
+                  value: "{{ args.s3_endpoint }}"
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: homeassistant-db-backup-s3
+                      key: access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: homeassistant-db-backup-s3
+                      key: secret-access-key
+              volumeMounts:
+                - name: ha-config
+                  mountPath: /ha-config
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+          volumes:
+            - name: ha-config
+              persistentVolumeClaim:
+                claimName: homeassistant-home-assistant-homeassistant-home-assistant-0

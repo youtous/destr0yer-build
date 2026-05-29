@@ -1,44 +1,49 @@
----
 # which filesystems to monitor
 monit_filesystems: []
 #  - {mnt: "/home", usage_alerts: ["90%", "99%"]}, default are already configured
 
 # Monit installation
-monit_version: "5.27.0"
-# checksum is available at https://bitbucket.org/tildeslash/monit/downloads/
-monit_download_checksum: "sha256:993a9d006e24b4746adbbd3b98f5ad74eaa6ee06165b96ea7855986162247a5a"
+# renovate: datasource=github-tags depName=tildeslash/monit
+monit_version: "5.33.0"
+# checksum is available at https://bitbucket.org/tildeslash/monit/downloads/ (tar.gz)
+monit_download_checksum: "sha256:ee99c248bd7c97d7f10296c87836f1233aac0e611dcb3f9ac527df62a0303cf5"
+
+# list of services to monitor
+monit_services_monitored:
+  - sshd
+  - cron
+  - chronyd
 
 # From ANXS
 monit_eventqueue_slots: 100
 monit_process_list: []
 
-  # Example:
-  #monit_process_list:
+# Example:
 
-  # The pid path is absolute, this is required.
-  #- pid: '/var/run/foo.pid'
+# The pid path is absolute, this is required.
+# - pid: '/var/run/foo.pid'
 
-  # The process is simply the process name, defaults to the pid's basename.
-  #process: 'foo'
+# The process is simply the process name, defaults to the pid's basename.
+# process: 'foo'
 
-  # Set a timeout, defaults to 60 seconds.
-  #timeout: 60
+# Set a timeout, defaults to 60 seconds.
+# timeout: 60
 
-  # The sysvinit style to start/stop a process, you can change this per process.
-  #start: '/etc/init.d/process start'
-  #stop: '/etc/init.d/process stop'
+# The sysvinit style to start/stop a process, you can change this per process.
+# start: '/etc/init.d/process start'
+# stop: '/etc/init.d/process stop'
 
-  # Append custom script logic, defaults to nothing.
-#script: |
+# Append custom script logic, defaults to nothing.
+script: ""
 
 # monit_username:
 # monit_password:
-monit_ssl: no
+monit_ssl: false
 monit_cert: "/etc/monit/monit.pem"
 
 monit_net_retry: 3
 
-monit_email_enable: yes
+monit_email_enable: true
 monit_notify_email: "{{ monitoring_email }}"
 
 monit_logfile: "syslog facility log_daemon"
@@ -46,19 +51,19 @@ monit_logfile: "syslog facility log_daemon"
 monit_poll_period: 60
 monit_poll_start_delay: 120
 
-monit_eventqueue_enable: yes
+monit_eventqueue_enable: true
 monit_eventqueue_directory: "/var/lib/monit/events"
 monit_eventque_slots: 100
 
-monit_mailformat_from: "monit@{{hostname}}"
+monit_mailformat_from: "monit@{{ hostname }}"
 monit_mailformat_subject: "$SERVICE $EVENT"
 monit_mailformat_message: "Monit $ACTION $SERVICE at $DATE on $HOST: $DESCRIPTION."
 
-monit_mailserver_host: "localhost" # configure the mailserver if using external solution
-monit_mailserver_port: "{{ postfix_smtp_port|default('25') }}"
+monit_mailserver_host: "localhost"  # configure the mailserver if using external solution
+monit_mailserver_port: "{{ postfix_smtp_port | default('25') }}"
 monit_mailserver_username: ""
 monit_mailserver_password: ""
-monit_mailserver_encryption: "" # https://mmonit.com/monit/documentation/monit.html#SSL-OPTIONS
+monit_mailserver_encryption: ""  # https://mmonit.com/monit/documentation/monit.html#SSL-OPTIONS
 monit_mailserver_timeout: "60"
 
 # alert limits
@@ -70,14 +75,13 @@ monit_cpu_wait_usage_alert: "20%"
 monit_load_avg_5min_alert: "{{ ansible_processor_cores * 1.5 }}"
 monit_load_avg_15min_alert: "{{ ansible_processor_cores }}"
 
-
 # Monit should not be exposed
 monit_port: 2812
 monit_address: localhost
 monit_allow: ["localhost"]
 # monit_username:
 # monit_password:
-# monit_ssl: no
+# monit_ssl: false
 # monit_cert: "/etc/monit/monit.pem"
 
-monit_monitors_sshd_port: "{{ sshd_port|default(22) }}"
+monit_monitors_sshd_port: "{{ sshd_port | default(22) }}"

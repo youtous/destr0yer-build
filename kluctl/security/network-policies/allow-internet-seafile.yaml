@@ -1,0 +1,23 @@
+{# Seafile container installs boto3 at boot via pip (S3 storage backend).
+   This policy allows egress to PyPI only from the seafile pod. #}
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-seafile-pypi
+  namespace: seafile
+spec:
+  description: "Seafile: pip install boto3 at boot needs PyPI access"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: seafile
+  egress:
+    - toFQDNs:
+        - matchName: pypi.org
+        - matchName: files.pythonhosted.org
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+  enableDefaultDeny:
+    ingress: false
+    egress: false

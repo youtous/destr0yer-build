@@ -1,11 +1,49 @@
-# Created by .ignore support plugin (hsz.mobi)
-.idea
+# IDE
+.idea/
+.vscode/
+
+# Secrets and credentials
 certs/*
 !certs/.keep
-secret_vars/*
+secret_vars/**/*
 !secret_vars/*.sample.yml
-playbook.retry
-.vagrant
-
-# ignore .env, must be defined on each machine
+!secret_vars/**/
+.vault_password
 .env
+
+# Ansible
+*.retry
+.cache/
+logs/
+
+# Galaxy-installed collections (keep only youtous.destr0yer)
+collections/ansible_collections/*
+!collections/ansible_collections/youtous/
+
+# Vagrant
+.vagrant/
+
+# Build artifacts
+build/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+Pipfile.lock
+
+.ansible
+
+kluctl/.helm-charts
+kluctl/.helm-charts/**
+
+# Dev environment (SSH keys, local state)
+.dev/
+.devcontainer/.env
+
+# Temp files
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db

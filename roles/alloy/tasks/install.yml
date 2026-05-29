@@ -1,0 +1,48 @@
+- name: Create temporary build directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: alloy_build
+  register: alloy_tmp_dir
+
+- name: Download Alloy checksums
+  ansible.builtin.get_url:
+    url: "{{ alloy_checksum_url }}"
+    dest: "{{ alloy_tmp_dir.path }}/SHA256SUMS"
+    mode: "u=rw"
+
+- name: Extract expected checksum for Alloy archive
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail && grep 'alloy-linux-{{ alloy_arch }}.zip' {{ alloy_tmp_dir.path }}/SHA256SUMS | awk '{print $1}'
+    executable: /bin/bash
+  changed_when: false
+  register: alloy_expected_checksum
+
+- name: Download Alloy archive
+  ansible.builtin.get_url:
+    url: "{{ alloy_download_url }}"
+    dest: "{{ alloy_tmp_dir.path }}/alloy.zip"
+    checksum: "sha256:{{ alloy_expected_checksum.stdout }}"
+    mode: "u=rw"
+
+- name: Extract Alloy archive
+  ansible.builtin.unarchive:
+    src: "{{ alloy_tmp_dir.path }}/alloy.zip"
+    dest: "{{ alloy_tmp_dir.path }}"
+    remote_src: true
+
+- name: Install Alloy binary
+  become: true
+  ansible.builtin.copy:
+    src: "{{ alloy_tmp_dir.path }}/alloy-linux-{{ alloy_arch }}"
+    dest: "{{ alloy_binary_path }}"
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+    remote_src: true
+
+- name: Cleanup build directory
+  become: true
+  ansible.builtin.file:
+    state: absent
+    path: "{{ alloy_tmp_dir.path }}"

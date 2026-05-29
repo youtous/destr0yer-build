@@ -1,0 +1,11 @@
+- name: Reload notify-ip-change systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable notify-ip-change timer
+  become: true
+  ansible.builtin.systemd:
+    name: notify-ip-change.timer
+    state: started
+    enabled: true

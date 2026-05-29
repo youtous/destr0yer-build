@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mailserver-restart
+  namespace: mail
+spec:
+  schedule: "{{ args.schedule_mailserver_restart }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: mailserver-restart
+          restartPolicy: OnFailure
+          containers:
+            - name: restart
+              # renovate: datasource=docker depName=alpine/kubectl
+              image: alpine/kubectl:1.36.1
+              command:
+                - kubectl
+                - rollout
+                - restart
+                - deployment/mailserver
+                - -n
+                - mail
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mailserver-restart
+  namespace: mail
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mailserver-restart
+  namespace: mail
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["mailserver"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mailserver-restart
+  namespace: mail
+subjects:
+  - kind: ServiceAccount
+    name: mailserver-restart
+    namespace: mail
+roleRef:
+  kind: Role
+  name: mailserver-restart
+  apiGroup: rbac.authorization.k8s.io

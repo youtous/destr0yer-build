@@ -1,0 +1,9 @@
+# renovate: datasource=github-releases depName=aquasecurity/kube-bench
+kube_bench_version: "0.15.5"
+
+kube_bench_binary_path: "/usr/local/bin/kube-bench"
+
+kube_bench_arch_map:
+  x86_64: "amd64"
+  aarch64: "arm64"
+kube_bench_arch: "{{ kube_bench_arch_map[ansible_architecture] | default('amd64') }}"

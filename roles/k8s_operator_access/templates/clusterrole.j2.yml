@@ -1,0 +1,136 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: "{{ k8s_operator_name }}"
+rules:
+  # Cluster-wide read (K9s browsing, kubectl get/describe)
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+
+  # Namespace lifecycle (kluctl creates namespaces on deploy)
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # CRUD on common namespaced application resources (kluctl deploy, operator work)
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets", "services", "serviceaccounts", "persistentvolumeclaims", "endpoints", "limitranges", "resourcequotas"]
+    verbs: ["create", "update", "patch", "delete", "deletecollection"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies", "ingressclasses"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # Cluster-scoped resources needed by Helm charts (cert-manager, kyverno, openebs, etc.)
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
+    verbs: ["create", "update", "patch", "delete", "bind", "escalate"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["scheduling.k8s.io"]
+    resources: ["priorityclasses"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # cert-manager CRDs
+  - apiGroups: ["cert-manager.io", "acme.cert-manager.io"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # Kyverno CRDs
+  - apiGroups: ["kyverno.io", "wgpolicyk8s.io"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # Storage CRDs (OpenEBS, snapshots, Velero)
+  - apiGroups: ["local.openebs.io", "openebs.io"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["velero.io"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "csidrivers", "csinodes"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # Monitoring CRDs (Prometheus operator)
+  - apiGroups: ["monitoring.coreos.com"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # Gateway API (future: Cilium Gateway)
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # MariaDB operator CRDs
+  - apiGroups: ["k8s.mariadb.com"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # Kyverno v2 policy API
+  - apiGroups: ["policies.kyverno.io"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # CrowdSec CRDs
+  - apiGroups: ["crowdsec.net"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # Cilium CRDs (network policies + Tetragon tracing policies)
+  - apiGroups: ["cilium.io"]
+    resources: ["*"]
+    verbs: ["create", "update", "patch", "delete"]
+
+  # Pod lifecycle (restart, delete, exec, logs, port-forward)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec", "pods/portforward"]
+    verbs: ["create"]
+
+  # Events (read-only, for troubleshooting)
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+
+  # Scale and rollout restart
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale", "statefulsets/scale"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: "{{ k8s_operator_name }}"
+subjects:
+  - kind: ServiceAccount
+    name: "{{ k8s_operator_name }}"
+    namespace: "{{ k8s_operator_namespace }}"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "{{ k8s_operator_name }}"

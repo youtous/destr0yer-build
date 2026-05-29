@@ -1,0 +1,9 @@
+deployments:
+  - path: chart/
+
+  - barrier: true
+
+  - path: issuers/
+
+  - path: desec-webhook/
+    when: "{{ args.certmanager_issuer_type == 'letsencrypt' }}"

@@ -1,0 +1,7 @@
+python 3.13.3
+helm 3.17.3
+k9s 0.50.18
+yq 4.52.5
+jq 1.8.1
+sops 3.9.4
+kubescape 3.0.25

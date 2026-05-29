@@ -1,0 +1,65 @@
+# renovate: datasource=helm depName=cilium registryUrl=https://helm.cilium.io
+cilium_chart_version: "1.19.4"
+
+cilium_chart_download_url: "https://helm.cilium.io/cilium-{{ cilium_chart_version }}.tgz"
+cilium_chart_sha265sum: "c6a788e6bd74598a235f7987930860f554c2dd8048154d1aba8a532bcde90cd6"
+
+cilium_helm_release_name: "cilium"
+cilium_k8s_namespace: "cilium"
+
+cilium_k8s_helm_values:
+  operator:
+    replicas: 1  # 3 in case of HA
+
+  kubeProxyReplacement: true
+
+  k8sServiceHost: "{{ ipv4_private | first }}"
+  k8sServicePort: 6443
+
+  encryption:
+    enabled: true
+    type: wireguard
+    nodeEncryption: true
+    strictMode:
+      enabled: true
+
+  loadBalancer:
+    mode: dsr
+    dsrDispatch: geneve
+  routingMode: tunnel
+  tunnelProtocol: geneve
+
+  ipam:
+    mode: "cluster-pool"
+
+    operator:
+      clusterPoolIPv4PodCIDRList: "10.43.0.0/16"  # fallback — override in inventory to match cluster-cidr
+      clusterPoolIPv4MaskSize: "24"  # mask size for each node
+
+  prometheus:
+    enabled: true
+    port: 19090
+
+  gatewayAPI:
+    enabled: true
+
+# renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
+# Pinned to v1.4.0 — Cilium 1.19 is incompatible with v1.5+ (TLSRoute
+# v1alpha2 removed from standard channel, causes operator CrashLoopBackOff).
+# Upgrade to v1.5.1 requires Cilium >= 1.20 (see cilium/cilium#45139).
+cilium_gateway_api_crd_version: "v1.4.0"
+
+cilium_gateway_api_crds_base_url: "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/{{ cilium_gateway_api_crd_version }}/config/crd/experimental"
+cilium_gateway_api_crd_files:
+  - gateway.networking.k8s.io_gatewayclasses.yaml
+  - gateway.networking.k8s.io_gateways.yaml
+  - gateway.networking.k8s.io_httproutes.yaml
+  - gateway.networking.k8s.io_referencegrants.yaml
+  - gateway.networking.k8s.io_grpcroutes.yaml
+  - gateway.networking.k8s.io_tlsroutes.yaml
+
+cilium_helm_show_commands: true
+
+# kube config — K3S admin kubeconfig (root-only, used for bootstrapping CNI)
+cilium_kubeconfig_path: "/etc/rancher/k3s/k3s.yaml"
+# TODO : handle upgrade

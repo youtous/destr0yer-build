@@ -1,0 +1,7 @@
+helmChart:
+  repo: https://grafana.github.io/helm-charts
+  chartName: loki
+  chartVersion: "7.0.0"
+  releaseName: loki
+  namespace: observability
+  skipCRDs: false

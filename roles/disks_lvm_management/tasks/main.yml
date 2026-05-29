@@ -1,0 +1,39 @@
+# configure the different partitions and associated file systems with LVM
+
+- name: Install parted and lvm2 and fs
+  become: true
+  ansible.builtin.package:
+    name:
+      - parted
+      - lvm2
+      - xfsprogs
+    state: present
+
+- name: Install btrfs-progs when btrfs filesystems are configured
+  become: true
+  ansible.builtin.package:
+    name: btrfs-progs
+    state: present
+  when: filesystems_to_create | selectattr('fstype', 'equalto', 'btrfs') | list | length > 0
+
+- name: Install cryptsetup when LUKS filesystems are configured
+  become: true
+  ansible.builtin.package:
+    name: cryptsetup
+    state: present
+  when: filesystems_to_create | selectattr('luks', 'defined') | selectattr('luks.enabled', 'defined') | selectattr('luks.enabled', 'equalto', true) | list | length > 0
+
+- name: Partitioning setup
+  ansible.builtin.import_tasks: parted.yml
+
+- name: LVM setup
+  ansible.builtin.import_tasks: lvm.yml
+
+- name: LUKS setup
+  ansible.builtin.import_tasks: luks.yml
+
+- name: Format setup
+  ansible.builtin.import_tasks: format.yml
+
+- name: Mount setup
+  ansible.builtin.import_tasks: mount.yml

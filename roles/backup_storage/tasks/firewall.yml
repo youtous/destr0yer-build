@@ -1,0 +1,21 @@
+- name: Whitelists allowed ips of accounts to access ssh
+  become: true
+  ansible.builtin.blockinfile:
+    dest: "/etc/hosts.allow"
+    block: "{{ lookup('template', 'files/hosts.allow.j2') }}"
+    insertbefore: BOF
+    marker: "### {mark} ANSIBLE MANAGED BLOCK - backup ip whitelist ###"
+
+- name: UFW Allow sftp backup clients - ALLOW tcp/ssh
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "{{ sshd_port | quote }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "backup client allowed"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ backup_users | default([]) | community.general.json_query('[*].restrict_ips') | list | flatten | unique | default([]) }}"

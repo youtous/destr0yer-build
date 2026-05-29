@@ -1,0 +1,26 @@
+# renovate: datasource=docker depName=ghcr.io/stakater/reloader
+image:
+  repository: ghcr.io/stakater/reloader
+  tag: "v1.4.17"
+  digest: "sha256:6346ad857388731950498be1c34caab931cbb8ae05330081c66f38ff551c5f21"  # v1.4.17
+
+reloader:
+  watchGlobally: true
+  deployment:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 50m
+        memory: 64Mi
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      capabilities:
+        drop: ["ALL"]
+    securityContext:
+      runAsNonRoot: true
+  podMonitor:
+    enabled: false

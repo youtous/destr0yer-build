@@ -1,0 +1,6 @@
+# Dev SSH settings — connection params come from ~/.ssh/config (run `just ssh-config` first)
+
+# Allow SSH tunneling in dev — needed for kubectl access from devcontainer
+# and kopia SFTP transport. Prod keeps the defaults (all disabled).
+sshd_allow_tcp_forwarding: "yes"
+sshd_permit_tunnel: "yes"

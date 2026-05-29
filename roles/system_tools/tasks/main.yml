@@ -1,0 +1,29 @@
+# This role contains CLI tools installation and configuration, CLI tools are for user not for the system
+- name: Install CLI Tools
+  become: true
+  ansible.builtin.apt:
+    name: "{{ cli_packages }}"
+
+- name: Configure vim
+  become: true
+  ansible.builtin.copy:
+    src: files/vimrc.local
+    dest: /etc/vim/vimrc.local
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Install ruby
+  become: true
+  ansible.builtin.apt:
+    name: "{{ ruby_packages }}"
+
+- name: Remove ccat (replaced by bat since Bullseye)
+  ansible.builtin.file:
+    path: /usr/local/bin/ccat
+    state: absent
+
+- name: Requires python
+  become: true
+  ansible.builtin.apt:
+    name: "{{ python_packages }}"

@@ -1,0 +1,266 @@
+# Provision servers using a global policy
+- name: Ensure server_environment is defined and not empty
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Check"
+      ansible.builtin.assert:
+        that: >
+          server_environment is defined and server_environment | length > 0
+        msg: "server_environment must be defined an not empty"
+
+- name: Configure systems | disk partitioning with LVM
+  hosts: systems
+  roles:
+    - disks_lvm_management
+    - swap
+    - mount
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["disk-partitioning", "configure-systems", "swap"]
+
+- name: Configure systems | apt packages configuration and update
+  hosts: systems
+  serial: 1  # configure one by one each host in case of docker update/kernel reboot
+  roles:
+    - cloud_provider_cleanup
+    - apt
+    - unattended_upgrades
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["apt", "configure-systems"]
+
+- name: Configure systems | minimal requirements
+  hosts: systems
+  roles:
+    - system_packages  # system packages (htop, curl etc)
+    - host  # configure system host files
+    - chronyd  # chronyd
+    - selinux  # SELinux MAC — must run before K3S (permissive by default, see doc/security.md)
+    - system_configuration  # configure the system (timezone, TERM, etc.)
+    - system_tools  # server cli tools (vim, etc)
+    - alloy  # Grafana Alloy telemetry collector (logs + host metrics)
+    - iptables_firewall  # define firewall policy
+    - entrypoint_ssh  # SSH access rules — MUST be in same play as iptables_firewall to avoid lockout
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["system", "configure-systems", "minimal", "alloy"]
+
+- name: Configure systems | configure kernel
+  hosts: systems
+  serial: 1  # configure one by one each host in case of reboot
+  roles:
+    - sysctl_configuration
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["sysctl", "configure-systems"]
+
+- name: Configure systems | manage users
+  hosts: systems
+  roles:
+    - users
+    - ssh_user_keys
+    - restrict_user_ssh_ips
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["users", "configure-systems"]
+
+- name: Configure systems | configure OpenSSH
+  hosts: systems
+  roles:
+    - ssh
+    - motd
+    - notify_login
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["ssh", "sshd", "configure-systems"]
+
+- name: Configure systems | configure log management
+  hosts: systems
+  roles:
+    - logrotate
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["log", "logrotate", "configure-systems"]
+
+- name: Configure systems | monit
+  hosts: systems
+  roles:
+    - monit
+    - monit_alloy
+    - monit_usb_storage
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["monit", "configure-systems"]
+
+- name: Configure systems | fail2ban
+  hosts: systems
+  roles:
+    - fail2ban
+    - monit_fail2ban
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["fail2ban", "configure-systems"]
+
+- name: Configure systems | CrowdSec firewall bouncer
+  hosts: systems
+  roles:
+    - crowdsec_bouncer
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["crowdsec", "configure-systems"]
+
+- name: Configure systems | resolv dns configuration
+  hosts: systems
+  roles:
+    - dnscrypt_proxy  # DNS with TLS
+    - monit_dnscrypt_proxy
+    - resolv
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["resolv", "configure-systems", "dnscrypt_proxy"]
+
+- name: Configure systems | hardening
+  hosts: systems
+  roles:
+    - hardening  # hardening systems
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["hardening", "configure-systems"]
+
+- name: Configure systems | sysstat
+  hosts: systems
+  roles:
+    - sysstat  # resource monitoring
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["sysstat", "configure-systems"]
+
+- name: Configure systems | logwatch
+  hosts: systems
+  roles:
+    - logwatch  # monitor server using emails
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["logwatch", "configure-systems"]
+
+- name: Configure systems with specifics interfaces
+  hosts: interfaces
+  roles:
+    - network
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["interfaces"]
+
+- name: Configure systems | configure fish shell
+  hosts: systems
+  roles:
+    - oh_my_fish
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["fish", "configure-systems"]
+
+- name: Configure systems | glances
+  hosts: systems
+  roles:
+    - glances  # boosted htop
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["configure-systems", "update-systems"]
+
+- name: Configure Postfix relay servers
+  hosts: smtp_relays
+  roles:
+    - postfix_relay
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["smtp-relay"]
+
+- name: Configure backup storage systems
+  hosts: backup_storage
+  roles:
+    - backup_storage
+    - monit_backup
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["backup_storage"]
+
+- name: Configure WireGuard peers
+  hosts: wireguard_peers
+  roles:
+    - wireguard_meta
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["wireguard"]
+
+- name: Configure backed-up systems
+  hosts: backed_up_hosts
+  roles:
+    - kopia
+    - monit_backup
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["backup_strategy"]
+
+- name: Configure cloud relay | HAProxy TCP + masquerade
+  hosts: relay
+  roles:
+    - cloud_relay
+    - monit_haproxy_relay
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["relay", "configure-systems"]
+
+- name: Watch servers ips
+  hosts: watch_ip
+  roles:
+    - notify_ip_change
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tags: ["watch-ip"]

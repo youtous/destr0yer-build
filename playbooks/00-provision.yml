@@ -1,0 +1,51 @@
+# vim: ts=2 sw=2 et
+- name: Ensure server_environment is defined and not empty
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Check"
+      ansible.builtin.assert:
+        that: >
+          server_environment is defined and server_environment | length > 0
+        msg: "server_environment must be defined an not empty"
+
+# Provision newly created servers, create a sudo user using root user
+- name: Perform initial provisionning
+  hosts: systems
+  vars:
+    _provisionned_file_path: /etc/status_provision_ansible
+    apt_allowed_to_reboot: false  # prevent reboot in this phase in order to preserve disk partition assigned
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+  tasks:
+    - name: "Check if provision is needed"
+      ansible.builtin.stat:
+        path: "{{ _provisionned_file_path }}"
+      register: system_provisionned_stat
+
+    # resolv is NOT called here — nameservers point to 127.0.0.1 (dnscrypt-proxy)
+    # which isn't installed yet. DNS resolution is configured in 01-configure.yml
+    # after dnscrypt-proxy is installed.
+
+    - name: Setup apt
+      ansible.builtin.include_role:
+        name: apt
+      when: not system_provisionned_stat.stat.exists
+
+    - name: Install system packages
+      ansible.builtin.include_role:
+        name: system_packages
+      when: not system_provisionned_stat.stat.exists
+
+    - name: Setup users
+      ansible.builtin.include_role:
+        name: users
+      when: not system_provisionned_stat.stat.exists
+
+    - name: Mark system as provisionned
+      ansible.builtin.file:
+        path: "{{ _provisionned_file_path }}"
+        state: touch
+        mode: u=rw,g=r,o=r
+      when: not system_provisionned_stat.stat.exists

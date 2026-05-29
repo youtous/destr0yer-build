@@ -1,0 +1,6 @@
+helmChart:
+  repo: https://helm.mariadb.com/mariadb-operator
+  chartName: mariadb-operator
+  chartVersion: "26.3.0"
+  releaseName: mariadb-operator
+  namespace: database

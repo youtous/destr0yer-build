@@ -1,0 +1,28 @@
+# For the moment, /etc/hosts.allow restriction is not used, only firewall restriction is used
+- name: List existing wireguard UFW rules
+  become: true
+  ansible.builtin.shell: >
+    set -o pipefail ufw status numbered | grep -zoP '\[.*\]\s{{ wireguard_server.port }}(?!\\d).*\n' | sed -E 's/\[\s*([0-9]+)\].*$/\1/g' | tr --delete [:blank:] | sed 's/\x0//g' | sort -rn | sed '/^s*$/d'
+  changed_when: false
+  ignore_errors: true  # in case no rule already exists
+  register: ufw_wireguard_rules
+
+- name: "UFW delete existing wireguard rules - tcp,udp/{{ wireguard_server.port }}"
+  become: true
+  ansible.builtin.shell: >
+    set -o pipefail && (yes || true) | ufw delete {{ item | quote }}
+  with_items: "{{ ufw_wireguard_rules.stdout_lines }}"
+  when: ufw_wireguard_rules.stdout_lines | length > 0
+  args:
+    executable: /bin/bash
+  register: cmd_output
+  changed_when: cmd_output.rc != 0
+
+- name: "UFW Allow wireguard networks - udp/{{ wireguard_server.port }}"
+  become: true
+  community.general.ufw:
+    rule: allow
+    port: "{{ wireguard_server.port }}"
+    proto: udp
+    src: "{{ item }}"
+  with_items: "{{ wireguard_server.restrict_ips }}"

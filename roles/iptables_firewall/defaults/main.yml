@@ -1,0 +1,12 @@
+ufw_logging: "off"
+ipv4_ip_forwarding: "1"  # required by K3S/Cilium
+ipv6_ip_forwarding: "1"
+
+ufw_additional_rules: []
+#  - comment: "a custom rule"
+#    proto: "tcp"
+#    src: "any"
+#    dest: "any"
+#    port: "1234"
+#    rule: "allow"
+#    direction: "in"

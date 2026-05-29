@@ -1,0 +1,105 @@
+- name: LUKS | Filter filesystems with LUKS enabled
+  ansible.builtin.set_fact:
+    _luks_filesystems: "{{ filesystems_to_create | selectattr('luks', 'defined') | selectattr('luks.enabled', 'defined') | list }}"
+
+- name: LUKS | Create keyfile directory
+  become: true
+  ansible.builtin.file:
+    path: /root/.luks
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+  when: _luks_filesystems | selectattr('luks.enabled', 'equalto', true) | list | length > 0
+
+- name: LUKS | Generate keyfile
+  become: true
+  ansible.builtin.command:
+    cmd: dd if=/dev/urandom of={{ item.luks.keyfile }} bs=1 count={{ item.luks.keyfile_size | default(4096) }}
+    creates: "{{ item.luks.keyfile }}"
+  loop: "{{ _luks_filesystems }}"
+  loop_control:
+    label: "{{ item.luks.name }}"
+  when: item.luks.enabled | default(false)
+  no_log: true
+
+- name: LUKS | Set keyfile permissions
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.luks.keyfile }}"
+    mode: "0400"
+    owner: root
+    group: root
+  loop: "{{ _luks_filesystems }}"
+  loop_control:
+    label: "{{ item.luks.name }}"
+  when: item.luks.enabled | default(false)
+
+- name: LUKS | Check if device is already LUKS formatted
+  become: true
+  ansible.builtin.command:
+    cmd: cryptsetup isLuks {{ item.dev }}
+  register: _luks_check
+  loop: "{{ _luks_filesystems }}"
+  loop_control:
+    label: "{{ item.luks.name }}"
+  when: item.luks.enabled | default(false)
+  changed_when: false
+  failed_when: false
+
+- name: LUKS | Format device with LUKS
+  become: true
+  ansible.builtin.command:
+    cmd: >-
+      cryptsetup luksFormat --batch-mode
+      --cipher {{ item.item.luks.cipher | default('aes-xts-plain64') }}
+      --key-size {{ item.item.luks.key_size | default(512) }}
+      --key-file {{ item.item.luks.keyfile }}
+      {{ item.item.dev }}
+  loop: "{{ _luks_check.results }}"
+  loop_control:
+    label: "{{ item.item.luks.name }}"
+  when:
+    - item.item.luks.enabled | default(false)
+    - item.rc != 0
+  changed_when: true
+  no_log: true
+
+- name: LUKS | Check if LUKS volume is already open
+  become: true
+  ansible.builtin.stat:
+    path: "/dev/mapper/{{ item.luks.name }}"
+  register: _luks_mapper
+  loop: "{{ _luks_filesystems }}"
+  loop_control:
+    label: "{{ item.luks.name }}"
+  when: item.luks.enabled | default(false)
+
+- name: LUKS | Open LUKS volume
+  become: true
+  ansible.builtin.command:
+    cmd: >-
+      cryptsetup open --type luks
+      --key-file {{ item.item.luks.keyfile }}
+      {{ item.item.dev }} {{ item.item.luks.name }}
+  loop: "{{ _luks_mapper.results }}"
+  loop_control:
+    label: "{{ item.item.luks.name }}"
+  when:
+    - item.item.luks.enabled | default(false)
+    - not item.stat.exists
+  changed_when: true
+  no_log: true
+
+- name: LUKS | Configure crypttab for auto-open at boot
+  become: true
+  community.general.crypttab:
+    name: "{{ item.luks.name }}"
+    backing_device: "{{ item.dev }}"
+    password: "{{ item.luks.keyfile }}"
+    opts: luks
+    state: present
+  loop: "{{ _luks_filesystems }}"
+  loop_control:
+    label: "{{ item.luks.name }}"
+  when: item.luks.enabled | default(false)

@@ -1,0 +1,9 @@
+deployments:
+  - include: promgraf/
+  - path: loki/
+  - path: alloy/
+  - path: gatus/
+  - path: testssl/
+  - path: drift-detection/
+  - path: ntfy/
+    when: "{{ args.enable_ntfy }}"

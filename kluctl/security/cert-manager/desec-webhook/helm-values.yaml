@@ -1,0 +1,16 @@
+groupName: "{{ args.certmanager_desec_group_name }}"
+
+certManager:
+  namespace: cert-manager
+  serviceAccountName: cert-manager
+
+secretsNames:
+  - "{{ args.certmanager_desec_token_secret_name }}"
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi

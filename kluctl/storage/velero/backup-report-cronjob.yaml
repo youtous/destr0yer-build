@@ -1,0 +1,172 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: velero-backup-report
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/component: backup-report
+spec:
+  schedule: "{{ args.schedule_velero_report }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: velero
+            app.kubernetes.io/component: backup-report
+        spec:
+          restartPolicy: Never
+          serviceAccountName: velero-report-reader
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            # renovate: datasource=docker depName=alpine/k8s
+            - name: report
+              image: docker.io/alpine/k8s@sha256:692239d739589247c4a791205ed9619c28ae85a21286e19a6211c04a62c56668  # 1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+                  BACKUPS=$(kubectl get backup.velero.io -n velero -o json 2>/dev/null || echo '{"items":[]}')
+                  SCHEDULES=$(kubectl get schedule.velero.io -n velero -o json 2>/dev/null || echo '{"items":[]}')
+
+                  COMPLETED=$(echo "$BACKUPS" | jq '[.items[] | select(.status.phase=="Completed")] | length')
+                  FAILED=$(echo "$BACKUPS" | jq '[.items[] | select(.status.phase=="Failed")] | length')
+                  PARTIAL=$(echo "$BACKUPS" | jq '[.items[] | select(.status.phase=="PartiallyFailed")] | length')
+
+                  if [ "$FAILED" -gt 0 ]; then
+                    LEVEL="CRITICAL"
+                  elif [ "$PARTIAL" -gt 0 ]; then
+                    LEVEL="WARNING"
+                  else
+                    LEVEL="OK"
+                  fi
+
+                  # Only send daily if there's a problem; on Mondays always send
+                  if [ "$LEVEL" = "OK" ] && [ "$(date +%u)" != "1" ]; then
+                    echo "All backups OK and not Monday — skipping report."
+                    exit 0
+                  fi
+
+                  SCHEDULE_LINES=$(echo "$SCHEDULES" | jq -r '
+                    .items[] |
+                    "  \(.metadata.name): \(.status.phase // "Unknown") (cron: \(.spec.schedule), last: \(.status.lastBackup // "Never"))"')
+
+                  RECENT_BACKUPS=$(echo "$BACKUPS" | jq -r '
+                    [.items | sort_by(.status.startTimestamp) | reverse | .[0:15][] |
+                     "  \(.metadata.name): \(.status.phase // "?") (started: \(.status.startTimestamp // "?"))" +
+                     (if .status.errors > 0 then " errors=\(.status.errors)" else "" end) +
+                     (if .status.warnings > 0 then " warnings=\(.status.warnings)" else "" end)
+                    ] | .[]')
+
+                  {
+                    printf 'Subject: [Velero/%s] Backup report - %s\r\n' "$LEVEL" "$(date +%Y-%m-%d)"
+                    printf 'From: %s\r\n' "$SMTP_FROM"
+                    printf 'To: %s\r\n' "$SMTP_TO"
+                    printf 'Content-Type: text/plain; charset=utf-8\r\n'
+                    printf '\r\n'
+                    printf 'Velero Backup Status Report\n'
+                    printf '============================\n\n'
+                    printf 'Status:    %s\n' "$LEVEL"
+                    printf 'Completed: %s\n' "$COMPLETED"
+                    printf 'Failed:    %s\n' "$FAILED"
+                    printf 'Partial:   %s\n\n' "$PARTIAL"
+                    printf 'Schedules:\n%s\n\n' "${SCHEDULE_LINES:-  (none)}"
+                    printf 'Recent backups:\n%s\n\n' "${RECENT_BACKUPS:-  (none)}"
+                    printf '---\nCluster: {{ args.cluster_domain }}\n'
+                    printf 'Generated: %s\n' "$NOW"
+                  } | curl -sf --url "smtp://${SMTP_HOST}:${SMTP_PORT}" \
+                      --user "${SMTP_USER}:${SMTP_PASS}" \
+                      --mail-from "$SMTP_FROM" \
+                      --mail-rcpt "$SMTP_TO" \
+                      --upload-file -
+
+                  echo "Report sent (status: ${LEVEL})"
+              env:
+                - name: SMTP_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: host
+                - name: SMTP_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: port
+                - name: SMTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: username
+                - name: SMTP_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: password
+                - name: SMTP_FROM
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-notifier
+                      key: from
+                - name: SMTP_TO
+                  value: "{{ args.admin_email }}"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: velero-report-reader
+  namespace: velero
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/component: backup-report
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: velero-report-reader
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/component: backup-report
+rules:
+  - apiGroups: ["velero.io"]
+    resources: ["backups", "schedules", "restores"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: velero-report-reader
+  labels:
+    app.kubernetes.io/name: velero
+    app.kubernetes.io/component: backup-report
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: velero-report-reader
+subjects:
+  - kind: ServiceAccount
+    name: velero-report-reader
+    namespace: velero

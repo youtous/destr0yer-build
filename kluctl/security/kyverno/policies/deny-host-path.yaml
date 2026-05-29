@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: deny-host-path
+spec:
+  validationFailureAction: "{{ args.kyverno_validation_action }}"
+  rules:
+    - name: deny-host-path-volumes
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, cilium, openebs, kyverno, cert-manager, observability, security, haproxy-ingress]
+      validate:
+        message: "hostPath volumes are not allowed in application namespaces."
+        pattern:
+          spec:
+            =(volumes):
+              - X(hostPath): "null"

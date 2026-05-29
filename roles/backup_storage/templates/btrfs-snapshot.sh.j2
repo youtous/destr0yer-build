@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+# Create timestamped read-only btrfs snapshots and prune old ones.
+set -euo pipefail
+
+SNAP_DIR="{{ backup_btrfs_snapshot_dir }}"
+SOURCE="{{ backup_root_directory }}"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+LABEL="${1:-hourly}"
+
+case "$LABEL" in
+    hourly)  RETENTION={{ backup_btrfs_retention_hourly }} ;;
+    daily)   RETENTION={{ backup_btrfs_retention_daily }} ;;
+    weekly)  RETENTION={{ backup_btrfs_retention_weekly }} ;;
+    *)       echo "Unknown label: $LABEL" >&2; exit 1 ;;
+esac
+
+btrfs subvolume snapshot -r "$SOURCE" "$SNAP_DIR/${LABEL}-${TIMESTAMP}"
+
+# Prune: keep only the N most recent snapshots for this label
+EXISTING=$(ls -1d "$SNAP_DIR/${LABEL}-"* 2>/dev/null | sort)
+COUNT=$(echo "$EXISTING" | wc -l)
+
+if [ "$COUNT" -gt "$RETENTION" ]; then
+    TO_DELETE=$((COUNT - RETENTION))
+    echo "$EXISTING" | head -n "$TO_DELETE" | while read -r snap; do
+        btrfs subvolume delete "$snap"
+    done
+fi

@@ -1,0 +1,11 @@
+ufw_smart_rules_supported_parameters_attributes:
+  - comment
+  - direction
+  - from_ip
+  - from_port
+  - interface
+  - proto
+  - route
+  - rule
+  - to_ip
+  - to_port

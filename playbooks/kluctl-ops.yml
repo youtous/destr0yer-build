@@ -1,0 +1,135 @@
+# Run kluctl operations on the control node using the operator kubeconfig.
+# The admin kubeconfig is never used for routine kluctl operations.
+# The workspace is synced to ~/destr0yer-build/ on ctrl so the operator
+# can SSH in and debug kluctl interactively after a failed deploy.
+#
+# Usage (via justfile):
+#   ansible-playbook playbooks/kluctl-ops.yml -e kluctl_command=deploy -e kluctl_target=dev -e 'kluctl_extra_args=--yes'
+#   ansible-playbook playbooks/kluctl-ops.yml -e kluctl_command=diff -e kluctl_target=dev
+
+- name: Run kluctl operation on ctrl
+  hosts: k3s_control_node[0]
+  gather_facts: true
+  become: false
+  vars:
+    kluctl_command: deploy
+    kluctl_target: dev
+    kluctl_extra_args: "--force-apply"
+    kluctl_include_dirs: ""  # last path component used as kluctl tag (e.g. "observability/promgraf" → "-I promgraf")
+    kluctl_execute: true
+
+  vars_files:
+    - ../secret_vars/{{ server_environment }}/all.yml
+    - ../secret_vars/{{ server_environment }}/sops-age-key.yml
+    - ../task_vars/sudo.yml
+    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
+
+  pre_tasks:
+    - name: Resolve user home directory
+      ansible.builtin.shell: echo $HOME
+      changed_when: false
+      register: _user_home
+
+    - name: Set workspace paths
+      ansible.builtin.set_fact:
+        kluctl_workspace: "{{ _user_home.stdout }}/destr0yer-build"
+        kluctl_operator_kubeconfig: "{{ _user_home.stdout }}/.kube/operator.yaml"
+
+    - name: Verify operator kubeconfig exists on ctrl
+      ansible.builtin.stat:
+        path: "{{ kluctl_operator_kubeconfig }}"
+      register: _operator_kc
+
+    - name: Fail if operator kubeconfig is missing
+      ansible.builtin.fail:
+        msg: >-
+          Operator kubeconfig not found at {{ kluctl_operator_kubeconfig }}. Run `just k3s` first to deploy K3S and create the operator kubeconfig.
+      when: not _operator_kc.stat.exists
+
+  tasks:
+    - name: Capture source git commit hash
+      delegate_to: localhost
+      ansible.builtin.command: git rev-parse --short HEAD
+      args:
+        chdir: "{{ playbook_dir }}/.."
+      changed_when: false
+      register: _git_commit
+
+    - name: Set source commit fact
+      ansible.builtin.set_fact:
+        kluctl_source_commit: "{{ _git_commit.stdout }}"
+
+    - name: Ensure workspace directory exists
+      ansible.builtin.file:
+        path: "{{ kluctl_workspace }}"
+        state: directory
+        mode: "u=rwx,g=rx"
+
+    - name: Sync kluctl project to ctrl
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/../kluctl/"
+        dest: "{{ kluctl_workspace }}/kluctl/"
+        delete: true
+        rsync_opts:
+          - "--exclude=.git"
+
+    - name: Commit synced kluctl state (tracks deploy history via source commit hash)
+      ansible.builtin.shell: |
+        cd {{ kluctl_workspace }}
+        git init -q 2>/dev/null || true
+        git add -A kluctl/ 2>/dev/null
+        git -c user.name=deploy -c user.email=deploy@local \
+          commit -q -m "deploy {{ kluctl_source_commit | default('unknown') }}" 2>/dev/null || true
+      register: _git_commit_result
+      changed_when: _git_commit_result.rc == 0 and 'nothing to commit' not in (_git_commit_result.stdout | default(''))
+
+    - name: Remove legacy SOPS key file if present
+      ansible.builtin.file:
+        path: "{{ kluctl_workspace }}/.sops-age-key.txt"
+        state: absent
+
+    - name: Deploy SOPS age key for operator (restricted permissions, auto-expires)
+      ansible.builtin.copy:
+        content: "{{ sops_age_private_key }}"
+        dest: "{{ _user_home.stdout }}/.sops-age-key.txt"
+        owner: "{{ ansible_user }}"
+        mode: "u=r"
+      no_log: true
+
+    - name: Schedule automatic SOPS key cleanup (30 min)
+      ansible.builtin.command:
+        cmd: systemd-run --user --on-active=30m --timer-property=AccuracySec=1s --unit=sops-key-cleanup rm -f {{ _user_home.stdout }}/.sops-age-key.txt
+      register: _sops_cleanup
+      changed_when: _sops_cleanup.rc == 0
+      failed_when: false
+
+    - name: Show manual command
+      when: not kluctl_execute | bool
+      ansible.builtin.debug:
+        msg: |-
+          Workspace synced. Connect and run:
+
+            ssh {{ inventory_hostname }}
+            cd {{ kluctl_workspace }}/kluctl
+            KUBECONFIG={{ kluctl_operator_kubeconfig }} SOPS_AGE_KEY=$(cat ~/.sops-age-key.txt) kluctl {{ kluctl_command }} -t {{ kluctl_target }} {{ '--yes' if kluctl_command in ['deploy', 'prune'] else '' }} {{ ('-I ' + kluctl_include_dirs | basename) if kluctl_include_dirs else '' }} {{ kluctl_extra_args }}
+
+    - name: "Run kluctl {{ kluctl_command }}"
+      when: kluctl_execute | bool
+      ansible.builtin.command: >
+        kluctl {{ kluctl_command }} -t {{ kluctl_target }} --project-dir {{ kluctl_workspace }}/kluctl/ --short-output --write-command-result=false {{ '--yes' if kluctl_command in ['deploy', 'prune'] else '' }} {{ ('-I ' + kluctl_include_dirs | basename) if kluctl_include_dirs else '' }} {{ kluctl_extra_args }}
+      environment:
+        KUBECONFIG: "{{ kluctl_operator_kubeconfig }}"
+        SOPS_AGE_KEY: "{{ sops_age_private_key }}"
+      register: _kluctl_result
+      changed_when: _kluctl_result.rc == 0
+      failed_when: false
+
+    - name: Show kluctl output
+      when: kluctl_execute | bool
+      ansible.builtin.debug:
+        msg: "{{ _kluctl_result.stdout_lines | default([]) + _kluctl_result.stderr_lines | default([]) }}"
+
+    - name: Fail if kluctl returned an error
+      when: kluctl_execute | bool and _kluctl_result.rc != 0
+      ansible.builtin.fail:
+        msg: "kluctl {{ kluctl_command }} failed with exit code {{ _kluctl_result.rc }}"

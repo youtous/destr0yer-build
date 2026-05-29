@@ -1,0 +1,115 @@
+---
+# Remove cloud provider services, packages, binaries, and configs.
+# Originally from the master branch "services" role (Scaleway-only).
+# Expanded to cover Scaleway, Hetzner, OVH, DigitalOcean.
+
+- name: Cloud provider cleanup is disabled
+  ansible.builtin.debug:
+    msg: "Skipped (cloud_provider_cleanup_enabled={{ cloud_provider_cleanup_enabled }})"
+  when: not (cloud_provider_cleanup_enabled | bool)
+
+- name: Cloud provider cleanup
+  when: cloud_provider_cleanup_enabled | bool
+  block:
+    - name: Find enabled cloud provider services
+      become: true
+      ansible.builtin.shell: >
+        set -o pipefail &&
+        systemctl list-unit-files --state=enabled --no-legend 2>/dev/null
+        | awk '{print $1}'
+        | grep -F '{{ cloud_provider_service_patterns | join("\n") }}'
+        || true
+      args:
+        executable: /bin/bash
+      changed_when: false
+      register: cloud_enabled_services
+
+    - name: Find running cloud provider services
+      become: true
+      ansible.builtin.shell: >
+        set -o pipefail &&
+        systemctl list-units --state=running --no-legend 2>/dev/null
+        | awk '{print $1}'
+        | grep -F '{{ cloud_provider_service_patterns | join("\n") }}'
+        || true
+      args:
+        executable: /bin/bash
+      changed_when: false
+      register: cloud_running_services
+
+    - name: Build combined service list
+      ansible.builtin.set_fact:
+        cloud_services_to_remove: >-
+          {{ (cloud_running_services.stdout_lines | default([]) +
+              cloud_enabled_services.stdout_lines | default([]))
+              | unique | select | list }}
+
+    - name: Stop and disable cloud provider services
+      become: true
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop: "{{ cloud_services_to_remove }}"
+      failed_when: false
+
+    - name: Remove cloud provider systemd unit files
+      become: true
+      ansible.builtin.shell: >
+        set -o pipefail &&
+        find /etc/systemd/system /usr/lib/systemd/system -maxdepth 1
+        -name '{{ item }}*' -type f -delete 2>/dev/null || true
+      args:
+        executable: /bin/bash
+      loop: "{{ cloud_provider_service_patterns }}"
+      changed_when: false
+
+    - name: Reload systemd after unit removal
+      become: true
+      ansible.builtin.systemd:
+        daemon_reload: true
+      when: cloud_services_to_remove | length > 0
+
+    - name: Remove cloud provider packages
+      become: true
+      ansible.builtin.apt:
+        name: "{{ cloud_provider_package_patterns }}"
+        state: absent
+        purge: true
+      failed_when: false
+
+    - name: Autoremove orphaned dependencies
+      become: true
+      ansible.builtin.apt:
+        autoremove: true
+      changed_when: false
+
+    - name: Find cloud provider binaries
+      become: true
+      ansible.builtin.stat:
+        path: "/usr/local/bin/{{ item }}"
+      loop: "{{ cloud_provider_binary_names }}"
+      register: cloud_binaries
+
+    - name: Remove cloud provider binaries
+      become: true
+      ansible.builtin.file:
+        path: "{{ item.stat.path }}"
+        state: absent
+      loop: "{{ cloud_binaries.results }}"
+      when: item.stat.exists
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Remove cloud provider config directories
+      become: true
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ cloud_provider_config_paths }}"
+
+    - name: Summary
+      ansible.builtin.debug:
+        msg: >-
+          Cloud provider cleanup: {{ cloud_services_to_remove | length }} service(s) found,
+          {{ cloud_binaries.results | selectattr('stat.exists') | list | length }} binary(ies) found.
