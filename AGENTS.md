@@ -112,7 +112,7 @@ All `just` recipes (provision, configure, k3s, deploy, diff, render, prune, test
   - `secrets.authelia_storage_key` — Authelia storage encryption key
 - `.vault_password` — Script that reads VAULT_PASSWORD from env, git-ignored
 - `.env` — Local config (ENV), git-ignored. `ENV` is the single source of truth for environment selection.
-- `.dev/sops-age-key.txt` — SOPS age private key, git-ignored (on GitHub)
+- `$SOPS_AGE_KEY_FILE` (default `.dev/sops-age-key.txt`) — SOPS age private key, git-ignored (on GitHub)
 
 **Secrets sync**: Local git fork with secrets on `deploy/master` branch (vault-encrypted).
 GitHub remote is read-only (`git remote set-url --push origin DISABLED`). Push protection:
@@ -151,7 +151,7 @@ Checklist when writing or reviewing a Kluctl manifest that uses `secrets.*`:
 Quick audit command — run after any change that touches `secrets.*`:
 ```sh
 # Rendered manifests must never have secrets.* in non-Secret resources
-RENDERED=$(SOPS_AGE_KEY_FILE=.dev/sops-age-key.txt kluctl render -t dev --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36 2>&1 | grep "Rendered into" | awk '{print $3}')
+RENDERED=$(kluctl render -t dev --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36 2>&1 | grep "Rendered into" | awk '{print $3}')
 # Check: no ConfigMap should contain sensitive-looking values
 rg -l 'kind: ConfigMap' "$RENDERED" | xargs rg -l 'token|password|secret|credential|api_key|private.key' || echo "OK — no leaks"
 ```

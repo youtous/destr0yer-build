@@ -59,7 +59,7 @@ vault-edit file:
 
 # Edit a SOPS-encrypted file (kluctl targets)
 sops-edit file:
-    SOPS_AGE_KEY_FILE=.dev/sops-age-key.txt sops {{file}}
+    sops {{file}}
 
 # Encrypt a file with ansible-vault
 vault-encrypt file:
@@ -106,33 +106,35 @@ k3s *args:
 sops-init:
     #!/usr/bin/env bash
     set -euo pipefail
-    mkdir -p .dev
-    if [ -f ".dev/sops-age-key.txt" ]; then
-        echo "Age key already exists at .dev/sops-age-key.txt"
-        grep "public key:" .dev/sops-age-key.txt
+    keyfile="${SOPS_AGE_KEY_FILE:-.dev/sops-age-key.txt}"
+    mkdir -p "$(dirname "$keyfile")"
+    if [ -f "$keyfile" ]; then
+        echo "Age key already exists at $keyfile"
+        grep "public key:" "$keyfile"
         exit 0
     fi
-    age-keygen -o .dev/sops-age-key.txt
+    age-keygen -o "$keyfile"
     echo ""
     echo "Public key:"
-    grep "public key:" .dev/sops-age-key.txt
+    grep "public key:" "$keyfile"
     echo ""
     echo "Next steps:"
     echo "  1. Update .sops.yaml with the public key above"
     echo "  2. Store the private key in vault:"
-    echo "     echo 'sops_age_private_key: \"'$(grep AGE-SECRET .dev/sops-age-key.txt)'\"' > secret_vars/dev/sops-age-key.yml"
+    echo "     echo 'sops_age_private_key: \"'$(grep AGE-SECRET $keyfile)'\"' > secret_vars/dev/sops-age-key.yml"
     echo "     just vault-encrypt secret_vars/dev/sops-age-key.yml"
     echo "  3. Run 'just sops-unlock' on other machines to extract the key for local use"
 
-# Extract age private key from vault into .dev/sops-age-key.txt (local dev only)
+# Extract age private key from vault into $SOPS_AGE_KEY_FILE (local dev only)
 sops-unlock:
     #!/usr/bin/env bash
     set -euo pipefail
-    mkdir -p .dev
+    keyfile="${SOPS_AGE_KEY_FILE:-.dev/sops-age-key.txt}"
+    mkdir -p "$(dirname "$keyfile")"
     python -m pipenv run ansible-vault view secret_vars/dev/sops-age-key.yml \
         --vault-password-file "./.vault_password" \
-        | grep -oP '(?<=sops_age_private_key: ")[^"]+' > .dev/sops-age-key.txt
-    echo "✓ Age key written to .dev/sops-age-key.txt"
+        | grep -oP '(?<=sops_age_private_key: ")[^"]+' > "$keyfile"
+    echo "✓ Age key written to $keyfile"
 
 # ─── Kluctl (K8S deployments) ────────────────────────────────────────
 # Kluctl runs on ctrl as the operator user (no root). Uses operator kubeconfig (not admin).
@@ -149,7 +151,7 @@ sync:
 
 # Render templates offline (no cluster needed, runs locally)
 render *args="":
-    SOPS_AGE_KEY_FILE=.dev/sops-age-key.txt kluctl render -t {{env}} --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36 {{args}}
+    kluctl render -t {{env}} --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36 {{args}}
 
 # [dev] Preview K8S changes before applying
 diff *args="":

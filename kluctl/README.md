@@ -115,9 +115,9 @@ just diff                             # Preview changes without applying
 just prune                            # Remove orphaned resources
 just render                           # Offline template validation
 
-# Direct kluctl (without just wrapper):
-SOPS_AGE_KEY_FILE=.dev/sops-age-key.txt kluctl deploy -t dev --project-dir kluctl/
-SOPS_AGE_KEY_FILE=.dev/sops-age-key.txt kluctl render -t dev --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36
+# Direct kluctl (without just wrapper — requires SOPS_AGE_KEY_FILE in env, see .env):
+kluctl deploy -t dev --project-dir kluctl/
+kluctl render -t dev --project-dir kluctl/ --offline-kubernetes --kubernetes-version 1.36
 ```
 
 ## Secrets

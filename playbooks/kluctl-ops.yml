@@ -34,6 +34,7 @@
       ansible.builtin.set_fact:
         kluctl_workspace: "{{ _user_home.stdout }}/destr0yer-build"
         kluctl_operator_kubeconfig: "{{ _user_home.stdout }}/.kube/operator.yaml"
+        _sops_key_file: "{{ _user_home.stdout }}/.sops-age-key.txt"
 
     - name: Verify operator kubeconfig exists on ctrl
       ansible.builtin.stat:
@@ -91,14 +92,14 @@
     - name: Deploy SOPS age key for operator (restricted permissions, auto-expires)
       ansible.builtin.copy:
         content: "{{ sops_age_private_key }}"
-        dest: "{{ _user_home.stdout }}/.sops-age-key.txt"
+        dest: "{{ _sops_key_file }}"
         owner: "{{ ansible_user }}"
         mode: "u=r"
       no_log: true
 
     - name: Schedule automatic SOPS key cleanup (30 min)
       ansible.builtin.command:
-        cmd: systemd-run --user --on-active=30m --timer-property=AccuracySec=1s --unit=sops-key-cleanup rm -f {{ _user_home.stdout }}/.sops-age-key.txt
+        cmd: systemd-run --user --on-active=30m --timer-property=AccuracySec=1s --unit=sops-key-cleanup rm -f {{ _sops_key_file }}
       register: _sops_cleanup
       changed_when: _sops_cleanup.rc == 0
       failed_when: false
@@ -111,7 +112,7 @@
 
             ssh {{ inventory_hostname }}
             cd {{ kluctl_workspace }}/kluctl
-            KUBECONFIG={{ kluctl_operator_kubeconfig }} SOPS_AGE_KEY=$(cat ~/.sops-age-key.txt) kluctl {{ kluctl_command }} -t {{ kluctl_target }} {{ '--yes' if kluctl_command in ['deploy', 'prune'] else '' }} {{ ('-I ' + kluctl_include_dirs | basename) if kluctl_include_dirs else '' }} {{ kluctl_extra_args }}
+            KUBECONFIG={{ kluctl_operator_kubeconfig }} SOPS_AGE_KEY=$(cat {{ _sops_key_file }}) kluctl {{ kluctl_command }} -t {{ kluctl_target }} {{ '--yes' if kluctl_command in ['deploy', 'prune'] else '' }} {{ ('-I ' + kluctl_include_dirs | basename) if kluctl_include_dirs else '' }} {{ kluctl_extra_args }}
 
     - name: "Run kluctl {{ kluctl_command }}"
       when: kluctl_execute | bool

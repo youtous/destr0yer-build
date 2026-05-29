@@ -246,7 +246,7 @@ Before first deploy on a new environment:
 # Create SOPS secrets from reference template
 cp kluctl/targets/secrets-reference.yaml kluctl/targets/<env>.enc.yaml
 # Generate each value (see commands in secrets-reference.yaml), then encrypt:
-SOPS_AGE_KEY_FILE=.dev/sops-age-key.txt sops -e -i kluctl/targets/<env>.enc.yaml
+sops -e -i kluctl/targets/<env>.enc.yaml
 # Subsequent edits:
 just sops-edit kluctl/targets/<env>.enc.yaml
 ```
@@ -297,11 +297,11 @@ will serve as the self-hosted remote.
 # Setup (laptop — one-time)
 git remote set-url --push origin DISABLED   # GitHub = read-only (fetch only)
 
-# Remove secret_vars/ from .gitignore (local fork only)
-# Commit vault-encrypted secrets on the deploy/ branch
+# Remove secret_vars/, .env, SOPS key from .gitignore (local fork only)
+# Commit vault-encrypted secrets + local config on the deploy/ branch
 git checkout -b deploy/master
-git add secret_vars/ .dev/sops-age-key.txt
-git commit -m "add vault-encrypted secrets (local only)"
+git add secret_vars/ "$SOPS_AGE_KEY_FILE" .env
+git commit -m "add vault-encrypted secrets + local config (local only)"
 ```
 
 **Branch convention:** secrets live on `deploy/master` (or `deploy/<env>`), never
