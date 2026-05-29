@@ -20,7 +20,6 @@ collections/        Ansible collection youtous.destr0yer (ufw_smart_rules, users
 kluctl/             Kluctl deployments (K8S-level: security, storage, database, observability, mail, apps, home)
 inventories/dev/    Inventory files and group_vars/host_vars
 secret_vars/        Ansible Vault encrypted secrets (git-ignored except samples)
-certs/              TLS certificates (git-ignored except .keep)
 archive/            (removed — Swarm code lives in git history only)
 doc/                Architecture decisions, guides, and documentation
 logs/               Ansible run logs (git-ignored, one file per run)
@@ -61,7 +60,7 @@ just mailpit-stop    # Stop mailpit container
 
 # Shared
 just lint            # Run pre-commit hooks (must always pass)
-just push / pull     # Sync secrets/certs to/from backup location
+just sops-edit kluctl/targets/<env>.enc.yaml # Edit SOPS-encrypted K8S secrets
 
 # Version management
 ./scripts/check-versions.sh                # List all component versions
@@ -111,10 +110,13 @@ All `just` recipes (provision, configure, k3s, deploy, diff, render, prune, test
   - `secrets.authelia_jwt_secret` — Authelia JWT HMAC key
   - `secrets.authelia_session_key` — Authelia session encryption key
   - `secrets.authelia_storage_key` — Authelia storage encryption key
-- `certs/` — TLS certs and private keys, git-ignored
 - `.vault_password` — Script that reads VAULT_PASSWORD from env, git-ignored
-- `.env` — Local config (ENV, CLUSTER_NAME, SAVE_PATH), git-ignored. `ENV` is the single source of truth for environment selection.
-- `.dev/sops-age-key.txt` — SOPS age private key, git-ignored
+- `.env` — Local config (ENV), git-ignored. `ENV` is the single source of truth for environment selection.
+- `.dev/sops-age-key.txt` — SOPS age private key, git-ignored (on GitHub)
+
+**Secrets sync**: Preferred method is a local git fork with secrets committed (vault-encrypted).
+GitHub remote is read-only (`git remote set-url --push origin DISABLED`). Future: push to
+self-hosted Forgejo.
 
 ## Conventions
 

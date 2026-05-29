@@ -287,6 +287,39 @@ just sops-edit kluctl/targets/<env>.enc.yaml
 just vault-edit secret_vars/<env>/all.yml
 ```
 
+### Secrets sync — local git fork (preferred)
+
+The preferred method is a **local git fork** with secrets committed directly.
+GitHub remote is set to read-only (fetch-only). Later, a private Forgejo instance
+will serve as the self-hosted remote.
+
+```sh
+# Setup (laptop — one-time)
+git remote set-url --push origin DISABLED   # GitHub = read-only (fetch only)
+
+# Remove secret_vars/ from .gitignore (local fork only)
+# Commit vault-encrypted secrets
+git add secret_vars/ .dev/sops-age-key.txt
+git commit -m "add vault-encrypted secrets (local only)"
+```
+
+**Phase 1 (current):** local-only repo, secrets committed locally. Backup via
+regular filesystem backup (Time Machine, restic, etc.) or manual `just push` to
+a synced folder.
+
+**Phase 2 (future):** self-hosted Forgejo on the cluster. Add as remote and push:
+```sh
+git remote add forgejo git@forgejo.k8s.home:youtous/destr0yer-build.git
+git push forgejo --all
+```
+
+**Why this works:**
+
+- `secret_vars/*.yml` are AES-256 vault-encrypted — safe in any private repo
+- `kluctl/targets/*.enc.yaml` are SOPS/age-encrypted — same
+- GitHub remote stays read-only — no risk of leaking secrets
+- Atomic (code + secrets together in one repo)
+
 ## Backup strategy
 
 Three independent backup layers, each serving a different recovery scenario:

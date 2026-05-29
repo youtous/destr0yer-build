@@ -54,7 +54,7 @@ Kopia picks up these snapshots as part of its daily backup sweep.
 | Host config | `/home/`, `/etc/` | kopia | Backup node (SFTP) |
 | DB dumps | MariaDB → `/var/backups/mariadb/` | mariadb-dump + kopia | Backup node (SFTP) |
 | Kluctl manifests | git repo | git push | GitHub |
-| Vault secrets + certs | `secret_vars/`, `certs/` | `just push` | Backup location |
+| Vault secrets | `secret_vars/` | git (local fork) | Private repo |
 
 **What does NOT need backing up** (rebuildable):
 - K3S binaries (reinstall via Ansible)

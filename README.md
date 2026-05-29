@@ -289,7 +289,6 @@ just vault-login                            # Set vault password
 just vault-edit secret_vars/<env>/all.yml   # Edit host-level secrets
 just sops-edit kluctl/targets/<env>.enc.yaml  # Edit K8S-level secrets
 just sops-init                              # First-time: generate age keypair
-just push / just pull                       # Backup/restore secrets
 ```
 
 See [doc/operations.md](doc/operations.md#secrets-management) for detailed procedures.

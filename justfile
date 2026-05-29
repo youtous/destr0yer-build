@@ -69,35 +69,6 @@ vault-encrypt file:
 vault-decrypt file:
     python -m pipenv run ansible-vault decrypt {{file}} --vault-password-file "./.vault_password"
 
-# ─── Secrets & Certs Sync ───────────────────────────────────────────
-
-# Push secrets and certs to backup location
-push: push-secrets push-certs
-    @echo "✓ Secrets and certs pushed"
-
-# Pull secrets and certs from backup location
-pull: pull-secrets pull-certs
-    @echo "✓ Secrets and certs pulled"
-
-# Save secrets to backup location
-push-secrets:
-    mkdir -p ${SAVE_PATH}/${CLUSTER_NAME}/secrets/
-    cp secret_vars/*.yml ${SAVE_PATH}/${CLUSTER_NAME}/secrets/
-
-# Restore secrets from backup location
-pull-secrets:
-    find ./secret_vars -type f ! -name '*.sample.yml' ! -name '.keep' -delete
-    cp -a ${SAVE_PATH}/${CLUSTER_NAME}/secrets/*.yml secret_vars
-
-# Save certs to backup location
-push-certs:
-    mkdir -p ${SAVE_PATH}/${CLUSTER_NAME}/certs/
-    cp -R certs/* ${SAVE_PATH}/${CLUSTER_NAME}/certs/
-
-# Restore certs from backup location
-pull-certs:
-    find ./certs -type f ! -name '*.sample.yml' ! -name '.keep' -delete
-    cp -aR ${SAVE_PATH}/${CLUSTER_NAME}/certs/* certs
 
 # ─── Playbooks ───────────────────────────────────────────────────────
 
@@ -171,7 +142,7 @@ sops-unlock:
 sync:
     rsync -az --delete \
         --exclude='.git' --exclude='.dev' --exclude='secret_vars' \
-        --exclude='certs' --exclude='.vagrant' --exclude='node_modules' \
+        --exclude='.vagrant' --exclude='node_modules' \
         -e ssh \
         ./ {{ssh_user}}@{{ctrl_ssh_host}}:~/destr0yer-build/
     @echo "✓ Workspace synced to {{ssh_user}}@{{ctrl_ssh_host}}:~/destr0yer-build/"

@@ -64,7 +64,7 @@ Phase 4 — Restore application data (~30 min-2h)
 - etcd snapshot (cluster state: namespaces, secrets, RBAC, CRDs)
 - PV data: databases (MariaDB, PostgreSQL), mail storage, Grafana dashboards
 - Host data: `/home`, SSH keys, WireGuard keys (in Ansible Vault)
-- TLS root CAs and private keys (in Ansible Vault + `just push/pull`)
+- TLS root CAs and private keys (in Ansible Vault)
 
 **K3S secrets-encryption and key management**:
 
