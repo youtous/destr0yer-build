@@ -34,7 +34,7 @@
       ansible.builtin.set_fact:
         kluctl_workspace: "{{ _user_home.stdout }}/destr0yer-build"
         kluctl_operator_kubeconfig: "{{ _user_home.stdout }}/.kube/operator.yaml"
-        _sops_key_file: "{{ _user_home.stdout }}/.sops-age-key.txt"
+        _sops_key_file: "{{ _user_home.stdout }}/.keys/{{ server_environment }}-sops.age"
 
     - name: Verify operator kubeconfig exists on ctrl
       ansible.builtin.stat:

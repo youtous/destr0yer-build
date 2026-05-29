@@ -3,13 +3,12 @@
 .vscode/
 
 # Secrets and credentials
-certs/*
-!certs/.keep
 secret_vars/**/*
 !secret_vars/*.sample.yml
 !secret_vars/**/
 .vault_password
 .env
+.keys/
 
 # Ansible
 *.retry

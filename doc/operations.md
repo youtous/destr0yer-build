@@ -297,10 +297,10 @@ will serve as the self-hosted remote.
 # Setup (laptop — one-time)
 git remote set-url --push origin DISABLED   # GitHub = read-only (fetch only)
 
-# Remove secret_vars/, .env, SOPS key from .gitignore (local fork only)
+# Remove secret_vars/, .env, .keys/ from .gitignore (local fork only)
 # Commit vault-encrypted secrets + local config on the deploy/ branch
 git checkout -b deploy/master
-git add secret_vars/ "$SOPS_AGE_KEY_FILE" .env
+git add secret_vars/ .keys/ .env
 git commit -m "add vault-encrypted secrets + local config (local only)"
 ```
 

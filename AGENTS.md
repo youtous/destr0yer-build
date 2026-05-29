@@ -112,7 +112,7 @@ All `just` recipes (provision, configure, k3s, deploy, diff, render, prune, test
   - `secrets.authelia_storage_key` — Authelia storage encryption key
 - `.vault_password` — Script that reads VAULT_PASSWORD from env, git-ignored
 - `.env` — Local config (ENV), git-ignored. `ENV` is the single source of truth for environment selection.
-- `$SOPS_AGE_KEY_FILE` (default `.dev/sops-age-key.txt`) — SOPS age private key, git-ignored (on GitHub)
+- `$SOPS_AGE_KEY_FILE` (default `.keys/<env>-sops.age`) — SOPS age private key, per-env, git-ignored (on GitHub)
 
 **Secrets sync**: Local git fork with secrets on `deploy/master` branch (vault-encrypted).
 GitHub remote is read-only (`git remote set-url --push origin DISABLED`). Push protection:

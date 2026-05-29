@@ -106,7 +106,7 @@ k3s *args:
 sops-init:
     #!/usr/bin/env bash
     set -euo pipefail
-    keyfile="${SOPS_AGE_KEY_FILE:-.dev/sops-age-key.txt}"
+    keyfile="${SOPS_AGE_KEY_FILE:-.keys/${ENV:-dev}-sops.age}"
     mkdir -p "$(dirname "$keyfile")"
     if [ -f "$keyfile" ]; then
         echo "Age key already exists at $keyfile"
@@ -121,17 +121,17 @@ sops-init:
     echo "Next steps:"
     echo "  1. Update .sops.yaml with the public key above"
     echo "  2. Store the private key in vault:"
-    echo "     echo 'sops_age_private_key: \"'$(grep AGE-SECRET $keyfile)'\"' > secret_vars/dev/sops-age-key.yml"
-    echo "     just vault-encrypt secret_vars/dev/sops-age-key.yml"
+    echo "     echo 'sops_age_private_key: \"'$(grep AGE-SECRET $keyfile)'\"' > secret_vars/${ENV:-dev}/sops-age-key.yml"
+    echo "     just vault-encrypt secret_vars/${ENV:-dev}/sops-age-key.yml"
     echo "  3. Run 'just sops-unlock' on other machines to extract the key for local use"
 
-# Extract age private key from vault into $SOPS_AGE_KEY_FILE (local dev only)
+# Extract age private key from vault into $SOPS_AGE_KEY_FILE
 sops-unlock:
     #!/usr/bin/env bash
     set -euo pipefail
-    keyfile="${SOPS_AGE_KEY_FILE:-.dev/sops-age-key.txt}"
+    keyfile="${SOPS_AGE_KEY_FILE:-.keys/${ENV:-dev}-sops.age}"
     mkdir -p "$(dirname "$keyfile")"
-    python -m pipenv run ansible-vault view secret_vars/dev/sops-age-key.yml \
+    python -m pipenv run ansible-vault view secret_vars/${ENV:-dev}/sops-age-key.yml \
         --vault-password-file "./.vault_password" \
         | grep -oP '(?<=sops_age_private_key: ")[^"]+' > "$keyfile"
     echo "✓ Age key written to $keyfile"
