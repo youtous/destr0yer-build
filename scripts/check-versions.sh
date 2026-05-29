@@ -137,7 +137,7 @@ declare -A ROLE_VERSIONS=(
     ["Kluctl CLI"]="k8s_kluctl_version|roles/k8s_kluctl/defaults/main.yml|kluctl/kluctl"
     ["Helm"]="k8s_helm_version|roles/k8s_helm/defaults/main.yml|helm/helm"
     ["k9s"]="k8s_k9s_version|roles/k8s_k9s/defaults/main.yml|derailed/k9s"
-    ["kube-bench"]="kube_bench_version|roles/audit_kube_bench/defaults/main.yml|aquasecurity/kube-bench"
+    ["kube-bench"]="kube_bench_version|playbooks/99-integration-tests.yml|aquasecurity/kube-bench"
     ["Gateway API CRDs"]="cilium_gateway_api_crd_version|roles/k3s_cilium/defaults/main.yml|kubernetes-sigs/gateway-api"
 )
 

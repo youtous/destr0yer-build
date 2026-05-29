@@ -733,11 +733,65 @@
       ansible.builtin.set_fact:
         test_results: "{{ test_results + [{'test': 'K3S audit log', 'passed': test_audit_log is not failed, 'detail': test_audit_log.msg | default('')}] }}"
 
-    # --- kube-bench CIS benchmark ---
-    - name: Check kube-bench is installed
-      ansible.builtin.stat:
-        path: /usr/local/bin/kube-bench
-      register: kube_bench_bin
+    # --- kube-bench CIS benchmark (ephemeral install) ---
+    - name: Install kube-bench temporarily
+      become: true
+      vars:
+        # renovate: datasource=github-releases depName=aquasecurity/kube-bench
+        kube_bench_version: "0.15.5"
+        kube_bench_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] | default('amd64') }}"
+      block:
+        - name: Create kube-bench temp directory
+          ansible.builtin.tempfile:
+            state: directory
+            suffix: kube_bench
+          register: kube_bench_tmp
+
+        - name: Download kube-bench checksums
+          ansible.builtin.get_url:
+            url: "https://github.com/aquasecurity/kube-bench/releases/download/v{{ kube_bench_version }}/kube-bench_{{ kube_bench_version }}_checksums.txt"
+            dest: "{{ kube_bench_tmp.path }}/checksums.txt"
+            mode: "u=rw"
+
+        - name: Extract expected checksum
+          ansible.builtin.shell:
+            cmd: >
+              set -o pipefail && grep 'kube-bench_{{ kube_bench_version }}_linux_{{ kube_bench_arch }}.tar.gz' {{ kube_bench_tmp.path }}/checksums.txt | awk '{print $1}'
+            executable: /bin/bash
+          changed_when: false
+          register: kube_bench_checksum
+
+        - name: Download kube-bench archive
+          ansible.builtin.get_url:
+            url: "https://github.com/aquasecurity/kube-bench/releases/download/v{{ kube_bench_version }}/kube-bench_{{ kube_bench_version }}_linux_{{ kube_bench_arch }}.tar.gz"
+            dest: "{{ kube_bench_tmp.path }}/kube-bench.tar.gz"
+            checksum: "sha256:{{ kube_bench_checksum.stdout }}"
+            mode: "u=rw"
+
+        - name: Extract kube-bench
+          ansible.builtin.unarchive:
+            src: "{{ kube_bench_tmp.path }}/kube-bench.tar.gz"
+            dest: "{{ kube_bench_tmp.path }}"
+            remote_src: true
+
+        - name: Install kube-bench binary
+          ansible.builtin.copy:
+            src: "{{ kube_bench_tmp.path }}/kube-bench"
+            dest: /usr/local/bin/kube-bench
+            owner: root
+            group: root
+            mode: "u=rwx,g=rx,o=rx"
+            remote_src: true
+
+        - name: Install kube-bench config
+          ansible.builtin.copy:
+            src: "{{ kube_bench_tmp.path }}/cfg/"
+            dest: /etc/kube-bench/cfg/
+            owner: root
+            group: root
+            mode: "u=rw,g=r,o=r"
+            directory_mode: "u=rwx,g=rx,o=rx"
+            remote_src: true
 
     - name: Run kube-bench (CIS K8S hardening)
       ansible.builtin.command:
@@ -745,14 +799,11 @@
       changed_when: false
       register: kube_bench_raw
       failed_when: false
-      when: kube_bench_bin.stat.exists
 
     - name: Parse kube-bench results
       ansible.builtin.set_fact:
         kube_bench_results: "{{ kube_bench_raw.stdout | from_json }}"
-      when:
-        - kube_bench_bin.stat.exists
-        - kube_bench_raw.rc == 0
+      when: kube_bench_raw.rc == 0
 
     - name: Count kube-bench totals
       ansible.builtin.set_fact:
@@ -803,6 +854,25 @@
     - name: Record kube-bench result
       ansible.builtin.set_fact:
         test_results: "{{ test_results + [{'test': 'kube-bench CIS', 'passed': test_kube_bench is not failed, 'detail': test_kube_bench.msg | default('skipped — kube-bench not installed')}] }}"
+
+    - name: Remove kube-bench (ephemeral cleanup)
+      become: true
+      block:
+        - name: Remove kube-bench binary
+          ansible.builtin.file:
+            path: /usr/local/bin/kube-bench
+            state: absent
+
+        - name: Remove kube-bench config
+          ansible.builtin.file:
+            path: /etc/kube-bench
+            state: absent
+
+        - name: Remove kube-bench temp directory
+          ansible.builtin.file:
+            path: "{{ kube_bench_tmp.path }}"
+            state: absent
+          when: kube_bench_tmp is defined
 
     # --- Summary ---
     - name: Print test summary
