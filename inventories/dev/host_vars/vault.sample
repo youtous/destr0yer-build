@@ -1,7 +1,8 @@
 # vim: ts=2 sw=2 et
 # Per-host secrets — encrypt with ansible-vault
-# Copy to secret_vars/<env>/<hostname>.yml and encrypt
-# Edit with: just vault-edit secret_vars/<env>/<hostname>.yml
+# Location: inventories/<env>/host_vars/<hostname>/vault.yml
+# Encrypt with: ansible-vault encrypt inventories/<env>/host_vars/<hostname>/vault.yml
+# Edit with:    just vault-edit inventories/<env>/host_vars/<hostname>/vault.yml
 
 # Sudo user password (generate with: openssl passwd -6)
 sudo_user_password: ""

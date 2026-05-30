@@ -20,10 +20,6 @@
     - k8s_k9s
     - role: k8s_kluctl
       when: k3s_control_node | default(false)
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup"]
 
 - name: Apply SELinux file contexts after K3S binary install
@@ -41,10 +37,6 @@
       changed_when: true
       failed_when: false
       when: ansible_facts.selinux.status | default('disabled') == 'enabled'
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "selinux"]
 
 - name: Wait for K3S API to be ready after config changes
@@ -60,10 +52,6 @@
       changed_when: false
       become: true
       ignore_errors: false
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "k3s-service-account"]
 
 - name: Harden default ServiceAccounts (CIS 5.1.5)
@@ -83,50 +71,30 @@
       loop: "{{ all_namespaces.stdout.split() }}"
       changed_when: false
       failed_when: false
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "k3s-hardening"]
 
 - name: Generate admin service account on controllers
   hosts: k3s_control_node
   roles:
     - k8s_service_account_admin
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "k3s-service-account"]
 
 - name: Install k3s internal services - networking
   hosts: k3s_control_node[0]
   roles:
     - k3s_cilium
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "k3s-internal-services", "k3s-internal-networking"]
 
 - name: Setup operator access on controllers
   hosts: k3s_control_node
   roles:
     - k8s_operator_access
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "k3s-operator-access"]
 
 - name: Setup app-deployer access on controllers
   hosts: k3s_control_node
   roles:
     - k8s_app_deployer_access
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
   tags: ["k3s-setup", "k3s-app-deployer-access"]
 
   # Remaining K8S services are deployed via Kluctl (see kluctl/ directory)

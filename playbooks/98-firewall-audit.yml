@@ -8,10 +8,6 @@
   become: true
   tags:
     - firewall-audit
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
 
   vars:
     test_results: []

@@ -232,7 +232,7 @@ Two independent secret stores:
 
 | Store | Scope | Tool | Files |
 |-------|-------|------|-------|
-| Ansible Vault | Host-level (SSH keys, sudo, WireGuard, Kopia, relay) | `ansible-vault` | `secret_vars/<env>/*.yml` |
+| Ansible Vault | Host-level (SSH keys, sudo, WireGuard, Kopia, relay) | `ansible-vault` | `inventories/<env>/group_vars/*/vault*.yml`, `inventories/<env>/host_vars/*/vault*.yml` |
 | SOPS (age) | K8S-level (Authelia, Garage, SMTP notifier, mailserver, Loki) | `sops` | `kluctl/targets/<env>.enc.yaml` |
 
 The two stores are **independent by design** — no automatic sync is needed.
@@ -270,7 +270,7 @@ just sops-edit kluctl/targets/<env>.enc.yaml
 # Set: secrets.crowdsec_bouncer_key: "<key>"
 
 # 3. Store in Ansible Vault for the host-level bouncer
-just vault-edit secret_vars/<env>/all.yml
+just vault-edit inventories/<env>/group_vars/all/vault.yml
 # Add: crowdsec_bouncer_api_key: "<key>"
 
 # 4. Deploy host bouncer
@@ -284,7 +284,7 @@ just configure --tags crowdsec
 just sops-edit kluctl/targets/<env>.enc.yaml
 
 # Ansible Vault (host layer)
-just vault-edit secret_vars/<env>/all.yml
+just vault-edit inventories/<env>/group_vars/all/vault.yml
 ```
 
 ### Secrets sync — local git fork (preferred)
@@ -297,10 +297,11 @@ will serve as the self-hosted remote.
 # Setup (laptop — one-time)
 git remote set-url --push origin DISABLED   # GitHub = read-only (fetch only)
 
-# Remove secret_vars/, .env, .keys/ from .gitignore (local fork only)
-# Commit vault-encrypted secrets + local config on the deploy/ branch
+# Vault files are git-ignored by default. On private forks, track them:
+# 1. Remove the vault lines from .gitignore
+# 2. Commit vault files + unencrypted local config on the deploy/ branch
 git checkout -b deploy/master
-git add secret_vars/ .keys/ .env
+git add inventories/*/group_vars/*/vault*.yml inventories/*/host_vars/*/vault*.yml .keys/ .env
 git commit -m "add vault-encrypted secrets + local config (local only)"
 ```
 
@@ -318,9 +319,9 @@ git push forgejo deploy/master
 
 **Why this works:**
 
-- `secret_vars/*.yml` are AES-256 vault-encrypted — safe in any private repo
+- `vault*.yml` files are AES-256 vault-encrypted — safe in any private repo
 - `kluctl/targets/*.enc.yaml` are SOPS/age-encrypted — same
-- GitHub remote stays read-only — no risk of leaking secrets
+- `.env` and `.keys/` (unencrypted) stay git-ignored
 - Atomic (code + secrets together in one repo)
 - `deploy/*` prefix = clear visual marker for secret-bearing branches
 

@@ -121,8 +121,8 @@ sops-init:
     echo "Next steps:"
     echo "  1. Update .sops.yaml with the public key above"
     echo "  2. Store the private key in vault:"
-    echo "     echo 'sops_age_private_key: \"'$(grep AGE-SECRET $keyfile)'\"' > secret_vars/${ENV:-dev}/sops-age-key.yml"
-    echo "     just vault-encrypt secret_vars/${ENV:-dev}/sops-age-key.yml"
+    echo "     echo 'sops_age_private_key: \"'$(grep AGE-SECRET $keyfile)'\"' > inventories/${ENV:-dev}/group_vars/all/vault-sops.yml"
+    echo "     just vault-encrypt inventories/${ENV:-dev}/group_vars/all/vault-sops.yml"
     echo "  3. Run 'just sops-unlock' on other machines to extract the key for local use"
 
 # Extract age private key from vault into $SOPS_AGE_KEY_FILE
@@ -131,7 +131,7 @@ sops-unlock:
     set -euo pipefail
     keyfile="${SOPS_AGE_KEY_FILE:-.keys/${ENV:-dev}-sops.age}"
     mkdir -p "$(dirname "$keyfile")"
-    python -m pipenv run ansible-vault view secret_vars/${ENV:-dev}/sops-age-key.yml \
+    python -m pipenv run ansible-vault view inventories/${ENV:-dev}/group_vars/all/vault-sops.yml \
         --vault-password-file "./.vault_password" \
         | grep -oP '(?<=sops_age_private_key: ")[^"]+' > "$keyfile"
     echo "✓ Age key written to $keyfile"
@@ -143,7 +143,7 @@ sops-unlock:
 # [dev] Sync full workspace to ctrl for kluctl operations and SSH debugging
 sync:
     rsync -az --delete \
-        --exclude='.git' --exclude='.dev' --exclude='secret_vars' \
+        --exclude='.git' --exclude='.dev' --exclude='*/vault*.yml' \
         --exclude='.vagrant' --exclude='node_modules' \
         -e ssh \
         ./ {{ssh_user}}@{{ctrl_ssh_host}}:~/destr0yer-build/

@@ -139,7 +139,7 @@ Uses `--network=host` to reach Vagrant VMs.
 just ssh-keygen      # 🔑 Generate dev SSH key (.dev/, git-ignored)
 
 # Add the dev public key to your vault:
-just vault-edit secret_vars/dev/all.yml
+just vault-edit inventories/dev/group_vars/all/vault.yml
 # sudo_user_ssh_keys:
 #   - "ssh-ed25519 AAAA... destr0yer-dev"   # paste from .dev/id_ed25519.pub
 
@@ -286,7 +286,7 @@ Two independent encrypted stores — no sync needed between them:
 
 ```sh
 just vault-login                            # Set vault password
-just vault-edit secret_vars/<env>/all.yml   # Edit host-level secrets
+just vault-edit inventories/<env>/group_vars/all/vault.yml  # Edit host-level secrets
 just sops-edit kluctl/targets/<env>.enc.yaml  # Edit K8S-level secrets
 just sops-init                              # First-time: generate age keypair
 ```

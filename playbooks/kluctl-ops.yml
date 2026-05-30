@@ -18,12 +18,6 @@
     kluctl_include_dirs: ""  # last path component used as kluctl tag (e.g. "observability/promgraf" → "-I promgraf")
     kluctl_execute: true
 
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../secret_vars/{{ server_environment }}/sops-age-key.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
-
   pre_tasks:
     - name: Resolve user home directory
       ansible.builtin.shell: echo $HOME

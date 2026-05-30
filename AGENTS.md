@@ -19,7 +19,6 @@ roles/              Ansible roles (k3s_*, k8s_*, system, networking, monitoring,
 collections/        Ansible collection youtous.destr0yer (ufw_smart_rules, users, logwatch)
 kluctl/             Kluctl deployments (K8S-level: security, storage, database, observability, mail, apps, home)
 inventories/dev/    Inventory files and group_vars/host_vars
-secret_vars/        Ansible Vault encrypted secrets (git-ignored except samples)
 archive/            (removed — Swarm code lives in git history only)
 doc/                Architecture decisions, guides, and documentation
 logs/               Ansible run logs (git-ignored, one file per run)
@@ -50,7 +49,7 @@ just kubectl-admin ...     # Break-glass: sudo breakglass-kubectl (emergency onl
 just garage status   # Run garage CLI inside garage-0 pod
 
 # Secrets
-just vault-edit secret_vars/<env>/all.yml   # Edit Ansible Vault secrets
+just vault-edit inventories/<env>/group_vars/all/vault.yml  # Edit Ansible Vault secrets
 just sops-edit kluctl/targets/<env>.enc.yaml  # Edit SOPS-encrypted K8S secrets
 
 # Dev tools
@@ -102,7 +101,7 @@ All `just` recipes (provision, configure, k3s, deploy, diff, render, prune, test
 
 ## Sensitive files — never commit unencrypted
 
-- `secret_vars/*.yml` — Ansible Vault encrypted
+- `inventories/*/group_vars/*/vault*.yml` and `inventories/*/host_vars/*/vault*.yml` — Ansible Vault encrypted (auto-loaded by Ansible)
 - `kluctl/targets/*.enc.yaml` — SOPS encrypted (age key). Contains:
   - `secrets.grafana_admin_password` — Grafana admin password
   - `secrets.garage_rpc_secret` — Garage inter-node RPC key
@@ -114,7 +113,8 @@ All `just` recipes (provision, configure, k3s, deploy, diff, render, prune, test
 - `.env` — Local config (ENV), git-ignored. `ENV` is the single source of truth for environment selection.
 - `$SOPS_AGE_KEY_FILE` (default `.keys/<env>-sops.age`) — SOPS age private key, per-env, git-ignored (on GitHub)
 
-**Secrets sync**: Local git fork with secrets on `deploy/master` branch (vault-encrypted).
+**Secrets sync**: Vault files (`vault*.yml`) are git-ignored by default. On private forks,
+remove the vault lines from `.gitignore` and commit them on the `deploy/master` branch.
 GitHub remote is read-only (`git remote set-url --push origin DISABLED`). Push protection:
 local pre-push hook blocks `deploy/*` to non-private remotes + GitHub branch rule rejects
 `deploy/**` server-side. Future: push to self-hosted Forgejo.
@@ -227,7 +227,7 @@ ssh ctrl.k3s.dev.local
 ssh worker.k3s.dev.local
 
 # Ansible ad-hoc (needs vault password)
-BECOME_PASS=$(pipenv run ansible-vault view secret_vars/dev/all.yml --vault-password-file .vault_password | grep sudo_user_clear_password | cut -d'"' -f2)
+BECOME_PASS=$(pipenv run ansible-vault view inventories/dev/group_vars/all/vault.yml --vault-password-file .vault_password | grep sudo_user_clear_password | cut -d'"' -f2)
 pipenv run ansible ctrl.k3s.dev.local -i inventories/dev/base-nodes.yml -u walle --become -m shell -a "..." -e "ansible_become_pass=$BECOME_PASS" --vault-password-file .vault_password
 ```
 

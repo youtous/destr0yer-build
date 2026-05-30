@@ -1,7 +1,8 @@
 # vim: ts=2 sw=2 et
 # Shared secrets for all hosts in the environment
-# Encrypt with: just vault-encrypt secret_vars/<env>/all.yml
-# Edit with:    just vault-edit secret_vars/<env>/all.yml
+# Location: inventories/<env>/group_vars/all/vault.yml
+# Encrypt with: ansible-vault encrypt inventories/<env>/group_vars/all/vault.yml
+# Edit with:    just vault-edit inventories/<env>/group_vars/all/vault.yml
 
 # Name of the common sudo user (created on all hosts)
 sudo_user_username: "walle"

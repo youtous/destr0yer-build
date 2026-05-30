@@ -1,6 +1,6 @@
 # vim: ts=2 sw=2 et
-# Host-specific variables — copy as <hostname>.yml
-# Secrets go in secret_vars/<env>/<hostname>.yml (vault-encrypted)
+# Host-specific variables — copy as <hostname>/main.yml (directory-based host_vars)
+# Secrets go in <hostname>/vault.yml (vault-encrypted, auto-loaded by Ansible)
 # SSH connection uses ~/.ssh/config (run `just ssh-config` to set up dev hosts)
 
 hostname: host.example.local

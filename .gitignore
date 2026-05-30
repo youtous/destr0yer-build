@@ -3,9 +3,10 @@
 .vscode/
 
 # Secrets and credentials
-secret_vars/**/*
-!secret_vars/*.sample.yml
-!secret_vars/**/
+# Vault files are AES-256 encrypted — safe to commit on private forks.
+# To track them: remove the two vault lines below and `git add inventories/`.
+inventories/*/group_vars/*/vault*.yml
+inventories/*/host_vars/*/vault*.yml
 .vault_password
 .env
 .keys/

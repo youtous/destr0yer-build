@@ -7,7 +7,7 @@
 #   2. Copy the public key below (replace the placeholder)
 #   3. Ensure SOPS_AGE_KEY_FILE is set in .env (see .env.sample)
 #   4. Store the private key in vault:
-#        just vault-encrypt secret_vars/<env>/sops-age-key.yml
+#        just vault-encrypt inventories/<env>/group_vars/all/vault-sops.yml
 #
 # On a new machine:
 #   just sops-unlock            — extracts the key from vault into $SOPS_AGE_KEY_FILE

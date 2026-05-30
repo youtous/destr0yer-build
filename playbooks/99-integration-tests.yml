@@ -9,10 +9,6 @@
     - integration-test
     - ssh-audit
   become: true
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
 
   tasks:
     - name: Install ssh-audit
@@ -65,10 +61,6 @@
   become: true
   vars:
     test_results: []
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
 
   tasks:
     # --- WireGuard mesh ---
@@ -187,10 +179,6 @@
   vars:
     kubeconfig: /etc/rancher/k3s/k3s.yaml
     test_results: []
-  vars_files:
-    - ../secret_vars/{{ server_environment }}/all.yml
-    - ../task_vars/sudo.yml
-    - "../secret_vars/{{ server_environment }}/{{ inventory_hostname }}.yml"
 
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
