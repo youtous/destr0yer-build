@@ -7,10 +7,12 @@ selinux_state: permissive
 selinux_policy: default
 
 # Install K3S-specific file contexts and policy support.
-selinux_k3s_support: true
+# Enable via group_vars for K3S nodes only.
+selinux_k3s_support: false
 
 # Install OpenEBS file context for PV data.
-selinux_openebs_support: true
+# Enable via group_vars for K3S nodes only.
+selinux_openebs_support: false
 
 # Reboot automatically if SELinux activation requires filesystem relabeling.
 # First-time activation needs a reboot for /.autorelabel.

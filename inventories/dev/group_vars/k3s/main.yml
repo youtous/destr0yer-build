@@ -1,6 +1,10 @@
 # Global k3s configuration for nodes (workers and controllers)
 # See: https://docs.k3s.io/cli/agent#node
 
+# SELinux — label K3S and OpenEBS paths (only relevant on K3S nodes)
+selinux_k3s_support: true
+selinux_openebs_support: true
+
 # Pull-through registry cache (ADR-015).
 # NodePort services expose proxies on each node — K3S pulls via localhost.
 # First deploy requires direct internet access; mirrors kick in after registry pods are running.

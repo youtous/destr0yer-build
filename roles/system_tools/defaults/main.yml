@@ -2,11 +2,6 @@ cli_packages:
   - vim
   - make
 
-ruby_packages:
-  - ruby
-  - ruby-dev
-  - g++
-
 python_packages:
   - python3
   - python3-pip

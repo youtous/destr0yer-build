@@ -13,11 +13,6 @@
     group: root
     mode: u=rw,g=r,o=r
 
-- name: Install ruby
-  become: true
-  ansible.builtin.apt:
-    name: "{{ ruby_packages }}"
-
 - name: Remove ccat (replaced by bat since Bullseye)
   ansible.builtin.file:
     path: /usr/local/bin/ccat
