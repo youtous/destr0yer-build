@@ -2,6 +2,7 @@
   ansible.builtin.tempfile:
     state: directory
     suffix: kopia_build
+    path: "{{ ansible_env.HOME }}/.ansible/tmp"
   register: kopia_tmp_dir
 
 - name: Download kopia checksums

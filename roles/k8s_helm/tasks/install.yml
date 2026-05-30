@@ -2,6 +2,7 @@
   ansible.builtin.tempfile:
     state: directory
     suffix: build
+    path: "{{ ansible_env.HOME }}/.ansible/tmp"
   register: tmp_dir_build
 
 - name: Download helm release and verify checksum

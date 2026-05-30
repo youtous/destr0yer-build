@@ -15,7 +15,7 @@
     - name: Download Gateway API CRD files
       ansible.builtin.get_url:
         url: "{{ cilium_gateway_api_crds_base_url }}/{{ item }}"
-        dest: "/tmp/gateway-api-{{ item }}"
+        dest: "{{ tmp_dir_build.path }}/gateway-api-{{ item }}"
         mode: "u=rw,g=r,o=r"
       loop: "{{ cilium_gateway_api_crd_files }}"
 
@@ -23,14 +23,14 @@
       become: true
       kubernetes.core.k8s:
         state: present
-        src: "/tmp/gateway-api-{{ item }}"
+        src: "{{ tmp_dir_build.path }}/gateway-api-{{ item }}"
       loop: "{{ cilium_gateway_api_crd_files }}"
       environment:
         KUBECONFIG: "{{ cilium_kubeconfig_path }}"
 
     - name: Cleanup Gateway API CRD files
       ansible.builtin.file:
-        path: "/tmp/gateway-api-{{ item }}"
+        path: "{{ tmp_dir_build.path }}/gateway-api-{{ item }}"
         state: absent
       loop: "{{ cilium_gateway_api_crd_files }}"
 
@@ -49,6 +49,7 @@
   ansible.builtin.tempfile:
     state: directory
     suffix: build
+    path: "{{ ansible_env.HOME }}/.ansible/tmp"
   register: tmp_dir_build
 
 - name: Download the chart

@@ -10,7 +10,7 @@
 
 - name: Create temporary download directory
   ansible.builtin.file:
-    path: /tmp/monit
+    path: "{{ monit_download_dest_directory }}"
     state: directory
     mode: u=rwx,g=rx,o=rx
   when: monit_present is failed
@@ -102,5 +102,5 @@
   become: true
   ansible.builtin.file:
     state: absent
-    path: "/tmp/monit"
+    path: "{{ monit_download_dest_directory }}"
   when: monit_present is failed
