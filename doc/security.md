@@ -21,7 +21,7 @@ Last updated: 2026-05-28
 | dnscrypt-proxy | Encrypted DNS on every host | ✅ |
 | Cilium encryption | `encryption.enabled: true`, `nodeEncryption: true` | ✅ |
 | Cilium socketLB | Host processes can reach NodePort services via eBPF | ✅ |
-| WireGuard PTP mesh | Encrypted inter-node tunnels (ChaCha20-Poly1305) | ✅ |
+| WireGuard planes | Encrypted inter-node tunnels (4 planes, ChaCha20-Poly1305) | ✅ |
 | Image pins | All images pinned by SHA256 digest | ✅ |
 | Ansible roles pinned by SHA | Commit hash in `requirements.yml` | ✅ |
 | Collections version-pinned | `requirements.yml` | ✅ |
@@ -73,7 +73,7 @@ double-encryption with no security gain on a single-node cluster.
 **Exceptions (TLS at application layer):**
 - External ingress (HAProxy → cert-manager TLS termination)
 - SMTP to external mailserver (TLS enforced in prod, disabled in dev for Mailpit)
-- WireGuard inter-node mesh (ChaCha20-Poly1305, always-on)
+- WireGuard inter-node planes (ChaCha20-Poly1305, always-on)
 
 **Dev-only TLS relaxations** (in `kluctl/targets/dev.yaml`):
 - `authelia_smtp_disable_require_tls: true` — Mailpit has no TLS
@@ -181,7 +181,7 @@ Audit runs are ephemeral (terminal only, no persistent storage of findings).
 - [x] Cilium: default-deny in all namespaces
 - [x] PSA: `restricted` profile enforced
 - [x] Cilium encryption: all pod-to-pod traffic encrypted
-- [x] WireGuard mesh: all infra nodes as peers
+- [x] WireGuard planes: per-plane isolation (admin, infra-ext, infra-int, relay-admin)
 - [x] CrowdSec nftables bouncer: host-level IP banning
 - [x] Kopia SFTP: restricted to WG subnet
 - [ ] Relay node UFW: allow public ports from `0.0.0.0/0` only (prod)
@@ -200,28 +200,80 @@ The relay is the only node with a public IP. SSH uses a two-phase pattern:
    in the cloud provider firewall (panel, API, or Terraform). No Ansible re-run needed.
    Inventory stays unchanged — UFW `ssh_entrypoints` remains as a second layer.
 
-**Result:** public SSH never reaches the host. All access goes through the WireGuard
-mesh. The cloud provider firewall is the gate; UFW is defense-in-depth.
+**Result:** public SSH never reaches the host. All access goes through WireGuard
+planes (`wg-relay-admin` for relay, `wg-admin` for clusters). The cloud provider
+firewall is the gate; UFW is defense-in-depth.
 
 **Recovery:** re-open tcp/22 in the cloud provider panel. Instant, no Ansible needed.
 The SSH daemon and UFW rules are still configured and ready.
 
-See `inventories/dev/host_vars/relay.sample.yml` for the inventory pattern.
+See `inventories/dev/host_vars/relay.sample/main.yml` for the inventory pattern.
 
-### Remote admin access — WireGuard UDP pipe
+### Remote admin access — WireGuard planes
 
-When the admin is not on the local network, SSH to self-hosted nodes goes through
-the relay as a **blind UDP forwarder** (DNAT). The admin authenticates directly on
-ctrl via WireGuard cryptokey routing — the relay never sees cleartext.
-
-**Architecture:**
+Remote admin access uses **dedicated WireGuard planes**, separated from service
+traffic. Full topology and interface listing in
+[networking.md](networking.md#wireguard-plane-separation).
 
 ```
-Admin laptop (10.99.98.100)
-  → WG tunnel to relay:41994 (UDP DNAT, relay is blind)
-  → ctrl wg0 authenticates admin by public key
-  → ctrl forwards to worker/internal nodes via wg0 mesh
+                               ┌─────────────────────────┐
+  wg-relay-admin :41995       │                         │
+  ┌──────────────────────────►│        RELAY            │
+  │  (SSH to relay only)      │                         │
+  │                           │  wg-relay-admin :41995  │
+  │  wg-admin :41994          │  wg-infra-ext   :41993  │
+  │  ┌───────────────────────►│  DNAT :41994 ──────┐    │
+  │  │  (relay = blind DNAT)  └────────────┬───────┼────┘
+  │  │                                     │       │
+  │  │                          wg-infra-ext       │ DNAT via
+  │  │                          (services)         │ wg-infra-ext
+  │  │                                     │       │
+┌─┴──┴──────────┐               ┌──────────┴───────┴───┐
+│               │               │       CTRL           │
+│   Admin PC    │               │                      │
+│               │               │  wg-admin     :41994 │
+│               │               │  wg-infra-ext :41993 │
+│               │               │  wg-infra-int :41991 │
+└───┬───────────┘               └──────────┬───────────┘
+    │                                      │
+    │                           wg-infra-int (inter-cluster)
+    │                                      │
+    │  wg-admin :41994          ┌──────────┴───────────┐
+    │  (direct, fixed IP)       │       DC2            │
+    └──────────────────────────►│                      │
+                                │  wg-admin     :41994 │
+                                │  wg-infra-int :41991 │
+                                └──────────────────────┘
 ```
+
+**Admin access flow (cluster behind relay — no fixed IP):**
+
+1. Admin laptop opens WG tunnel to `relay:41994`
+2. Relay receives opaque UDP — it has no key to decrypt, just DNATs to `ctrl:41994`
+3. Ctrl's `wg-admin` interface decrypts — authenticates admin by cryptokey
+4. Admin has SSH/kubectl access to ctrl
+
+**Admin access flow (cluster with fixed IP):**
+
+1. Admin laptop opens WG tunnel directly to `dc2:41994`
+2. DC2's `wg-admin` interface decrypts — authenticates admin by cryptokey
+3. Admin has SSH/kubectl access to DC2. No relay involved.
+
+### WireGuard plane isolation
+
+Each plane has independent keys. Compromising one plane does not expose the others.
+
+| Plane | Port | Relay role | Compromission does NOT expose |
+|-------|------|-----------|-------------------------------|
+| `wg-relay-admin` | 41995 | Terminates (decrypts) | Clusters (admin or services) |
+| `wg-admin` | 41994 | Blind DNAT (cannot decrypt) | Service traffic, inter-cluster |
+| `wg-infra-ext` | 41993 | Terminates (decrypts) | Admin access, inter-cluster |
+| `wg-infra-int` | 41991 | N/A (no relay) | Admin access, public services |
+
+**Why not combine `wg-relay-admin` and `wg-admin`?** The relay is the most
+exposed node (public IP, open ports). If combined, a compromised relay could
+impersonate the admin to ctrl (it would hold the WG keys). Separated: a
+compromised relay gives SSH to the relay only, never to any cluster.
 
 **Triple protection (static IP admin):**
 
@@ -229,30 +281,32 @@ Admin laptop (10.99.98.100)
    Port invisible to all other sources.
 2. **WG crypto-stealth** — Without admin's private key, no handshake response.
    Port scan returns nothing (indistinguishable from closed).
-3. **Ctrl peer verification** — IP `10.99.98.100` is cryptographically bound
-   to admin's key via WG AllowedIPs. Cannot be spoofed.
+3. **Ctrl peer verification** — admin IP is cryptographically bound to admin's
+   key via WG AllowedIPs. Cannot be spoofed.
 
 **Trust model:**
 
-- Relay: **zero-trust** — blind UDP pipe, no WG keys for admin, cannot decrypt
-  or forge traffic. Even root on a compromised relay cannot inject valid WG packets.
-- Ctrl: **trusted** — authenticates admin directly, routes to internal nodes.
-- Workers: **trusted via ctrl** — same physical site, ctrl forwards honestly.
+- Relay: **zero-trust** — blind UDP pipe for admin, no WG keys for `wg-admin`.
+  Even root on a compromised relay cannot inject valid WG packets.
+- Ctrl: **trusted** — authenticates admin directly via `wg-admin` interface.
+- Workers: **trusted via Cilium** — same physical site, encrypted eBPF mesh.
 
 **Filtering on ctrl (defense-in-depth):**
 
-- `wg-filter-relay` iptables: allow `tcp/22` from `10.99.98.100/32` only
-- `ssh_entrypoints` (UFW): includes `10.99.98.100/32`
+- `wg-admin` iptables chain: allow `tcp/22` from admin WG subnet only
+- `ssh_entrypoints` (UFW): includes admin WG subnet
 - `restrict_user_ssh_ips` (sshd): optional per-user IP restriction
 
 **Scaling:**
 
-- Add admin → new peer on ctrl wg0. Relay unchanged.
-- Revoke admin → remove peer from ctrl wg0. Relay unchanged.
-- Add internal node → already routed via ctrl mesh. Nothing extra.
+- Add admin → new peer on each cluster's `wg-admin`. Relay unchanged.
+- Revoke admin → remove peer. Relay unchanged.
+- Add cluster → admin adds a new WG peer (direct or via DNAT). Independent keys.
+- Add site → new `wg-infra-int` peer on each cluster ctrl. Admin plane unchanged.
 
-See `inventories/dev/host_vars/relay.sample.yml` (DNAT rules, cloud FW)
-and `inventories/dev/host_vars/host.sample.yml` (ctrl peer config).
+See [`inventories/dev/host_vars/relay.sample/`](../inventories/dev/host_vars/relay.sample/)
+(DNAT rules, cloud FW) and [`inventories/dev/host_vars/host.sample/`](../inventories/dev/host_vars/host.sample/)
+(ctrl peer config).
 
 ## Mail workload isolation
 

@@ -5,7 +5,7 @@ UFW deny-all, CrowdSec + fail2ban, Cilium NetworkPolicy, Authelia SSO.
 
 **Core principle**: Block ALL inbound ports on bare-metal nodes. The only node
 with public ports open is the cloud relay. All administration and inter-node
-traffic flows through the WireGuard PTP mesh.
+traffic flows through dedicated WireGuard planes (see `doc/networking.md`).
 
 **Zero-trust network model**:
 ```
@@ -15,64 +15,72 @@ Public internet
      ▼
 ┌─────────────┐
 │ Cloud relay │ ← the ONLY node with public ports open
-│   (relay)   │
-└──────┬──────┘
-       │ WireGuard PTP mesh (10.99.99.0/24)
-       │ (nodes connect OUTBOUND, no inbound needed)
+│   (relay)   │   wg-infra-ext :41993 (services)
+└──────┬──────┘   wg-relay-admin :41995 (admin SSH to relay)
+       │          DNAT :41994 → ctrl (blind, admin WG pipe)
+       │
+  wg-infra-ext (service traffic)
+       │
   ┌────┴────┐
+  │  ctrl   │ ← wg-admin :41994, wg-infra-ext :41993, wg-infra-int :41991
   │         │
-  ▼         ▼
-bare-metal  bare-metal
-  nodes       nodes
-  │              │
-  └── UFW: deny ALL inbound from internet
-      SSH: only via WireGuard mesh (10.99.99.0/24)
-      K3S API: only via WireGuard mesh
-      Monitoring: only via WireGuard mesh
+  └────┬────┘
+       │
+  Cilium eBPF (encrypted, nodeEncryption: true)
+       │
+  ┌────┴────┐
+  │ worker  │ ← no WG (intra-cluster = Cilium)
+  └─────────┘
+
+UFW: deny ALL inbound from internet on bare-metal
+SSH: only via wg-admin or wg-relay-admin
+K3S API: only via wg-admin subnet
 ```
 
 **How it works**:
-- All infra nodes are WireGuard peers in a static mesh (Ansible-managed).
-- SSH is only accessible via WG IP (10.99.99.x), never via public IP.
-- K3S API server binds to WG interface.
+- WireGuard uses 4 isolated planes with independent keys per trust boundary.
+- Workers have no WG — intra-cluster uses Cilium (encrypted eBPF tunnels).
+- SSH is only accessible via WG admin planes, never via public IP.
+- K3S API server binds to admin WG subnet.
 - Peer configs are static in Ansible Vault — no control plane dependency.
 - WireGuard is kernel-level; survives K3S outages.
 
-**Routing principle — the relay node is only for public internet traffic**:
-- The WireGuard mesh is **peer-to-peer**. Nodes connect directly to each other,
-  not through the relay node. The relay node is NOT a hub.
-- The relay node is only involved when traffic comes FROM or goes TO the public
-  internet (web requests, inbound/outbound email).
-- Admin accessing Grafana? Direct WG connection to bare-metal, bypasses relay.
-- Alloy on relay shipping logs to Loki? Direct WG to bare-metal.
-- K3S API calls between nodes? Direct WG mesh.
-- External MTA delivering email? Goes through relay (ADR-006).
+**Routing principle — relay is only for public internet traffic**:
+- The relay is a blind forwarder (service traffic via `wg-infra-ext`, admin
+  traffic via DNAT). It is NOT a hub.
+- Admin accessing Grafana? Via `wg-admin` to ctrl (DNAT through relay or direct).
+- External MTA delivering email? Goes through relay `wg-infra-ext` (ADR-006).
+- Intra-cluster traffic (ctrl↔worker)? Cilium eBPF, no WG involved.
+- Inter-cluster (ctrl↔DC2)? Via `wg-infra-int`, no relay involved.
 
 ```
                     Public internet traffic
                            │
                     ┌──────▼──────┐
-                    │ Cloud relay │ ← only for public-facing services
+                    │ Cloud relay │ ← wg-infra-ext (services only)
                     │   node      │
                     └──────┬──────┘
                            │
-            WireGuard PTP mesh (static peers, direct connections)
-                    ┌──────┴──────┐
-                    │             │
-             ┌──────▼──┐   ┌─────▼───┐
-             │ BM-A    │◄─►│ BM-B    │  ← direct mesh, relay not involved
-             │(ctrl)   │   │(worker) │
-             └─────────┘   └─────────┘
+                    wg-infra-ext (HAProxy TCP: mail, HTTPS)
+                           │
+                    ┌──────▼──┐
+                    │  ctrl   │
+                    └────┬────┘
+                         │
+                  Cilium eBPF (encrypted)
+                         │
+                    ┌────▼────┐
+                    │ worker  │  ← no WG, Cilium handles intra-cluster
+                    └─────────┘
 
-Admin laptop ──── WireGuard client ──── direct to BM-A:Grafana
-                  (or Headscale in future, see ADR-005 Tier 2)
+Admin laptop ──── wg-admin ──── ctrl (via relay DNAT or direct)
 ```
 
 **Defense in depth — 4 layers**:
 
 | Layer | Tool | Scope |
 |-------|------|-------|
-| Network | WireGuard PTP mesh + UFW deny-all | Zero public exposure on bare-metal |
+| Network | WireGuard planes + UFW deny-all | Zero public exposure on bare-metal |
 | Host | CrowdSec + fail2ban | Ban IPs on cloud relay (public ports) |
 | Cluster | Cilium NetworkPolicy | Namespace isolation, egress control |
 | Application | cert-manager TLS, K8S RBAC, Authelia | Encryption, auth, SSO |

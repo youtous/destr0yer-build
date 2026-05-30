@@ -1,7 +1,9 @@
 wireguard_client:
-  - interface: "wg0"  # the default interface name that wireguard should use if not specified otherwise.
+  # Interface name — override per plane (wg-infra-ext as client to relay, etc.)
+  # See doc/networking.md#wireguard-plane-separation for the 4-plane topology.
+  - interface: "wg-infra-ext"
     # generate keys using (works for server/clients) `wg genkey | tee privatekey | wg pubkey > publickey`
-    endpoint: ""  # "vpn.localhost.dv:1990" # VPN server endpoint
+    endpoint: ""  # "relay-infra:41993" # WG server endpoint (use /etc/hosts, not DNS)
     server_public_key: ""  # <---- public key of the server
     public_key: ""  # <--- public key of the client
     private_key: ""

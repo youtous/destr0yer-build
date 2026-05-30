@@ -171,91 +171,80 @@ host_users: []
 # relay_user: "{{ relay_email }}"
 # relay_password: "{{ secret_relay_password }}"
 
-### WireGuard server (if this host is a WireGuard endpoint)
+### WireGuard — ctrl node planes
+# Each ctrl has up to 3 WG interfaces (see doc/networking.md#wireguard-plane-separation):
+#   wg-admin     :41994  Admin access (via relay DNAT or direct)
+#   wg-infra-ext :41993  Service traffic from relay (HAProxy TCP)
+#   wg-infra-int :41991  Inter-cluster mesh (future, Garage replication)
+#
 # wireguard_server_external_interface: eth0
 # wireguard_servers:
-#   - interface: wg0
+#
+#   # ── wg-admin: admin ops (SSH, kubectl) ──
+#   - interface: wg-admin
 #     addresses:
-#       - 10.99.99.1/24
-#     port: "1990"
-#     public_key: ""
-#     private_key: "{{ wireguard_server_private_key }}"
-#     restrict_ips: ["192.168.56.0/24", "10.99.99.0/24"]  # never use "any" — restrict to known peer networks
-#     peers: "{{ wireguard_server_peers }}"
+#       - 10.99.98.1/24
+#     port: "41994"
+#     public_key: "CTRL_ADMIN_PUBLIC_KEY"
+#     private_key: "{{ vault_wg_admin_private_key }}"
+#     restrict_ips: ["10.99.98.0/24"]
+#     peers:
+#       - name: admin-laptop
+#         public_key: "ADMIN_LAPTOP_PUBLIC_KEY"
+#         preshared_key: "{{ vault_admin_laptop_psk }}"
+#         allowed_ips:
+#           - 10.99.98.100/32
+#         persistent_keepalive: ""
+#     pre_up: []
+#     pre_down: []
+#     post_up:
+#       - "iptables -F wg-filter-admin || true"
+#       - "iptables -t filter -N wg-filter-admin || true"
+#       - "iptables -t filter -A wg-filter-admin -p tcp --dport 22 -j ACCEPT"
+#       - "iptables -t filter -A wg-filter-admin -p icmp -j ACCEPT"
+#       - "iptables -t filter -A wg-filter-admin -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+#       - "iptables -t filter -A wg-filter-admin -j DROP"
+#       - "iptables -t filter -I INPUT -i %i -j wg-filter-admin"
+#     post_down:
+#       - "iptables -t filter -D INPUT -i %i -j wg-filter-admin || true"
+#       - "iptables -F wg-filter-admin || true"
+#       - "iptables -X wg-filter-admin || true"
+#     mtu: ""
 #
-# ─── Remote admin peer (WG UDP pipe via relay) ────────────────────────────────
-# Admin laptop connects to ctrl's wg0 via a blind DNAT on the relay.
-# The relay forwards UDP 41994 → ctrl:1990 without decrypting.
-# Admin authenticates directly on ctrl by WG cryptokey (zero-trust relay).
-#
-# Add admin as a peer on wg0 (in wireguard_server_peers or inline):
-#     - name: admin-laptop
-#       public_key: "ADMIN_LAPTOP_PUBLIC_KEY"
-#       preshared_key: "{{ vault_admin_laptop_psk }}"
-#       allowed_ips:
-#         - 10.99.98.100/32   # admin IP, cryptographically bound to this key
-#       persistent_keepalive: ""
-#
-# Required ctrl-side config for admin access:
-#   1. wg-filter-relay post_up: add rule before the DROP:
-#        iptables -t filter -A wg-filter-relay -s 10.99.98.100/32 -p tcp --dport 22 -j ACCEPT
-#   2. ssh_entrypoints: add "10.99.98.100/32"
-#   3. Worker AllowedIPs (if admin needs worker access):
-#        allowed_ips: [..., "10.99.98.0/24"]
-#
-# Trust model:
-#   - Relay: zero-trust (blind UDP pipe, no keys, can't forge)
-#   - Ctrl: trusted (authenticates admin directly by WG key)
-#   - Worker: trusted via ctrl (ctrl forwards, same physical site)
-#
-# See relay.sample.yml for the DNAT setup and cloud FW rules.
-# See doc/security.md for full security analysis.
+# For clusters behind a relay (no fixed IP), the relay blindly DNATs
+# UDP 41994 → ctrl:41994 (same port, no translation). Admin authenticates
+# directly on ctrl by WG cryptokey — relay is zero-trust.
+# See relay.sample/main.yml for DNAT setup.
+# See doc/security.md#wireguard-plane-isolation for threat model.
 
-### WireGuard client — local mesh (if this host connects to another node)
-# wireguard_clients:
-#   - interface: wg0
-#     name: "{{ hostname }}"
-#     addresses:
-#       - 10.99.99.2/24
-#     endpoint: "ctrl.example.local:1990"
-#     persistent_keepalive: "25"
-#     allowed_ips:
-#       - 10.99.99.0/24
-#     server_public_key: ""
-#     public_key: ""
-#     private_key: "{{ wireguard_client_private_key }}"
-#     preshared_key: "{{ wireguard_client_preshared_key }}"
-
-### WireGuard client — cloud relay tunnel (self-hosted → relay)
-# The relay is the WG server (public IP, non-standard port).
-# The self-hosted node is the client (behind NAT, initiates connection).
+### WireGuard client — relay tunnel (ctrl → relay for services)
+# Ctrl connects to relay's wg-infra-ext as a client.
 # persistent_keepalive keeps the tunnel alive through NAT.
 #
 # Security: do NOT use a public DNS name for the endpoint.
 # Use raw IP or /etc/hosts entry (see ADR-005 "Endpoint hardening").
-# Example /etc/hosts: `203.0.113.42  relay-infra`
 # Managed by the system role's `hosts_entries` variable.
 #
 # wireguard_clients:
-#   - interface: wg-infra
+#   - interface: wg-infra-ext
 #     name: ctrl
 #     addresses:
 #       - 10.99.99.10/24
-#     endpoint: "relay-infra:41993"  # resolved via /etc/hosts, non-standard port
+#     endpoint: "relay-infra:41993"
 #     persistent_keepalive: "25"
 #     allowed_ips:
-#       - 10.99.99.0/24  # route relay subnet through tunnel
+#       - 10.99.99.0/24
 #     server_public_key: "RELAY_PUBLIC_KEY"
 #     public_key: "CTRL_PUBLIC_KEY"
-#     private_key: "{{ vault_wg_infra_private_key }}"
-#     preshared_key: "{{ vault_wg_infra_psk }}"
+#     private_key: "{{ vault_wg_infra_ext_private_key }}"
+#     preshared_key: "{{ vault_wg_infra_ext_psk }}"
 
 ### Backup (Kopia SFTP over WireGuard)
 # users_ssh_keys:
 #   - username: root
 #     public_key: "{{ root_public_key }}"
 #     private_key: "{{ root_private_key }}"
-# kopia_sftp_host: "10.99.99.1"  # backup server WG IP
+# kopia_sftp_host: "192.168.56.10"  # backup server (LAN IP in dev, WG IP in prod)
 # kopia_sftp_user: "backup_hostname"
 # kopia_sftp_path: "/home"
 # kopia_sftp_key: "/root/.ssh/id_ed25519"

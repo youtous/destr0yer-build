@@ -18,14 +18,18 @@ networking layer.
 
 **Decision**: Two-tier VPN architecture.
 
-**Tier 1 — WireGuard PTP (infra mesh, always-on)**:
-- Full mesh between all infrastructure nodes (ctrl, workers, relay, backup)
-- Carries: Alloy→Loki, Kopia SFTP, Prometheus scraping, Garage replication,
-  mail relay DNAT, inter-node SSH
+**Tier 1 — WireGuard PTP (per-plane isolation, always-on)**:
+- Separated into 4 planes: `wg-admin` (ops), `wg-infra-ext` (relay↔ctrl services),
+  `wg-relay-admin` (SSH to relay), `wg-infra-int` (inter-cluster mesh)
+- Workers have NO WireGuard — intra-cluster networking uses Cilium (encrypted eBPF)
+- Carries: mail relay, HTTPS (via wg-infra-ext), admin SSH/kubectl (via wg-admin),
+  Garage replication (via wg-infra-int, future)
 - Kernel-level, no K3S dependency, survives cluster outages
 - Managed by existing `wireguard_server`/`wireguard_client`/`wireguard_meta` roles
 - Static peer configs in Ansible Vault — no control plane needed
-- WG subnet: `10.99.99.0/24` + ULA IPv6 `fdc9:281f:04d7:9ee9::/64`
+- Subnets: `10.99.98.0/24` (admin), `10.99.99.0/24` (infra-ext),
+  `10.99.100.0/24` (infra-int) + ULA IPv6
+- See `doc/networking.md#wireguard-plane-separation` for full topology
 
 **Tier 2 — Headscale (future, scoped to human access)**:
 - Admin laptop SSH, kubectl, Grafana dashboard access
@@ -74,13 +78,13 @@ and complicates multi-cluster (each cluster needs a public port).
   Then in the WG client config: `endpoint: "relay-infra:<port>"`.
   If relay IP changes, Ansible updates `/etc/hosts` + restarts WG (handler).
 
-For intra-cluster mesh (ctrl↔worker in the same LAN), ctrl remains the WG
-server with workers as clients — this is a separate interface (wg0) from the
-relay tunnel (wg-infra).
+Intra-cluster networking (ctrl↔worker) uses Cilium encrypted eBPF tunnels
+(`nodeEncryption: true`). Workers have no WireGuard interfaces.
 
 **Implementation**:
-1. Complete WireGuard mesh: all nodes as peers (ctrl=server, others=clients)
-2. UFW: restrict SSH/K3S API to WG subnet (`10.99.99.0/24`) on bare-metal
-3. Route backup SFTP, Alloy→Loki, Garage replication over WG IPs
-4. Cloud relay: WG server on wg-infra (ADR-006), self-hosted nodes connect as clients
-5. Headscale: defer to P-future, evaluate for admin/laptop access only
+1. Per-plane WireGuard: each plane has dedicated interface, port, keys, and subnet
+2. UFW: restrict SSH/K3S API to admin WG subnet (`10.99.98.0/24`) on bare-metal
+3. Cloud relay: WG server on wg-infra-ext (ADR-006), ctrl connects as client
+4. Admin access: `wg-admin` (blind DNAT via relay) or direct (fixed IP clusters)
+5. Inter-cluster: `wg-infra-int` for Garage replication (future)
+6. Headscale: defer to P-future, evaluate for admin/laptop access only

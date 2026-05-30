@@ -65,7 +65,7 @@ mode = "2"  # replicate each block to 2 nodes
 ```
 
 Both Garage nodes run inside K3S (on bare-metal at site-a and site-b).
-Garage handles cross-site replication over the Headscale mesh automatically.
+Garage handles cross-site replication over the `wg-infra-int` plane automatically.
 If one site is down, the other serves all data.
 
 Note: Garage in K3S means if K3S is down, Garage is down. For backups
@@ -76,26 +76,26 @@ backup-of-last-resort.
 **Cross-site networking for Garage replication**:
 
 Garage pods run in pod network (10.42.x.x) but must reach the remote
-Garage node on the WireGuard mesh (10.99.99.x) for RPC replication
+Garage node on the `wg-infra-int` plane (10.99.100.x) for RPC replication
 (port 3901). The recommended K8s approach:
 
 ```
-Garage pod (10.42.x.x) → pod gateway → host kernel → wg0 → remote site
+Garage pod (10.42.x.x) → pod gateway → host kernel → wg-infra-int → remote site
 ```
 
 - **No `hostNetwork`** — Garage is an application, not infra. hostNetwork
   is an anti-pattern for apps (breaks network isolation).
 - **Kernel routing** — the pod's default gateway is the host. The host has
-  the wg0 interface with a route to 10.99.99.0/24. Traffic flows naturally
-  through the existing WireGuard tunnel without any K8s-side changes.
-- **Cilium NetworkPolicy** — a `toCIDR` rule scoped to the WireGuard mesh
+  the `wg-infra-int` interface with a route to `10.99.100.0/24`. Traffic
+  flows naturally through the WireGuard tunnel without any K8s-side changes.
+- **Cilium NetworkPolicy** — a `toCIDR` rule scoped to the `wg-infra-int`
   subnet and Garage RPC port controls the egress:
 
 ```yaml
 # CiliumNetworkPolicy for cross-site Garage replication
 egress:
   - toCIDR:
-      - "10.99.99.0/24"    # WireGuard mesh subnet
+      - "10.99.100.0/24"   # wg-infra-int subnet (inter-cluster mesh)
     toPorts:
       - ports:
           - port: "3901"   # Garage RPC
@@ -103,7 +103,7 @@ egress:
 ```
 
 Why `toCIDR` and not `toEntities: host`: `toCIDR` targets exactly the
-WireGuard mesh subnet. `toEntities: host` would allow all traffic to
+inter-cluster WG subnet. `toEntities: host` would allow all traffic to
 the host (too broad). Why not Cilium Cluster Mesh: ADR-010 explicitly
 rejected cross-cluster K8s networking — WireGuard PTP is simpler and
 independent of K8s.

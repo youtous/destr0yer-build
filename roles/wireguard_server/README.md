@@ -14,17 +14,21 @@ _from https://wiki.archlinux.org/index.php/WireGuard_
 
 ## Setup client (peer)
 
-`wg0.cf`
+Example client config for `wg-infra-ext` (ctrl connecting to relay):
+
 ```toml
 [Interface]
 PrivateKey = CLIENT_PRIVATE_KEY
-Address = 10.99.99.2/24,fdc9:281f:04d7:9ee9::2/64 # <--- set client ip here
-DNS = 10.99.99.1, fdc9:281f:04d7:9ee9::1
+Address = 10.99.99.10/24
 # PublicKey = CLIENT_PUBLIC_KEY
+# DNS = 10.99.99.1, fdc9:281f:04d7:9ee9::1  # optional: use WG server as DNS resolver
 
 [Peer]
 PublicKey = SERVER_PUBLIC_KEY
 PresharedKey = SERVER-CLIENT-PRESHARED_KEY
-Endpoint = vpn.localhost.dv:1990
-AllowedIPs = 0.0.0.0/0,::/0 # route all traffic trougth the VPN
+Endpoint = relay-infra:41993
+AllowedIPs = 10.99.99.0/24
+PersistentKeepalive = 25
 ```
+
+See `doc/networking.md#wireguard-plane-separation` for the 4-plane topology.

@@ -166,11 +166,11 @@ Detailed ADRs are in [doc/adr/](doc/adr/). Key decisions:
 - **HAProxy Ingress**: DaemonSet with hostNetwork, default IngressClass (Traefik disabled in k3s)
 - **OpenEBS hostpath**: Lightweight persistent storage (minimal overhead)
 - **Loki + Alloy**: Centralized logging (replaces archived Elastic stack)
-- **Two-tier VPN** (ADR-005 revised): WireGuard PTP for infra mesh (always-on, no K3S dependency). Headscale deferred to future for human/admin access only.
-- **Multi-cluster**: One K3S cluster per geographic zone. Clusters are independent.
-- **Cloud relay**: Public-facing forwarder for mail/web. WireGuard + HAProxy TCP (dual-stack IPv4/IPv6, PROXY protocol v2). No TLS termination on relay. May run K3S in future depending on workload needs.
+- **WireGuard plane separation** (ADR-005 revised): 4 independent WG planes with isolated keys — `wg-admin` (admin ops), `wg-relay-admin` (relay SSH), `wg-infra-ext` (relay ↔ ctrl services), `wg-infra-int` (inter-cluster mesh). Intra-cluster pod networking handled by Cilium (not WG). See [doc/networking.md](doc/networking.md#wireguard-plane-separation) for topology and [doc/security.md](doc/security.md#wireguard-plane-isolation) for threat model.
+- **Multi-cluster**: One K3S cluster per geographic zone. Clusters are independent. Inter-cluster traffic via `wg-infra-int`, admin access via `wg-admin` (direct for fixed IP, DNAT via relay otherwise).
+- **Cloud relay**: Public-facing forwarder for mail/web. WireGuard `wg-infra-ext` + HAProxy TCP (dual-stack IPv4/IPv6, PROXY protocol v2). No TLS termination on relay. Relay is zero-trust for admin traffic (blind UDP DNAT only).
 - **Zero-trust** (ADR-008): All inbound blocked on bare-metal. SSH restricted to known IPs (entrypoint_ssh). Relay is the only node with public ports.
-- **SSH relay pattern**: Bootstrap-then-lock — cloud provider firewall gates public SSH during initial provisioning, closed after WireGuard validated. Remote admin access via WG UDP pipe (relay = blind DNAT, admin authenticates directly on ctrl by WG key, cloud FW restricts UDP port to admin's static IP). See doc/security.md.
+- **SSH relay pattern**: Bootstrap-then-lock — cloud provider firewall gates public SSH during initial provisioning, closed after WireGuard validated. Remote admin access via `wg-admin` plane (relay = blind DNAT on port 41994, admin authenticates directly on ctrl by WG key). See [doc/security.md](doc/security.md#remote-admin-access--wireguard-planes).
 - **cert-manager**: TLS certificate lifecycle — internal CA (dev) or Let's Encrypt via deSEC DNS-01 (prod)
 - **Garage**: S3-compatible object storage (backend for Loki/backups), admin via `kubectl exec`
 - **Ingress**: HAProxy for all HTTP/HTTPS + TCP (mail). Cilium Gateway API deferred.
@@ -280,6 +280,7 @@ Validated subsystems:
 | 8 | Seafile client-side encryption | Low | Enable encrypted libraries for sensitive data (ADR-032) |
 | 9 | IPv6 dual-stack | High | K3S dual-stack + relay HAProxy IPv6 binds + UFW/Cilium rules (ADR-036) |
 | 10 | Authelia access control | Medium | Create `users` group, map proper ACL rules (bypass/1FA/2FA), fix current rules that downgrade 2FA for admins |
+| 11 | SELinux enforcing mode | High | Audit AVC denials in permissive (`ausearch -m AVC`), write custom policy modules (`audit2allow`), test each service (K3S, containerd, dnscrypt, alloy, monit, WireGuard). Debian refpolicy is stricter than RHEL targeted — requires thorough validation on Vagrant before prod. |
 
 ### Completed validations
 

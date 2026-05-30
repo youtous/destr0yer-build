@@ -27,27 +27,9 @@ relay_email: monitoring-heaven-pascal@k8s.home
 
 ### End of smtp relay parameters ###
 
-### Begin of Wireguard client parameters ###
-
-wireguard_clients:
-  - interface: wg0
-    name: "{{ hostname }}"
-    addresses:
-      - 10.99.99.2/24
-      - fdc9:281f:04d7:9ee9::2/64
-    endpoint: "ctrl.k3s.dev.local:1990"
-    persistent_keepalive: "25"
-    mtu: ""
-    allowed_ips:
-      - 10.99.99.0/24
-      - fdc9:281f:04d7:9ee9::/64
-    dns: []
-    server_public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc="
-    public_key: "VtgEDbhCLKhGMULdFxDliyccRwXv03r69lhY41gWhjA="
-    private_key: "{{ wireguard_client_private_key }}"
-    preshared_key: "{{ wireguard_client_preshared_key }}"
-
-### End of Wireguard client parameters ###
+### WireGuard — not needed on workers
+# Intra-cluster networking uses Cilium (encrypted eBPF tunnels, nodeEncryption: true).
+# Workers have no WG interfaces. See doc/networking.md#wireguard-plane-separation.
 
 ### Swap — per-host, depends on available RAM and workload.
 # 4 GB for a 5.5 GB RAM VM running K3S + Cilium.
@@ -61,8 +43,8 @@ users_ssh_keys:
     public_key: "{{ root_public_key }}"
     private_key: "{{ root_private_key }}"
 
-# SFTP via WireGuard mesh IP (ctrl WG address = 10.99.99.1)
-kopia_sftp_host: "10.99.99.1"
+# SFTP via LAN (workers have no WG — intra-cluster uses Cilium)
+kopia_sftp_host: "192.168.56.10"
 kopia_sftp_user: "backup_worker"
 kopia_sftp_path: "/home"
 kopia_sftp_key: "/root/.ssh/id_ed25519"

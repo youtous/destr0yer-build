@@ -62,4 +62,3 @@ cilium_helm_show_commands: true
 
 # kube config — K3S admin kubeconfig (root-only, used for bootstrapping CNI)
 cilium_kubeconfig_path: "/etc/rancher/k3s/k3s.yaml"
-# TODO : handle upgrade

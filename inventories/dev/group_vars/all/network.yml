@@ -14,8 +14,7 @@ fail2ban_trusted_ips:
   - "192.168.56.1"  # vagrant host (management workstation)
   - "192.168.56.10"  # ctrl
   - "192.168.56.11"  # worker
-  - "10.99.99.1"  # ctrl WG
-  - "10.99.99.2"  # worker WG
+  - "10.99.99.1"  # ctrl wg-infra-ext
 
 # Cilium eBPF routing requires rp_filter=0 and resets it at runtime.
 # Skip rp_filter in the hardening role to avoid idempotence fight.

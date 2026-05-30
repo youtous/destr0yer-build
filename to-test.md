@@ -26,24 +26,23 @@ Run on Vagrant dev cluster after `just configure && just k3s && just deploy`.
 - [ ] `ansible-galaxy collection list` shows `youtous.destr0yer` at path `./collections`
 - [ ] No `youtous.*` entries in `requirements.yml` roles section
 
-### WireGuard mesh
+### WireGuard planes
 
-- [ ] `wg show wg0` on ctrl shows interface up, listening on port 1990
-- [ ] `wg show wg0` on worker shows interface up, peer handshake recent
-- [ ] `ping -c3 10.99.99.1` from worker succeeds (ctrl via WG)
-- [ ] `ping -c3 10.99.99.2` from ctrl succeeds (worker via WG)
-- [ ] Monit check on both nodes: `monit status wg0` shows running
-- [ ] UFW on ctrl allows port 1990/udp
+- [ ] `wg show wg-infra-ext` on ctrl shows interface up, listening on port 41993
+- [ ] Worker has no WG interfaces (intra-cluster uses Cilium)
+- [ ] Monit check on ctrl: `monit status wg-infra-ext` shows running
+- [ ] UFW on ctrl allows port 41993/udp
+- [ ] In prod: `wg show wg-admin` on ctrl shows interface up, listening on port 41994
 
 ### Kopia backup (over WireGuard)
 
-- [ ] `kopia_sftp_host` uses WG IP (`10.99.99.1`) in inventory
+- [ ] `kopia_sftp_host` uses LAN IP (`192.168.56.10`) in dev inventory
 - [ ] `systemctl is-active kopia-snapshot.timer` returns active on both nodes
 - [ ] `kopia repository status` on both nodes shows connected via SFTP
 - [ ] `kopia snapshot list` shows at least one snapshot
 - [ ] `systemctl is-active kopia-verify.timer` returns active
-- [ ] Backup SFTP traffic flows over wg0 (verify with `ss -tnp | grep 10.99.99`)
-- [ ] `backup_storage` UFW allows SSH from `10.99.99.0/24`
+- [ ] Backup SFTP traffic flows over LAN (verify with `ss -tnp | grep 192.168.56`)
+- [ ] `backup_storage` UFW allows SSH from backup source IPs
 
 ### oh-my-fish
 

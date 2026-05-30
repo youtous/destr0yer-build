@@ -1,13 +1,16 @@
 # Cloud relay node — sample inventory
-# Copy to inventories/<env>/host_vars/<relay-hostname>.yml and fill in vault values.
+# Copy to inventories/<env>/host_vars/<relay-hostname>/main.yml and fill in vault values.
 #
-# The relay uses TWO roles:
-#   1. wireguard_meta (WG tunnel to home cluster)
-#   2. cloud_relay (HAProxy TCP + outbound masquerade)
+# Roles: wireguard_meta (WG tunnels) + cloud_relay (HAProxy TCP + masquerade)
+#
+# WireGuard planes on relay (see doc/networking.md#wireguard-plane-separation):
+#   wg-infra-ext    :41993  Service traffic relay ↔ ctrl (HAProxy TCP forward)
+#   wg-relay-admin  :41995  Admin SSH to relay only (relay decrypts)
+#   DNAT            :41994  Blind UDP pipe → ctrl wg-admin (relay cannot decrypt)
 
 # ─── WireGuard (consumed by wireguard_meta/wireguard_server) ─────────────────
 wireguard_servers:
-  - interface: wg-infra
+  - interface: wg-infra-ext
     addresses:
       - 10.99.99.1/24
     port: "41993"  # Non-standard — avoid 51820 (scanned by bots)
@@ -43,8 +46,8 @@ wireguard_servers:
       - "iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
       - "ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
       # UDP pipe: blind DNAT for admin WG to ctrl (relay never decrypts)
-      - "iptables -t nat -A PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:1990"
-      - "iptables -t nat -A POSTROUTING -o %i -p udp --dport 1990 -d 10.99.99.10 -j MASQUERADE"
+      - "iptables -t nat -A PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:41994"
+      - "iptables -t nat -A POSTROUTING -o %i -p udp --dport 41994 -d 10.99.99.10 -j MASQUERADE"
     post_down:
       - "iptables -t filter -D INPUT -i %i -j wg-filter-cluster || true"
       - "iptables -F wg-filter-cluster || true"
@@ -55,8 +58,8 @@ wireguard_servers:
       - "iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
       - "ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
       # Remove UDP pipe DNAT
-      - "iptables -t nat -D PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:1990 || true"
-      - "iptables -t nat -D POSTROUTING -o %i -p udp --dport 1990 -d 10.99.99.10 -j MASQUERADE || true"
+      - "iptables -t nat -D PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:41994 || true"
+      - "iptables -t nat -D POSTROUTING -o %i -p udp --dport 41994 -d 10.99.99.10 -j MASQUERADE || true"
     mtu: ""
 
   - interface: wg-relay-admin
@@ -98,7 +101,7 @@ fail2ban_trusted_ips:
 # ─── HAProxy TCP relay (consumed by cloud_relay role) ────────────────────────
 relay_public_interface: eth0
 relay_backend_ip: "10.99.99.10"
-relay_wg_interface: wg-infra
+relay_wg_interface: wg-infra-ext
 
 # Phase 1: IPv4 only. Set to true when AAAA records + rDNS are ready.
 relay_haproxy_ipv6: false
@@ -154,60 +157,21 @@ ssh_entrypoints:
   - "10.99.98.0/24"  # wg-relay-admin subnet (steady-state admin access)
   - "203.0.113.42/32"  # Admin public IP (bootstrap + recovery only)
 
-# ─── Remote admin access — dual WireGuard ─────────────────────────────────────
-# Two separate WG planes for admin access:
-#
-#   wg-relay-admin (port 41995):
-#     Admin laptop → relay SSH directly (for relay management)
-#     Relay decrypts — admin is a peer on this interface.
-#     iptables: SSH only, no forwarding.
-#
-#   UDP pipe (port 41994) — blind DNAT:
-#     Admin laptop → WG to ctrl THROUGH relay (for cluster management)
-#     Relay does NOT decrypt — just DNAT UDP to ctrl:1990.
-#     Admin authenticates on ctrl by WG cryptokey.
-#
-# Why two planes:
-#   - wg-infra compromise (ctrl/worker key leak) doesn't grant relay SSH
-#   - wg-relay-admin compromise doesn't grant cluster access (different keys)
+# ─── WireGuard plane separation ────────────────────────────────────────────────
+# Why separate wg-relay-admin from wg-admin (UDP pipe)?
+#   - Relay is most exposed (public IP) → holds minimum keys
+#   - wg-relay-admin compromise → SSH to relay only, never to clusters
+#   - wg-infra-ext compromise → service traffic only, never admin access
 #   - Independent key rotation per plane
 #
 # Cloud provider firewall:
-#   - UDP 41993: allow from any (wg-infra, crypto-stealth)
-#   - UDP 41994: allow from admin's static IP ONLY (UDP pipe → ctrl)
+#   - UDP 41993: allow from any (wg-infra-ext, crypto-stealth)
+#   - UDP 41994: allow from admin's static IP ONLY (wg-admin UDP pipe)
 #   - UDP 41995: allow from admin's static IP ONLY (wg-relay-admin)
 #   - TCP 22: closed after bootstrap (see SSH section above)
 #
-# DNAT rules for UDP pipe (add to wg-infra post_up or ufw before.rules):
-#   iptables -t nat -A PREROUTING -i eth0 -p udp --dport 41994 -j DNAT --to-destination 10.99.99.10:1990
-#   iptables -t nat -A POSTROUTING -o wg-infra -p udp --dport 1990 -d 10.99.99.10 -j MASQUERADE
-#
-# Admin laptop WG config (two peers):
-#   [Interface]
-#   Address = 10.99.98.100/32
-#   PrivateKey = <admin_private_key>
-#
-#   # Peer 1: relay (for relay SSH)
-#   [Peer]
-#   PublicKey = <relay_admin_wg_public_key>
-#   PresharedKey = <relay_psk>
-#   Endpoint = relay.public.ip:41995
-#   AllowedIPs = 10.99.98.1/32
-#   PersistentKeepalive = 25
-#
-#   # Peer 2: ctrl (via UDP pipe through relay)
-#   [Peer]
-#   PublicKey = <ctrl_wg0_public_key>
-#   PresharedKey = <ctrl_psk>
-#   Endpoint = relay.public.ip:41994
-#   AllowedIPs = 10.99.99.0/24
-#   PersistentKeepalive = 25
-#
-# Scaling:
-#   - Add admin: new peer on wg-relay-admin + ctrl wg0. One DNAT per site.
-#   - Revoke admin: remove peer from both. Relay DNAT unchanged.
-#   - Add internal node: already routed via ctrl. Nothing extra.
-#   - Multi-site: add DNAT port per site on relay.
+# Full architecture: doc/networking.md#wireguard-plane-separation
+# Threat model:    doc/security.md#wireguard-plane-isolation
 
 # ─── CrowdSec bouncer ──────────────────────────────────────────────────────
 # Relay has no K3S — no CrowdSec LAPI NodePort to connect to.

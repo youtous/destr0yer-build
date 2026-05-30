@@ -148,7 +148,7 @@ iptables MARK (dport 25) → fwmark 0x100
     │
 ip rule fwmark 0x100 → table 100
     │
-table 100: default via 10.99.99.1 dev wg0  (relay WG IP)
+table 100: default via 10.99.99.1 dev wg-infra-ext  (relay WG IP)
     │
 WireGuard tunnel → Relay
     │
@@ -165,7 +165,7 @@ iptables -t mangle -A FORWARD -p tcp --dport 25 -o eth+ -j MARK --set-mark 0x100
 
 # Route marked traffic via WG to relay
 ip rule add fwmark 0x100 table 100
-ip route add default via 10.99.99.1 dev wg0 table 100
+ip route add default via 10.99.99.1 dev wg-infra-ext table 100
 ```
 
 **Interaction with Cilium eBPF**: Cilium processes pod traffic at TC (traffic
@@ -175,7 +175,7 @@ packet AFTER Cilium has rewritten the source but BEFORE the kernel makes the
 routing decision. The `ip rule` then redirects to the WG tunnel.
 
 **Caveats**:
-- Verify with `tcpdump -i wg0 port 25` that outbound SMTP actually enters the tunnel
+- Verify with `tcpdump -i wg-infra-ext port 25` that outbound SMTP actually enters the tunnel
 - If Cilium's `bpf_lxc` program makes the routing decision before iptables,
   this approach won't work — fall back to `DEFAULT_RELAY_HOST` in Postfix config
 - The mangle FORWARD rule needs `-o` matching the default outbound interface

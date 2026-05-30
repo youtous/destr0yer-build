@@ -2,7 +2,7 @@
 # WireGuard is configured separately via wireguard_meta/wireguard_server roles.
 
 relay_public_interface: eth0
-relay_wg_interface: wg-infra
+relay_wg_interface: wg-infra-ext
 relay_wg_subnet: "10.99.99.0/24"
 
 # Enable IPv6 binds (set to true when AAAA records + rDNS are ready)

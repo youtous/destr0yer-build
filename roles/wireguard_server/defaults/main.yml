@@ -2,15 +2,16 @@
 wireguard_server_external_interface: eth0  # only used HERE not applicable globally
 
 wireguard_server:
-  # the default interface name that wireguard should use if not specified otherwise.
-  - interface: "wg0"
+  # Interface name — override per plane (wg-admin, wg-infra-ext, wg-relay-admin, etc.)
+  # See doc/networking.md#wireguard-plane-separation for the 4-plane topology.
+  - interface: "wg-infra-ext"
 
     # generate keys using (works for server/clients) `wg genkey | tee privatekey | wg pubkey > publickey`
     public_key: ""
     private_key: ""
 
-    # the default wireguard port
-    port: "1990"
+    # Port — each plane uses a dedicated port (41993 infra-ext, 41994 admin, 41995 relay-admin, 41991 infra-int)
+    port: "41993"
     # restrict ips to access wireguard_server, by default, 'any' allow any ip
     restrict_ips:
       - "any"
@@ -39,13 +40,13 @@ wireguard_server:
 
     # generate preshared_key using `wg genpsk > peer_A-peer_B.psk`
     peers: []
-    #  - name: "peerB"
-    #    public_key: "PEER_B_PUBLIC_KEY"
-    #    preshared_key: "SERVER-PEER_B-PRESHARED_KEY"
+    #  - name: "ctrl"
+    #    public_key: "PEER_PUBLIC_KEY"
+    #    preshared_key: "SERVER-PEER-PRESHARED_KEY"
     #    allowed_ips:
     #      # The IP range that we may send packets to for this peer.
-    #      - 10.99.99.2/32 # <---- /32 means only route traffic to 10.99.99.2 (client ip)
-    #      - fdc9:281f:04d7:9ee9::2/128 # <---- /128 same
+    #      - 10.99.99.10/32 # <---- /32 means only route traffic to this peer's IP
+    #      - fdc9:281f:04d7:9ee9::10/128 # <---- /128 same for IPv6
     #
     #     persistent_keepalive: "25" # only used when behind a NAT (https://www.wireguard.com/quickstart/)
 

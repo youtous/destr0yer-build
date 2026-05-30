@@ -34,11 +34,14 @@ dns_allowed_hosts: "{{ ['10.99.99.1/24', 'fdc9:281f:04d7:9ee9::1/64'] + (local_c
 
 wireguard_server_external_interface: eth0
 wireguard_servers:
-  - interface: wg0
-    addresses:  # server address + network
+  # wg-infra-ext: service traffic (relay ↔ ctrl via HAProxy TCP)
+  # See doc/networking.md#wireguard-plane-separation for full topology.
+  # In dev, ctrl also acts as relay — backends target its own WG IP.
+  - interface: wg-infra-ext
+    addresses:
       - 10.99.99.1/24
       - fdc9:281f:04d7:9ee9::1/64
-    port: "1990"
+    port: "41993"
     mtu: ""
     public_key: "0dE5sNjWqFUeUFRSvI9VTNu/OXPclLB/8bmw1fqUVCc="
     private_key: "{{ wireguard_server_private_key }}"
@@ -49,17 +52,12 @@ wireguard_servers:
     pre_up: []
     pre_down: []
     post_up:
-      # INPUT filter (IPv4): WG peers can only reach ingress ports (mail + web)
-      # ⚠️  WARNING: port 22 is included because in DEV ctrl is both relay AND
-      # backup_storage target. Kopia SFTP from worker needs SSH over the WG tunnel.
-      # In PROD the relay is a separate node — do NOT add port 22 to the relay's
-      # wg-filter-relay. Instead, the K3S node's WG config should allow port 22
-      # only from known backup peers (see relay.sample.yml).
+      # INPUT filter (IPv4): relay peers can only reach ingress ports (mail + web)
       - "iptables -F wg-filter-relay || true"
       - "iptables -t filter -N wg-filter-relay || true"
       - "iptables -t filter -A wg-filter-relay -p icmp -j ACCEPT"
       - "iptables -t filter -A wg-filter-relay -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
-      - "iptables -t filter -A wg-filter-relay -p tcp -m multiport --dports 22,25,465,587,993,443,80 -j ACCEPT"
+      - "iptables -t filter -A wg-filter-relay -p tcp -m multiport --dports 25,465,587,993,443,80 -j ACCEPT"
       - "iptables -t filter -A wg-filter-relay -j DROP"
       - "iptables -t filter -I INPUT -i %i -j wg-filter-relay"
       # INPUT filter (IPv6): K3S is IPv4-only, drop all IPv6 except ICMP
@@ -107,18 +105,18 @@ filesystems_to_create:
 
 ### Begin of Backup storage parameters ###
 backup_btrfs_enabled: true
-# backup_storage parameters
+# backup_storage parameters — worker connects over LAN (no WG on workers)
 backup_users:
   - username: worker
     restrict_ips:
-      - "10.99.99.2"
-      - "fdc9:281f:04d7:9ee9::2"
+      - "192.168.56.11"
+      - "fde4:8dba:82e1::c2"
     ssh_keys:
       - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH6vcZbXLfRAj2g8RvdU2RRc/EYsMtLZTMEPhvDkAEir root@worker.k3s.dev.local"
   - username: ctrl
     restrict_ips:
-      - "10.99.99.1"
-      - "fdc9:281f:04d7:9ee9::1"
+      - "192.168.56.10"
+      - "fde4:8dba:82e1::c1"
     ssh_keys:
       - "{{ root_public_key }} root@ctrl.k3s.dev.local"
 
@@ -132,8 +130,8 @@ users_ssh_keys:
     public_key: "{{ root_public_key }}"
     private_key: "{{ root_private_key }}"
 
-# SFTP via WireGuard mesh IP (ctrl WG address = 10.99.99.1)
-kopia_sftp_host: "10.99.99.1"
+# SFTP via LAN (ctrl and worker are on the same subnet)
+kopia_sftp_host: "192.168.56.10"
 kopia_sftp_user: "backup_ctrl"
 kopia_sftp_path: "/home"
 kopia_sftp_key: "/root/.ssh/id_ed25519"
@@ -144,10 +142,10 @@ kopia_enabled: true
 
 ### Cloud relay test (HAProxy TCP on ctrl for testing) ###
 # DEV: ctrl is both relay and K3S node. Backends target its own WG IP (10.99.99.1)
-# which hits the K3S ingress via the WG interface — same path as production.
+# which hits the K3S ingress via the wg-infra-ext interface — same path as production.
 # In PROD: backend_addr = WG IP of the K3S peer (e.g. 10.99.99.10).
 relay_public_interface: eth1
-relay_wg_interface: wg0
+relay_wg_interface: wg-infra-ext
 relay_wg_subnet: "10.99.99.0/24"
 relay_haproxy_ipv6: false
 

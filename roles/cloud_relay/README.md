@@ -27,7 +27,7 @@ Applied before this role in the playbook:
 ```yaml
 roles:
   - iptables_firewall      # UFW + sysctl ip_forward
-  - wireguard_meta         # wg-infra interface + peers
+  - wireguard_meta         # wg-infra-ext interface + peers
   - cloud_relay            # HAProxy (Quadlet) + masquerade in UFW
   - monit_haproxy_relay    # monit checks on HAProxy ports + healthcheck
 ```
@@ -88,7 +88,7 @@ that enforce least-privilege access in both directions:
 
 Rules are applied as PostUp/PostDown in the WireGuard config, tied to the
 tunnel lifecycle. Both IPv4 and IPv6 are filtered (prevents bypass via WG
-IPv6 address). See `inventories/dev/host_vars/relay.sample.yml` for the
+IPv6 address). See `inventories/dev/host_vars/relay.sample/main.yml` for the
 full example.
 
 ## Domain filtering
@@ -119,7 +119,7 @@ GCP TCP LB).
 
 | Variable | Default | Description |
 |---|---|---|
-| `relay_wg_interface` | `wg-infra` | WG interface name |
+| `relay_wg_interface` | `wg-infra-ext` | WG interface name |
 | `relay_haproxy_ipv6` | `false` | Bind IPv6 on all frontends |
 | `relay_haproxy_image` | `docker.io/haproxytech/haproxy-alpine:3.3` | Container image (renovate-managed) |
 | `relay_haproxy_sni_routes` | `[]` | HTTPS SNI routing table (see below) |
@@ -235,4 +235,4 @@ nodes are WG **clients** (behind NAT, initiate connection). See ADR-005.
 Endpoint hardening:
 - Use a non-standard WG port (not 51820)
 - Do NOT register WG endpoint in public DNS — use raw IP or `/etc/hosts`
-- See `inventories/dev/host_vars/relay.sample.yml` for full example
+- See `inventories/dev/host_vars/relay.sample/main.yml` for full example
