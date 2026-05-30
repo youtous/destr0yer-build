@@ -2,5 +2,5 @@ motd_file: "60-motd"
 motd_directory: "/etc/update-motd.d"
 motd_banner: |
   ┌──────────────────────────────────────────────────────────────────┐
-  │            destr0yer-build  //  K3S hardened cluster             │
+  │              destr0yer-build  //  hardened cluster               │
   └──────────────────────────────────────────────────────────────────┘
