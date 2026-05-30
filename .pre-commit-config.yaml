@@ -26,6 +26,7 @@ repos:
           (?x)^(
             .*\.j2$|
             .*\.j2\.(yaml|yml)$|
+            .*/vault.*\.yml$|
             kluctl/\.helm-charts/.*|
             \.ansible/.*|
             archive/.*|

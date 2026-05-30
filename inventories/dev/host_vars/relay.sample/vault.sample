@@ -1,0 +1,36 @@
+# vim: ts=2 sw=2 et
+# Per-host secrets — encrypt with ansible-vault
+# Location: inventories/<env>/host_vars/<hostname>/vault.yml
+# Encrypt with: ansible-vault encrypt inventories/<env>/host_vars/<hostname>/vault.yml
+# Edit with:    just vault-edit inventories/<env>/host_vars/<hostname>/vault.yml
+
+# Sudo user password (generate with: openssl passwd -6)
+sudo_user_password: ""
+sudo_user_clear_password: ""
+
+# Root password (generate with: openssl passwd -6)
+root_password: ""
+
+# SSH keys for root (generate with: ssh-keygen -q -t ed25519 -C "" -N "")
+root_public_key: ""
+root_private_key: ""
+
+# SMTP relay password (if this host relays mail)
+# secret_relay_password: ""
+
+# WireGuard server keys (if this host is a WireGuard server)
+# wireguard_server_private_key: ""
+# wireguard_server_peers:
+#   - name: "peer-hostname"
+#     public_key: ""
+#     preshared_key: ""
+#     allowed_ips:
+#       - 10.99.99.2/32
+
+# WireGuard client keys (if this host is a WireGuard client)
+# Generate with: wg genkey | tee private.key | wg pubkey > public.key && wg genpsk > preshared.key
+# wireguard_client_private_key: ""
+# wireguard_client_preshared_key: ""
+
+# Kopia repository password (if this host uses Kopia backup)
+# secret_kopia_password: ""
