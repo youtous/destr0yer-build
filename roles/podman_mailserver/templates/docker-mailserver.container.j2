@@ -16,7 +16,7 @@ Volume={{ podman_mailserver_home }}/mail-data:/var/mail:Z
 Volume={{ podman_mailserver_home }}/mail-state:/var/mail-state:Z
 Volume={{ podman_mailserver_home }}/mail-log:/var/log/mail:Z
 Volume={{ podman_mailserver_home }}/config:/tmp/docker-mailserver:Z
-Volume={{ podman_mailserver_home }}/tls:/etc/dms/tls:ro,Z
+Volume={{ podman_mailserver_home }}/tls:/etc/dms/tls:Z
 
 HealthCmd=ss -tlnp | grep -q ':25'
 HealthInterval=60s

@@ -36,6 +36,9 @@ podman_mailserver_enable_clamav: false
 podman_mailserver_tls_level: "modern"
 podman_mailserver_log_level: "info"
 
+# Network interface inside the container (pasta creates a tap device, not eth0)
+podman_mailserver_network_interface: "tap0"
+
 # Postfix limits
 podman_mailserver_mailbox_size_limit: 1073741824
 podman_mailserver_message_size_limit: 12000000
