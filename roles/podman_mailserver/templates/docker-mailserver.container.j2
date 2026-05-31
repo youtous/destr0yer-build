@@ -8,7 +8,7 @@ ContainerName={{ podman_mailserver_container_name }}
 Image={{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }}
 Pod={{ podman_mailserver_pod_name }}.pod
 
-AddCapability=NET_ADMIN
+AddCapability=NET_ADMIN SYS_RESOURCE
 
 EnvironmentFile={{ podman_mailserver_home }}/config/mailserver.env
 
