@@ -177,8 +177,18 @@ configMaps:
     path: postfix-virtual.cf
     data: |
       {% for domain in secrets.mailserver_domains %}
-      {% for alias in domain.aliases %}
+      {% for alias in domain.aliases | default([]) %}
       {{ alias.alias }} {{ alias.to }}
+      {% endfor %}
+      {% endfor %}
+
+  postfix-virtual-regexp.cf:
+    create: true
+    path: postfix-virtual-regexp.cf
+    data: |
+      {% for domain in secrets.mailserver_domains %}
+      {% for alias in domain.regexp_aliases | default([]) %}
+      {{ alias.pattern }} {{ alias.to }}
       {% endfor %}
       {% endfor %}
 

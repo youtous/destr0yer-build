@@ -24,7 +24,7 @@
     force: "{{ item.force | default(False) }}"
     shrink: "{{ item.shrink | default(False) }}"
     opts: "{{ item.opts | default('') }}"
-    pvs: "{{ item.pvs | default('') }}"
+    pvs: "{{ item.pvs | default(omit) }}"
     vg: "{{ item.vg }}"
     lv: "{{ item.lv }}"
     size: "{{ item.size | default('') }}"

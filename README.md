@@ -123,7 +123,7 @@ cd destr0yer-build
 
 just setup           # Install everything
 cp .env.sample .env  # Local config
-just vault-login     # Set vault password
+eval "$(just vault-login)"  # Set vault password (bash); just vault-login | source (fish)
 ```
 
 ### 🧪 Development environment
@@ -285,7 +285,7 @@ Two independent encrypted stores — no sync needed between them:
 | 🔐 SOPS + age | K8S-level (Kluctl secrets, S3 keys, OIDC) | X25519 | `just sops-edit kluctl/targets/<env>.enc.yaml` |
 
 ```sh
-just vault-login                            # Set vault password
+eval "$(just vault-login)"                  # Set vault password (bash); just vault-login | source (fish)
 just vault-edit inventories/<env>/group_vars/all/vault.yml  # Edit host-level secrets
 just sops-edit kluctl/targets/<env>.enc.yaml  # Edit K8S-level secrets
 just sops-init                              # First-time: generate age keypair

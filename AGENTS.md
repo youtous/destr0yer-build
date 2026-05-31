@@ -29,7 +29,7 @@ logs/               Ansible run logs (git-ignored, one file per run)
 ```sh
 # Ansible (host-level) — all runs logged to logs/<playbook>-<timestamp>.log
 just setup           # Install all tools + deps + galaxy roles
-just vault-login     # Set vault password in env
+eval "$(just vault-login)"  # Set vault password (bash); just vault-login | source (fish)
 just provision       # Run 00-provision playbook
 just configure       # Run 01-configure playbook
 just k3s             # Run 02-k3s playbook

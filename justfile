@@ -45,17 +45,23 @@ _galaxy-install:
 
 # ─── Vault & Secrets ────────────────────────────────────────────────
 
-# Load vault password interactively
+# Load vault password interactively (current shell only, no persistence)
+# Fish: just vault-login | source
+# Bash: eval "$(just vault-login)"
 vault-login:
-    #!/usr/bin/env fish
-    echo "Please enter your VAULT Password: "
-    read -s VAULT_PASSWORD_INPUT
-    set -Ux VAULT_PASSWORD "$VAULT_PASSWORD_INPUT"
-    echo "✓ Vault password set"
+    #!/usr/bin/env bash
+    read -s -p "Please enter your VAULT Password: " pw
+    echo >&2
+    if [ -n "$FISH_VERSION" ] || [ "$(basename "$SHELL")" = "fish" ]; then
+        echo "set -x VAULT_PASSWORD '$pw';"
+    else
+        echo "export VAULT_PASSWORD='$pw';"
+    fi
+    echo "# ✓ Vault password set" >&2
 
-# Edit an encrypted vault file
+# Edit an encrypted vault file (uses $EDITOR, defaults to vi)
 vault-edit file:
-    python -m pipenv run ansible-vault edit {{file}} --vault-password-file "./.vault_password"
+    EDITOR="${EDITOR:-vi}" python -m pipenv run ansible-vault edit {{file}} --vault-password-file "./.vault_password"
 
 # Edit a SOPS-encrypted file (kluctl targets)
 sops-edit file:
