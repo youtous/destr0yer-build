@@ -7,13 +7,16 @@ podman_mailserver_quadlet_dir: "/home/{{ podman_mailserver_user }}/.config/conta
 
 podman_mailserver_xdg_runtime_dir: "/run/user/{{ podman_mailserver_uid }}"
 
-podman_mailserver_dirs:
+podman_mailserver_dirs_private:
   - "mail-data"
   - "mail-state"
   - "mail-log"
-  - "config"
   - "config/rspamd/dkim"
+
+podman_mailserver_dirs_shared:
+  - "config"
   - "tls"
+  - "nginx"
   - "nginx/conf.d"
   - "nginx/mta-sts"
 

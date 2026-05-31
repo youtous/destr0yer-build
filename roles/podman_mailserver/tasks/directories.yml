@@ -17,9 +17,9 @@
     state: directory
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
-    mode: "u=rwx,g=rx,o="
+    mode: "u=rwx,g=rx,o=rx"
 
-- name: Create mailserver subdirectories
+- name: Create private subdirectories (mail data, DKIM keys)
   become: true
   ansible.builtin.file:
     path: "{{ podman_mailserver_home }}/{{ item }}"
@@ -27,7 +27,17 @@
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
     mode: "u=rwx,g=rx,o="
-  loop: "{{ podman_mailserver_dirs }}"
+  loop: "{{ podman_mailserver_dirs_private }}"
+
+- name: Create shared subdirectories (readable by container non-root processes)
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_home }}/{{ item }}"
+    state: directory
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rwx,g=rx,o=rx"
+  loop: "{{ podman_mailserver_dirs_shared }}"
 
 - name: Ensure Quadlet directory exists
   become: true

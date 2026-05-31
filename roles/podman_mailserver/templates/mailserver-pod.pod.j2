@@ -5,6 +5,7 @@
 
 [Pod]
 PodName={{ podman_mailserver_pod_name }}
+PodmanArgs=--hostname {{ podman_mailserver_hostname }}
 Network=pasta
 
 PublishPort=25:25
