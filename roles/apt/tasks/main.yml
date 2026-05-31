@@ -43,6 +43,15 @@
   with_items:
     - 5-preferences
 
+- name: Remove unwanted default packages
+  become: true
+  ansible.builtin.apt:
+    name: "{{ apt_packages_to_remove }}"
+    state: absent
+    purge: true
+    autoremove: true
+  when: apt_packages_to_remove | length > 0
+
 - name: Update apt-cache
   become: true
   ansible.builtin.apt:

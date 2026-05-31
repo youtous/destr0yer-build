@@ -97,7 +97,7 @@
     name: "{{ item.luks.name }}"
     backing_device: "{{ item.dev }}"
     password: "{{ item.luks.keyfile }}"
-    opts: luks
+    opts: "{{ item.luks.opts | default('luks,nofail') }}"
     state: present
   loop: "{{ _luks_filesystems }}"
   loop_control:

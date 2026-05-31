@@ -101,7 +101,7 @@ filesystems_to_create:
   - dev: /dev/mapper/vg--podman-lv--podman
     fstype: xfs
     mount_path: /srv/podman
-    mount_opts: "defaults,noatime"
+    mount_opts: "defaults,noatime,nofail"
 ```
 
 ### Vault (secrets)

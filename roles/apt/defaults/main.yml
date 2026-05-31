@@ -17,3 +17,12 @@ apt_unwanted_sources_patterns:
   - "*scw*"
   - "*ovh*"
   - "*digitalocean*"
+
+# unwanted default Debian packages — removed on all nodes
+# exim4: default MTA, conflicts with postfix/DMS, can block boot on Debian 13
+#         (sysv-generator failure → emergency mode)
+apt_packages_to_remove:
+  - exim4
+  - exim4-base
+  - exim4-config
+  - exim4-daemon-light
