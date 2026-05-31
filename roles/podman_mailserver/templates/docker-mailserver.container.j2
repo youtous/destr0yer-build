@@ -9,7 +9,6 @@ Image={{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_ma
 Pod={{ podman_mailserver_pod_name }}.pod
 
 AddCapability=NET_ADMIN
-DropCapability=ALL
 
 EnvironmentFile={{ podman_mailserver_home }}/config/mailserver.env
 
