@@ -14,5 +14,5 @@ tls_ssl_options = NO_COMPRESSION, NO_RENEGOTIATION
 postscreen_dnsbl_sites = zen.spamhaus.org*3, bl.mailspike.net, b.barracudacentral.org*2, list.dnswl.org=127.0.[0..255].0*-2, list.dnswl.org=127.0.[0..255].1*-3, list.dnswl.org=127.0.[0..255].[2..3]*-4
 
 # Access maps
-smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination, check_recipient_access hash:/tmp/docker-mailserver/postfix-receive-access.cf
-smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, check_sender_access hash:/tmp/docker-mailserver/postfix-send-access.cf
+smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination, check_recipient_access texthash:/tmp/docker-mailserver/postfix-receive-access.cf
+smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, check_sender_access texthash:/tmp/docker-mailserver/postfix-send-access.cf
