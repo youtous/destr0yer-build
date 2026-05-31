@@ -58,7 +58,7 @@ podman_mailserver_message_size_limit: 12000000
 #     regexp_aliases:  (optional, pcre patterns for postfix-virtual-regexp.cf)
 #       - pattern: "/^bounce-.*@example\\.com$/"
 #         to: "postmaster@example.com"
-#     dkim_private_b64: "base64-encoded-key" (optional, Rspamd signing key)
+#     dkim_private: |  (optional, PEM private key for Rspamd DKIM signing)
 #     dkim_public: |  (optional, PEM public key for DNS TXT record reference)
 #       -----BEGIN PUBLIC KEY-----
 #       MIIBIjANBg...

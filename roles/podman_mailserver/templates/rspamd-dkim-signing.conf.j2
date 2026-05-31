@@ -6,7 +6,7 @@ use_domain = "header";
 use_redis = false;
 use_esld = true;
 {% for domain in podman_mailserver_domains %}
-{% if domain.dkim_private_b64 is defined %}
+{% if domain.dkim_private is defined %}
 domain {
     {{ domain.domain }} {
         path = "/tmp/docker-mailserver/rspamd/dkim/{{ domain.domain }}.private";

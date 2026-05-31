@@ -131,7 +131,8 @@ podman_mailserver_domains:
     regexp_aliases:                     # optional, pcre patterns
       - pattern: "/^bounce-.*@example\\.com$/"
         to: "postmaster@example.com"
-    dkim_private_b64: "base64-encoded-private-key"  # optional, Rspamd signing key
+    dkim_private: |                          # optional, PEM private key for Rspamd DKIM signing
+      <RSA private key PEM content>
     dkim_public: |                         # optional, PEM public key for DNS reference
       -----BEGIN PUBLIC KEY-----
       MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
@@ -470,8 +471,8 @@ To generate a new DKIM key pair:
 openssl genrsa -out mail.private 2048
 openssl rsa -in mail.private -pubout -out mail.public
 
-# Base64-encode private key for dkim_private_b64
-base64 -w0 mail.private
+# dkim_private is the PEM file content (mail.private)
+cat mail.private
 
 # dkim_public is the PEM file content (mail.public)
 cat mail.public
