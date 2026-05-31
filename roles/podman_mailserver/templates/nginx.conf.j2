@@ -1,0 +1,52 @@
+{{ ansible_managed | comment }}
+
+# HTTPS — MTA-STS policy servers
+{% for domain in podman_mailserver_domains %}
+{% if domain.mta_sts is defined %}
+server {
+    listen 443 ssl;
+    server_name mta-sts.{{ domain.domain }};
+
+    ssl_certificate     /etc/nginx/tls/fullchain.pem;
+    ssl_certificate_key /etc/nginx/tls/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    location /.well-known/mta-sts.txt {
+        alias /etc/nginx/mta-sts/{{ domain.domain }}.txt;
+        default_type text/plain;
+    }
+
+    location / {
+        return 444;
+    }
+}
+
+{% endif %}
+{% endfor %}
+# HTTPS — autodiscover / autoconfig
+{% for domain in podman_mailserver_domains %}
+server {
+    listen 443 ssl;
+    server_name autoconfig.{{ domain.domain }} autodiscover.{{ domain.domain }};
+
+    ssl_certificate     /etc/nginx/tls/fullchain.pem;
+    ssl_certificate_key /etc/nginx/tls/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+{% endfor %}
+# HTTP — redirect all to HTTPS
+server {
+    listen 80 default_server;
+    return 301 https://$host$request_uri;
+}

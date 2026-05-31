@@ -1,0 +1,34 @@
+- name: Validate TLS cert and key are provided
+  ansible.builtin.assert:
+    that:
+      - podman_mailserver_tls_cert | length > 0
+      - podman_mailserver_tls_key | length > 0
+    fail_msg: >-
+      podman_mailserver_tls_cert and podman_mailserver_tls_key must be set
+      (wildcard Let's Encrypt cert, inline PEM from Ansible Vault).
+
+- name: Deploy TLS fullchain
+  become: true
+  ansible.builtin.copy:
+    content: "{{ podman_mailserver_tls_cert }}"
+    dest: "{{ podman_mailserver_home }}/tls/fullchain.pem"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  no_log: true
+  notify:
+    - Restart mailserver container
+    - Restart nginx container
+
+- name: Deploy TLS private key
+  become: true
+  ansible.builtin.copy:
+    content: "{{ podman_mailserver_tls_key }}"
+    dest: "{{ podman_mailserver_home }}/tls/privkey.pem"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=,o="
+  no_log: true
+  notify:
+    - Restart mailserver container
+    - Restart nginx container

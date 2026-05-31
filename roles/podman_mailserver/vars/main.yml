@@ -1,0 +1,27 @@
+podman_mailserver_pod_name: "mailserver-pod"
+podman_mailserver_container_name: "docker-mailserver"
+podman_mailserver_nginx_container_name: "nginx-mail"
+podman_mailserver_autodiscover_container_name: "autodiscover"
+
+podman_mailserver_quadlet_dir: "/home/{{ podman_mailserver_user }}/.config/containers/systemd"
+
+podman_mailserver_xdg_runtime_dir: "/run/user/{{ podman_mailserver_uid }}"
+
+podman_mailserver_dirs_private:
+  - "mail-data"
+  - "mail-state"
+  - "mail-log"
+  - "config/rspamd/dkim"
+
+podman_mailserver_dirs_shared:
+  - "config"
+  - "tls"
+  - "nginx"
+  - "nginx/conf.d"
+  - "nginx/mta-sts"
+
+podman_mailserver_quadlet_files:
+  - "{{ podman_mailserver_pod_name }}.pod"
+  - "{{ podman_mailserver_container_name }}.container"
+  - "{{ podman_mailserver_nginx_container_name }}.container"
+  - "{{ podman_mailserver_autodiscover_container_name }}.container"

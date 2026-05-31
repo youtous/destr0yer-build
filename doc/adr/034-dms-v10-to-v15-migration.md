@@ -1,6 +1,6 @@
 # ADR-034: DMS v10 to v15 mail migration on new infrastructure
 
-**Status**: WIP — to be executed during production deployment
+**Status**: Done (role implemented, prod migration pending)
 
 **Date**: 2026-05-26
 
@@ -106,6 +106,24 @@ current context.
 
 Rejected because DMS v15 introduces structural and behavioral changes that make raw
 reuse of v10 configuration and state risky.
+
+## Standalone deployment option
+
+The `podman_mailserver` Ansible role implements this migration strategy and also
+serves as a **standalone, production-ready mail deployment** for single-node
+self-hosting. It does not require Kubernetes — rootless Podman with pasta
+networking provides a secure, minimal-footprint setup.
+
+**TLS certificate management** is intentionally left to the operator. The role
+deploys certificates from Ansible Vault but does not provision or renew them.
+Operators choose their own method (certbot, acme.sh, cert-manager on a separate
+cluster, manual renewal, etc.). This separation of concerns avoids coupling the
+mail role to a specific PKI infrastructure and keeps the role usable in any
+environment — from a single VPS to a multi-node setup with centralized cert
+management.
+
+Migration to Kubernetes (`kluctl/mail/`) remains an option but is not required.
+See the role README for the transition procedure.
 
 ## Consequences
 

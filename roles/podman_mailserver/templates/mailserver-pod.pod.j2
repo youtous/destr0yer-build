@@ -1,0 +1,19 @@
+{{ ansible_managed | comment }}
+# Quadlet pod — rootless Podman with pasta networking.
+# Shared network namespace for DMS + Nginx + autodiscover.
+# Placed in ~/.config/containers/systemd/ for the {{ podman_mailserver_user }} user.
+
+[Pod]
+PodName={{ podman_mailserver_pod_name }}
+PodmanArgs=--hostname {{ podman_mailserver_hostname }}
+Network=pasta
+
+PublishPort=25:25
+PublishPort=80:80
+PublishPort=443:443
+PublishPort=465:465
+PublishPort=587:587
+PublishPort=993:993
+
+[Install]
+WantedBy=default.target
