@@ -74,7 +74,7 @@ Lifecycle: **ADR** (decision) → **implementation** (roles/kluctl) → **Doc** 
 |---|----------|--------|-----|
 | [006](006-mail-cloud-relay.md) | Mail architecture — cloud blind relay | ✅ Done | -- |
 | [033](033-mail-dual-cluster-backup-mx.md) | Mail architecture — dual-cluster with backup MX and whitehole NAT | 📋 Proposed | -- |
-| [034](034-dms-v10-to-v15-migration.md) | DMS v10 to v15 mail migration on new infrastructure | 🔧 WIP (prod) | -- |
+| [034](034-dms-v10-to-v15-migration.md) | DMS v10 to v15 mail migration — standalone Podman or K8S | ✅ Done (role), ⏳ Prod migration | -- |
 
 ## Phase 7 — Future
 

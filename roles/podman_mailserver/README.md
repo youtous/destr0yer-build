@@ -1,9 +1,11 @@
 # podman_mailserver
 
-Transitional deployment of [docker-mailserver](https://docker-mailserver.github.io/docker-mailserver/latest/)
-v15 via rootless Podman Quadlet with pasta networking. Intended as a bridge from
-an existing DMS v10 (standalone Docker) instance to the Kubernetes deployment
-(`kluctl/mail/`).
+Standalone deployment of [docker-mailserver](https://docker-mailserver.github.io/docker-mailserver/latest/)
+v15 via rootless Podman Quadlet with pasta networking. Designed for simple,
+secure self-hosting on a single node without requiring Kubernetes.
+
+Can also serve as a stepping stone toward a full Kubernetes deployment
+(`kluctl/mail/`) — see [Transition to Kubernetes](#transition-to-kubernetes).
 
 The role deploys three containers in a shared Podman pod:
 
@@ -191,12 +193,26 @@ the DMS fail2ban manages its own nftables chains inside the container namespace.
 For additional host-level jails reading DMS logs, use `fail2ban_additional` with
 log path `/srv/podman/mailserver/mail-log/`.
 
-## TLS certificate renewal
+## TLS certificate management
 
-The wildcard certificate is deployed from Ansible Vault. To renew:
+The role deploys TLS certificates from Ansible Vault variables
+(`podman_mailserver_tls_cert` and `podman_mailserver_tls_key`) but **does not
+manage certificate provisioning or renewal**. This is intentionally left to the
+operator — choose whichever method fits your setup:
 
-1. Obtain a new certificate (e.g. `certbot certonly --manual --preferred-challenges dns`)
+| Method | How it works |
+|--------|-------------|
+| **certbot (manual DNS-01)** | `certbot certonly --manual --preferred-challenges dns`, copy PEM to vault, re-run playbook |
+| **certbot (automated DNS-01)** | Use a DNS plugin (e.g. `certbot-dns-cloudflare`, `certbot-dns-desec`) with a cron/systemd timer, then push to vault or sync certs directly |
+| **acme.sh** | Lightweight alternative to certbot with built-in DNS API support for many providers |
+| **cert-manager (on K3S)** | If you run a K3S cluster alongside, cert-manager can issue certs via DNS-01 and export them to a Secret; a script syncs the PEM into vault or directly to the host |
+| **Vault-managed** | Store certs in Ansible Vault, renew manually when needed, re-run the playbook |
+
+Regardless of the method, the workflow is always:
+
+1. Obtain or renew the certificate (wildcard `*.example.com` recommended)
 2. Update `podman_mailserver_tls_cert` and `podman_mailserver_tls_key` in vault
+   (or deploy certs directly to `/srv/podman/mailserver/tls/` and restart)
 3. Re-run the playbook — handlers automatically restart DMS and Nginx on cert change
 
 ## Migration from DMS v10
@@ -478,9 +494,9 @@ cat mail.private
 cat mail.public
 ```
 
-### Transition to Kubernetes
+### Transition to Kubernetes (optional)
 
-When ready to move to the K8S deployment (`kluctl/mail/mailserver/`):
+If you later decide to move to the K8S deployment (`kluctl/mail/mailserver/`):
 
 1. Stop the Podman deployment: `-e podman_mailserver_state=absent` (keeps data)
 2. Copy mail data to the K8S node's OpenEBS volume:
