@@ -40,7 +40,7 @@
   become: true
   become_user: "{{ podman_mailserver_user }}"
   ansible.builtin.systemd:
-    name: "{{ podman_mailserver_pod_name }}"
+    name: "{{ podman_mailserver_pod_name }}-pod"
     enabled: true
     state: started
     scope: user

@@ -389,7 +389,7 @@ sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 podman exec docker-mailserver se
 ### Restart services
 
 ```sh
-sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 systemctl --user restart mailserver-pod
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 systemctl --user restart mailserver-pod-pod
 sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 systemctl --user restart docker-mailserver
 sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 systemctl --user restart nginx-mail
 ```
