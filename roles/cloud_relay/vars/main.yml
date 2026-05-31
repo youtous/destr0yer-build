@@ -1,0 +1,2 @@
+relay_haproxy_config_dir: "/home/{{ relay_haproxy_user }}/haproxy"
+relay_haproxy_quadlet_dir: "/home/{{ relay_haproxy_user }}/.config/containers/systemd"

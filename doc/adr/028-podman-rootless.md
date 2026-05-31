@@ -21,4 +21,7 @@ internally. But some host-level tasks need a container runtime:
 - Add `podman` to `system_packages` role (installed on all nodes)
 - Configure rootless mode (subuid/subgid) via Ansible
 - Update `monitor_testssl` to use `podman run` instead of `docker run`
-- Future: use Quadlet for standalone containers on non-K3S nodes (relay, backup)
+- `cloud_relay`: HAProxy runs as rootless Podman Quadlet with pasta networking
+  (dedicated `haproxy-relay` user, `sysctl ip_unprivileged_port_start=25`)
+- `podman_mailserver`: DMS runs as rootful Podman Quadlet with host networking
+  (transitional deployment, uses `NET_ADMIN` for fail2ban)

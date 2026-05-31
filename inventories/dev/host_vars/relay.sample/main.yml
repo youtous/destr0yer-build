@@ -94,6 +94,10 @@ wireguard_servers:
       - "iptables -X wg-filter-admin || true"
     mtu: ""
 
+# ─── Sysctl — rootless Podman port binding ──────────────────────────────────
+# Required for rootless HAProxy to bind privileged ports (25, 80, 443, 465, 993)
+sysctl_net_ipv4_ip_unprivileged_port_start: '25'
+
 # ─── Fail2ban ────────────────────────────────────────────────────────────────
 fail2ban_trusted_ips:
   - "10.99.98.100"  # admin laptop (wg-relay-admin)
