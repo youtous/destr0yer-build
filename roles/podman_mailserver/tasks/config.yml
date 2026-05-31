@@ -107,7 +107,7 @@
     dest: "{{ podman_mailserver_home }}/config/rspamd/dkim/{{ domain.domain }}.private"
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
-    mode: "u=rw,g=r,o=r"
+    mode: "u=rw,g=r,o="
   loop: "{{ podman_mailserver_domains | selectattr('dkim_private', 'defined') | list }}"
   loop_control:
     loop_var: domain
@@ -122,7 +122,7 @@
     dest: "{{ podman_mailserver_home }}/config/rspamd/dkim/{{ domain.domain }}.public.txt"
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
-    mode: "u=rw,g=r,o=r"
+    mode: "u=rw,g=r,o="
   loop: "{{ podman_mailserver_domains | selectattr('dkim_public', 'defined') | list }}"
   loop_control:
     loop_var: domain
@@ -148,7 +148,7 @@
     dest: "{{ podman_mailserver_home }}/nginx/conf.d/default.conf"
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
-    mode: "u=rw,g=r,o=r"
+    mode: "u=rw,g=r,o="
   notify: Restart nginx container
 
 - name: Deploy MTA-STS policy files
@@ -158,9 +158,63 @@
     dest: "{{ podman_mailserver_home }}/nginx/mta-sts/{{ domain.domain }}.txt"
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
-    mode: "u=rw,g=r,o=r"
+    mode: "u=rw,g=r,o="
   loop: "{{ podman_mailserver_domains | selectattr('mta_sts', 'defined') | list }}"
   loop_control:
     loop_var: domain
     label: "{{ domain.domain }}"
   notify: Restart nginx container
+
+# Fix internal container permissions via user namespace UID remapping.
+# podman unshare translates container UIDs to the correct host subuid,
+# so no world-readable files on the host.
+
+- name: Resolve Nginx UID from container image
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman run --rm
+      {{ podman_mailserver_nginx_image }}:{{ podman_mailserver_nginx_version }}@{{ podman_mailserver_nginx_digest }}
+      id -u nginx
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: false
+  register: _nginx_uid
+
+- name: Resolve Rspamd UID from DMS image
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman run --rm
+      {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }}
+      id -u _rspamd
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: false
+  register: _rspamd_uid
+
+- name: Fix permissions for Nginx
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman unshare chown -R {{ _nginx_uid.stdout }}:{{ _nginx_uid.stdout }}
+      {{ podman_mailserver_home }}/nginx
+      {{ podman_mailserver_home }}/tls
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: true
+
+- name: Fix permissions for Rspamd DKIM keys
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman unshare chown -R {{ _rspamd_uid.stdout }}:{{ _rspamd_uid.stdout }}
+      {{ podman_mailserver_home }}/config/rspamd/dkim
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: true
+  when: podman_mailserver_domains | selectattr('dkim_private', 'defined') | list | length > 0
