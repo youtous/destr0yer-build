@@ -1,4 +1,4 @@
-{{ ansible_managed | comment('#') }}
+{{ ansible_managed | comment }}
 {% for domain in podman_mailserver_domains %}
 {% for account in domain.accounts | default([]) %}
 {% if account.quota_mb is defined %}

@@ -1,4 +1,4 @@
-{{ ansible_managed | comment('#') }}
+{{ ansible_managed | comment }}
 {% for domain in podman_mailserver_domains %}
 {% if domain.receive_bans is defined %}
 {% for ban in domain.receive_bans %}

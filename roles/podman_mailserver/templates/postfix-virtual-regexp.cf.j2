@@ -1,4 +1,4 @@
-{{ ansible_managed | comment('#') }}
+{{ ansible_managed | comment }}
 {% for domain in podman_mailserver_domains %}
 {% for alias in domain.regexp_aliases | default([]) %}
 {{ alias.pattern }} {{ alias.to }}
