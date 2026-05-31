@@ -1,5 +1,5 @@
-# Deploy docker-mailserver via rootful Podman (Quadlet).
-# Transitional deployment: DMS v10 (Docker) -> Podman rootful -> Kubernetes.
+# Deploy docker-mailserver via rootless Podman (Quadlet + pasta networking).
+# Transitional deployment: DMS v10 (Docker) -> Podman rootless -> Kubernetes.
 #
 # Prerequisites:
 #   - LVM mount at /srv/podman (via disks_lvm_management in 00-provision)
@@ -24,7 +24,7 @@
           server_environment is defined and server_environment | length > 0
         msg: "server_environment must be defined and not empty"
 
-- name: Deploy mailserver (Podman rootful)
+- name: Deploy mailserver (Podman rootless)
   hosts: podman_mailservers
   roles:
     - podman_mailserver

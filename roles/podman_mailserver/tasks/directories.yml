@@ -15,8 +15,8 @@
   ansible.builtin.file:
     path: "{{ podman_mailserver_home }}"
     state: directory
-    owner: root
-    group: root
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
     mode: "u=rwx,g=rx,o="
 
 - name: Create mailserver subdirectories
@@ -24,8 +24,8 @@
   ansible.builtin.file:
     path: "{{ podman_mailserver_home }}/{{ item }}"
     state: directory
-    owner: root
-    group: root
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
     mode: "u=rwx,g=rx,o="
   loop: "{{ podman_mailserver_dirs }}"
 
@@ -34,6 +34,6 @@
   ansible.builtin.file:
     path: "{{ podman_mailserver_quadlet_dir }}"
     state: directory
-    owner: root
-    group: root
-    mode: "u=rwx,g=rx,o=rx"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rwx,g=,o="

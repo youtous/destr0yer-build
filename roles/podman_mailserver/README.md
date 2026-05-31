@@ -1,8 +1,9 @@
 # podman_mailserver
 
 Transitional deployment of [docker-mailserver](https://docker-mailserver.github.io/docker-mailserver/latest/)
-v15 via rootful Podman Quadlet. Intended as a bridge from an existing DMS v10
-(standalone Docker) instance to the Kubernetes deployment (`kluctl/mail/`).
+v15 via rootless Podman Quadlet with pasta networking. Intended as a bridge from
+an existing DMS v10 (standalone Docker) instance to the Kubernetes deployment
+(`kluctl/mail/`).
 
 The role deploys three containers in a shared Podman pod:
 
@@ -10,8 +11,9 @@ The role deploys three containers in a shared Podman pod:
 - **nginx-mail** — HTTPS for MTA-STS policy + autodiscover/autoconfig reverse proxy
 - **autodiscover** — `wdes/mail-autodiscover-autoconfig` for Outlook/Thunderbird/Apple Mail
 
-All containers run rootful (system-level Quadlet in `/etc/containers/systemd/`)
-with `Network=host`, following the same pattern as `cloud_relay`.
+All containers run as a dedicated system user (`mail-dms`) via user-level Quadlet
+in `~/.config/containers/systemd/` with `Network=pasta`, following the same
+rootless pattern as `cloud_relay`.
 
 ## Architecture
 
@@ -42,8 +44,11 @@ Applied before this role:
 |------|-------|-----|
 | LVM mount at `/srv/podman` | `disks_lvm_management` in `00-provision` | Dedicated storage for all Podman data |
 | Podman | `system_packages` in `01-configure` | Container runtime |
+| `sysctl_net_ipv4_ip_unprivileged_port_start: '25'` | `sysctl_configuration` in `01-configure` | Allow rootless binding to ports 25+ |
 
-The role asserts the LV mount exists and fails early if missing.
+The role creates a dedicated system user (`mail-dms`, UID 5200), configures
+subuid/subgid, and enables lingering for boot persistence. It asserts the LV
+mount exists and fails early if missing.
 
 ## Playbook usage
 
@@ -140,8 +145,10 @@ podman_mailserver_domains:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `podman_mailserver_user` | `mail-dms` | Rootless Podman system user |
+| `podman_mailserver_uid` | `5200` | UID for the rootless user |
 | `podman_mailserver_base_path` | `/srv/podman` | LV mount point |
-| `podman_mailserver_enable_fail2ban` | `true` | DMS built-in fail2ban (nftables, host-scoped) |
+| `podman_mailserver_enable_fail2ban` | `true` | DMS built-in fail2ban (nftables, container-scoped) |
 | `podman_mailserver_enable_rspamd` | `true` | Rspamd spam filtering + DKIM signing |
 | `podman_mailserver_enable_clamav` | `false` | ClamAV antivirus (adds ~200MB RAM) |
 | `podman_mailserver_tls_level` | `modern` | TLS version floor (`modern` = TLS 1.2+) |
@@ -156,9 +163,9 @@ podman_mailserver_domains:
 
 ## Security
 
-- **Rootful Podman** with system-level Quadlet (same model as `cloud_relay`)
-- **Network=host** — containers bind ports directly, no NAT
-- **fail2ban** with `NET_ADMIN` — bans apply at host network level (nftables)
+- **Rootless Podman** with user-level Quadlet (same model as `cloud_relay`)
+- **Network=pasta** — preserves source IPs for fail2ban and logging
+- **fail2ban** with `NET_ADMIN` — bans apply within the container network namespace
 - **TLS**: wildcard Let's Encrypt cert, `TLS_LEVEL=modern` (TLS 1.2+)
 - **PERMIT_DOCKER=none** — all mail submission requires SASL authentication
 - **SPOOF_PROTECTION=1** — sender address validation
@@ -169,17 +176,18 @@ podman_mailserver_domains:
 ## Fail2ban
 
 The role uses DMS's **built-in fail2ban** (runs inside the container). Because the
-pod uses `Network=host`, fail2ban operates on the host's network namespace —
-bans are effective at the host level (unlike rootless Podman where bans are
-scoped to the container namespace).
+pod uses rootless Podman with `Network=pasta`, fail2ban operates within the
+container's network namespace — bans are scoped to the pasta interface. Source
+IPs are preserved by pasta, so fail2ban sees real client IPs and bans work
+correctly at the container level.
 
 DMS v15 uses nftables as the fail2ban backend. Default jails include `postfix`,
 `dovecot`, and `postfix-sasl`. Custom jails can be added via
 `config/fail2ban-jail.cf` in the DMS config volume.
 
 If host-level fail2ban is also running (role `fail2ban`), there is no conflict —
-the DMS fail2ban manages its own nftables chains inside the container. For
-additional host-level jails reading DMS logs, use `fail2ban_additional` with
+the DMS fail2ban manages its own nftables chains inside the container namespace.
+For additional host-level jails reading DMS logs, use `fail2ban_additional` with
 log path `/srv/podman/mailserver/mail-log/`.
 
 ## TLS certificate renewal
@@ -267,8 +275,8 @@ password hashes from v10's `postfix-accounts.cf` are copied correctly.
 just ansible-playbook playbooks/03-podman-mailserver.yml
 ```
 
-The migration tasks run after the containers are deployed. On first start,
-DMS v15 will:
+The migration tasks run before the containers start (data must be in place first).
+On first start, DMS v15 will:
 
 - Upgrade Dovecot internal indexes
 - Rebuild Postfix lookup tables
@@ -278,12 +286,14 @@ DMS v15 will:
 **4. Verify:**
 
 ```sh
+DMS="sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200"
+
 # Check container health
-podman pod ps
-podman ps --pod
+$DMS podman pod ps
+$DMS podman ps --pod
 
 # Check DMS logs for errors
-podman logs docker-mailserver 2>&1 | tail -50
+$DMS podman logs docker-mailserver 2>&1 | tail -50
 
 # Test SMTP
 openssl s_client -connect mail.example.com:465 -quiet
@@ -292,7 +302,7 @@ openssl s_client -connect mail.example.com:465 -quiet
 openssl s_client -connect mail.example.com:993 -quiet
 
 # Check fail2ban status
-podman exec docker-mailserver setup fail2ban status
+$DMS podman exec docker-mailserver setup fail2ban status
 
 # Check MTA-STS
 curl -sf https://mta-sts.example.com/.well-known/mta-sts.txt
@@ -357,27 +367,30 @@ just ansible-playbook playbooks/03-podman-mailserver.yml \
   -e podman_mailserver_teardown_purge_data=true
 ```
 
-This additionally removes all mail data and the mailserver home directory.
+This additionally removes all mail data, the mailserver home directory, the
+`mail-dms` system user, subuid/subgid entries, and lingering.
 
 ## Operations
 
 ### Inspect containers
 
+All Podman commands must run as the `mail-dms` user:
+
 ```sh
-podman pod ps                              # pod status
-podman ps --pod                            # all containers
-podman logs -f docker-mailserver           # DMS logs
-podman logs -f nginx-mail                  # Nginx logs
-podman exec docker-mailserver setup email list   # list accounts
-podman exec docker-mailserver setup fail2ban     # fail2ban status
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 podman pod ps
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 podman ps --pod
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 podman logs -f docker-mailserver
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 podman logs -f nginx-mail
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 podman exec docker-mailserver setup email list
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 podman exec docker-mailserver setup fail2ban
 ```
 
 ### Restart services
 
 ```sh
-systemctl restart mailserver-pod           # restart entire pod
-systemctl restart docker-mailserver        # restart DMS only
-systemctl restart nginx-mail               # restart Nginx only
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 systemctl --user restart mailserver-pod
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 systemctl --user restart docker-mailserver
+sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 systemctl --user restart nginx-mail
 ```
 
 ### Update DMS version

@@ -16,6 +16,10 @@ podman_mailserver_autodiscover_image: "docker.io/wdes/mail-autodiscover-autoconf
 podman_mailserver_autodiscover_version: "main"
 podman_mailserver_autodiscover_digest: "sha256:dc5c86993d166c0aa0a27ce086a48e5cdd9fae79886fcc34ceb105cd4ceedfe6"
 
+# Rootless Podman user
+podman_mailserver_user: "mail-dms"
+podman_mailserver_uid: 5200
+
 # Storage — /srv/podman is the LV mount (managed by disks_lvm_management)
 podman_mailserver_base_path: "/srv/podman"
 podman_mailserver_home: "{{ podman_mailserver_base_path }}/mailserver"

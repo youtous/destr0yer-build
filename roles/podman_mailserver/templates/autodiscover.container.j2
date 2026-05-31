@@ -1,7 +1,7 @@
 {{ ansible_managed | comment }}
 # Quadlet container — mail autodiscover/autoconfig (wdes/mail-autodiscover-autoconfig)
-# HTTP on localhost:8080, fronted by Nginx reverse proxy
-# Rootful: system-level Quadlet, host networking via pod
+# HTTP on localhost:8080, fronted by Nginx reverse proxy.
+# Rootless Podman, pasta networking via pod.
 
 [Container]
 ContainerName={{ podman_mailserver_autodiscover_container_name }}

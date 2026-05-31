@@ -1,6 +1,6 @@
 {{ ansible_managed | comment }}
 # Quadlet container — Nginx (MTA-STS + autodiscover/autoconfig reverse proxy)
-# Rootful: system-level Quadlet, host networking via pod
+# Rootless Podman, pasta networking via pod.
 
 [Container]
 ContainerName={{ podman_mailserver_nginx_container_name }}

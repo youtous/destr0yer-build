@@ -84,8 +84,8 @@
         src: "{{ item.path }}"
         dest: "{{ podman_mailserver_home }}/config/rspamd/dkim/{{ item.path | dirname | basename }}.private"
         remote_src: true
-        owner: root
-        group: root
+        owner: "{{ podman_mailserver_user }}"
+        group: "{{ podman_mailserver_user }}"
         mode: "u=rw,g=,o="
       loop: "{{ _opendkim_keys.files | default([]) }}"
       loop_control:
@@ -123,6 +123,18 @@
       register: _sieve_migration
       changed_when: "'migrated:' in _sieve_migration.stdout"
       when: _sieve_files.matched > 0
+
+    # Rootless Podman maps host UIDs into a user namespace.
+    # Mail data from v10 is owned by root (or other UIDs) and must be
+    # re-mapped so the container's internal root (UID 0) sees correct ownership.
+    - name: Fix ownership for rootless Podman user namespace
+      become: true
+      become_user: "{{ podman_mailserver_user }}"
+      ansible.builtin.command:
+        cmd: "podman unshare chown -R 0:0 {{ podman_mailserver_home }}/mail-data {{ podman_mailserver_home }}/mail-state"
+      environment:
+        XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+      changed_when: true
 
     - name: Migration complete
       ansible.builtin.debug:

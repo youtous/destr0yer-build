@@ -13,7 +13,7 @@
           - podman_mailserver_domain | length > 0
         fail_msg: "podman_mailserver_domains and podman_mailserver_domain must be set."
 
-    - name: Verify Podman is available
+    - name: Setup rootless Podman user
       ansible.builtin.import_tasks: user.yml
 
     - name: Prepare directories and validate prerequisites
