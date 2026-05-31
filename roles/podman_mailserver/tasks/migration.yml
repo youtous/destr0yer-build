@@ -139,11 +139,35 @@
 
     # Rootless Podman maps host UIDs into a user namespace.
     # Re-map so the container's internal root (UID 0) sees correct ownership.
-    - name: Fix ownership for rootless Podman user namespace
+    # DMS uses UID 5000 (docker/vmail) for Dovecot mail access.
+    # Resolve dynamically in case it changes between versions.
+    - name: Resolve DMS mail user UID
       become: true
       become_user: "{{ podman_mailserver_user }}"
       ansible.builtin.command:
-        cmd: "podman unshare chown -R 0:0 {{ podman_mailserver_home }}/mail-data {{ podman_mailserver_home }}/mail-state"
+        cmd: >-
+          podman run --rm
+          {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }}
+          id -u docker
+      environment:
+        XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+      changed_when: false
+      register: _dms_mail_uid
+
+    - name: Fix mail data ownership for container namespace
+      become: true
+      become_user: "{{ podman_mailserver_user }}"
+      ansible.builtin.command:
+        cmd: "podman unshare chown -R {{ _dms_mail_uid.stdout }}:{{ _dms_mail_uid.stdout }} {{ podman_mailserver_home }}/mail-data"
+      environment:
+        XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+      changed_when: true
+
+    - name: Fix mail state ownership for container namespace
+      become: true
+      become_user: "{{ podman_mailserver_user }}"
+      ansible.builtin.command:
+        cmd: "podman unshare chown -R 0:0 {{ podman_mailserver_home }}/mail-state"
       environment:
         XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
       changed_when: true
