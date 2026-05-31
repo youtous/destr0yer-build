@@ -19,7 +19,9 @@
 - name: Install cryptsetup when LUKS filesystems are configured
   become: true
   ansible.builtin.package:
-    name: cryptsetup
+    name:
+      - cryptsetup
+      - cryptsetup-initramfs
     state: present
   when: filesystems_to_create | selectattr('luks', 'defined') | selectattr('luks.enabled', 'defined') | selectattr('luks.enabled', 'equalto', true) | list | length > 0
 
