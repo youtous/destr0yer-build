@@ -55,7 +55,18 @@
   failed_when: false
   changed_when: true
 
-# 5. Remove UFW rules
+# 5. Clean rootless Podman storage (layers, cache)
+- name: Prune Podman storage
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: podman system prune -af
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  failed_when: false
+  changed_when: true
+
+# 6. Remove UFW rules
 - name: Remove UFW rule for SMTP
   ansible.builtin.include_tasks: teardown-ufw.yml
   vars:

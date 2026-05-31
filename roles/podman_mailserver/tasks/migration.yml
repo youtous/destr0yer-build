@@ -124,9 +124,21 @@
       changed_when: "'migrated:' in _sieve_migration.stdout"
       when: _sieve_files.matched > 0
 
+    # Rsync runs as root — fix host ownership to mail-dms first
+    - name: Fix host ownership of migrated data
+      become: true
+      ansible.builtin.file:
+        path: "{{ podman_mailserver_home }}/{{ item }}"
+        state: directory
+        owner: "{{ podman_mailserver_user }}"
+        group: "{{ podman_mailserver_user }}"
+        recurse: true
+      loop:
+        - "mail-data"
+        - "mail-state"
+
     # Rootless Podman maps host UIDs into a user namespace.
-    # Mail data from v10 is owned by root (or other UIDs) and must be
-    # re-mapped so the container's internal root (UID 0) sees correct ownership.
+    # Re-map so the container's internal root (UID 0) sees correct ownership.
     - name: Fix ownership for rootless Podman user namespace
       become: true
       become_user: "{{ podman_mailserver_user }}"
