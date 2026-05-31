@@ -107,7 +107,7 @@
     dest: "{{ podman_mailserver_home }}/config/rspamd/dkim/{{ domain.domain }}.private"
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
-    mode: "u=rw,g=,o="
+    mode: "u=rw,g=r,o=r"
   loop: "{{ podman_mailserver_domains | selectattr('dkim_private', 'defined') | list }}"
   loop_control:
     loop_var: domain

@@ -6,7 +6,9 @@
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
     mode: "u=rw,g=r,o="
-  notify: Reload systemd user daemon
+  notify:
+    - Reload systemd user daemon
+    - Restart mailserver pod
 
 - name: Deploy Quadlet container units
   become: true
@@ -25,7 +27,9 @@
       dest: "{{ podman_mailserver_autodiscover_container_name }}.container"
   loop_control:
     label: "{{ item.dest }}"
-  notify: Reload systemd user daemon
+  notify:
+    - Reload systemd user daemon
+    - Restart mailserver pod
 
 - name: Reload systemd user daemon
   become: true

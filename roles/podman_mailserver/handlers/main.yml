@@ -18,6 +18,16 @@
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
 
+- name: Restart mailserver pod
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.systemd:
+    name: "{{ podman_mailserver_pod_name }}-pod"
+    state: restarted
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+
 - name: Reload systemd user daemon
   become: true
   become_user: "{{ podman_mailserver_user }}"
