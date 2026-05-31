@@ -1,0 +1,6 @@
+{{ ansible_managed | comment('#') }}
+{% for domain in podman_mailserver_domains %}
+{% for account in domain.accounts | default([]) %}
+{{ account.username }}@{{ domain.domain }}|{BLF-CRYPT}{{ account.bcrypt_password }}
+{% endfor %}
+{% endfor %}

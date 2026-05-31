@@ -1,0 +1,41 @@
+- name: Deploy Quadlet pod unit
+  become: true
+  ansible.builtin.template:
+    src: mailserver-pod.pod.j2
+    dest: "{{ podman_mailserver_quadlet_dir }}/{{ podman_mailserver_pod_name }}.pod"
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload systemd daemon
+
+- name: Deploy Quadlet container units
+  become: true
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ podman_mailserver_quadlet_dir }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  loop:
+    - src: docker-mailserver.container.j2
+      dest: "{{ podman_mailserver_container_name }}.container"
+    - src: nginx-mail.container.j2
+      dest: "{{ podman_mailserver_nginx_container_name }}.container"
+    - src: autodiscover.container.j2
+      dest: "{{ podman_mailserver_autodiscover_container_name }}.container"
+  loop_control:
+    label: "{{ item.dest }}"
+  notify: Reload systemd daemon
+
+- name: Reload systemd daemon
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start mailserver pod
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ podman_mailserver_pod_name }}"
+    enabled: true
+    state: started
+    daemon_reload: true

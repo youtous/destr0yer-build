@@ -1,0 +1,9 @@
+# Rootful Podman — no dedicated user needed.
+# Containers run as root via systemd system-level Quadlet units.
+# This file is kept as a placeholder for any future user-level setup.
+
+- name: Verify Podman is installed
+  become: true
+  ansible.builtin.command:
+    cmd: podman --version
+  changed_when: false

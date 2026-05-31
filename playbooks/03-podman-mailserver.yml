@@ -1,0 +1,31 @@
+# Deploy docker-mailserver via rootful Podman (Quadlet).
+# Transitional deployment: DMS v10 (Docker) -> Podman rootful -> Kubernetes.
+#
+# Prerequisites:
+#   - LVM mount at /srv/podman (via disks_lvm_management in 00-provision)
+#   - Podman installed (via system_packages in 01-configure)
+#
+# Usage:
+#   just ansible-playbook playbooks/03-podman-mailserver.yml
+#
+# Teardown (keep data):
+#   just ansible-playbook playbooks/03-podman-mailserver.yml -e podman_mailserver_state=absent
+#
+# Teardown + purge data:
+#   just ansible-playbook playbooks/03-podman-mailserver.yml -e podman_mailserver_state=absent -e podman_mailserver_teardown_purge_data=true
+
+- name: Ensure server_environment is defined and not empty
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Check
+      ansible.builtin.assert:
+        that: >
+          server_environment is defined and server_environment | length > 0
+        msg: "server_environment must be defined and not empty"
+
+- name: Deploy mailserver (Podman rootful)
+  hosts: podman_mailservers
+  roles:
+    - podman_mailserver
+  tags: ["podman-mailserver"]

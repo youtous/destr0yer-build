@@ -1,0 +1,13 @@
+- name: "Remove UFW rule for port {{ podman_mailserver_teardown_port }}"
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "{{ podman_mailserver_teardown_port }}"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "podman-mailserver"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: []

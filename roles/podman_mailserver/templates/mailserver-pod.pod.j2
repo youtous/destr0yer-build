@@ -1,0 +1,10 @@
+{{ ansible_managed | comment }}
+# Quadlet pod — shared network namespace for DMS + Nginx + autodiscover.
+# Rootful: system-level unit in /etc/containers/systemd/
+
+[Pod]
+PodName={{ podman_mailserver_pod_name }}
+Network=host
+
+[Install]
+WantedBy=multi-user.target default.target

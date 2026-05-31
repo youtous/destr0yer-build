@@ -1,0 +1,25 @@
+{{ ansible_managed | comment }}
+# Quadlet container — mail autodiscover/autoconfig (wdes/mail-autodiscover-autoconfig)
+# HTTP on localhost:8080, fronted by Nginx reverse proxy
+# Rootful: system-level Quadlet, host networking via pod
+
+[Container]
+ContainerName={{ podman_mailserver_autodiscover_container_name }}
+# renovate: datasource=docker depName=wdes/mail-autodiscover-autoconfig
+Image={{ podman_mailserver_autodiscover_image }}:{{ podman_mailserver_autodiscover_version }}@{{ podman_mailserver_autodiscover_digest }}
+Pod={{ podman_mailserver_pod_name }}.pod
+ReadOnly=true
+
+Environment=ROCKET_PROFILE=production
+Environment=ROCKET_ADDRESS=127.0.0.1
+Environment=ROCKET_PORT=8080
+Environment=IMAP_HOSTNAME={{ podman_mailserver_hostname }}
+Environment=IMAP_PORT=993
+Environment=IMAP_SOCKET=SSL
+Environment=SMTP_HOSTNAME={{ podman_mailserver_hostname }}
+Environment=SMTP_PORT=465
+Environment=SMTP_SOCKET=SSL
+
+[Service]
+Restart=always
+RestartSec=5

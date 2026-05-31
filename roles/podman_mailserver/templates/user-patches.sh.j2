@@ -1,0 +1,7 @@
+#!/bin/bash
+{{ ansible_managed | comment }}
+
+# Apply Debian security updates on every container start.
+# Mitigates CVEs in DMS-bundled packages between version bumps.
+apt-get update -qq && apt-get upgrade -y -qq --no-install-recommends \
+  -o Dpkg::Options::="--force-confold" 2>&1 | tail -5

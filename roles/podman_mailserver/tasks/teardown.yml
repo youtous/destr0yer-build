@@ -1,0 +1,102 @@
+# 1. Stop and disable the pod (stops all 3 containers)
+- name: Stop mailserver pod
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ podman_mailserver_pod_name }}"
+    state: stopped
+    enabled: false
+  failed_when: false
+
+# 2. Remove all Quadlet unit files
+- name: Remove Quadlet units
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_quadlet_dir }}/{{ item }}"
+    state: absent
+  loop: "{{ podman_mailserver_quadlet_files }}"
+
+# 3. Reload systemd to unregister units
+- name: Reload systemd daemon after unit removal
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+# 4. Remove pod and containers
+- name: Remove Podman pod and containers
+  become: true
+  ansible.builtin.command:
+    cmd: "podman pod rm -f {{ podman_mailserver_pod_name }}"
+  failed_when: false
+  changed_when: true
+
+- name: Remove container images
+  become: true
+  ansible.builtin.command:
+    cmd: "podman rmi -f {{ item }}"
+  loop:
+    - "{{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }}"
+    - "{{ podman_mailserver_nginx_image }}:{{ podman_mailserver_nginx_version }}@{{ podman_mailserver_nginx_digest }}"
+    - "{{ podman_mailserver_autodiscover_image }}:{{ podman_mailserver_autodiscover_version }}@{{ podman_mailserver_autodiscover_digest }}"
+  failed_when: false
+  changed_when: true
+
+# 5. Remove UFW rules (pass empty from_ips — ufw_smart_rules removes all matching rules)
+- name: Remove UFW rule for SMTP
+  ansible.builtin.include_tasks: teardown-ufw.yml
+  vars:
+    podman_mailserver_teardown_port: "25"
+
+- name: Remove UFW rule for HTTP
+  ansible.builtin.include_tasks: teardown-ufw.yml
+  vars:
+    podman_mailserver_teardown_port: "80"
+
+- name: Remove UFW rule for HTTPS
+  ansible.builtin.include_tasks: teardown-ufw.yml
+  vars:
+    podman_mailserver_teardown_port: "443"
+
+- name: Remove UFW rule for SMTPS
+  ansible.builtin.include_tasks: teardown-ufw.yml
+  vars:
+    podman_mailserver_teardown_port: "465"
+
+- name: Remove UFW rule for Submission
+  ansible.builtin.include_tasks: teardown-ufw.yml
+  vars:
+    podman_mailserver_teardown_port: "587"
+
+- name: Remove UFW rule for IMAPS
+  ansible.builtin.include_tasks: teardown-ufw.yml
+  vars:
+    podman_mailserver_teardown_port: "993"
+
+# 6. Remove config and TLS files (always)
+- name: Remove config and TLS directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_home }}/{{ item }}"
+    state: absent
+  loop:
+    - "config"
+    - "tls"
+    - "nginx"
+
+# 7. Conditional: purge mail data
+- name: Purge mail data directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_home }}/{{ item }}"
+    state: absent
+  loop:
+    - "mail-data"
+    - "mail-state"
+    - "mail-log"
+  when: podman_mailserver_teardown_purge_data | bool
+
+- name: Remove mailserver home if fully purged
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_home }}"
+    state: absent
+  when: podman_mailserver_teardown_purge_data | bool

@@ -1,0 +1,16 @@
+- name: Restart mailserver container
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ podman_mailserver_container_name }}"
+    state: restarted
+
+- name: Restart nginx container
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ podman_mailserver_nginx_container_name }}"
+    state: restarted
+
+- name: Reload systemd daemon
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true

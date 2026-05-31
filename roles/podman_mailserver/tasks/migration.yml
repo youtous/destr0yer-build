@@ -1,0 +1,131 @@
+- name: Skip migration
+  ansible.builtin.debug:
+    msg: "Migration disabled (podman_mailserver_migration_enabled={{ podman_mailserver_migration_enabled }})"
+  when: not podman_mailserver_migration_enabled
+
+- name: Run v10 migration
+  when: podman_mailserver_migration_enabled
+  block:
+    - name: Validate migration source exists
+      become: true
+      ansible.builtin.stat:
+        path: "{{ podman_mailserver_migration_source }}"
+      register: _migration_source
+
+    - name: Assert migration source directory exists
+      ansible.builtin.assert:
+        that:
+          - _migration_source.stat.exists
+          - _migration_source.stat.isdir
+        fail_msg: >-
+          Migration source {{ podman_mailserver_migration_source }} does not exist or is not a directory.
+          Copy your v10 data there first.
+
+    - name: Check expected v10 subdirectories
+      become: true
+      ansible.builtin.stat:
+        path: "{{ podman_mailserver_migration_source }}/{{ item }}"
+      register: _migration_subdirs
+      loop:
+        - "mail"
+        - "config"
+
+    - name: Warn about missing v10 subdirectories
+      ansible.builtin.debug:
+        msg: "WARNING: {{ item.item }} not found in migration source — skipping"
+      when: not item.stat.exists
+      loop: "{{ _migration_subdirs.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Rsync mail data from v10
+      become: true
+      ansible.posix.synchronize:
+        src: "{{ podman_mailserver_migration_source }}/mail/"
+        dest: "{{ podman_mailserver_home }}/mail-data/"
+        archive: true
+        delete: false
+      delegate_to: "{{ inventory_hostname }}"
+      when: (_migration_subdirs.results | selectattr('item', 'equalto', 'mail') | first).stat.exists
+
+    # Rsync mail state (selective — skip incompatible data)
+    - name: Check mail-state exists in migration source
+      become: true
+      ansible.builtin.stat:
+        path: "{{ podman_mailserver_migration_source }}/mail-state"
+      register: _migration_state
+
+    - name: Rsync mail state from v10 (skip fail2ban DB and ClamAV)
+      become: true
+      ansible.posix.synchronize:
+        src: "{{ podman_mailserver_migration_source }}/mail-state/"
+        dest: "{{ podman_mailserver_home }}/mail-state/"
+        archive: true
+        delete: false
+        rsync_opts:
+          - "--exclude=lib-fail2ban/"
+          - "--exclude=lib-clamav/"
+      delegate_to: "{{ inventory_hostname }}"
+      when: _migration_state.stat.exists | default(false)
+
+    # Migrate DKIM keys from OpenDKIM (v10) to Rspamd format (v15)
+    - name: Check OpenDKIM keys in migration source
+      become: true
+      ansible.builtin.find:
+        paths: "{{ podman_mailserver_migration_source }}/config/opendkim/keys"
+        patterns: "*.private"
+        recurse: true
+      register: _opendkim_keys
+      ignore_errors: true
+
+    - name: Copy OpenDKIM keys to Rspamd DKIM directory
+      become: true
+      ansible.builtin.copy:
+        src: "{{ item.path }}"
+        dest: "{{ podman_mailserver_home }}/config/rspamd/dkim/{{ item.path | dirname | basename }}.private"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "u=rw,g=,o="
+      loop: "{{ _opendkim_keys.files | default([]) }}"
+      loop_control:
+        label: "{{ item.path | dirname | basename }}"
+
+    # Migrate Sieve scripts (v13 breaking change: moved to home/sieve)
+    - name: Find Sieve scripts needing migration
+      become: true
+      ansible.builtin.find:
+        paths: "{{ podman_mailserver_home }}/mail-data"
+        patterns: "*.sieve"
+        recurse: true
+        file_type: file
+      register: _sieve_files
+
+    - name: Migrate Sieve scripts to home/sieve layout
+      become: true
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+          for domaindir in {{ podman_mailserver_home }}/mail-data/*/; do
+            [ -d "$domaindir" ] || continue
+            for userdir in "$domaindir"*/; do
+              [ -d "$userdir" ] || continue
+              old_sieve="$userdir/sieve"
+              new_sieve="$userdir/home/sieve"
+              if [ -d "$old_sieve" ] && [ ! -d "$new_sieve" ]; then
+                mkdir -p "$(dirname "$new_sieve")"
+                mv "$old_sieve" "$new_sieve"
+                echo "migrated: $old_sieve -> $new_sieve"
+              fi
+            done
+          done
+        executable: /bin/bash
+      register: _sieve_migration
+      changed_when: "'migrated:' in _sieve_migration.stdout"
+      when: _sieve_files.matched > 0
+
+    - name: Migration complete
+      ansible.builtin.debug:
+        msg: >-
+          v10 migration done. Review logs above for any warnings.
+          First container start will finalize internal format upgrades (Dovecot, Postfix).
