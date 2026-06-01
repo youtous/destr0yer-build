@@ -23,7 +23,7 @@
           fi
         done
       done
-      [ "$changed" -eq 0 ] && echo "no-change"
+      if [ "$changed" -eq 0 ]; then echo "no-change"; fi
     executable: /bin/bash
   register: _sieve_fix
   changed_when: "'fixed:' in _sieve_fix.stdout"
