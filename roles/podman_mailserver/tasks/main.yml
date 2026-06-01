@@ -28,26 +28,12 @@
     - name: Deploy configuration files
       ansible.builtin.import_tasks: config.yml
 
-    - name: Deploy Quadlet pod and containers
-      ansible.builtin.import_tasks: quadlet.yml
-
-    - name: Flush handlers to ensure containers are started
-      ansible.builtin.meta: flush_handlers
-      when: podman_mailserver_sieve_fix | default(podman_mailserver_migration_enabled) | default(false)
-
-    - name: Wait for DMS container to be running
-      become: true
-      become_user: "{{ podman_mailserver_user }}"
-      ansible.builtin.command:
-        cmd: podman wait --condition=running docker-mailserver
-      environment:
-        XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
-      changed_when: false
-      when: podman_mailserver_sieve_fix | default(podman_mailserver_migration_enabled) | default(false)
-
-    - name: Fix Sieve symlinks (idempotent, runs inside container)
+    - name: Fix Sieve symlinks (idempotent, runs in temporary container)
       ansible.builtin.include_tasks: sieve-fix.yml
       when: podman_mailserver_sieve_fix | default(podman_mailserver_migration_enabled) | default(false)
+
+    - name: Deploy Quadlet pod and containers
+      ansible.builtin.import_tasks: quadlet.yml
 
     - name: Configure firewall rules
       ansible.builtin.import_tasks: firewall.yml
