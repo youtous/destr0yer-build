@@ -22,6 +22,10 @@
     - name: Migrate data from v10 instance
       ansible.builtin.import_tasks: migration.yml
 
+    - name: Fix Sieve symlinks (idempotent)
+      ansible.builtin.include_tasks: sieve-fix.yml
+      when: podman_mailserver_sieve_fix | default(podman_mailserver_migration_enabled) | default(false)
+
     - name: Deploy TLS wildcard certificate
       ansible.builtin.import_tasks: tls.yml
 
