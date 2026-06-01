@@ -50,5 +50,8 @@ smtp_tls_verify_cert_match = hostname, nexthop, dot-nexthop
 
 smtp_tls_wrappermode = {{ postfix_uses_client_ssl_tls }}
 
+# Host lookup method (dns = direct DNS, native = system resolver incl. /etc/hosts)
+smtp_host_lookup = {{ postfix_smtp_host_lookup }}
+
 # Set external SMTP relay host here IP or hostname accepted along with a port number.
 relayhost = {{ relayhost }}
