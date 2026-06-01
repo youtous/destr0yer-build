@@ -81,14 +81,18 @@
     mode: "u=rw,g=r,o="
   notify: Restart mailserver container
 
-- name: Create Rspamd override directory
+- name: Create Rspamd directories
   become: true
   ansible.builtin.file:
-    path: "{{ podman_mailserver_home }}/config/rspamd/override.d"
+    path: "{{ item }}"
     state: directory
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
-    mode: "u=rwx,g=rx,o="
+    mode: "u=rwx,g=rx,o=rx"
+  loop:
+    - "{{ podman_mailserver_home }}/config/rspamd"
+    - "{{ podman_mailserver_home }}/config/rspamd/override.d"
+    - "{{ podman_mailserver_home }}/config/rspamd/dkim"
 
 - name: Deploy Rspamd DKIM signing config
   become: true
