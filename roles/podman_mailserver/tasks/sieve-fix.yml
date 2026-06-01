@@ -26,20 +26,22 @@
   register: _sieve_fix
   changed_when: "'fixed:' in _sieve_fix.stdout"
 
-- name: Fix ownership of modified Sieve files
+- name: Resolve container mail UID for host namespace
   become: true
-  become_user: "{{ podman_mailserver_user }}"
   ansible.builtin.shell:
     cmd: |
       set -euo pipefail
-      MAIL_UID=$(podman run --rm \
+      SUBUID_START=$(grep '^{{ podman_mailserver_user }}:' /etc/subuid | cut -d: -f2)
+      CONTAINER_UID=$(podman run --rm \
         {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }} \
         id -u docker)
-      MAIL_GID=$(podman run --rm \
-        {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }} \
-        id -g docker)
-      podman unshare chown -R "${MAIL_UID}:${MAIL_GID}" {{ podman_mailserver_home }}/mail-data/
+      echo "$(( SUBUID_START + CONTAINER_UID ))"
     executable: /bin/bash
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: false
+  register: _host_mail_uid
+
+- name: Fix ownership of mail data (host-mapped UID)
+  become: true
+  ansible.builtin.command:
+    cmd: chown -Rh {{ _host_mail_uid.stdout }}:{{ _host_mail_uid.stdout }} {{ podman_mailserver_home }}/mail-data/
   changed_when: true
