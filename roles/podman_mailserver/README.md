@@ -420,7 +420,17 @@ sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200 systemctl --user restart nginx-m
 
 ### Add a new email account
 
-1. Generate password: `doveadm pw -s BLF-CRYPT`
+1. Generate bcrypt password hash:
+   ```sh
+   # Option A — htpasswd (cost 15, recommended)
+   ./scripts/bcrypt-password.sh user1
+   # Copy the hash after the "user1:" prefix
+
+   # Option B — via the running DMS container
+   DMS="sudo -u mail-dms XDG_RUNTIME_DIR=/run/user/5200"
+   $DMS podman exec docker-mailserver doveadm pw -s BLF-CRYPT
+   # Copy the hash without the {BLF-CRYPT} prefix
+   ```
 2. Add to `podman_mailserver_domains[].accounts` in vault
 3. Re-run the playbook
 
