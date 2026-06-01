@@ -4,34 +4,28 @@
   ansible.builtin.shell:
     cmd: |
       set -euo pipefail
-      MAIL_UID=$(podman run --rm \
-        {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }} \
-        id -u docker)
-      MAIL_GID=$(podman run --rm \
-        {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }} \
-        id -g docker)
-      podman unshare bash -c "
-        for domaindir in {{ podman_mailserver_home }}/mail-data/*/; do
-          [ -d \"\$domaindir\" ] || continue
-          for userdir in \"\$domaindir\"*/; do
-            [ -d \"\$userdir\" ] || continue
-            dovecot_sieve=\"\$userdir/.dovecot.sieve\"
-            if [ -L \"\$dovecot_sieve\" ]; then
-              target=\$(readlink \"\$dovecot_sieve\")
-              case \"\$target\" in
+      podman exec docker-mailserver bash -c '
+        for domaindir in /var/mail/*/; do
+          [ -d "$domaindir" ] || continue
+          for userdir in "$domaindir"*/; do
+            [ -d "$userdir" ] || continue
+            dovecot_sieve="$userdir/.dovecot.sieve"
+            if [ -L "$dovecot_sieve" ]; then
+              target=$(readlink "$dovecot_sieve")
+              case "$target" in
                 sieve/*)
-                  new_target=\"home/\${target}\"
-                  ln -sf \"\$new_target\" \"\$dovecot_sieve\"
-                  rm -f \"\$userdir/.dovecot.svbin\"
-                  echo \"fixed: \$dovecot_sieve -> \$new_target\"
+                  new_target="home/${target}"
+                  ln -sf "$new_target" "$dovecot_sieve"
+                  rm -f "$userdir/.dovecot.svbin"
+                  echo "fixed: $dovecot_sieve -> $new_target"
                   ;;
               esac
-              chown -R $MAIL_UID:$MAIL_GID \"\$userdir\"
+              chown -Rh docker:docker "$userdir/.dovecot.sieve" "$userdir/home/sieve/" 2>/dev/null || true
             fi
           done
         done
         echo done
-      "
+      '
     executable: /bin/bash
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
