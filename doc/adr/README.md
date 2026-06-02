@@ -57,6 +57,7 @@ Lifecycle: **ADR** (decision) → **implementation** (roles/kluctl) → **Doc** 
 | [023](023-disaster-recovery.md) | Disaster recovery plan | 📋 Decided | -- |
 | [026](026-velero-backup.md) | Velero — K8S-native backup with Kopia backend | ✅ Done | [storage](../storage.md) |
 | [035](035-usb-storage.md) | USB disk storage for local K3S workloads | ✅ Done | [usb-storage](../usb-storage.md) |
+| [038](038-sftpgo-backup-server.md) | SFTPGo — fine-grained SFTP server with S3 backend (bare-metal + K8S) | 📋 TODO | -- |
 
 ## Phase 5 — Ingress, certificates and applications
 
