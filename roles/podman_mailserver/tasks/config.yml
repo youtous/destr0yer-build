@@ -31,11 +31,11 @@
     mode: "u=rw,g=r,o="
   notify: Restart mailserver container
 
-- name: Deploy postfix virtual regexp aliases
+- name: Deploy postfix regexp aliases
   become: true
   ansible.builtin.template:
-    src: postfix-virtual-regexp.cf.j2
-    dest: "{{ podman_mailserver_home }}/config/postfix-virtual-regexp.cf"
+    src: postfix-regexp.cf.j2
+    dest: "{{ podman_mailserver_home }}/config/postfix-regexp.cf"
     owner: "{{ podman_mailserver_user }}"
     group: "{{ podman_mailserver_user }}"
     mode: "u=rw,g=r,o="

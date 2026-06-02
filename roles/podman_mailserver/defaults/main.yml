@@ -58,7 +58,7 @@ podman_mailserver_message_size_limit: 12000000
 #     aliases:
 #       - alias: "abuse@example.com"
 #         to: "postmaster@example.com"
-#     regexp_aliases:  (optional, pcre patterns for postfix-virtual-regexp.cf)
+#     regexp_aliases:  (optional, pcre patterns for postfix-regexp.cf — auto-loaded by DMS for both receiving and sending)
 #       - pattern: "/^bounce-.*@example\\.com$/"
 #         to: "postmaster@example.com"
 #     dkim_private: |  (optional, PEM private key for Rspamd DKIM signing)

@@ -17,5 +17,12 @@ postscreen_dnsbl_sites = zen.spamhaus.org*3, bl.mailspike.net, b.barracudacentra
 smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination, check_recipient_access texthash:/tmp/docker-mailserver/postfix-receive-access.cf
 smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, check_sender_access texthash:/tmp/docker-mailserver/postfix-send-access.cf
 
-# Virtual aliases — DMS default + regexp patterns
-virtual_alias_maps = texthash:/etc/postfix/virtual, regexp:/tmp/docker-mailserver/postfix-virtual-regexp.cf
+# Plus addressing (user+tag@domain → user@domain)
+recipient_delimiter = +
+
+# Virtual aliases — DMS default + regexp patterns (explicit)
+virtual_alias_maps = texthash:/etc/postfix/virtual, pcre:/tmp/docker-mailserver/postfix-regexp.cf
+# smtpd_sender_login_maps is NOT overridden here — DMS auto-loads postfix-regexp.cf
+# into a unionmap that includes internal maps (sender_login_maps.pcre, aliases, virtual).
+# Overriding it would break SPOOF_PROTECTION. The regexp patterns work for both
+# receiving (virtual_alias_maps above) and sending (DMS unionmap) via the same file.
