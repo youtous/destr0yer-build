@@ -19,7 +19,7 @@
     group: "{{ podman_mailserver_user }}"
     mode: "u=rwx,g=rx,o="
 
-- name: Create all subdirectories
+- name: Create config and shared subdirectories
   become: true
   ansible.builtin.file:
     path: "{{ podman_mailserver_home }}/{{ item }}"
@@ -28,6 +28,14 @@
     group: "{{ podman_mailserver_user }}"
     mode: "u=rwx,g=rx,o="
   loop: "{{ podman_mailserver_dirs_private + podman_mailserver_dirs_shared }}"
+
+- name: Create data subdirectories (ownership set later by fix-permissions)
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_home }}/{{ item }}"
+    state: directory
+    mode: "u=rwx,g=rx,o="
+  loop: "{{ podman_mailserver_dirs_data }}"
 
 - name: Ensure Quadlet directory exists
   become: true

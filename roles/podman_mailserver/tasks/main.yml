@@ -32,6 +32,9 @@
       ansible.builtin.include_tasks: sieve-fix.yml
       when: podman_mailserver_sieve_fix | default(podman_mailserver_migration_enabled) | default(false)
 
+    - name: Fix data directory ownership for container namespace
+      ansible.builtin.import_tasks: fix-permissions.yml
+
     - name: Restore SELinux labels on mailserver data
       become: true
       ansible.builtin.command:

@@ -7,10 +7,17 @@ podman_mailserver_quadlet_dir: "/home/{{ podman_mailserver_user }}/.config/conta
 
 podman_mailserver_xdg_runtime_dir: "/run/user/{{ podman_mailserver_uid }}"
 
-podman_mailserver_dirs_private:
+# Directories owned by the container's docker user (UID 5000 → host-mapped UID).
+# In rootless Podman, host UID mail-dms maps to container UID 0 (root).
+# DMS processes (Postfix, Dovecot) run as docker:docker (5000:5000), so these
+# directories must be owned by the host-mapped UID, not mail-dms.
+podman_mailserver_dirs_data:
   - "mail-data"
   - "mail-state"
   - "mail-log"
+
+# Directories owned by mail-dms (maps to container root — DMS copies configs from here)
+podman_mailserver_dirs_private:
   - "config/rspamd/dkim"
 
 podman_mailserver_dirs_shared:
