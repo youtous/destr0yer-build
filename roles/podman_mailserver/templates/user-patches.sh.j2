@@ -5,3 +5,10 @@
 # Mitigates CVEs in DMS-bundled packages between version bumps.
 apt-get update -qq && apt-get upgrade -y -qq --no-install-recommends \
   -o Dpkg::Options::="--force-confold" 2>&1 | tail -5
+
+# Restrict TLS signature algorithms to SHA-256+ (exclude SHA-1, SHA-224).
+# Postfix 3.7 has no native sigalgs parameter — must set via OpenSSL config.
+# internet.nl / NCSC-NL §3.3.5: SHA-224 = "phase out", SHA-1/MD5 = "insufficient".
+if ! grep -q '^SignatureAlgorithms' /etc/ssl/openssl.cnf; then
+  sed -i '/\[system_default_sect\]/a SignatureAlgorithms = ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512' /etc/ssl/openssl.cnf
+fi

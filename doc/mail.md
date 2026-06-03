@@ -43,51 +43,75 @@ ManageSieve is restricted at two levels:
 | TLS ciphers | `HIGH:@SECLEVEL=2` (see below) |
 | Postscreen | enforce |
 
-### TLS hardening — cipher and signature policy
+### TLS hardening — cipher suites and signature algorithms
+
+Our Postfix TLS configuration targets **only** NCSC-NL "good" and "sufficient"
+cipher suites, with no "phase out" or "insufficient" suites offered.
 
 ```text
-# postfix-main.cf
-tls_high_cipherlist = HIGH:@SECLEVEL=2
+# postfix-main.cf — cipher suites
+tls_high_cipherlist = ECDHE+AESGCM:ECDHE+CHACHA20:@SECLEVEL=2
 smtp_tls_ciphers = high
 smtpd_tls_ciphers = high
 tls_preempt_cipherlist = yes
 tls_ssl_options = NO_COMPRESSION, NO_RENEGOTIATION
 ```
 
-**Why no explicit `tls_exclude_ciphers`**: OpenSSL 3.x `HIGH` cipher list
-already excludes all genuinely broken ciphers (NULL, EXPORT, DES, RC4, MD5).
-An explicit exclude list is redundant and risks breaking deliverability.
+```bash
+# user-patches.sh — signature algorithms (Postfix 3.7 has no native parameter)
+sed -i '/\[system_default_sect\]/a SignatureAlgorithms = ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512' /etc/ssl/openssl.cnf
+```
 
-**HMAC-SHA1 cipher MACs** (e.g. `ECDHE-RSA-AES256-SHA`) are deliberately kept.
-HMAC-SHA1 is not broken — SHA-1 collision weaknesses do not affect HMAC
-(RFC 2104). Excluding them would force old MTAs to fall back to plaintext
-(`smtpd_tls_security_level = may` = opportunistic TLS), which is strictly worse.
+#### Cipher suite selection
 
-**`@SECLEVEL=2`** (112-bit minimum security) solves a different problem flagged
-by internet.nl: the **signature algorithm** used during TLS 1.2 key exchange.
-By default, OpenSSL offers SHA-1 as a hash for the server's digital signature
-of key exchange parameters. NCSC-NL
-([guidelines v2025-05, §3.3.5](https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1))
-rates SHA-1 for signatures as "insufficient".
+The positive list `ECDHE+AESGCM:ECDHE+CHACHA20` includes only:
 
-`@SECLEVEL=2` in the cipher string:
+| TLS 1.2 cipher (IANA name) | Status (NCSC-NL) |
+|----------------------------|-------------------|
+| `TLS_ECDHE_{ECDSA,RSA}_WITH_AES_256_GCM_SHA384` | Sufficient |
+| `TLS_ECDHE_{ECDSA,RSA}_WITH_AES_128_GCM_SHA256` | Sufficient |
+| `TLS_ECDHE_{ECDSA,RSA}_WITH_CHACHA20_POLY1305_SHA256` | Sufficient |
 
-| What it does | Impact |
-|-------------|--------|
-| Disables SHA-1 as **signature algorithm** for key exchange | Fixes internet.nl finding |
-| Keeps HMAC-SHA1 as **cipher MAC** | No deliverability impact (HMAC-SHA1 ≥ 112-bit) |
-| Requires RSA ≥ 2048 bits | Our cert is 2048 — OK |
-| Requires DH ≥ 2048 bits | Postfix auto-generates — OK |
+Excluded by design (not in the positive list):
 
-This is a global setting (`tls_high_cipherlist` is shared between `smtpd` and
-`smtp`). Outbound connections to servers with < 2048-bit certs fall back to
-plaintext (same behavior as any cipher negotiation failure with `may`).
+| Excluded | Why |
+|----------|-----|
+| `*_CCM_8` (short tag) | Insufficient — truncated authentication tag |
+| `*_ARIA_*` | Phase out |
+| `*_CBC_SHA256`, `*_CBC_SHA384` | Phase out |
+| `*_CAMELLIA_*` | Phase out |
+| `DHE_*` | Phase out (DH key exchange) |
+| HMAC-SHA1 ciphers | Phase out but harmless — excluded as side effect |
 
-| Hash for key exchange signature | Status (NCSC-NL) |
-|---------------------------------|-------------------|
-| SHA-256, SHA-384, SHA-512 | Good |
-| SHA-224 | Phase out |
-| **SHA-1**, MD5 | Insufficient — disabled by `@SECLEVEL=2` |
+TLS 1.3 cipher suites are negotiated separately from `tls_high_cipherlist` and
+are unaffected (all TLS 1.3 suites are "good" or "sufficient").
+
+**Deliverability impact**: with `smtpd_tls_security_level = may` (opportunistic),
+any MTA that cannot negotiate an ECDHE+AESGCM/CHACHA20 cipher falls back to
+plaintext. In 2026, virtually all mail servers support ECDHE+AESGCM. The risk
+of plaintext fallback is negligible and preferable to offering weak ciphers.
+
+#### Key exchange signature algorithms
+
+Two distinct settings control which hash functions the server uses for digital
+signatures during TLS 1.2 key exchange:
+
+1. **`@SECLEVEL=2`** in the cipher string — disables SHA-1 (< 112-bit security
+   for collision resistance). Does **not** disable SHA-224 (exactly 112-bit).
+
+2. **`SignatureAlgorithms`** in OpenSSL system config (`user-patches.sh`) —
+   explicitly lists SHA-256/384/512 only, excluding both SHA-1 and SHA-224.
+   Postfix 3.7 has no native parameter for this; Postfix 3.9+ adds
+   `tls_config_file` which will make this cleaner.
+
+| Hash for key exchange signature | Status (NCSC-NL) | Our config |
+|---------------------------------|-------------------|------------|
+| SHA-256, SHA-384, SHA-512 | Good | Allowed |
+| SHA-224 | Phase out | Excluded via `SignatureAlgorithms` |
+| SHA-1, MD5 | Insufficient | Excluded via `@SECLEVEL=2` |
+
+`tls_preempt_cipherlist = yes` enforces server cipher preference order —
+AESGCM is preferred over CHACHA20 (AES-NI hardware acceleration on servers).
 
 ## Anti-spam stack (Rspamd)
 
@@ -314,11 +338,12 @@ testssl --jsonfile results.json --append mail.example.com:465
 testssl --jsonfile results.json --append mail.example.com:993
 ```
 
-Expected results with `TLS_LEVEL=modern` + `@SECLEVEL=2`:
+Expected results with our hardened config:
 - No SSLv2/SSLv3/TLSv1.0/TLSv1.1
 - Only TLSv1.2 and TLSv1.3
-- No RC4, DES, 3DES, NULL, EXPORT ciphers
-- No SHA-1 for key exchange signatures (SECLEVEL=2)
+- TLS 1.2 ciphers: only ECDHE + AESGCM/CHACHA20 (no ARIA, CCM-8, CBC, DHE)
+- No SHA-1 or SHA-224 for key exchange signatures
+- Server cipher preference enforced (`tls_preempt_cipherlist = yes`)
 - Forward secrecy (ECDHE) on all cipher suites
 - Valid certificate chain with trusted CA
 
@@ -379,7 +404,9 @@ testssl.sh / internet.nl.
 ### Transport security
 
 - [ ] TLS 1.2+ only — no SSLv2/SSLv3/TLSv1.0/TLSv1.1 (`TLS_LEVEL=modern`)
-- [ ] Cipher level `HIGH:@SECLEVEL=2` (excludes broken ciphers + SHA-1 for signatures)
+- [ ] Cipher suites: only NCSC-NL "sufficient" (`ECDHE+AESGCM:ECDHE+CHACHA20:@SECLEVEL=2`)
+- [ ] No CCM-8, ARIA, CBC-SHA256/SHA384, DHE, CAMELLIA cipher suites
+- [ ] Signature algorithms: SHA-256/384/512 only (no SHA-1, no SHA-224)
 - [ ] Forward secrecy — ECDHE on all suites
 - [ ] Certificate valid, not self-signed, full chain served
 - [ ] STARTTLS on port 25 (opportunistic for receiving)
@@ -429,7 +456,7 @@ internet.nl tests 7 categories. Map to our implementation:
 
 | Category | What they check | Our implementation | Status |
 |----------|----------------|-------------------|--------|
-| **STARTTLS** | TLS available, TLS 1.2+, cipher order, no SSLv3, no SHA-1 for key exchange signatures | `TLS_LEVEL=modern`, `HIGH:@SECLEVEL=2` | ✅ |
+| **STARTTLS** | TLS available, TLS 1.2+, cipher order, cipher suites, signature hash | `TLS_LEVEL=modern`, `ECDHE+AESGCM:ECDHE+CHACHA20:@SECLEVEL=2`, `SignatureAlgorithms` SHA-256+ | ✅ |
 | **Certificate** | Valid, not expired, full chain, matches hostname | cert-manager / Let's Encrypt wildcard | ✅ (prod) |
 | **DANE** | DNSSEC + TLSA `3 1 1` for port 25 | deSEC supports DNSSEC | ⏳ TODO |
 | **SPF** | `v=spf1 ... -all` (hard fail) | Configured per domain | ✅ |

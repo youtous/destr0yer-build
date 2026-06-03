@@ -143,14 +143,22 @@ configMaps:
       apt-get update -qq && apt-get upgrade -y -qq --no-install-recommends \
         -o Dpkg::Options::="--force-confold" 2>&1 | tail -5
 
+      # Restrict TLS signature algorithms to SHA-256+ (exclude SHA-1, SHA-224).
+      # Postfix 3.7 has no native sigalgs parameter — must set via OpenSSL config.
+      # internet.nl / NCSC-NL §3.3.5: SHA-224 = "phase out", SHA-1/MD5 = "insufficient".
+      if ! grep -q '^SignatureAlgorithms' /etc/ssl/openssl.cnf; then
+        sed -i '/\[system_default_sect\]/a SignatureAlgorithms = ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512' /etc/ssl/openssl.cnf
+      fi
+
   postfix-main.cf:
     create: true
     path: postfix-main.cf
     data: |
-      # TLS hardening — SECLEVEL=2 disables SHA-1 for key exchange signatures
-      # (required by internet.nl / NCSC-NL guidelines) while keeping HMAC-SHA1
-      # cipher MACs (not broken, avoids plaintext fallback with old MTAs).
-      tls_high_cipherlist = HIGH:@SECLEVEL=2
+      # TLS hardening — only NCSC-NL "sufficient" cipher suites (no phase-out/insufficient).
+      # Positive list: ECDHE + AESGCM/CHACHA20 only. Excludes ARIA, CCM-8, CBC, DHE, CAMELLIA.
+      # SECLEVEL=2 (112-bit min) additionally disables SHA-1 for key exchange signatures.
+      # SHA-224 is excluded separately via SignatureAlgorithms in user-patches.sh.
+      tls_high_cipherlist = ECDHE+AESGCM:ECDHE+CHACHA20:@SECLEVEL=2
       smtp_tls_ciphers = high
       smtpd_tls_ciphers = high
       tls_preempt_cipherlist = yes
