@@ -1,6 +1,9 @@
 {{ ansible_managed | comment }}
 
-# TLS hardening
+# TLS hardening — SECLEVEL=2 disables SHA-1 for key exchange signatures
+# (required by internet.nl / NCSC-NL guidelines) while keeping HMAC-SHA1
+# cipher MACs (not broken, avoids plaintext fallback with old MTAs).
+tls_high_cipherlist = HIGH:@SECLEVEL=2
 smtp_tls_ciphers = high
 smtpd_tls_ciphers = high
 tls_preempt_cipherlist = yes
