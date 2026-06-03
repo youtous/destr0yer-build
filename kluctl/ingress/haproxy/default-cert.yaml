@@ -11,6 +11,8 @@ spec:
   issuerRef:
     name: {{ args.certmanager_issuer | default("cluster-issuer") }}
     kind: ClusterIssuer
+  privateKey:
+    rotationPolicy: Never
   dnsNames:
     - "*.{{ args.cluster_domain }}"
   duration: 8760h

@@ -80,6 +80,13 @@ podman_mailserver_ufw_from_ips:
   - "0.0.0.0/0"
   - "::/0"
 
+# DANE — outbound TLSA verification (requires DNSSEC-validating resolver)
+# When enabled, Postfix uses mandatory TLS for domains with valid TLSA records
+# and falls back to opportunistic TLS otherwise. Safe to enable before
+# publishing your own TLSA records.
+podman_mailserver_dane_enabled: false
+podman_mailserver_smtp_tls_security_level: "{{ 'dane' if podman_mailserver_dane_enabled else 'may' }}"
+
 # Migration from v10
 podman_mailserver_migration_enabled: false
 podman_mailserver_migration_source: "/var/mail-backup"

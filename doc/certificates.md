@@ -148,6 +148,65 @@ handling credentials (Authelia, Grafana, KopiaUI). A compromised mesh peer
 can MITM sessions via ARP spoofing without TLS. Use HTTPS everywhere
 internally — the self-signed CA has near-zero operational overhead.
 
+## DANE/TLSA considerations for mail certificates
+
+When DANE is deployed (see [mail.md](mail.md#danetlsa-requires-dnssec)), the
+mail server's TLS certificate public key is hashed and published as a TLSA
+DNS record. This creates a dependency between cert renewal and DNS.
+
+**Key reuse is required** to avoid updating TLSA records on every renewal:
+
+| Tool | Setting | Effect |
+|------|---------|--------|
+| certbot | `--reuse-key` | Keeps private key across renewals |
+| lego | `--reuse-key` | Same, for non-K3S hosts |
+| cert-manager | `spec.privateKey.rotationPolicy: Never` | K8S Certificate resource keeps key |
+
+Without key reuse, every 90-day Let's Encrypt renewal generates a new key,
+changing the SPKI hash and breaking DANE until the TLSA record is updated.
+
+**Default in this cluster**: `rotationPolicy: Never` is enforced globally via
+the Kyverno policy `default-cert-key-reuse`. All Certificate resources
+(explicit or auto-created by Ingress annotations) get key reuse by default.
+This makes every certificate DANE-compatible out of the box.
+
+Security trade-off: if a private key is compromised, the window of exposure
+is longer (no auto-rotation on renewal). Mitigated by:
+- K8S secrets-at-rest encryption
+- RBAC restricts Secret access
+- WireGuard protects network transport
+- ECDHE provides forward secrecy per TLS session (past sessions unaffected)
+- Manual rotation always possible by deleting the TLS Secret
+
+**When you must rotate the key** (compromise, algorithm upgrade):
+1. Compute TLSA hash for the new key
+2. Publish both old and new TLSA records (dual records)
+3. Wait ≥ 2x DNS TTL for propagation
+4. Deploy certificate with new key
+5. Remove old TLSA record
+
+**cert-manager integration** — the `cluster-issuer` Certificate for mail
+should set `rotationPolicy: Never` when DANE is active:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mail-tls
+spec:
+  secretName: mail-tls-secret
+  issuerRef:
+    name: cluster-issuer
+    kind: ClusterIssuer
+  privateKey:
+    rotationPolicy: Never
+  dnsNames:
+    - mail.example.com
+```
+
+See [mail.md](mail.md#danetlsa-requires-dnssec) for TLSA record format and
+Postfix outbound DANE configuration.
+
 ## Pod-to-pod mTLS
 
 Handled by Cilium transparent encryption (WireGuard mode). No application-level
