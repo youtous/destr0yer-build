@@ -35,7 +35,7 @@
 - name: Accept host key for SFTP target
   become: true
   ansible.builtin.known_hosts:
-    name: "{{ kopia_sftp_host }}"
+    name: "{{ '[' ~ kopia_sftp_host ~ ']:' ~ kopia_sftp_port if kopia_sftp_port | int != 22 else kopia_sftp_host }}"
     key: "{{ item }}"
     path: /root/.ssh/known_hosts
   loop: "{{ kopia_sftp_host_key_scan.stdout_lines | select('match', '^[^#]') | list }}"
