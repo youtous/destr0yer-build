@@ -9,9 +9,7 @@ Type=oneshot
 WorkingDirectory=/root
 EnvironmentFile=/etc/kopia.env
 ExecStartPre=/bin/mkdir -p /root/.cache/kopia /root/.config/kopia
-{% for path in kopia_snapshot_paths %}
-ExecStart={{ kopia_binary_path }} snapshot create {{ path }}
-{% endfor %}
+ExecStart={{ kopia_binary_path }} snapshot create {{ kopia_snapshot_paths | join(' ') }}
 
 # Hardening — Kopia runs as root (needs DAC read on /etc, /root, /var/lib/rancher)
 ReadOnlyPaths=/
