@@ -6,12 +6,13 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+WorkingDirectory=/root
 EnvironmentFile=/etc/kopia.env
+ExecStartPre=/bin/mkdir -p /root/.cache/kopia /root/.config/kopia
 ExecStart={{ kopia_binary_path }} snapshot verify --verify-files-percent={{ kopia_verify_percent }}
 
 # Hardening — same restrictions as kopia-snapshot
-ProtectSystem=strict
 ReadOnlyPaths=/
-ReadWritePaths=/root/.config/kopia /root/.cache/kopia /tmp
+ReadWritePaths=/root/.config/kopia /root/.cache/kopia /root/.ssh /tmp
 NoNewPrivileges=yes
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

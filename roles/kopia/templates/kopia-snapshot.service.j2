@@ -6,14 +6,15 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+WorkingDirectory=/root
 EnvironmentFile=/etc/kopia.env
+ExecStartPre=/bin/mkdir -p /root/.cache/kopia /root/.config/kopia
 {% for path in kopia_snapshot_paths %}
 ExecStart={{ kopia_binary_path }} snapshot create {{ path }}
 {% endfor %}
 
 # Hardening — Kopia runs as root (needs DAC read on /etc, /root, /var/lib/rancher)
-ProtectSystem=strict
 ReadOnlyPaths=/
-ReadWritePaths=/root/.config/kopia /root/.cache/kopia /tmp
+ReadWritePaths=/root/.config/kopia /root/.cache/kopia /root/.ssh /tmp
 NoNewPrivileges=yes
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
