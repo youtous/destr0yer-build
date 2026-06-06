@@ -406,11 +406,17 @@ Layer 3 — Kopia host-level (→ SFTP → backup node)
 
 | Tool | Schedule | Retention | Target |
 |------|----------|-----------|--------|
-| MariaDB Operator Backup (HA) | 03:00 daily | `mariadb_backup_retention_count` (default 14, count-based) | `<prefix>homeassistant-backups` S3 bucket |
 | MariaDB Operator Backup (Seafile) | 02:00 daily | `mariadb_backup_retention_count` (default 14, count-based) | `<prefix>seafile-backups` S3 bucket |
-| Velero daily | 03:00 daily | `velero_backup_retention_count` (default 14, count-based) | `<prefix>velero-backups` S3 bucket |
-| Kopia host-level | 04:00 daily | Policy-based (dedup) | Backup node via SFTP |
-| HA native backup | 03:00 daily (automation) | `ha_backup_local_retention_count` (default 14, count-based) | `/config/backups/` (in PVC, captured by Velero FSB) |
+| MariaDB Operator Backup (HA) | 03:00 daily | `mariadb_backup_retention_count` (default 14, count-based) | `<prefix>homeassistant-backups` S3 bucket |
+| Velero daily | 04:00 daily | `velero_backup_retention_count` (default 14, count-based) | `<prefix>velero-backups` S3 bucket |
+| HA native backup | 05:00 daily (automation) | `ha_backup_local_retention_count` (default 14, count-based) | `/config/backups/` (in PVC, captured by Velero FSB) |
+| Kopia host-level | 06:00 daily | Policy-based (dedup) | Backup node via SFTP |
+
+**Schedule distribution**: Stagger backup jobs to avoid I/O and network
+contention. Keep at least 1 hour between jobs, especially when they share
+the same storage backend (Garage S3) or network path (SFTP over WireGuard).
+Database dumps (MariaDB) should run **before** filesystem-level backups
+(Velero, Kopia) so the dump files are included in the snapshot.
 
 ### Velero annotations
 
