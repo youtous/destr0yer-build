@@ -10,3 +10,10 @@ EnvironmentFile=/etc/kopia.env
 {% for path in kopia_snapshot_paths %}
 ExecStart={{ kopia_binary_path }} snapshot create {{ path }}
 {% endfor %}
+
+# Hardening — Kopia runs as root (needs DAC read on /etc, /root, /var/lib/rancher)
+ProtectSystem=strict
+ReadOnlyPaths=/
+ReadWritePaths=/root/.config/kopia /root/.cache/kopia /tmp
+NoNewPrivileges=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
