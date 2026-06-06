@@ -55,9 +55,11 @@
   environment:
     KOPIA_PASSWORD: "{{ kopia_password }}"
   when: kopia_repo_status.rc != 0
-  changed_when: true
-  failed_when: false
   register: kopia_create_result
+  changed_when: kopia_create_result.rc == 0
+  failed_when:
+    - kopia_create_result.rc != 0
+    - "'already initialized' not in (kopia_create_result.stderr | default(''))"
   retries: "{{ kopia_sftp_retries }}"
   delay: "{{ kopia_sftp_retry_delay }}"
 
