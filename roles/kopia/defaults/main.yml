@@ -7,6 +7,7 @@ kopia_binary_path: "/usr/local/bin/kopia"
 
 # SFTP repository target
 kopia_sftp_host: ""
+kopia_sftp_port: 22
 kopia_sftp_user: ""
 kopia_sftp_path: "/home"
 kopia_sftp_key: "/root/.ssh/id_ed25519"

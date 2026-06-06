@@ -249,6 +249,7 @@ host_users: []
 #     public_key: "{{ root_public_key }}"
 #     private_key: "{{ root_private_key }}"
 # kopia_sftp_host: "192.168.56.10"  # backup server (LAN IP in dev, WG IP in prod)
+# kopia_sftp_port: 22               # override if SFTP server uses non-standard port
 # kopia_sftp_user: "backup_hostname"
 # kopia_sftp_path: "/home"
 # kopia_sftp_key: "/root/.ssh/id_ed25519"
