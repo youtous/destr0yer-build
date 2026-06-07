@@ -67,7 +67,7 @@ spec:
       containers:
         # renovate: datasource=docker depName=koenkk/zigbee2mqtt
         - name: zigbee2mqtt
-          image: docker.io/koenkk/zigbee2mqtt:2.10.1
+          image: docker.io/koenkk/zigbee2mqtt:2.11.0
           ports:
             - containerPort: 8080
               name: http
