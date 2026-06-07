@@ -1,0 +1,34 @@
+- name: Validate lynis notification email is set
+  ansible.builtin.assert:
+    that: lynis_notification_email | length > 0
+    fail_msg: "lynis_audit_enabled is true but lynis_notification_email is empty"
+
+- name: Deploy lynis audit systemd service
+  become: true
+  ansible.builtin.template:
+    src: lynis-audit.service.j2
+    dest: /etc/systemd/system/lynis-audit.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload lynis systemd
+
+- name: Deploy lynis audit systemd timer
+  become: true
+  ansible.builtin.template:
+    src: lynis-audit.timer.j2
+    dest: /etc/systemd/system/lynis-audit.timer
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - Reload lynis systemd
+    - Enable lynis-audit timer
+
+- name: Ensure lynis-audit timer is started
+  become: true
+  ansible.builtin.systemd:
+    name: lynis-audit.timer
+    state: started
+    enabled: true
+    daemon_reload: true

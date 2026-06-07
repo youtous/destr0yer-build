@@ -1,0 +1,39 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Lynis security audit
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '\
+  REPORT=$(mktemp) && \
+  lynis audit system --no-colors --quick --no-log --auditor "systemd-timer" > "$REPORT" 2>&1; \
+  SCORE=$(grep "Hardening index" "$REPORT" | grep -oP "\d+" | head -1); \
+  WARNINGS=$(grep -c "Warning:" "$REPORT" || true); \
+  SUGGESTIONS=$(grep -c "Suggestion:" "$REPORT" || true); \
+  SUMMARY="Score: ${SCORE:-N/A}/100 | Warnings: $WARNINGS | Suggestions: $SUGGESTIONS"; \
+  echo "$SUMMARY"; \
+  { \
+    printf "Subject: [lynis] %s - {{ ansible_hostname }} (%s)\r\n" "$SUMMARY" "$(date +%%Y-%%m-%%d)"; \
+    printf "From: lynis@{{ ansible_hostname }}\r\n"; \
+    printf "To: {{ lynis_notification_email }}\r\n"; \
+    printf "Content-Type: text/plain; charset=utf-8\r\n"; \
+    printf "\r\n"; \
+    cat "$REPORT"; \
+  } | /usr/sbin/sendmail -t -f "lynis@{{ ansible_hostname }}"; \
+  rm -f "$REPORT"'
+
+# Hardening — Lynis is read-only (--no-log disables /var/log writes)
+ReadOnlyPaths=/
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelModules=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

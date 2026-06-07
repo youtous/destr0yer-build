@@ -1,19 +1,18 @@
-# This role configures the /etc/resolv.conf to use specific configuration
-
 - name: Unlock /etc/resolv.conf
   become: true
   ansible.builtin.file:
     path: /etc/resolv.conf
     attributes: -i
 
-- name: Configure network settings
-  ansible.builtin.import_role:
-    name: ahuffman.resolv
-  vars:
-    resolv_domain: "{{ domain_name }}"
-    resolv_search: "{{ domain_search }}"
-    resolv_nameservers: "{{ nameservers }}"
-    resolv_options: "{{ resolv_conf_options | default([]) }}"
+- name: Configure /etc/resolv.conf for DNSCrypt-proxy
+  become: true
+  ansible.builtin.template:
+    src: "templates/resolv.conf.j2"
+    dest: "/etc/resolv.conf"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify: Restart postfix
 
 # some server providers tries to overwrite resolv.conf...
 - name: Ensure resolv.conf is not overwritable

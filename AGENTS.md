@@ -234,14 +234,16 @@ Detailed ADRs are in [doc/adr/](doc/adr/). Key decisions:
 - **Kluctl render** (in container): validates templates without a cluster
 - **Integration** (Vagrant VMs): `just test-integration`
 - **Firewall audit** (Vagrant VMs): `just test-firewall`
-- **Security audit** (manual, maintenance): `just audit-node` + `just audit-cluster`
+- **Security audit** (manual, maintenance): `just audit-node` + `just audit-cluster` + `just audit-lynis` + `just audit-systemd`
 - CI: GitHub Actions runs lint on push/PR
 
 ## Security (see [doc/security.md](doc/security.md))
 
-Implemented: SELinux (permissive), audit logging, PSA restricted, default-deny NetworkPolicy, Cilium encryption, fail2ban host-level.
+Implemented: SELinux (permissive), audit logging, PSA restricted, default-deny NetworkPolicy, Cilium encryption, fail2ban host-level, systemd service sandboxing, Lynis-driven host hardening (sysctl, file permissions, SSH, login.defs).
 
 Kyverno policies use `args.kyverno_validation_action` — `Audit` in dev, `Enforce` in prod.
+
+Systemd hardened services: Alloy, DNSCrypt-proxy, Monit, Fail2ban, Glances, Kopia (snapshot + verify). Each service has tailored restrictions — see `doc/security.md` for the full posture table.
 
 ## Cluster access model
 
@@ -343,6 +345,9 @@ Validated subsystems:
 | Grafana OIDC | Validated via Authelia login |
 | Seafile S3 + OIDC | Validated (encryption is client-side, Garage buckets exist) |
 | Multi-arch registry audit | Passed — few amd64-only exceptions (parsedmarc, mail-autodiscover) |
+| Lynis host audit | Installed, `just audit-lynis` available (target ≥ 80/100) |
+| Systemd hardening | 7 services sandboxed (Alloy, DNSCrypt, Monit, Fail2ban, Glances, Kopia×2) |
+| Host hardening (Lynis-driven) | Sysctl, SSH, file permissions, login.defs SHA rounds, wpa_supplicant removed |
 
 ### ADRs needing live validation (cannot be done offline)
 

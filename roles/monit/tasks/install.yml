@@ -97,6 +97,9 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
+  notify:
+    - Reload monit systemd
+    - Restart monit
 
 - name: Clean temporary directory
   become: true

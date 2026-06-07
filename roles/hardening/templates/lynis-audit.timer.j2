@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Monthly Lynis security audit
+
+[Timer]
+OnCalendar={{ lynis_schedule }}
+Persistent=true
+RandomizedDelaySec=3600
+
+[Install]
+WantedBy=timers.target

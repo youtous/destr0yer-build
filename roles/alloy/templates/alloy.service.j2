@@ -22,9 +22,19 @@ ProtectSystem=strict
 ProtectHome=yes
 ReadWritePaths={{ alloy_data_path }}
 PrivateDevices=true
+PrivateTmp=true
 ProtectKernelTunables=true
 ProtectKernelModules=true
+ProtectKernelLogs=true
 ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+MemoryDenyWriteExecute=true
+LockPersonality=true
 StateDirectory=alloy
 
 [Install]

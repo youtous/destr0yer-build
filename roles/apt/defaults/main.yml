@@ -26,3 +26,5 @@ apt_packages_to_remove:
   - exim4-base
   - exim4-config
   - exim4-daemon-light
+  - modemmanager
+  - wpasupplicant

@@ -256,6 +256,14 @@ audit-node host:
 audit-cluster:
     kubescape scan framework nsa,mitre --submit=false --format pretty-printer
 
+# Audit host-level security with Lynis (score + warnings)
+audit-lynis host:
+    ssh {{host}} "sudo lynis audit system --no-colors --quick 2>/dev/null | tail -40"
+
+# Audit systemd service hardening scores
+audit-systemd host:
+    ssh {{host}} "systemd-analyze security --no-pager 2>/dev/null | grep -v '✓'"
+
 # ─── SSH Keys ───────────────────────────────────────────────────────
 
 # [dev] Generate a dev SSH keypair for Vagrant/test VMs (stored in workspace)

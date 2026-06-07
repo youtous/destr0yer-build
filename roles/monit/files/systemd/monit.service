@@ -26,8 +26,19 @@ KillMode=process
 ExecStart=/usr/local/bin/monit -I
 ExecStop=/usr/local/bin/monit quit
 ExecReload=/usr/local/bin/monit reload
-Restart = on-abnormal
+Restart=on-abnormal
 StandardOutput=null
+
+# Hardening — monit needs broad read access for system monitoring
+# but does not need to modify kernel or load modules
+NoNewPrivileges=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectHostname=true
+ProtectClock=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
 
 [Install]
 WantedBy=multi-user.target

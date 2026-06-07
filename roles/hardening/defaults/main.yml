@@ -24,3 +24,8 @@ os_unused_filesystems:
 
 # whitelist for used filesystems
 os_filesystem_whitelist: []
+
+# Lynis periodic audit
+lynis_audit_enabled: true
+lynis_schedule: "Mon *-*-01..07 05:00:00"
+lynis_notification_email: "{{ monitoring_email | default('') }}"

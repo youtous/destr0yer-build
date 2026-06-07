@@ -8,7 +8,6 @@ Wants=network-online.target
 Type=oneshot
 WorkingDirectory=/root
 EnvironmentFile=/etc/kopia.env
-ExecStartPre=/bin/mkdir -p /root/.cache/kopia /root/.config/kopia
 ExecStart={{ kopia_binary_path }} snapshot create {{ kopia_snapshot_paths | join(' ') }}
 
 # Hardening — Kopia runs as root (needs DAC read on /etc, /root, /var/lib/rancher)

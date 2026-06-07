@@ -1,0 +1,37 @@
+# Lynis FILE-7524 / BOOT-5122 — restrict sensitive file and directory permissions
+
+- name: Restrict cron directories (Lynis FILE-7524)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: "u=rwx,g=,o="
+  loop:
+    - /etc/cron.d
+    - /etc/cron.daily
+    - /etc/cron.hourly
+    - /etc/cron.weekly
+    - /etc/cron.monthly
+
+- name: Restrict crontab (Lynis FILE-7524)
+  ansible.builtin.file:
+    path: /etc/crontab
+    owner: root
+    group: root
+    mode: "u=rw,g=,o="
+
+- name: Restrict GRUB config (Lynis BOOT-5122)
+  ansible.builtin.file:
+    path: /boot/grub/grub.cfg
+    owner: root
+    group: root
+    mode: "u=r,g=,o="
+  failed_when: false
+
+- name: Restrict root .ssh directory
+  ansible.builtin.file:
+    path: /root/.ssh
+    owner: root
+    group: root
+    mode: "u=rwx,g=,o="
+  failed_when: false

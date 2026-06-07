@@ -14,25 +14,12 @@
     - Restart dnscrypt-proxy
     - Restart DNSCrypt-proxy
 
-- name: Restart NetworkManager
-  become: true
-  ansible.builtin.systemd:
-    name: NetworkManager
-    state: restarted
-  notify: Restart postfix
-
-- name: Make sure NetworkManager service is running after restart
-  ansible.builtin.command: systemctl is-active NetworkManager  # noqa command-instead-of-module
-  changed_when: false
-  listen: Restart NetworkManager
-
 - name: Make sure DNS are available after restart
   ansible.builtin.command: dig A youtous.me
   changed_when: false
   listen:
     - Restart dnscrypt-proxy
     - Restart DNSCrypt-proxy
-    - Restart NetworkManager
 
 - name: Populate service facts
   ansible.builtin.service_facts:

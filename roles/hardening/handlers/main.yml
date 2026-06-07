@@ -1,0 +1,11 @@
+- name: Reload lynis systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable lynis-audit timer
+  become: true
+  ansible.builtin.systemd:
+    name: lynis-audit.timer
+    enabled: true
+    state: started
