@@ -1,20 +1,25 @@
-- name: Resolve container docker UID for host namespace
+- name: Resolve container docker UID
   become: true
-  ansible.builtin.shell:
-    cmd: |
-      set -euo pipefail
-      SUBUID_START=$(grep '^{{ podman_mailserver_user }}:' /etc/subuid | cut -d: -f2)
-      CONTAINER_UID=$(podman run --rm \
-        {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }} \
-        id -u docker)
-      echo "$(( SUBUID_START + CONTAINER_UID - 1 ))"
-    executable: /bin/bash
-  changed_when: false
-  register: _host_mail_uid
-
-- name: Fix ownership of data directories (host-mapped UID)
-  become: true
+  become_user: "{{ podman_mailserver_user }}"
   ansible.builtin.command:
-    cmd: chown -Rh {{ _host_mail_uid.stdout }}:{{ _host_mail_uid.stdout }} {{ podman_mailserver_home }}/{{ item }}
+    cmd: >-
+      podman run --rm
+      {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }}
+      id -u docker
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: false
+  register: _container_docker_uid
+
+- name: Fix ownership of data directories (container docker user via namespace)
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman unshare chown -R
+      {{ _container_docker_uid.stdout }}:{{ _container_docker_uid.stdout }}
+      {{ podman_mailserver_home }}/{{ item }}
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
   loop: "{{ podman_mailserver_dirs_data }}"
   changed_when: true
