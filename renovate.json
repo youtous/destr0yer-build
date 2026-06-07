@@ -20,6 +20,19 @@
       "matchManagers": ["custom.regex"],
       "matchFileNames": ["kluctl/**"],
       "groupName": "kluctl helm charts"
+    },
+    {
+      "description": "Monit: extract version from Bitbucket release-X.Y.Z tags",
+      "matchDatasources": ["bitbucket-tags"],
+      "matchPackageNames": ["tildeslash/monit"],
+      "extractVersion": "^release-(?<version>\\d+\\.\\d+\\.\\d+)$"
+    },
+    {
+      "description": "nginx in Ansible roles: use docker versioning to preserve -alpine suffix",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["nginx"],
+      "matchFileNames": ["roles/**"],
+      "versioning": "docker"
     }
   ],
   "customManagers": [
