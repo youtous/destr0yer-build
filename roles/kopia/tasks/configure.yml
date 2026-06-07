@@ -23,7 +23,7 @@
   become: true
   ansible.builtin.command:
     cmd: >
-      ssh-keyscan -p {{ hostvars[kopia_sftp_host]['sshd_port'] | default(22) }}
+      ssh-keyscan -p {{ kopia_sftp_port }}
       {{ kopia_sftp_host }}
   register: kopia_sftp_host_key_scan
   retries: "{{ kopia_sftp_retries }}"
@@ -35,7 +35,7 @@
 - name: Accept host key for SFTP target
   become: true
   ansible.builtin.known_hosts:
-    name: "{{ kopia_sftp_host }}"
+    name: "{{ '[' ~ kopia_sftp_host ~ ']:' ~ kopia_sftp_port if kopia_sftp_port | int != 22 else kopia_sftp_host }}"
     key: "{{ item }}"
     path: /root/.ssh/known_hosts
   loop: "{{ kopia_sftp_host_key_scan.stdout_lines | select('match', '^[^#]') | list }}"
@@ -48,15 +48,18 @@
       {{ kopia_binary_path }} repository create sftp
       --path={{ kopia_sftp_path }}
       --host={{ kopia_sftp_host }}
+      --port={{ kopia_sftp_port }}
       --username={{ kopia_sftp_user }}
       --keyfile={{ kopia_sftp_key }}
       --known-hosts=/root/.ssh/known_hosts
   environment:
     KOPIA_PASSWORD: "{{ kopia_password }}"
   when: kopia_repo_status.rc != 0
-  changed_when: true
-  failed_when: false
   register: kopia_create_result
+  changed_when: kopia_create_result.rc == 0
+  failed_when:
+    - kopia_create_result.rc != 0
+    - "'already initialized' not in (kopia_create_result.stderr | default(''))"
   retries: "{{ kopia_sftp_retries }}"
   delay: "{{ kopia_sftp_retry_delay }}"
 
@@ -67,6 +70,7 @@
       {{ kopia_binary_path }} repository connect sftp
       --path={{ kopia_sftp_path }}
       --host={{ kopia_sftp_host }}
+      --port={{ kopia_sftp_port }}
       --username={{ kopia_sftp_user }}
       --keyfile={{ kopia_sftp_key }}
       --known-hosts=/root/.ssh/known_hosts

@@ -103,8 +103,10 @@ This avoids breaking apt on fresh VMs.
 
 **Manual (during maintenance):**
 ```sh
-just audit-node ctrl.k3s.dev.local    # Full kube-bench output (all sections)
-just audit-cluster                     # NSA/CISA + MITRE scan (kubescape)
+just audit-node ctrl.k3s.dev.local      # K3S CIS benchmark (kube-bench)
+just audit-cluster                       # NSA/CISA + MITRE scan (kubescape)
+just audit-lynis ctrl.k3s.dev.local      # Host-level security audit (Lynis, target ≥ 80/100)
+just audit-systemd ctrl.k3s.dev.local    # Systemd service sandboxing scores (target ≤ 5.0)
 ```
 
 ## CI

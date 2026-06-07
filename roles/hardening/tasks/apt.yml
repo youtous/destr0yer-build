@@ -3,3 +3,9 @@
     name: '{{ os_security_packages_list }}'
     state: 'absent'
   when: os_security_packages_clean | bool
+
+- name: Install security hardening packages (Lynis DEB-0880, AUTH-9262)
+  ansible.builtin.apt:
+    name:
+      - libpam-tmpdir
+    state: present

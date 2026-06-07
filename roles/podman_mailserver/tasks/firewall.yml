@@ -1,0 +1,83 @@
+- name: UFW Allow SMTP - tcp/25
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "25"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "podman-mailserver SMTP"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ podman_mailserver_ufw_from_ips }}"
+
+- name: UFW Allow HTTP - tcp/80
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "80"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "podman-mailserver HTTP (MTA-STS redirect)"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ podman_mailserver_ufw_from_ips }}"
+
+- name: UFW Allow HTTPS - tcp/443
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "443"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "podman-mailserver HTTPS (MTA-STS/autodiscover)"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ podman_mailserver_ufw_from_ips }}"
+
+- name: UFW Allow SMTPS - tcp/465
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "465"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "podman-mailserver SMTPS"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ podman_mailserver_ufw_from_ips }}"
+
+- name: UFW Allow Submission - tcp/587
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "587"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "podman-mailserver Submission"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ podman_mailserver_ufw_from_ips }}"
+
+- name: UFW Allow IMAPS - tcp/993
+  become: true
+  ansible.builtin.import_role:
+    name: youtous.destr0yer.ufw_smart_rules
+  vars:
+    ufw_rule_parameters:  # noqa: var-naming[no-role-prefix]
+      to_port: "993"
+      rule: "allow"
+      proto: tcp
+      direction: in
+      comment: "podman-mailserver IMAPS"
+    ufw_rules_criteria: from_ips
+    ufw_rule_from_ips: "{{ podman_mailserver_ufw_from_ips }}"

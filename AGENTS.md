@@ -134,6 +134,69 @@ local pre-push hook blocks `deploy/*` to non-private remotes + GitHub branch rul
 - Pre-commit must always pass — fix failures even if they seem out of scope
 - USB disk storage uses existing `filesystems_to_create` from `disks_lvm_management` — no separate role. SMART monitoring via `smartmontools` + `monit_usb_storage`. See [doc/usb-storage.md](doc/usb-storage.md)
 - **UFW rules**: If a port is a dependency of an Ansible role, the role manages its own rule via `ufw_smart_rules` (self-contained). `ufw_additional_rules` in inventory is only for ports not managed by any Ansible role (e.g. HAProxy Ingress ports deployed via Kluctl).
+- **Binary download checksums — dynamic fetching, not hardcoded**: All Ansible roles that download binaries (Helm, K9s, Kluctl, Cilium CLI, Alloy, Monit, Kopia) must fetch the checksum file (`.sha256sum`, `checksums.txt`, etc.) at download time and verify against it — never hardcode a hash in `defaults/main.yml`. Pattern: (1) `get_url` the checksum file, (2) `shell` + `grep`/`awk` to extract the hash, (3) `get_url` the archive with `checksum: "sha256:{{ extracted }}"`. Rationale: hardcoded checksums block Renovate from auto-bumping versions (each bump needs a manual hash update), and offer no real security benefit since checksum and archive come from the same upstream origin. Exception: Helm chart from a Helm repo (e.g. Cilium chart from `helm.cilium.io`) — use `uri` + `from_yaml` to extract the digest from `index.yaml` instead.
+
+### File permissions — least privilege by default
+
+Always apply the most restrictive permissions possible:
+
+| Resource type | Mode | Owner | Rationale |
+|--------------|------|-------|-----------|
+| System binaries (`/usr/local/bin/*`) | `0755` | `root:root` | Must be executable by all users |
+| System config dirs (`/etc/haproxy`, `/etc/monit`) | `0755` | `root:root` | System services need read access |
+| Data files (`/etc/hosts`, config files) | `0644` | `root:root` | Readable, **never executable** |
+| Service data dirs (alloy, kopia cache) | `0750` | `svc_user:svc_group` | No world access |
+| Secrets (TLS keys, DKIM, vault) | `0600` | owner only | No group, no other |
+| User home dirs (functional users) | `0700` | user:user | No group, no other |
+| Backup chroot dirs | `0750` | `root:backup_group` | SFTP chroot requires root-owned, group-traversable |
+
+Rules when writing Ansible tasks:
+- **Never use `0755` on data files** — use `0644` (or `0640`/`0600` for sensitive data)
+- **Never use `o=rx` on service/user directories** — use `o=` unless there's a documented reason
+- **Functional users** (mail-dms, alloy, backup) get `0700` homes — no group/other access
+- **`failed_when: false`** must only swallow expected failures (e.g. "already initialized"). Always use `failed_when` with a condition, never bare `false`.
+
+### Systemd service hardening — sandboxing checklist
+
+All custom systemd services (Kopia, Alloy, custom oneshots) should apply these restrictions:
+
+```ini
+# Filesystem isolation
+ReadOnlyPaths=/                    # Entire filesystem read-only
+ReadWritePaths=/specific/paths     # Only paths the service needs to write
+WorkingDirectory=/appropriate/dir  # Explicit CWD (no reliance on defaults)
+
+# Privilege restriction
+NoNewPrivileges=yes                # Block setuid/capabilities escalation
+
+# Network restriction
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6  # Only needed socket types
+```
+
+When adding a new systemd service:
+1. Start with `ReadOnlyPaths=/` + explicit `ReadWritePaths` for known write targets
+2. Add `NoNewPrivileges=yes` unless the service needs to escalate (rare)
+3. Restrict socket families unless the service needs exotic sockets (netlink, bluetooth)
+4. Use `ExecStartPre=/bin/mkdir -p` for directories that may not exist yet
+5. Do **not** use `ProtectSystem=strict` together with `ReadOnlyPaths=/` (redundant, can conflict)
+7. **Services that call `sendmail`**: use `ProtectSystem=full` (not `strict`, not `ReadOnlyPaths=/`). Postfix's `postdrop` needs writable access to `/var/spool/postfix/maildrop/` and `ReadWritePaths` does not reliably work with `postdrop`'s setgid + chroot setup.
+6. Test with `systemd-analyze security <unit>` to verify the hardening score
+
+### Systemd timer services — failure notification rule
+
+**Every timer-triggered oneshot service must have `OnFailure=` and a success notification.** Pattern:
+
+```ini
+[Unit]
+OnFailure=<role>-failure-notify@%n.service
+```
+
+The `<role>-failure-notify@.service` template sends an email with the last 50 journal lines via `sendmail`. Each role deploys its own `@.service` (kopia, btrfs, lynis, notify-ip). Success notification is handled by the service itself (e.g. Lynis emails its report, Kopia logs to journal, btrfs touches a health marker file).
+
+If a new service uses a timer, it must:
+1. Add `OnFailure=<role>-failure-notify@%n.service` in its `[Unit]`
+2. Deploy the corresponding `<role>-failure-notify@.service` template (copy pattern from `kopia-failure-notify@.service.j2`)
+3. Include hardening in the notify service (`ProtectSystem=full` + sendmail-compatible `RestrictAddressFamilies`)
 
 ### Secrets in Kluctl manifests — zero plaintext rule
 
@@ -189,14 +252,16 @@ Detailed ADRs are in [doc/adr/](doc/adr/). Key decisions:
 - **Kluctl render** (in container): validates templates without a cluster
 - **Integration** (Vagrant VMs): `just test-integration`
 - **Firewall audit** (Vagrant VMs): `just test-firewall`
-- **Security audit** (manual, maintenance): `just audit-node` + `just audit-cluster`
+- **Security audit** (manual, maintenance): `just audit-node` + `just audit-cluster` + `just audit-lynis` + `just audit-systemd`
 - CI: GitHub Actions runs lint on push/PR
 
 ## Security (see [doc/security.md](doc/security.md))
 
-Implemented: SELinux (permissive), audit logging, PSA restricted, default-deny NetworkPolicy, Cilium encryption, fail2ban host-level.
+Implemented: SELinux (permissive), audit logging, PSA restricted, default-deny NetworkPolicy, Cilium encryption, fail2ban host-level, systemd service sandboxing, Lynis-driven host hardening (sysctl, file permissions, SSH, login.defs).
 
 Kyverno policies use `args.kyverno_validation_action` — `Audit` in dev, `Enforce` in prod.
+
+Systemd hardened services: Alloy, DNSCrypt-proxy, Monit, Fail2ban, Glances, Kopia (snapshot + verify + failure-notify), Lynis, notify-ip-change, btrfs (scrub + snapshot + cold-send + failure-notify). Each service has tailored restrictions — see `doc/security.md` for the full posture table.
 
 ## Cluster access model
 
@@ -298,6 +363,9 @@ Validated subsystems:
 | Grafana OIDC | Validated via Authelia login |
 | Seafile S3 + OIDC | Validated (encryption is client-side, Garage buckets exist) |
 | Multi-arch registry audit | Passed — few amd64-only exceptions (parsedmarc, mail-autodiscover) |
+| Lynis host audit | Installed, `just audit-lynis` available (target ≥ 79/100) |
+| Systemd hardening | 14 services sandboxed (Alloy, DNSCrypt, Monit, Fail2ban, Glances, Kopia×3, Lynis×2, notify-ip×2, btrfs×4) |
+| Host hardening (Lynis-driven) | Sysctl, SSH, file permissions, login.defs SHA rounds, wpa_supplicant removed |
 
 ### ADRs needing live validation (cannot be done offline)
 

@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+{% for domain in podman_mailserver_domains %}
+{% for alias in domain.aliases | default([]) %}
+{{ alias.alias }} {{ alias.to }}
+{% endfor %}
+{% endfor %}

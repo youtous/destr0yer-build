@@ -5,7 +5,7 @@ Decisions: [ADR-008](adr/008-network-zero-trust.md) (zero-trust),
 [ADR-021](adr/021-kyverno-policy-engine.md) (Kyverno),
 [ADR-025](adr/025-k8s-api-auth.md) (K8S API auth)
 
-Last updated: 2026-05-28
+Last updated: 2026-06-07
 
 ## Current security posture
 
@@ -14,9 +14,12 @@ Last updated: 2026-05-28
 | Disk encryption for secrets | Ansible Vault (AES-256) + SOPS/age (K8S) | ✅ |
 | K3S secrets-at-rest encryption | `secrets-encryption: true` | ✅ |
 | K3S kernel hardening | `protect-kernel-defaults: true` | ✅ |
-| SSH hardening | Dedicated role, WG-restricted IPs, ed25519 keys | ✅ |
-| Host hardening | Modprobe, login_defs, limits, sysctl (CIS) | ✅ |
-| fail2ban | Host-level, SSH + services | ✅ |
+| SSH hardening | Dedicated role, WG-restricted IPs, ed25519 keys, `TCPKeepAlive no` | ✅ |
+| Host hardening | Modprobe, login_defs (SHA-512 65536 rounds), limits, sysctl (CIS + Lynis) | ✅ |
+| File permissions | Cron dirs 700, `grub.cfg` 400, `/root/.ssh` 700 | ✅ |
+| Systemd sandboxing | Alloy, DNSCrypt, Monit, Fail2ban, Glances, Kopia hardened | ✅ |
+| Lynis audit | Installed on all nodes, `just audit-lynis` (target ≥ 80/100) | ✅ |
+| fail2ban | Host-level, SSH + services, `nftables-multiport` banaction | ✅ |
 | UFW firewall | Host-level, restricted ports, `ufw_smart_rules`. Pod CIDR (`local_container_ips`) allowed on HAProxy ports — required because hostNetwork traffic traverses UFW. | ✅ |
 | dnscrypt-proxy | Encrypted DNS on every host | ✅ |
 | Cilium encryption | `encryption.enabled: true`, `nodeEncryption: true` | ✅ |
@@ -165,6 +168,8 @@ Events shipped to Loki via Alloy for alerting in Grafana.
 |-------|------|---------|----------|-----------|
 | Node config | kube-bench | CIS misconfigurations | No | Maintenance |
 | Workload config | kubescape | NSA/CISA/MITRE gaps | No | Maintenance |
+| Host hardening | Lynis | SSH, PAM, kernel, filesystem, firewall gaps | No | Maintenance |
+| Systemd sandboxing | `systemd-analyze security` | Missing service restrictions | No | Maintenance |
 | Admission | Kyverno | Policy violations | **Yes** (reject) | Real-time |
 | Runtime syscalls | Tetragon | Shell, privesc, file writes | **Yes** (kill/deny) | Real-time |
 | App-level | CrowdSec | Brute force, scanning, bots | **Yes** (ban IP) | Real-time |
@@ -172,6 +177,30 @@ Events shipped to Loki via Alloy for alerting in Grafana.
 | Version bumps | Renovate | Outdated images/charts/deps | No (PR-based) | Continuous |
 
 Audit runs are ephemeral (terminal only, no persistent storage of findings).
+
+### Audit commands
+
+```sh
+# K3S CIS benchmark (per-node)
+just audit-node ctrl.k3s.dev.local
+
+# K8S workload audit (cluster-wide)
+just audit-cluster
+
+# Host-level security audit with Lynis (per-node)
+just audit-lynis ctrl.k3s.dev.local
+
+# Systemd service hardening scores (per-node, shows non-OK services only)
+just audit-systemd ctrl.k3s.dev.local
+```
+
+**Lynis** audits SSH config, PAM, kernel parameters, filesystem permissions,
+firewall rules, and more. Score is out of 100 — target ≥ 80. Installed via
+`system_packages` on all nodes.
+
+**systemd-analyze security** scores each service from 0 (safe) to 10 (exposed).
+Services we control should target ≤ 5.0 (MEDIUM or better). System services
+(ssh, cron, dbus) cannot be hardened without breaking functionality.
 
 ## Zero-trust checklist
 

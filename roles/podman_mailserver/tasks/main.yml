@@ -1,0 +1,48 @@
+- name: Teardown mailserver (state=absent)
+  ansible.builtin.import_tasks: teardown.yml
+  when: podman_mailserver_state == 'absent'
+
+- name: Deploy mailserver (state=present)
+  when: podman_mailserver_state == 'present'
+  tags: ["podman-mailserver"]
+  block:
+    - name: Validate required variables
+      ansible.builtin.assert:
+        that:
+          - podman_mailserver_domains | length > 0
+          - podman_mailserver_domain | length > 0
+        fail_msg: "podman_mailserver_domains and podman_mailserver_domain must be set."
+
+    - name: Setup rootless Podman user
+      ansible.builtin.import_tasks: user.yml
+
+    - name: Prepare directories and validate prerequisites
+      ansible.builtin.import_tasks: directories.yml
+
+    - name: Migrate data from v10 instance
+      ansible.builtin.import_tasks: migration.yml
+
+    - name: Deploy TLS wildcard certificate
+      ansible.builtin.import_tasks: tls.yml
+
+    - name: Deploy configuration files
+      ansible.builtin.import_tasks: config.yml
+
+    - name: Fix Sieve symlinks (idempotent)
+      ansible.builtin.include_tasks: sieve-fix.yml
+      when: podman_mailserver_sieve_fix | default(podman_mailserver_migration_enabled) | default(false)
+
+    - name: Fix data directory ownership for container namespace
+      ansible.builtin.import_tasks: fix-permissions.yml
+
+    - name: Restore SELinux labels on mailserver data
+      become: true
+      ansible.builtin.command:
+        cmd: restorecon -R {{ podman_mailserver_home }}
+      changed_when: false
+
+    - name: Deploy Quadlet pod and containers
+      ansible.builtin.import_tasks: quadlet.yml
+
+    - name: Configure firewall rules
+      ansible.builtin.import_tasks: firewall.yml

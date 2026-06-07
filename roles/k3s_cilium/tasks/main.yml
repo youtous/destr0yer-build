@@ -52,12 +52,26 @@
     path: "{{ ansible_env.HOME }}/.ansible/tmp"
   register: tmp_dir_build
 
+- name: Fetch Cilium Helm repo index
+  ansible.builtin.uri:
+    url: "{{ cilium_chart_repo_url }}/index.yaml"
+    return_content: true
+  register: _cilium_helm_index
+
+- name: Extract chart digest from Helm index
+  ansible.builtin.set_fact:
+    _cilium_chart_digest: >-
+      {{ (_cilium_helm_index.content | from_yaml).entries.cilium
+         | selectattr('version', 'equalto', cilium_chart_version)
+         | map(attribute='digest')
+         | first }}
+
 - name: Download the chart
   ansible.builtin.get_url:
     url: "{{ cilium_chart_download_url }}"
     dest: "{{ tmp_dir_build.path }}/{{ cilium_chart_archive_name }}"
-    checksum: "sha256:{{ cilium_chart_sha265sum }}"
-    mode: u=rw,g=,o=
+    checksum: "sha256:{{ _cilium_chart_digest }}"
+    mode: "u=rw,g=,o="
 
 - name: Install cilium chart
   become: true

@@ -5,12 +5,26 @@
     path: "{{ ansible_env.HOME }}/.ansible/tmp"
   register: tmp_dir_build
 
+- name: Download kluctl checksums
+  ansible.builtin.get_url:
+    url: "{{ k8s_kluctl_checksum_url }}"
+    dest: "{{ tmp_dir_build.path }}/checksums.txt"
+    mode: "u=rw,g=,o="
+
+- name: Extract expected checksum for kluctl archive
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail && grep '{{ k8s_kluctl_archive_name }}' {{ tmp_dir_build.path }}/checksums.txt | awk '{print $1}'
+    executable: /bin/bash
+  changed_when: false
+  register: k8s_kluctl_expected_checksum
+
 - name: Download kluctl release and verify checksum
   ansible.builtin.get_url:
     url: "{{ k8s_kluctl_download_url }}"
     dest: "{{ tmp_dir_build.path }}/{{ k8s_kluctl_archive_name }}"
-    checksum: "sha256:{{ k8s_kluctl_checksum }}"
-    mode: u=rw,g=,o=
+    checksum: "sha256:{{ k8s_kluctl_expected_checksum.stdout }}"
+    mode: "u=rw,g=,o="
 
 - name: Extract downloaded release
   ansible.builtin.unarchive:

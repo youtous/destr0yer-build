@@ -19,9 +19,16 @@
 - name: Install cryptsetup when LUKS filesystems are configured
   become: true
   ansible.builtin.package:
-    name: cryptsetup
+    name:
+      - cryptsetup
+      - cryptsetup-initramfs
+      - systemd-cryptsetup
     state: present
   when: filesystems_to_create | selectattr('luks', 'defined') | selectattr('luks.enabled', 'defined') | selectattr('luks.enabled', 'equalto', true) | list | length > 0
+  notify: Reload systemd
+
+- name: Flush handlers to ensure systemd sees new generators
+  ansible.builtin.meta: flush_handlers
 
 - name: Partitioning setup
   ansible.builtin.import_tasks: parted.yml

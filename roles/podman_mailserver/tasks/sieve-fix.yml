@@ -1,0 +1,27 @@
+- name: Fix Sieve symlinks pointing to old v10 path
+  become: true
+  ansible.builtin.shell:
+    cmd: |
+      set -euo pipefail
+      for domaindir in {{ podman_mailserver_home }}/mail-data/*/; do
+        [ -d "$domaindir" ] || continue
+        for userdir in "$domaindir"*/; do
+          [ -d "$userdir" ] || continue
+          dovecot_sieve="$userdir/.dovecot.sieve"
+          if [ -L "$dovecot_sieve" ]; then
+            target=$(readlink "$dovecot_sieve")
+            case "$target" in
+              sieve/*)
+                new_target="home/${target}"
+                ln -sf "$new_target" "$dovecot_sieve"
+                rm -f "$userdir/.dovecot.svbin"
+                echo "fixed: $dovecot_sieve -> $new_target"
+                ;;
+            esac
+          fi
+        done
+      done
+      echo "done"
+    executable: /bin/bash
+  register: _sieve_fix
+  changed_when: "'fixed:' in _sieve_fix.stdout"

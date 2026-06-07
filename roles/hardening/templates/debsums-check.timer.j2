@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Weekly debsums package integrity check
+
+[Timer]
+OnCalendar={{ debsums_schedule }}
+Persistent=true
+RandomizedDelaySec=1800
+
+[Install]
+WantedBy=timers.target

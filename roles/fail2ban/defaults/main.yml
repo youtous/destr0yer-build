@@ -17,7 +17,7 @@ fail2ban_ignoreips: "['127.0.0.1/8', '::1'] + {{ fail2ban_trusted_ips }}"
 # fail2ban_findtime: 600
 # fail2ban_backend: auto
 fail2ban_destemail: "{{ monitoring_email }}"
-# fail2ban_banaction: iptables-multiport
+fail2ban_banaction: nftables-multiport
 # fail2ban_mta: sendmail
 # fail2ban_protocol: tcp
 # fail2ban_chain: INPUT

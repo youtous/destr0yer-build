@@ -1,0 +1,26 @@
+- name: Unlock /etc/resolv.conf
+  become: true
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    attributes: -i
+
+- name: Configure /etc/resolv.conf for DNSCrypt-proxy
+  become: true
+  ansible.builtin.template:
+    src: "templates/resolv.conf.j2"
+    dest: "/etc/resolv.conf"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify: Restart postfix
+
+# some server providers tries to overwrite resolv.conf...
+- name: Ensure resolv.conf is not overwritable
+  become: true
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    owner: root
+    group: root
+    attributes: i
+    mode: u=rw,g=r,o=r
+  when: lock_resolv_conf

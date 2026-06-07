@@ -1,6 +1,6 @@
 # Mail Operations Guide
 
-Last updated: 2026-05-28
+Last updated: 2026-06-03
 
 ## Architecture
 
@@ -40,7 +40,78 @@ ManageSieve is restricted at two levels:
 | Mailbox size | 1 GB (`POSTFIX_MAILBOX_SIZE_LIMIT: 1073741824`) |
 | Message size | 12 MB (`POSTFIX_MESSAGE_SIZE_LIMIT: 12000000`) |
 | TLS level | modern (TLS 1.2+ only) |
+| TLS ciphers | `HIGH:@SECLEVEL=2` (see below) |
 | Postscreen | enforce |
+
+### TLS hardening — cipher suites and signature algorithms
+
+Our Postfix TLS configuration targets **only** NCSC-NL "good" and "sufficient"
+cipher suites, with no "phase out" or "insufficient" suites offered.
+
+```text
+# postfix-main.cf — cipher suites
+tls_high_cipherlist = ECDHE+AESGCM:ECDHE+CHACHA20:@SECLEVEL=2
+smtp_tls_ciphers = high
+smtpd_tls_ciphers = high
+tls_preempt_cipherlist = yes
+tls_ssl_options = NO_COMPRESSION, NO_RENEGOTIATION
+```
+
+```bash
+# user-patches.sh — signature algorithms (Postfix 3.7 has no native parameter)
+sed -i '/\[system_default_sect\]/a SignatureAlgorithms = ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA512:RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512' /etc/ssl/openssl.cnf
+```
+
+#### Cipher suite selection
+
+The positive list `ECDHE+AESGCM:ECDHE+CHACHA20` includes only:
+
+| TLS 1.2 cipher (IANA name) | Status (NCSC-NL) |
+|----------------------------|-------------------|
+| `TLS_ECDHE_{ECDSA,RSA}_WITH_AES_256_GCM_SHA384` | Sufficient |
+| `TLS_ECDHE_{ECDSA,RSA}_WITH_AES_128_GCM_SHA256` | Sufficient |
+| `TLS_ECDHE_{ECDSA,RSA}_WITH_CHACHA20_POLY1305_SHA256` | Sufficient |
+
+Excluded by design (not in the positive list):
+
+| Excluded | Why |
+|----------|-----|
+| `*_CCM_8` (short tag) | Insufficient — truncated authentication tag |
+| `*_ARIA_*` | Phase out |
+| `*_CBC_SHA256`, `*_CBC_SHA384` | Phase out |
+| `*_CAMELLIA_*` | Phase out |
+| `DHE_*` | Phase out (DH key exchange) |
+| HMAC-SHA1 ciphers | Phase out but harmless — excluded as side effect |
+
+TLS 1.3 cipher suites are negotiated separately from `tls_high_cipherlist` and
+are unaffected (all TLS 1.3 suites are "good" or "sufficient").
+
+**Deliverability impact**: with `smtpd_tls_security_level = may` (opportunistic),
+any MTA that cannot negotiate an ECDHE+AESGCM/CHACHA20 cipher falls back to
+plaintext. In 2026, virtually all mail servers support ECDHE+AESGCM. The risk
+of plaintext fallback is negligible and preferable to offering weak ciphers.
+
+#### Key exchange signature algorithms
+
+Two distinct settings control which hash functions the server uses for digital
+signatures during TLS 1.2 key exchange:
+
+1. **`@SECLEVEL=2`** in the cipher string — disables SHA-1 (< 112-bit security
+   for collision resistance). Does **not** disable SHA-224 (exactly 112-bit).
+
+2. **`SignatureAlgorithms`** in OpenSSL system config (`user-patches.sh`) —
+   explicitly lists SHA-256/384/512 only, excluding both SHA-1 and SHA-224.
+   Postfix 3.7 has no native parameter for this; Postfix 3.9+ adds
+   `tls_config_file` which will make this cleaner.
+
+| Hash for key exchange signature | Status (NCSC-NL) | Our config |
+|---------------------------------|-------------------|------------|
+| SHA-256, SHA-384, SHA-512 | Good | Allowed |
+| SHA-224 | Phase out | Excluded via `SignatureAlgorithms` |
+| SHA-1, MD5 | Insufficient | Excluded via `@SECLEVEL=2` |
+
+`tls_preempt_cipherlist = yes` enforces server cipher preference order —
+AESGCM is preferred over CHACHA20 (AES-NI hardware acceleration on servers).
 
 ## Anti-spam stack (Rspamd)
 
@@ -85,6 +156,100 @@ mta-sts.example.com.              IN  CNAME <relay_hostname>.
 ; TLS reporting
 _smtp._tls.example.com.           IN  TXT   "v=TLSRPTv1; rua=mailto:postmaster+tls-reports@example.com"
 ```
+
+### DANE/TLSA (requires DNSSEC)
+
+DANE ([RFC 7672](https://datatracker.ietf.org/doc/html/rfc7672)) binds a mail
+server's TLS certificate to a DNSSEC-signed DNS record, eliminating reliance on
+certificate authorities for SMTP. internet.nl scores DANE as a key compliance
+item.
+
+**Prerequisites**:
+1. Domain zone signed with DNSSEC (DS record at registrar)
+2. MX hostname zone also signed (if different from domain zone)
+3. DNSSEC-validating resolver on the mail server (dnscrypt-proxy handles this)
+
+**TLSA record** — use `3 1 1` (DANE-EE, SPKI, SHA-256) as recommended by
+RFC 7672 section 3.1:
+
+```text
+; Generate the TLSA hash from your certificate's public key
+openssl x509 -in cert.pem -noout -pubkey \
+  | openssl pkey -pubin -outform DER \
+  | openssl dgst -sha256 -binary \
+  | xxd -p -c 256
+
+; Publish for each mail port (25 is required, 465/993 recommended)
+_25._tcp.mail.example.com.   IN  TLSA  3 1 1 <hex-hash>
+_465._tcp.mail.example.com.  IN  TLSA  3 1 1 <hex-hash>
+_993._tcp.mail.example.com.  IN  TLSA  3 1 1 <hex-hash>
+```
+
+**Why `3 1 1`** (SPKI selector): The hash depends only on the public key, not
+certificate metadata (issuer, expiry). This survives Let's Encrypt renewals
+as long as the private key is reused. For 90-day renewal cycles, this is the
+difference between hands-off automation and updating DNS every 3 months.
+
+**Let's Encrypt + DANE — key reuse strategy**:
+
+| Method | How | TLSA update needed? |
+|--------|-----|-------------------|
+| `certbot --reuse-key` | Keeps the same private key across renewals | No (SPKI hash unchanged) |
+| `lego --reuse-key` | Same, for non-K3S hosts | No |
+| cert-manager `privateKey.rotationPolicy: Never` | K8S: keeps key in Certificate spec | No |
+| Key rotation (manual) | Generate new key, update TLSA before renewal | Yes — publish new TLSA, wait for DNS propagation, then rotate |
+
+**Key rotation with DANE** — when you must rotate the private key:
+1. Generate new key pair
+2. Compute new TLSA hash
+3. Publish **both** old and new TLSA records (dual records)
+4. Wait for DNS propagation (≥ 2x TTL)
+5. Deploy new certificate with new key
+6. Remove old TLSA record after TTL expiry
+
+**DANE + MTA-STS — complementary, not competing**:
+
+| | DANE | MTA-STS |
+|---|------|---------|
+| **Trust anchor** | DNSSEC (no CA needed) | CA-signed HTTPS certificate |
+| **Requires** | DNSSEC on domain | HTTPS endpoint for policy file |
+| **Adoption** | ~30% of MX hosts validate DANE | Wider client support |
+| **Failure mode** | Hard fail if TLSA present but invalid | Configurable (testing/enforce) |
+| **Recommendation** | Deploy both — DANE for DNSSEC-aware MTAs, MTA-STS for the rest |
+
+**Postfix outbound DANE** — verify TLSA records when sending:
+
+```text
+# Add to postfix-main.cf for outbound DANE verification
+smtp_dns_support_level = dnssec
+smtp_tls_security_level = dane
+```
+
+With `dane` security level, Postfix:
+- Uses mandatory TLS when TLSA records are found and valid
+- Falls back to opportunistic TLS when no TLSA records exist
+- Rejects delivery if TLSA records exist but are unusable (no silent downgrade)
+
+This is safe to enable even before publishing your own TLSA records — it only
+affects outbound verification of other servers' DANE.
+
+**Validation**:
+
+```bash
+# Verify your TLSA record
+dig +dnssec TLSA _25._tcp.mail.example.com
+
+# Verify DNSSEC chain
+dig +dnssec +cd mail.example.com
+
+# Test DANE end-to-end
+# internet.nl → "Test your email" → checks DANE automatically
+# Or: https://dane.sys4.de (DANE SMTP validator)
+# Or: https://www.huque.com/bin/danecheck (TLSA record checker)
+```
+
+**Implementation status**: TODO — requires DNSSEC on domain (deSEC supports
+DNSSEC natively). Blocked until prod DNS setup (see ADR-024).
 
 ### Service discovery (autoconfig)
 
@@ -140,25 +305,175 @@ grep -v '^-' dkim-public.pem | tr -d '\n'
 
 Store the base64-encoded private key in `secrets.mailserver_domains[].dkim_private_b64`.
 
-## Testing
+## Testing and validation
+
+### Quick connectivity check
 
 ```bash
 # SMTP connectivity (from a machine with network access)
 swaks -f test@example.com -t recipient@example.com --server mail.example.com:465 -tlsc -a LOGIN
 
-# TLS grade
-testssl --starttls smtp mail.example.com:25
-testssl mail.example.com:465
-testssl mail.example.com:993
+# IMAP connectivity
+openssl s_client -connect mail.example.com:993
 ```
 
-Testing services:
-- https://www.mail-tester.com — deliverability score
-- https://en.internet.nl — DKIM/SPF/DMARC/DANE/MTA-STS compliance
-- https://mecsa.jrc.ec.europa.eu — EU compliance check
-- https://www.mailhardener.com/tools/mta-sts-validator — MTA-STS validation
-- https://ssl-config.mozilla.org — TLS configuration reference
-- https://bettercrypto.org/#_tls_usage_in_mail_server_protocols — crypto reference
+### TLS audit with testssl.sh
+
+[testssl.sh](https://github.com/drwetter/testssl.sh) audits TLS configuration,
+cipher suites, protocols, certificate chain, and known vulnerabilities.
+
+```bash
+# SMTP STARTTLS (port 25)
+testssl --starttls smtp mail.example.com:25
+
+# SMTPS (port 465)
+testssl mail.example.com:465
+
+# IMAPS (port 993)
+testssl mail.example.com:993
+
+# All ports, JSON output for archiving
+testssl --jsonfile results.json --starttls smtp mail.example.com:25
+testssl --jsonfile results.json --append mail.example.com:465
+testssl --jsonfile results.json --append mail.example.com:993
+```
+
+Expected results with our hardened config:
+- No SSLv2/SSLv3/TLSv1.0/TLSv1.1
+- Only TLSv1.2 and TLSv1.3
+- TLS 1.2 ciphers: only ECDHE + AESGCM/CHACHA20 (no ARIA, CCM-8, CBC, DHE)
+- No SHA-1 or SHA-224 for key exchange signatures
+- Server cipher preference enforced (`tls_preempt_cipherlist = yes`)
+- Forward secrecy (ECDHE) on all cipher suites
+- Valid certificate chain with trusted CA
+
+A weekly automated testssl CronJob runs in the cluster
+(`kluctl/observability/testssl/`) and sends HTML reports by email.
+
+### internet.nl compliance check
+
+[internet.nl](https://internet.nl) is the Dutch Internet Standards Platform's
+free compliance checker. It validates the full email security stack in one pass.
+
+Go to https://internet.nl → **Test your email** → enter your domain.
+
+It checks:
+
+| Category | What it tests |
+|----------|-------------|
+| **STARTTLS** | TLS availability, version, cipher order, DANE |
+| **DANE** | TLSA records in DNS (optional but recommended) |
+| **SPF** | Syntax, strictness (`-all` vs `~all`) |
+| **DKIM** | Selector, key size, algorithm |
+| **DMARC** | Policy (`reject`), alignment (`strict`), reporting URIs |
+| **MTA-STS** | Policy file, DNS TXT record, mode (`enforce`) |
+| **TLS-RPT** | TLS reporting record in DNS |
+
+Target: **100% score**. Common deductions:
+- DANE not configured → add TLSA records (requires DNSSEC on domain)
+- DMARC `p=quarantine` instead of `p=reject` → switch after validation period
+- SPF `~all` instead of `-all` → switch after confirming no missing senders
+
+### Additional testing services
+
+| Service | What it checks | URL |
+|---------|---------------|-----|
+| mail-tester.com | Deliverability score (send an email to their address) | https://www.mail-tester.com |
+| MX Toolbox | MX, DNS, blacklist, SMTP diagnostics | https://mxtoolbox.com |
+| MECSA | EU email compliance (TLS, DANE, SPF, DKIM, DMARC) | https://mecsa.jrc.ec.europa.eu |
+| Mailhardener | MTA-STS validator, DMARC analyzer | https://www.mailhardener.com/tools/mta-sts-validator |
+| Hardenize | Full domain security audit (HTTPS + email) | https://www.hardenize.com |
+| CheckTLS | SMTP TLS negotiation tester | https://www.checktls.com |
+
+### Reference guides
+
+| Guide | Scope |
+|-------|-------|
+| [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org) | TLS cipher/protocol recommendations (Postfix preset) |
+| [BetterCrypto — Applied Crypto Hardening](https://bettercrypto.org/#_tls_usage_in_mail_server_protocols) | Mail server crypto configuration reference |
+| [M3AAWG Best Practices](https://www.m3aawg.org/published-documents) | Industry messaging anti-abuse best practices |
+| [RFC 8461 — MTA-STS](https://datatracker.ietf.org/doc/html/rfc8461) | MTA-STS specification |
+| [RFC 8460 — TLS-RPT](https://datatracker.ietf.org/doc/html/rfc8460) | TLS reporting specification |
+
+## Security checklist
+
+Pre-production validation — run through before exposing a mail server to the
+internet. Items marked with automated tooling can be verified via
+testssl.sh / internet.nl.
+
+### Transport security
+
+- [ ] TLS 1.2+ only — no SSLv2/SSLv3/TLSv1.0/TLSv1.1 (`TLS_LEVEL=modern`)
+- [ ] Cipher suites: only NCSC-NL "sufficient" (`ECDHE+AESGCM:ECDHE+CHACHA20:@SECLEVEL=2`)
+- [ ] No CCM-8, ARIA, CBC-SHA256/SHA384, DHE, CAMELLIA cipher suites
+- [ ] Signature algorithms: SHA-256/384/512 only (no SHA-1, no SHA-224)
+- [ ] Forward secrecy — ECDHE on all suites
+- [ ] Certificate valid, not self-signed, full chain served
+- [ ] STARTTLS on port 25 (opportunistic for receiving)
+- [ ] Implicit TLS on 465 (submission) and 993 (IMAP)
+- [ ] testssl.sh shows no CRITICAL or HIGH findings
+
+### DANE and DNSSEC (internet.nl requirements)
+
+- [ ] Domain zone signed with DNSSEC (DS record at registrar)
+- [ ] MX hostname zone signed with DNSSEC
+- [ ] TLSA `3 1 1` records published for ports 25, 465, 993
+- [ ] TLSA hash matches current certificate public key
+- [ ] Outbound DANE enabled (`smtp_dns_support_level = dnssec`, `smtp_tls_security_level = dane`)
+- [ ] Key reuse configured for automated renewals (`--reuse-key` or `rotationPolicy: Never`)
+- [ ] DANE + MTA-STS both deployed (complementary coverage)
+- [ ] CAA record restricting issuance to Let's Encrypt
+
+### Authentication and anti-spoofing
+
+- [ ] SPF: `v=spf1 mx -all` (hard fail)
+- [ ] DKIM: RSA 2048-bit, selector published, signing verified
+- [ ] DMARC: `p=reject; sp=reject; adkim=s; aspf=s` (strict alignment)
+- [ ] MTA-STS: `mode: enforce`, `max_age: 604800`
+- [ ] TLS-RPT: `_smtp._tls` TXT record with rua
+- [ ] SPOOF_PROTECTION enabled (DMS)
+- [ ] PTR record matches HELO hostname
+- [ ] No open relay (`PERMIT_DOCKER=none`, SASL required for submission)
+
+### Spam and abuse prevention
+
+- [ ] Postscreen with DNSBL enforcement
+- [ ] Rspamd scoring enabled (HFILTER score ≥ 6 for unknown hostnames)
+- [ ] fail2ban / CrowdSec active
+- [ ] Rate limiting on submission ports
+- [ ] Message size limit configured
+
+### Monitoring
+
+- [ ] testssl.sh CronJob (weekly, email report)
+- [ ] Parsedmarc for DMARC aggregate reports
+- [ ] Log shipping to Loki (Postfix, Dovecot, Rspamd)
+- [ ] Alerting on delivery failures, queue growth, auth failures
+
+### internet.nl 100% score — full checklist
+
+internet.nl tests 7 categories. Map to our implementation:
+
+| Category | What they check | Our implementation | Status |
+|----------|----------------|-------------------|--------|
+| **STARTTLS** | TLS available, TLS 1.2+, cipher order, cipher suites, signature hash | `TLS_LEVEL=modern`, `ECDHE+AESGCM:ECDHE+CHACHA20:@SECLEVEL=2`, `SignatureAlgorithms` SHA-256+ | ✅ |
+| **Certificate** | Valid, not expired, full chain, matches hostname | cert-manager / Let's Encrypt wildcard | ✅ (prod) |
+| **DANE** | DNSSEC + TLSA `3 1 1` for port 25 | deSEC supports DNSSEC | ⏳ TODO |
+| **SPF** | `v=spf1 ... -all` (hard fail) | Configured per domain | ✅ |
+| **DKIM** | Selector published, RSA ≥ 2048 bits, signing verified | Rspamd, 2048-bit RSA, selector `mail` | ✅ |
+| **DMARC** | `p=reject`, strict alignment, reporting URIs | `adkim=s; aspf=s; p=reject` | ✅ |
+| **MTA-STS** | Policy file served, `mode: enforce`, TLS-RPT record | nginx + `_smtp._tls` TXT | ✅ |
+
+Missing for 100%: DANE (requires DNSSEC activation on domain via deSEC).
+
+### Periodic re-validation
+
+| Frequency | Action |
+|-----------|--------|
+| Weekly | testssl.sh automated report (CronJob) |
+| Monthly | internet.nl full compliance check (manual) |
+| On change | Re-run after any TLS, DNS, or Postfix config change |
+| Quarterly | Review DMARC aggregate reports (parsedmarc) |
 
 ## Patching strategy
 

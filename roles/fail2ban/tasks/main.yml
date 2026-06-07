@@ -1,4 +1,35 @@
 # This role contains the default policy for fail2ban
+- name: Create fail2ban systemd override directory
+  become: true
+  ansible.builtin.file:
+    path: /etc/systemd/system/fail2ban.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+
+- name: Deploy fail2ban hardening override
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/fail2ban.service.d/hardening.conf
+    content: |
+      [Service]
+      NoNewPrivileges=true
+      PrivateDevices=true
+      PrivateTmp=true
+      ProtectHome=yes
+      ProtectKernelLogs=true
+      ProtectHostname=true
+      ProtectClock=true
+      RestrictRealtime=true
+      RestrictSUIDSGID=true
+      LockPersonality=true
+      RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Restart fail2ban
+
 - name: Install fail2ban backend packages
   become: true
   ansible.builtin.apt:

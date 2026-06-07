@@ -15,12 +15,28 @@
     mode: u=rwx,g=rx,o=rx
   when: monit_present is failed
 
+- name: Download Monit checksum
+  ansible.builtin.get_url:
+    url: "{{ monit_checksum_url }}"
+    dest: "{{ monit_download_dest_directory }}/monit.tar.gz.sha256"
+    mode: "u=rw,g=,o="
+  when: monit_present is failed
+
+- name: Extract expected checksum for Monit archive
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail && awk '{print $1}' {{ monit_download_dest_directory }}/monit.tar.gz.sha256
+    executable: /bin/bash
+  changed_when: false
+  register: monit_expected_checksum
+  when: monit_present is failed
+
 - name: Download Monit archive
   ansible.builtin.get_url:
     url: "{{ monit_download_uri }}"
     dest: "{{ monit_download_dest_directory }}/monit.tar.gz"
-    checksum: "{{ monit_download_checksum }}"
-    mode: u=rw,g=,o=
+    checksum: "sha256:{{ monit_expected_checksum.stdout }}"
+    mode: "u=rw,g=,o="
   when: monit_present is failed
 
 - name: Extract Monit archive
@@ -48,7 +64,7 @@
     state: directory
     owner: root
     group: root
-    mode: u=rwx,g=rx,o=rx
+    mode: "u=rwx,g=rx,o=rx"
 
 - name: Create Monit additional configuration directory
   become: true
@@ -57,7 +73,7 @@
     state: directory
     owner: root
     group: root
-    mode: u=rwx,g=rx,o=rx
+    mode: "u=rwx,g=rx,o=rx"
 
 - name: Create Monit var directory
   become: true
@@ -76,7 +92,7 @@
     dest: /etc/monit/monitrc
     owner: root
     group: root
-    mode: u=rw,g=r,o=r
+    mode: "u=rw,g=,o="
   when: monit_present is failed
 
 - name: Create a symbolic link for monitrc
@@ -97,6 +113,9 @@
     owner: root
     group: root
     mode: u=rw,g=r,o=r
+  notify:
+    - Reload monit systemd
+    - Restart monit
 
 - name: Clean temporary directory
   become: true

@@ -3,4 +3,4 @@ k8s_kluctl_release_channel: "https://github.com/kluctl/kluctl/releases/download"
 
 k8s_kluctl_archive_name: "kluctl_{{ k8s_kluctl_version }}_linux_{{ k8s_kluctl_arch }}.tar.gz"
 k8s_kluctl_download_url: "{{ k8s_kluctl_release_channel }}/{{ k8s_kluctl_version }}/{{ k8s_kluctl_archive_name }}"
-k8s_kluctl_checksum: "{{ k8s_kluctl_checksums[k8s_kluctl_arch] }}"
+k8s_kluctl_checksum_url: "{{ k8s_kluctl_release_channel }}/{{ k8s_kluctl_version }}/kluctl_{{ k8s_kluctl_version }}_checksums.txt"

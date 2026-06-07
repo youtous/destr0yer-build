@@ -3,9 +3,27 @@
 Description=Check and notify on public IP changes
 After=network-online.target
 Wants=network-online.target
+OnFailure=notify-ip-failure-notify@%n.service
 
 [Service]
 Type=oneshot
 ExecStart={{ notify_change_ip_directory }}/notify-ip-change.sh
 StandardOutput=append:{{ notify_change_ip_log_file }}
 StandardError=append:{{ notify_change_ip_log_file }}
+
+# Hardening — ProtectSystem=full keeps /usr, /boot, /etc read-only; /var stays writable for sendmail
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths={{ notify_change_ip_directory }}
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

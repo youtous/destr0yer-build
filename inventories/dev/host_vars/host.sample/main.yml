@@ -59,11 +59,14 @@ ipv6_private:
 #     lv: "lv-openebs"
 #     size: "60%VG"
 #
+# IMPORTANT: always include nofail — without it, a mount failure drops the node
+# into emergency mode (no SSH access, requires console rescue).
+#
 # filesystems_to_create:
 #   - dev: /dev/mapper/vg--k3s-lv--rancher
 #     fstype: xfs
 #     mount_path: /var/lib/rancher
-#     mount_opts: "defaults,noatime"
+#     mount_opts: "defaults,noatime,nofail"
 #     luks:
 #       enabled: true
 #       name: crypt-k3s
@@ -71,7 +74,7 @@ ipv6_private:
 #   - dev: /dev/mapper/vg--k3s-lv--openebs
 #     fstype: xfs
 #     mount_path: /var/openebs
-#     mount_opts: "defaults,noatime"
+#     mount_opts: "defaults,noatime,nofail"
 #     luks:
 #       enabled: true
 #       name: crypt-openebs
@@ -81,6 +84,7 @@ ipv6_private:
 #   luks.keyfile_size: 4096       # keyfile size in bytes
 #   luks.cipher: aes-xts-plain64  # LUKS cipher
 #   luks.key_size: 512            # key size in bits (AES-256-XTS)
+#   luks.opts: "luks,nofail"      # crypttab options (nofail = boot continues if LUKS fails)
 #
 # Requirement: root partition must itself be encrypted (FDE).
 # Keyfiles stored on root are protected by FDE at rest.
@@ -100,7 +104,7 @@ ipv6_private:
 #     fstype: btrfs
 #     opts: "-f"
 #     mount_path: /home/backups
-#     mount_opts: "defaults,noatime,compress=zstd:3"
+#     mount_opts: "defaults,noatime,nofail,compress=zstd:3"
 #     luks:
 #       enabled: true
 #       name: crypt-backups
@@ -245,6 +249,7 @@ host_users: []
 #     public_key: "{{ root_public_key }}"
 #     private_key: "{{ root_private_key }}"
 # kopia_sftp_host: "192.168.56.10"  # backup server (LAN IP in dev, WG IP in prod)
+# kopia_sftp_port: 22               # override if SFTP server uses non-standard port
 # kopia_sftp_user: "backup_hostname"
 # kopia_sftp_path: "/home"
 # kopia_sftp_key: "/root/.ssh/id_ed25519"

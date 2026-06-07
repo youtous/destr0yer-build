@@ -1,0 +1,97 @@
+# Image
+podman_mailserver_image: "docker.io/mailserver/docker-mailserver"
+# renovate: datasource=docker depName=mailserver/docker-mailserver
+podman_mailserver_version: "15.1.0"
+podman_mailserver_digest: "sha256:af51b15dd3fc72153c0e90eb7692bb5e3a463212d87959a80fa7aa89b617d44a"
+
+# Nginx image (MTA-STS + autodiscover reverse proxy)
+podman_mailserver_nginx_image: "docker.io/nginx"
+# renovate: datasource=docker depName=nginx
+podman_mailserver_nginx_version: "1.31.1-alpine"
+podman_mailserver_nginx_digest: "sha256:8b1e78743a03dbb2c95171cc58639fef29abc8816598e27fb910ed2e621e589a"
+
+# Autodiscover image
+podman_mailserver_autodiscover_image: "docker.io/wdes/mail-autodiscover-autoconfig"
+# renovate: datasource=docker depName=wdes/mail-autodiscover-autoconfig
+podman_mailserver_autodiscover_version: "main"
+podman_mailserver_autodiscover_digest: "sha256:dc5c86993d166c0aa0a27ce086a48e5cdd9fae79886fcc34ceb105cd4ceedfe6"
+
+# Rootless Podman user
+podman_mailserver_user: "mail-dms"
+podman_mailserver_uid: 5200
+podman_mailserver_user_home: "{{ podman_mailserver_base_path }}/home/{{ podman_mailserver_user }}"
+
+# Storage — /srv/podman is the LV mount (managed by disks_lvm_management)
+podman_mailserver_base_path: "/srv/podman"
+podman_mailserver_home: "{{ podman_mailserver_base_path }}/mailserver"
+
+# Hostname / domain
+podman_mailserver_hostname: "mail.{{ podman_mailserver_domain }}"
+podman_mailserver_domain: "example.com"
+podman_mailserver_postmaster: "postmaster@{{ podman_mailserver_domain }}"
+
+# Features
+podman_mailserver_enable_fail2ban: true
+podman_mailserver_enable_rspamd: true
+podman_mailserver_enable_clamav: false
+podman_mailserver_tls_level: "modern"
+podman_mailserver_log_level: "info"
+
+# Network interface inside the container (pasta creates a tap device, not eth0)
+podman_mailserver_network_interface: "tap0"
+
+# Postfix limits
+podman_mailserver_mailbox_size_limit: 1073741824
+podman_mailserver_message_size_limit: 12000000
+
+# Accounts, aliases, domains — from inventory/vault
+# Structure:
+#   - domain: "example.com"
+#     mta_sts:  (optional, see README.md for DNS setup)
+#       mode: "enforce"           # testing | enforce | none (default: testing)
+#       max_age: 604800           # seconds (default: 86401, ~1 day)
+#       mx_entries:               # MX hostnames for the policy
+#         - "mail.example.com"
+#     accounts:
+#       - username: "user1"
+#         bcrypt_password: "$2b$12$..."
+#         quota_mb: 500  (optional)
+#     aliases:
+#       - alias: "abuse@example.com"
+#         to: "postmaster@example.com"
+#     regexp_aliases:  (optional, pcre patterns for postfix-regexp.cf — auto-loaded by DMS for both receiving and sending)
+#       - pattern: "/^bounce-.*@example\\.com$/"
+#         to: "postmaster@example.com"
+#     dkim_private: |  (optional, PEM private key for Rspamd DKIM signing)
+#     dkim_public: |  (optional, PEM public key for DNS TXT record reference)
+#       -----BEGIN PUBLIC KEY-----
+#       MIIBIjANBg...
+#       -----END PUBLIC KEY-----
+#     receive_bans: [] (optional)
+#     send_bans: [] (optional)
+podman_mailserver_domains: []
+
+# TLS wildcard cert (from Ansible Vault, inline PEM)
+podman_mailserver_tls_cert: ""
+podman_mailserver_tls_key: ""
+
+# UFW allowed source IPs (passed to ufw_smart_rules as ufw_rule_from_ips).
+# Default allows from anywhere (0.0.0.0/0 + ::/0). Override to restrict.
+podman_mailserver_ufw_from_ips:
+  - "0.0.0.0/0"
+  - "::/0"
+
+# DANE — outbound TLSA verification (requires DNSSEC-validating resolver)
+# When enabled, Postfix uses mandatory TLS for domains with valid TLSA records
+# and falls back to opportunistic TLS otherwise. Safe to enable before
+# publishing your own TLSA records.
+podman_mailserver_dane_enabled: false
+podman_mailserver_smtp_tls_security_level: "{{ 'dane' if podman_mailserver_dane_enabled else 'may' }}"
+
+# Migration from v10
+podman_mailserver_migration_enabled: false
+podman_mailserver_migration_source: "/var/mail-backup"
+
+# Lifecycle state: present | absent
+podman_mailserver_state: present
+podman_mailserver_teardown_purge_data: false

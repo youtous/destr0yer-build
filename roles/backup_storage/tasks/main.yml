@@ -153,18 +153,18 @@
     state: directory
     path: "{{ backup_root_directory }}/backup_{{ item.username }}"
     owner: root
-    group: root
-    mode: u=rwx,g=rx,o=rx
+    group: "{{ backup_group_name }}"
+    mode: "u=rwx,g=rx,o="
   with_items: "{{ backup_users }}"
 
-- name: Ensure backup folders permissions
+- name: Ensure backup home folders permissions
   become: true
   ansible.builtin.file:
     state: directory
     path: "{{ backup_root_directory }}/backup_{{ item.username }}/home"
     owner: "backup_{{ item.username }}"
     group: "{{ backup_group_name }}"
-    mode: u=rwx,g=,o=
+    mode: "u=rwx,g=,o="
   with_items: "{{ backup_users }}"
 
 - name: Configure btrfs snapshots

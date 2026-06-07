@@ -2,7 +2,22 @@
 [Unit]
 Description=Monthly btrfs cold send of latest daily snapshot
 After=local-fs.target
+OnFailure=btrfs-failure-notify@%n.service
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/sbin/btrfs-cold-send.sh
+
+# Hardening
+NoNewPrivileges=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

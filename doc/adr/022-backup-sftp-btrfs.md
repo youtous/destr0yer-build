@@ -88,15 +88,13 @@ Kopia picks up these snapshots as part of its daily backup sweep.
 - Prometheus alerting rule: fires if no successful backup in 24h
 - Alertmanager routes alert to email + ntfy
 
-**Verification schedule** (on backup node):
+**Verification schedule** (runs on each K3S node, not backup node):
 ```
-daily:   kopia snapshot verify --verify-files-percent 5
-weekly:  kopia snapshot verify --verify-files-percent 100 --force-hash
-         (re-downloads and re-checksums all data blobs — detects bit rot)
+weekly (Sun 04:00):  kopia snapshot verify --verify-files-percent 5
 ```
 
-Email notification on any verification failure. Gatus alerts if
-verification hasn't run in the expected window.
+Configurable via `kopia_verify_schedule` and `kopia_verify_percent`.
+Email notification on any verification failure (via local SMTP relay).
 
 **Disaster recovery procedure**:
 ```sh
@@ -130,6 +128,12 @@ mail storage). That's what kopia → SFTP protects.
 6. [x] Update backup includes: `/var/lib/rancher/k3s/server/db/`,
    `/var/openebs/local/`, `/home/`, `/etc/`
 7. [ ] Alerting: email/ntfy on backup failure + Prometheus alert if no backup in X hours
+
+**Systemd hardening** (applied to both `kopia-snapshot.service` and `kopia-verify.service`):
+- `ProtectSystem=strict` + `ReadOnlyPaths=/` — Kopia can read all paths but only write to its config/cache
+- `ReadWritePaths=/root/.config/kopia /root/.cache/kopia /tmp`
+- `NoNewPrivileges=yes` — prevents privilege escalation
+- `RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6` — limits socket types
 
 **Monitoring (no server mode — KISS)**:
 - Kopia runs as systemd timer on each node (client-only, no central daemon)

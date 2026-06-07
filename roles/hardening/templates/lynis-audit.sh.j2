@@ -1,0 +1,43 @@
+#!/bin/sh
+# {{ ansible_managed }}
+set -eu
+
+REPORT=$(mktemp)
+PROFILE=$(mktemp --suffix=.prf)
+trap 'rm -f "$REPORT" "$PROFILE"' EXIT
+
+ESC=$(printf '\033')
+
+# Force ANSI colors via custom profile (bypasses isatty check in Lynis)
+if [ -f /etc/lynis/default.prf ]; then
+  sed 's/^colors=.*/colors=yes/' /etc/lynis/default.prf > "$PROFILE"
+  grep -q '^colors=' "$PROFILE" || echo 'colors=yes' >> "$PROFILE"
+else
+  echo 'colors=yes' > "$PROFILE"
+fi
+
+lynis audit system --quick --no-log --auditor "systemd-timer" --profile "$PROFILE" \
+  > "$REPORT" 2>&1 || true
+
+# Strip ANSI codes before parsing to avoid matching escape sequence digits
+SCORE=$(sed "s/${ESC}\[[0-9;]*m//g" "$REPORT" | grep "Hardening index" | grep -oP "\d+" | head -1 || true)
+WARNINGS=$(sed "s/${ESC}\[[0-9;]*m//g" "$REPORT" | grep -c "Warning:" || true)
+SUGGESTIONS=$(sed "s/${ESC}\[[0-9;]*m//g" "$REPORT" | grep -c "Suggestion:" || true)
+SUMMARY="Score: ${SCORE:-N/A}/100 | Warnings: $WARNINGS | Suggestions: $SUGGESTIONS"
+echo "$SUMMARY"
+
+{
+  printf "Subject: [lynis] %s - {{ ansible_hostname }} (%s)\r\n" "$SUMMARY" "$(date +%Y-%m-%d)"
+  printf "From: lynis@{{ ansible_hostname }}\r\n"
+  printf "To: {{ lynis_notification_email }}\r\n"
+  printf "MIME-Version: 1.0\r\n"
+  printf "Content-Type: text/html; charset=utf-8\r\n"
+  printf "\r\n"
+  printf '<html><body><pre style="font-family:monospace;font-size:13px;background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:8px;overflow-x:auto;">'
+  if command -v aha >/dev/null 2>&1; then
+    aha -b -n < "$REPORT"
+  else
+    sed -e "s/${ESC}\[[0-9;]*m//g" -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' "$REPORT"
+  fi
+  printf '</pre></body></html>'
+} | /usr/sbin/sendmail -t -f "lynis@{{ ansible_hostname }}"

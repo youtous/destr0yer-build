@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+[Unit]
+Description=debsums package integrity check
+OnFailure=debsums-failure-notify@%n.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/debsums-check.sh
+
+# Hardening — ProtectSystem=full keeps /var writable for sendmail
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

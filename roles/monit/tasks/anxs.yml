@@ -4,7 +4,7 @@
   ansible.builtin.template:
     src: "etc/monit/monitrc.j2"
     dest: "/etc/monit/monitrc"
-    mode: "u=r"
+    mode: "u=rw,g=,o="
   notify:
     - Restart monit
 
@@ -12,7 +12,7 @@
   ansible.builtin.template:
     src: "etc/monit/conf.d/{{ item }}.j2"
     dest: "/etc/monit/conf.d/{{ item }}"
-    mode: "u=r"
+    mode: "u=rw,g=,o="
   with_items: "{{ monit_services_monitored }}"
   notify:
     - Reload monit
@@ -29,7 +29,7 @@
     dest: "/etc/monit/conf.d/{{ item.type | default('base') }}_{{ item.process | default(item.pid | basename | replace('.pid', '')) }}.conf"
     owner: root
     group: root
-    mode: "u=rw,g=r,o=r"
+    mode: "u=rw,g=,o="
   with_community.general.flattened:
     - "{{ monit_process_list }}"
   when: item.pid is defined and item.pid

@@ -1,0 +1,16 @@
+# Lynis AUTH-9328 — set default umask in shell profiles
+
+- name: Deploy umask profile script
+  ansible.builtin.template:
+    src: hardening-umask.sh.j2
+    dest: /etc/profile.d/hardening-umask.sh
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+
+- name: Set umask in /etc/bash.bashrc (non-login shells)
+  ansible.builtin.lineinfile:
+    path: /etc/bash.bashrc
+    regexp: '^umask '
+    line: "umask 027"
+    insertafter: EOF

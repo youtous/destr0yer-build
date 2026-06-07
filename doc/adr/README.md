@@ -57,6 +57,7 @@ Lifecycle: **ADR** (decision) → **implementation** (roles/kluctl) → **Doc** 
 | [023](023-disaster-recovery.md) | Disaster recovery plan | 📋 Decided | -- |
 | [026](026-velero-backup.md) | Velero — K8S-native backup with Kopia backend | ✅ Done | [storage](../storage.md) |
 | [035](035-usb-storage.md) | USB disk storage for local K3S workloads | ✅ Done | [usb-storage](../usb-storage.md) |
+| [038](038-sftpgo-backup-server.md) | SFTPGo — fine-grained SFTP server with S3 backend (bare-metal + K8S) | 📋 TODO | -- |
 
 ## Phase 5 — Ingress, certificates and applications
 
@@ -74,7 +75,7 @@ Lifecycle: **ADR** (decision) → **implementation** (roles/kluctl) → **Doc** 
 |---|----------|--------|-----|
 | [006](006-mail-cloud-relay.md) | Mail architecture — cloud blind relay | ✅ Done | -- |
 | [033](033-mail-dual-cluster-backup-mx.md) | Mail architecture — dual-cluster with backup MX and whitehole NAT | 📋 Proposed | -- |
-| [034](034-dms-v10-to-v15-migration.md) | DMS v10 to v15 mail migration on new infrastructure | 🔧 WIP (prod) | -- |
+| [034](034-dms-v10-to-v15-migration.md) | DMS v10 to v15 mail migration — standalone Podman or K8S | ✅ Done (role), ⏳ Prod migration | -- |
 
 ## Phase 7 — Future
 

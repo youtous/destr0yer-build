@@ -2,7 +2,7 @@ system_packages:
   - cron
   - attr
   - curl
-  - network-manager  # manage network systemd's way
+  - lynis  # host-level security audit
   - wget
   - curl
   - dnsutils

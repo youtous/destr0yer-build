@@ -92,6 +92,10 @@ args:
     default: true
   - name: enable_mail
     default: true
+  - name: mail_dane_enabled
+    default: false
+  - name: mail_smtp_tls_security_level
+    default: "may"
   - name: mail_proxy_ports
     default:
       - "12525"

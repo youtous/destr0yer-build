@@ -1,8 +1,8 @@
 # renovate: datasource=helm depName=cilium registryUrl=https://helm.cilium.io
 cilium_chart_version: "1.19.4"
 
-cilium_chart_download_url: "https://helm.cilium.io/cilium-{{ cilium_chart_version }}.tgz"
-cilium_chart_sha265sum: "c6a788e6bd74598a235f7987930860f554c2dd8048154d1aba8a532bcde90cd6"
+cilium_chart_repo_url: "https://helm.cilium.io"
+cilium_chart_download_url: "{{ cilium_chart_repo_url }}/cilium-{{ cilium_chart_version }}.tgz"
 
 cilium_helm_release_name: "cilium"
 cilium_k8s_namespace: "cilium"

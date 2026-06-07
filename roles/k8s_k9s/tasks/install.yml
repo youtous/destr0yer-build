@@ -5,12 +5,26 @@
     path: "{{ ansible_env.HOME }}/.ansible/tmp"
   register: tmp_dir_build
 
+- name: Download k9s checksums
+  ansible.builtin.get_url:
+    url: "{{ k8s_k9s_checksum_url }}"
+    dest: "{{ tmp_dir_build.path }}/checksums.sha256"
+    mode: "u=rw,g=,o="
+
+- name: Extract expected checksum for k9s archive
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail && grep '{{ k8s_k9s_archive_name }}' {{ tmp_dir_build.path }}/checksums.sha256 | grep -v '.sbom.json' | awk '{print $1}'
+    executable: /bin/bash
+  changed_when: false
+  register: k8s_k9s_expected_checksum
+
 - name: Download k9s release and verify checksum
   ansible.builtin.get_url:
     url: "{{ k8s_k9s_download_release_url }}"
     dest: "{{ tmp_dir_build.path }}/{{ k8s_k9s_archive_name }}"
-    checksum: "sha256:{{ k8s_k9s_version_sha256sum }}"
-    mode: u=rw,g=,o=
+    checksum: "sha256:{{ k8s_k9s_expected_checksum.stdout }}"
+    mode: "u=rw,g=,o="
 
 - name: Extract downloaded release
   ansible.builtin.unarchive:

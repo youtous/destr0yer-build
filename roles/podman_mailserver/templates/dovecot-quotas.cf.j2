@@ -1,0 +1,8 @@
+{{ ansible_managed | comment }}
+{% for domain in podman_mailserver_domains %}
+{% for account in domain.accounts | default([]) %}
+{% if account.quota_mb is defined %}
+{{ account.username }}@{{ domain.domain }}:{{ account.quota_mb }}M
+{% endif %}
+{% endfor %}
+{% endfor %}

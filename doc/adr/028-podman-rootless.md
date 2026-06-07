@@ -21,7 +21,23 @@ internally. But some host-level tasks need a container runtime:
 - Add `podman` to `system_packages` role (installed on all nodes)
 - Configure rootless mode (subuid/subgid) via Ansible
 - Update `monitor_testssl` to use `podman run` instead of `docker run`
-- `cloud_relay`: HAProxy runs as rootless Podman Quadlet with pasta networking
-  (dedicated `haproxy-relay` user, `sysctl ip_unprivileged_port_start=25`)
-- `podman_mailserver`: DMS runs as rootful Podman Quadlet with host networking
-  (transitional deployment, uses `NET_ADMIN` for fail2ban)
+- Quadlet for standalone containers on non-K3S nodes:
+  - `cloud_relay`: HAProxy via rootless Podman with `Network=pasta` (user `haproxy-relay`, UID 5100)
+  - `podman_mailserver`: DMS + Nginx + Autodiscover via rootless Podman with `Network=pasta` (user `mail-dms`, UID 5200)
+
+**Rootless networking — pasta**:
+Both `cloud_relay` and `podman_mailserver` use `Network=pasta` (passthrough
+to user namespace) instead of `Network=host` (which is unavailable in rootless
+Podman due to user namespace isolation). Pasta preserves source IP addresses
+for TCP connections, which is required for fail2ban (DMS), rate limiting (HAProxy),
+and PROXY protocol. Each role uses `PublishPort` directives in the Quadlet unit
+to expose specific ports. Privileged port binding requires
+`sysctl_net_ipv4_ip_unprivileged_port_start` set to the lowest needed port (e.g. 25).
+
+**UID mapping**:
+Each role creates a dedicated system user with non-overlapping subuid/subgid ranges:
+- `haproxy-relay` (UID 5100): subuid 200000:65536
+- `mail-dms` (UID 5200): subuid 300000:65536
+
+For migrated data (e.g. DMS v10 → v15), `podman unshare chown` remaps host UIDs
+into the container's user namespace so internal processes see correct ownership.

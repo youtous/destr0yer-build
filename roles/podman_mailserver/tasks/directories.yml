@@ -1,0 +1,47 @@
+- name: Gather mount facts
+  ansible.builtin.setup:
+    filter: ansible_mounts
+
+- name: Assert LV mount exists
+  ansible.builtin.assert:
+    that:
+      - ansible_mounts | selectattr('mount', 'equalto', podman_mailserver_base_path) | list | length > 0
+    fail_msg: >-
+      {{ podman_mailserver_base_path }} is not mounted.
+      Configure disks_lvm_management in host_vars first (provision playbook).
+
+- name: Create mailserver home directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_home }}"
+    state: directory
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rwx,g=rx,o="
+
+- name: Create config and shared subdirectories
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_home }}/{{ item }}"
+    state: directory
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rwx,g=rx,o="
+  loop: "{{ podman_mailserver_dirs_private + podman_mailserver_dirs_shared }}"
+
+- name: Create data subdirectories (ownership set later by fix-permissions)
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_home }}/{{ item }}"
+    state: directory
+    mode: "u=rwx,g=rx,o="
+  loop: "{{ podman_mailserver_dirs_data }}"
+
+- name: Ensure Quadlet directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_quadlet_dir }}"
+    state: directory
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rwx,g=,o="

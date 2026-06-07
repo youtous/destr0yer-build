@@ -1,0 +1,6 @@
+version: STSv1
+mode: {{ domain.mta_sts.mode | default("testing") }}
+{% for mx in domain.mta_sts.mx_entries | default([podman_mailserver_hostname]) %}
+mx: {{ mx }}
+{% endfor %}
+max_age: {{ domain.mta_sts.max_age | default(86401) }}

@@ -3,8 +3,27 @@
 Description=Kopia snapshot verification
 After=network-online.target
 Wants=network-online.target
+OnFailure=kopia-failure-notify@%n.service
 
 [Service]
 Type=oneshot
+WorkingDirectory=/root
 EnvironmentFile=/etc/kopia.env
 ExecStart={{ kopia_binary_path }} snapshot verify --verify-files-percent={{ kopia_verify_percent }}
+
+# Hardening — same restrictions as kopia-snapshot
+ReadOnlyPaths=/
+ReadWritePaths=/root/.config/kopia /root/.cache/kopia /root/.ssh /tmp
+NoNewPrivileges=yes
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

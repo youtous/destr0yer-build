@@ -83,7 +83,7 @@
     state: directory
     owner: "{{ k8s_app_deployer_linux_user }}"
     group: "{{ k8s_app_deployer_linux_user }}"
-    mode: u=rwx,g=rx,o=rx
+    mode: "u=rwx,g=rx,o="
 
 - name: Install app-deployer fish config
   ansible.builtin.template:

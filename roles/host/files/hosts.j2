@@ -1,5 +1,5 @@
 # IPv4
-127.0.0.1   localhost {{ hostname }}
+127.0.0.1   {{ hostname }} localhost
 
 # IPv6
 ::1         localhost ip6-localhost ip6-loopback
@@ -12,5 +12,12 @@ ff02::2 ip6-allrouters
 # nodes the cluster
 {% for hostnameJ in groups['all'] %}
 {{ hostvars[hostnameJ]['ipv4_private'][0] }} {{ hostvars[hostnameJ]['hostname'] }}
+{% endfor %}
+{% endif %}
+{% if hosts_extra_entries | length > 0 %}
+
+# extra entries
+{% for entry in hosts_extra_entries %}
+{{ entry.ip }} {{ entry.names }}
 {% endfor %}
 {% endif %}

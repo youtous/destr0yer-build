@@ -1,2 +1,8 @@
 # generate an associative hostname ip list in the hosts file using private ips
 generate_static_host_mapping: true
+
+# additional /etc/hosts entries (e.g. local overrides for relay, DMS, etc.)
+# hosts_extra_entries:
+#   - ip: "127.0.0.1"
+#     names: "mail.example.com"
+hosts_extra_entries: []

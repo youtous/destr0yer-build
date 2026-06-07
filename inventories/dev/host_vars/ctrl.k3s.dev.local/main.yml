@@ -101,6 +101,7 @@ filesystems_to_create:
     fstype: btrfs
     opts: "-f"
     mount_path: /home/backups
+    mount_opts: "defaults,noatime,nofail"
 ### End of Disk management parameters ###
 
 ### Begin of Backup storage parameters ###

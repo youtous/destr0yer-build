@@ -1,0 +1,32 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-cert-key-reuse
+  annotations:
+    policies.kyverno.io/title: Default certificate private key reuse
+    policies.kyverno.io/description: >-
+      Sets privateKey.rotationPolicy to Never on all cert-manager Certificate
+      resources that do not explicitly set it. This ensures the same private key
+      is reused across renewals, making certificates DANE-compatible by default
+      (TLSA 3 1 1 SPKI hash stays stable). TLS session security is not affected
+      (ECDHE provides forward secrecy independently of the certificate key).
+      Manual key rotation remains possible by deleting the TLS Secret.
+spec:
+  rules:
+    - name: set-rotation-policy-never
+      match:
+        any:
+          - resources:
+              kinds: [Certificate]
+{% raw %}
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.privateKey.rotationPolicy || '' }}"
+            operator: Equals
+            value: ""
+      mutate:
+        patchStrategicMerge:
+          spec:
+            privateKey:
+              rotationPolicy: Never
+{% endraw %}

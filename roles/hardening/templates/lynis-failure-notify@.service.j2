@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Send email on %i failure
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '\
+  echo "Subject: [ALERT] %i failed on {{ ansible_hostname }}\nFrom: lynis@{{ ansible_hostname }}\nTo: {{ lynis_notification_email }}\n\nUnit %i failed at $(date -u).\n\nJournal (last 50 lines):\n$(journalctl -u %i --no-pager -n 50)" \
+  | /usr/sbin/sendmail -t -f "lynis@{{ ansible_hostname }}"'
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

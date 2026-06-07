@@ -15,7 +15,7 @@
 - name: LUKS | Generate keyfile
   become: true
   ansible.builtin.command:
-    cmd: dd if=/dev/urandom of={{ item.luks.keyfile }} bs=1 count={{ item.luks.keyfile_size | default(4096) }}
+    cmd: openssl rand -out {{ item.luks.keyfile }} {{ item.luks.keyfile_size | default(64) }}
     creates: "{{ item.luks.keyfile }}"
   loop: "{{ _luks_filesystems }}"
   loop_control:
@@ -97,9 +97,17 @@
     name: "{{ item.luks.name }}"
     backing_device: "{{ item.dev }}"
     password: "{{ item.luks.keyfile }}"
-    opts: luks
+    opts: "{{ item.luks.opts | default('luks,nofail') }}"
     state: present
   loop: "{{ _luks_filesystems }}"
   loop_control:
     label: "{{ item.luks.name }}"
   when: item.luks.enabled | default(false)
+  register: _luks_crypttab
+
+- name: LUKS | Rebuild initramfs after crypttab changes
+  become: true
+  ansible.builtin.command:
+    cmd: update-initramfs -u
+  when: _luks_crypttab.results | selectattr('changed', 'defined') | selectattr('changed', 'equalto', true) | list | length > 0
+  changed_when: true

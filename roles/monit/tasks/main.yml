@@ -15,7 +15,7 @@
   ansible.builtin.template:
     src: "templates/etc/monit/conf.d/{{ item }}.j2"
     dest: "/etc/monit/conf.d/{{ item }}"
-    mode: u=rw,g=r,o=
+    mode: "u=rw,g=,o="
   with_items:
     - system
   notify:

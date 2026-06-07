@@ -1,0 +1,224 @@
+# --- DMS config files ---
+
+- name: Deploy mailserver environment file
+  become: true
+  ansible.builtin.template:
+    src: mailserver.env.j2
+    dest: "{{ podman_mailserver_home }}/config/mailserver.env"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart mailserver container
+
+- name: Deploy postfix accounts
+  become: true
+  ansible.builtin.template:
+    src: postfix-accounts.cf.j2
+    dest: "{{ podman_mailserver_home }}/config/postfix-accounts.cf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=,o="
+  no_log: true
+  notify: Restart mailserver container
+
+- name: Deploy postfix virtual aliases
+  become: true
+  ansible.builtin.template:
+    src: postfix-virtual.cf.j2
+    dest: "{{ podman_mailserver_home }}/config/postfix-virtual.cf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart mailserver container
+
+- name: Deploy postfix regexp aliases
+  become: true
+  ansible.builtin.template:
+    src: postfix-regexp.cf.j2
+    dest: "{{ podman_mailserver_home }}/config/postfix-regexp.cf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart mailserver container
+
+- name: Deploy postfix main.cf overrides
+  become: true
+  ansible.builtin.template:
+    src: postfix-main.cf.j2
+    dest: "{{ podman_mailserver_home }}/config/postfix-main.cf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart mailserver container
+
+- name: Deploy postfix receive access map
+  become: true
+  ansible.builtin.template:
+    src: postfix-receive-access.cf.j2
+    dest: "{{ podman_mailserver_home }}/config/postfix-receive-access.cf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart mailserver container
+
+- name: Deploy postfix send access map
+  become: true
+  ansible.builtin.template:
+    src: postfix-send-access.cf.j2
+    dest: "{{ podman_mailserver_home }}/config/postfix-send-access.cf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart mailserver container
+
+- name: Deploy dovecot quotas
+  become: true
+  ansible.builtin.template:
+    src: dovecot-quotas.cf.j2
+    dest: "{{ podman_mailserver_home }}/config/dovecot-quotas.cf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart mailserver container
+
+- name: Create Rspamd directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rwx,g=rx,o=rx"
+  loop:
+    - "{{ podman_mailserver_home }}/config/rspamd"
+    - "{{ podman_mailserver_home }}/config/rspamd/override.d"
+    - "{{ podman_mailserver_home }}/config/rspamd/dkim"
+
+- name: Deploy Rspamd DKIM signing config
+  become: true
+  ansible.builtin.template:
+    src: rspamd-dkim-signing.conf.j2
+    dest: "{{ podman_mailserver_home }}/config/rspamd/override.d/dkim_signing.conf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart mailserver container
+
+- name: Deploy DKIM private keys
+  become: true
+  ansible.builtin.copy:
+    content: "{{ domain.dkim_private }}"
+    dest: "{{ podman_mailserver_home }}/config/rspamd/dkim/{{ domain.domain }}.private"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  loop: "{{ podman_mailserver_domains | selectattr('dkim_private', 'defined') | list }}"
+  loop_control:
+    loop_var: domain
+    label: "{{ domain.domain }}"
+  no_log: true
+  notify: Restart mailserver container
+
+- name: Deploy DKIM public keys
+  become: true
+  ansible.builtin.copy:
+    content: "{{ domain.dkim_public }}"
+    dest: "{{ podman_mailserver_home }}/config/rspamd/dkim/{{ domain.domain }}.public.txt"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  loop: "{{ podman_mailserver_domains | selectattr('dkim_public', 'defined') | list }}"
+  loop_control:
+    loop_var: domain
+    label: "{{ domain.domain }}"
+  notify: Restart mailserver container
+
+- name: Deploy user-patches.sh
+  become: true
+  ansible.builtin.template:
+    src: user-patches.sh.j2
+    dest: "{{ podman_mailserver_home }}/config/user-patches.sh"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rwx,g=rx,o="
+  notify: Restart mailserver container
+
+# --- Nginx config files ---
+
+- name: Deploy Nginx config
+  become: true
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ podman_mailserver_home }}/nginx/conf.d/default.conf"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  notify: Restart nginx container
+
+- name: Deploy MTA-STS policy files
+  become: true
+  ansible.builtin.template:
+    src: mta-sts.txt.j2
+    dest: "{{ podman_mailserver_home }}/nginx/mta-sts/{{ domain.domain }}.txt"
+    owner: "{{ podman_mailserver_user }}"
+    group: "{{ podman_mailserver_user }}"
+    mode: "u=rw,g=r,o="
+  loop: "{{ podman_mailserver_domains | selectattr('mta_sts', 'defined') | list }}"
+  loop_control:
+    loop_var: domain
+    label: "{{ domain.domain }}"
+  notify: Restart nginx container
+
+# Fix internal container permissions via user namespace UID remapping.
+# podman unshare translates container UIDs to the correct host subuid,
+# so no world-readable files on the host.
+
+- name: Resolve Nginx UID from container image
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman run --rm
+      {{ podman_mailserver_nginx_image }}:{{ podman_mailserver_nginx_version }}@{{ podman_mailserver_nginx_digest }}
+      id -u nginx
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: false
+  register: _nginx_uid
+
+- name: Resolve Rspamd UID from DMS image
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman run --rm
+      {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }}
+      id -u _rspamd
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: false
+  register: _rspamd_uid
+
+- name: Fix permissions for Nginx
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman unshare chown -R {{ _nginx_uid.stdout }}:{{ _nginx_uid.stdout }}
+      {{ podman_mailserver_home }}/nginx
+      {{ podman_mailserver_home }}/tls
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: true
+
+- name: Fix permissions for Rspamd DKIM keys
+  become: true
+  become_user: "{{ podman_mailserver_user }}"
+  ansible.builtin.command:
+    cmd: >-
+      podman unshare chown -R {{ _rspamd_uid.stdout }}:{{ _rspamd_uid.stdout }}
+      {{ podman_mailserver_home }}/config/rspamd/dkim
+  environment:
+    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+  changed_when: true
+  when: podman_mailserver_domains | selectattr('dkim_private', 'defined') | list | length > 0
