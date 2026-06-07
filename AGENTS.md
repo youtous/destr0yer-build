@@ -178,6 +178,7 @@ When adding a new systemd service:
 3. Restrict socket families unless the service needs exotic sockets (netlink, bluetooth)
 4. Use `ExecStartPre=/bin/mkdir -p` for directories that may not exist yet
 5. Do **not** use `ProtectSystem=strict` together with `ReadOnlyPaths=/` (redundant, can conflict)
+7. **Services that call `sendmail`**: use `ProtectSystem=full` (not `strict`, not `ReadOnlyPaths=/`). Postfix's `postdrop` needs writable access to `/var/spool/postfix/maildrop/` and `ReadWritePaths` does not reliably work with `postdrop`'s setgid + chroot setup.
 6. Test with `systemd-analyze security <unit>` to verify the hardening score
 
 ### Systemd timer services — failure notification rule

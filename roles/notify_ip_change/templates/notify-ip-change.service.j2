@@ -11,10 +11,10 @@ ExecStart={{ notify_change_ip_directory }}/notify-ip-change.sh
 StandardOutput=append:{{ notify_change_ip_log_file }}
 StandardError=append:{{ notify_change_ip_log_file }}
 
-# Hardening
+# Hardening — ProtectSystem=full keeps /usr, /boot, /etc read-only; /var stays writable for sendmail
 NoNewPrivileges=true
-ProtectSystem=strict
-ReadWritePaths={{ notify_change_ip_directory }} /var/spool/postfix
+ProtectSystem=full
+ReadWritePaths={{ notify_change_ip_directory }}
 PrivateTmp=true
 ProtectKernelTunables=true
 ProtectKernelModules=true
