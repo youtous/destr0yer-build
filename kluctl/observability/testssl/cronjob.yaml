@@ -29,7 +29,7 @@ spec:
           initContainers:
             # renovate: datasource=docker depName=ghcr.io/testssl/testssl.sh
             - name: testssl
-              image: ghcr.io/testssl/testssl.sh@sha256:d655949d41c413a0ce0a66e169c7e691ac846fe44b4b986dbc74fe6f4c1ad2e4  # 3.2
+              image: ghcr.io/testssl/testssl.sh@sha256:72b416319a561d7173c138946290f9c408362539d70e3b76b34295b382650ecd  # 3.2
               command: ["/bin/bash", "-c"]
               args:
                 - |
