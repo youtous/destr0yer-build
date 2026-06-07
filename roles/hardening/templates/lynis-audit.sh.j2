@@ -3,13 +3,21 @@
 set -eu
 
 REPORT=$(mktemp)
-trap 'rm -f "$REPORT"' EXIT
+PROFILE=$(mktemp --suffix=.prf)
+trap 'rm -f "$REPORT" "$PROFILE"' EXIT
 
 ESC=$(printf '\033')
 
-# Pseudo-terminal forces Lynis to emit ANSI colors (isatty check)
-script -qec "lynis audit system --quick --no-log --auditor systemd-timer" /dev/null 2>/dev/null \
-  | tr -d '\r' > "$REPORT" || true
+# Force ANSI colors via custom profile (bypasses isatty check in Lynis)
+if [ -f /etc/lynis/default.prf ]; then
+  sed 's/^colors=.*/colors=yes/' /etc/lynis/default.prf > "$PROFILE"
+  grep -q '^colors=' "$PROFILE" || echo 'colors=yes' >> "$PROFILE"
+else
+  echo 'colors=yes' > "$PROFILE"
+fi
+
+lynis audit system --quick --no-log --auditor "systemd-timer" --profile "$PROFILE" \
+  > "$REPORT" 2>&1 || true
 
 # Strip ANSI codes before parsing to avoid matching escape sequence digits
 SCORE=$(sed "s/${ESC}\[[0-9;]*m//g" "$REPORT" | grep "Hardening index" | grep -oP "\d+" | head -1 || true)
@@ -26,6 +34,10 @@ echo "$SUMMARY"
   printf "Content-Type: text/html; charset=utf-8\r\n"
   printf "\r\n"
   printf '<html><body><pre style="font-family:monospace;font-size:13px;background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:8px;overflow-x:auto;">'
-  aha -bn < "$REPORT"
+  if command -v aha >/dev/null 2>&1; then
+    aha -bn < "$REPORT"
+  else
+    sed -e "s/${ESC}\[[0-9;]*m//g" -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' "$REPORT"
+  fi
   printf '</pre></body></html>'
 } | /usr/sbin/sendmail -t -f "lynis@{{ ansible_hostname }}"
