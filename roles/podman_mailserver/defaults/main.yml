@@ -7,7 +7,7 @@ podman_mailserver_digest: "sha256:af51b15dd3fc72153c0e90eb7692bb5e3a463212d87959
 # Nginx image (MTA-STS + autodiscover reverse proxy)
 podman_mailserver_nginx_image: "docker.io/nginx"
 # renovate: datasource=docker depName=nginx
-podman_mailserver_nginx_version: "1.31.1-alpine"
+podman_mailserver_nginx_version: "1.31.1"
 podman_mailserver_nginx_digest: "sha256:8b1e78743a03dbb2c95171cc58639fef29abc8816598e27fb910ed2e621e589a"
 
 # Autodiscover image
