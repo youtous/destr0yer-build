@@ -48,7 +48,7 @@
     state: directory
     owner: root
     group: root
-    mode: "0700"
+    mode: "u=rwx,g=rx,o=rx"
 
 - name: Create Monit additional configuration directory
   become: true
@@ -57,7 +57,7 @@
     state: directory
     owner: root
     group: root
-    mode: "0700"
+    mode: "u=rwx,g=rx,o=rx"
 
 - name: Create Monit var directory
   become: true
@@ -76,7 +76,7 @@
     dest: /etc/monit/monitrc
     owner: root
     group: root
-    mode: "0600"
+    mode: "u=rw,g=,o="
   when: monit_present is failed
 
 - name: Create a symbolic link for monitrc
