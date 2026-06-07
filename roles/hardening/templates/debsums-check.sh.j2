@@ -1,0 +1,22 @@
+#!/bin/sh
+# {{ ansible_managed }}
+set -eu
+
+CHANGES=$(debsums --changed 2>/dev/null || true)
+
+if [ -z "$CHANGES" ]; then
+  echo "debsums: all package checksums OK"
+  exit 0
+fi
+
+COUNT=$(echo "$CHANGES" | wc -l)
+echo "debsums: $COUNT modified file(s) found"
+
+{
+  printf "Subject: [debsums] %s modified file(s) - {{ ansible_hostname }} (%s)\r\n" "$COUNT" "$(date +%Y-%m-%d)"
+  printf "From: debsums@{{ ansible_hostname }}\r\n"
+  printf "To: {{ lynis_notification_email }}\r\n"
+  printf "\r\n"
+  printf "debsums detected modified package files on {{ ansible_hostname }}:\n\n"
+  echo "$CHANGES"
+} | /usr/sbin/sendmail -t -f "debsums@{{ ansible_hostname }}"

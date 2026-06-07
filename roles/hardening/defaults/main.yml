@@ -29,3 +29,7 @@ os_filesystem_whitelist: []
 lynis_audit_enabled: true
 lynis_schedule: "Mon *-*-01..07 05:00:00"
 lynis_notification_email: "{{ monitoring_email | default('') }}"
+
+# debsums periodic integrity check
+debsums_check_enabled: true
+debsums_schedule: "Mon *-*-* 04:00:00"

@@ -9,3 +9,15 @@
     name: lynis-audit.timer
     enabled: true
     state: started
+
+- name: Reload debsums systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable debsums-check timer
+  become: true
+  ansible.builtin.systemd:
+    name: debsums-check.timer
+    enabled: true
+    state: started

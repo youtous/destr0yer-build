@@ -24,6 +24,14 @@
   ansible.builtin.import_tasks: file_permissions.yml
   become: true
 
+- name: Umask
+  ansible.builtin.import_tasks: umask.yml
+  become: true
+
+- name: Debsums integrity check timer
+  ansible.builtin.import_tasks: debsums.yml
+  when: debsums_check_enabled | bool
+
 - name: Lynis audit timer
   ansible.builtin.import_tasks: lynis.yml
   when: lynis_audit_enabled | bool

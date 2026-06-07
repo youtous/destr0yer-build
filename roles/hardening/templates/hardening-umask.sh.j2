@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+# Restrict default file creation mask for all shell sessions (Lynis AUTH-9328)
+# login.defs UMASK 077 covers login/su/useradd; this covers non-login shells
+umask 027

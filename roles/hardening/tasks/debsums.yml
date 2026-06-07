@@ -1,0 +1,50 @@
+# Lynis CUST-0285 — periodic debsums integrity check
+
+- name: Deploy debsums failure notification service
+  become: true
+  ansible.builtin.template:
+    src: debsums-failure-notify@.service.j2
+    dest: /etc/systemd/system/debsums-failure-notify@.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload debsums systemd
+
+- name: Deploy debsums check script
+  become: true
+  ansible.builtin.template:
+    src: debsums-check.sh.j2
+    dest: /usr/local/sbin/debsums-check.sh
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o="
+
+- name: Deploy debsums check systemd service
+  become: true
+  ansible.builtin.template:
+    src: debsums-check.service.j2
+    dest: /etc/systemd/system/debsums-check.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload debsums systemd
+
+- name: Deploy debsums check systemd timer
+  become: true
+  ansible.builtin.template:
+    src: debsums-check.timer.j2
+    dest: /etc/systemd/system/debsums-check.timer
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - Reload debsums systemd
+    - Enable debsums-check timer
+
+- name: Ensure debsums-check timer is started
+  become: true
+  ansible.builtin.systemd:
+    name: debsums-check.timer
+    state: started
+    enabled: true
+    daemon_reload: true
