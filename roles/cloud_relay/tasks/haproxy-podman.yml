@@ -1,45 +1,122 @@
+- name: Ensure user home parent directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ relay_haproxy_user_home | dirname }}"
+    state: directory
+    mode: "u=rwx,g=rx,o=x"
+
+- name: Create HAProxy rootless user
+  become: true
+  ansible.builtin.user:
+    name: "{{ relay_haproxy_user }}"
+    uid: "{{ relay_haproxy_uid }}"
+    system: true
+    create_home: true
+    home: "{{ relay_haproxy_user_home }}"
+    shell: /usr/sbin/nologin
+    comment: "HAProxy relay (Podman rootless)"
+
+- name: Restrict user home permissions
+  become: true
+  ansible.builtin.file:
+    path: "{{ relay_haproxy_user_home }}"
+    mode: "u=rwx,g=,o="
+
+- name: Configure subuid for rootless Podman
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/subuid
+    regexp: "^{{ relay_haproxy_user }}:"
+    line: "{{ relay_haproxy_user }}:200000:65536"
+    create: true
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+
+- name: Configure subgid for rootless Podman
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/subgid
+    regexp: "^{{ relay_haproxy_user }}:"
+    line: "{{ relay_haproxy_user }}:200000:65536"
+    create: true
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+
+- name: Enable lingering for boot persistence
+  become: true
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ relay_haproxy_user }}"
+    creates: "/var/lib/systemd/linger/{{ relay_haproxy_user }}"
+
 - name: Create HAProxy config directory
   become: true
   ansible.builtin.file:
-    path: /etc/haproxy
+    path: "{{ relay_haproxy_config_dir }}"
     state: directory
-    owner: root
-    group: root
-    mode: "u=rwx,g=rx,o=rx"
+    owner: "{{ relay_haproxy_user }}"
+    group: "{{ relay_haproxy_user }}"
+    mode: "u=rwx,g=rx,o="
 
 - name: Deploy HAProxy config
   become: true
   ansible.builtin.template:
     src: haproxy.cfg.j2
-    dest: /etc/haproxy/haproxy.cfg
-    owner: root
-    group: root
-    mode: "u=rw,g=r,o=r"
-  notify: Restart HAProxy container
+    dest: "{{ relay_haproxy_config_dir }}/haproxy.cfg"
+    owner: "{{ relay_haproxy_user }}"
+    group: "{{ relay_haproxy_user }}"
+    mode: "u=rw,g=r,o="
+  notify:
+    - Reload HAProxy systemd user daemon
+    - Restart HAProxy container
+
+- name: Ensure Quadlet parent directories exist
+  become: true
+  ansible.builtin.file:
+    path: "{{ relay_haproxy_user_home }}/.config/containers"
+    state: directory
+    owner: "{{ relay_haproxy_user }}"
+    group: "{{ relay_haproxy_user }}"
+    mode: "u=rwx,g=,o="
 
 - name: Ensure Quadlet directory exists
   become: true
   ansible.builtin.file:
-    path: /etc/containers/systemd
+    path: "{{ relay_haproxy_quadlet_dir }}"
     state: directory
-    owner: root
-    group: root
-    mode: "u=rwx,g=rx,o=rx"
+    owner: "{{ relay_haproxy_user }}"
+    group: "{{ relay_haproxy_user }}"
+    mode: "u=rwx,g=,o="
 
 - name: Deploy HAProxy Quadlet unit
   become: true
   ansible.builtin.template:
     src: haproxy-podman.service.j2
-    dest: /etc/containers/systemd/haproxy-relay.container
-    owner: root
-    group: root
-    mode: "u=rw,g=r,o=r"
-  notify: Restart HAProxy container
+    dest: "{{ relay_haproxy_quadlet_dir }}/haproxy-relay.container"
+    owner: "{{ relay_haproxy_user }}"
+    group: "{{ relay_haproxy_user }}"
+    mode: "u=rw,g=r,o="
+  notify:
+    - Reload HAProxy systemd user daemon
+    - Restart HAProxy container
+
+- name: Reload systemd user daemon
+  become: true
+  become_user: "{{ relay_haproxy_user }}"
+  ansible.builtin.systemd:
+    daemon_reload: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "{{ relay_haproxy_xdg_runtime_dir }}"
 
 - name: Enable and start HAProxy container service
   become: true
+  become_user: "{{ relay_haproxy_user }}"
   ansible.builtin.systemd:
     name: haproxy-relay
     enabled: true
     state: started
-    daemon_reload: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "{{ relay_haproxy_xdg_runtime_dir }}"

@@ -6,20 +6,22 @@ This role handles only the relay-specific parts. WireGuard is configured
 separately via the existing `wireguard_meta` / `wireguard_server` roles.
 
 The relay is a blind forwarder — no TLS termination, no K3S.
-HAProxy runs in a podman container via Quadlet.
+HAProxy runs as a rootless Podman container via Quadlet with pasta networking.
 
 ## What it does
 
-1. Validates required variables and IP forwarding (fail-fast assertions)
-2. Deploys NAT masquerade rules into `/etc/ufw/before.rules` (outbound only)
-3. Deploys HAProxy config (TCP mode, PROXY protocol v2, dual-stack ready)
-4. Deploys HAProxy as a podman Quadlet container (read-only, network=host)
+1. Creates a dedicated `haproxy-relay` system user for rootless Podman
+2. Validates required variables and IP forwarding (fail-fast assertions)
+3. Deploys NAT masquerade rules into `/etc/ufw/before.rules` (outbound only)
+4. Deploys HAProxy config (TCP mode, PROXY protocol v2, dual-stack ready)
+5. Deploys HAProxy as a rootless Podman Quadlet container (read-only, pasta networking)
 
 ## Prerequisites
 
 Applied before this role in the playbook:
 
 - `iptables_firewall` — UFW + IP forwarding (creates `/etc/ufw/before.rules`)
+- `sysctl_configuration` — `net.ipv4.ip_unprivileged_port_start` <= 25 (for rootless port binding)
 - `wireguard_meta` — WireGuard interface up
 
 ## Playbook usage
@@ -44,7 +46,7 @@ just configure --limit relay --tags relay   # skip base config
 ```
 Internet (IPv4 + IPv6)
        │
-   HAProxy (podman Quadlet, TCP mode, network=host)
+   HAProxy (podman Quadlet rootless, TCP mode, pasta networking)
    ├── :25/:465/:993 → send-proxy-v2 → WG → K3S mail
    └── :443 (SNI) → send-proxy-v2 → WG → K3S web (optional)
        │
@@ -60,8 +62,10 @@ Internet (IPv4 + IPv6)
 
 ## Security hardening
 
+- **Rootless Podman**: dedicated `haproxy-relay` user, user namespace isolation
 - **Container isolation**: podman Quadlet, `ReadOnly=true`, `NoNewPrivileges=true`
-- **Minimal capabilities**: `DropCapability=ALL`, `AddCapability=NET_BIND_SERVICE`
+- **pasta networking**: preserves real client source IPs (required for PROXY protocol v2)
+- **Minimal capabilities**: `DropCapability=ALL` (port binding via kernel sysctl, not capabilities)
 - **Rate limiting**: stick-tables per source IP (configurable conn_rate/10s)
 - **Connection limits**: max simultaneous connections per IP (default 200)
 - **Healthcheck**: `haproxy -c -f ...` validates config integrity
@@ -119,9 +123,13 @@ GCP TCP LB).
 
 | Variable | Default | Description |
 |---|---|---|
+| `relay_haproxy_user` | `haproxy-relay` | System user for rootless Podman |
+| `relay_haproxy_uid` | `5100` | UID for the rootless user |
+| `relay_haproxy_base_path` | `/srv/podman` | Base path for rootless user home |
+| `relay_haproxy_user_home` | `<base_path>/home/<user>` | User home directory |
 | `relay_wg_interface` | `wg-infra-ext` | WG interface name |
 | `relay_haproxy_ipv6` | `false` | Bind IPv6 on all frontends |
-| `relay_haproxy_image` | `docker.io/haproxytech/haproxy-alpine:3.3` | Container image (renovate-managed) |
+| `relay_haproxy_version` | `3.3` | Container image tag (renovate-managed) |
 | `relay_haproxy_sni_routes` | `[]` | HTTPS SNI routing table (see below) |
 | `relay_haproxy_sni_port` | `443` | SNI frontend listen port |
 | `relay_haproxy_http_redirect` | `true` | Enable port 80 → HTTPS redirect |

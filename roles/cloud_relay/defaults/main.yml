@@ -8,10 +8,20 @@ relay_wg_subnet: "10.99.99.0/24"
 # Enable IPv6 binds (set to true when AAAA records + rDNS are ready)
 relay_haproxy_ipv6: false
 
-# HAProxy container image (runs via podman Quadlet)
+# HAProxy container image (runs via podman Quadlet, rootless)
 # haproxytech — maintained by HAProxy Technologies, multi-arch (amd64+arm64)
-# renovate: datasource=docker depName=haproxytech/haproxy-alpine
-relay_haproxy_image: "docker.io/haproxytech/haproxy-alpine:3.3"
+# renovate: datasource=docker depName=haproxytech/haproxy-alpine versioning=docker
+relay_haproxy_version: "3.3"
+relay_haproxy_digest: "sha256:0d5cbd567da46b15e29d5e6176f90a0b3403c88dbccf2e5268da04f14a863cb7"
+
+# Rootless Podman user for HAProxy container
+# subuid/subgid range: 200000:65536 (mailserver uses 300000 — no overlap)
+relay_haproxy_user: "haproxy-relay"
+relay_haproxy_uid: 5100
+
+# Storage — /srv/podman is the LV mount (managed by disks_lvm_management)
+relay_haproxy_base_path: "/srv/podman"
+relay_haproxy_user_home: "{{ relay_haproxy_base_path }}/home/{{ relay_haproxy_user }}"
 
 # Timeouts
 relay_haproxy_timeout_connect: "5s"
