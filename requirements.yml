@@ -27,7 +27,7 @@ roles:
   # Logrotate
   - name: arillso.logrotate
     src: git+https://github.com/arillso/ansible.logrotate.git
-    version: 0aced5bf8e938b8eee2d902bd3c9262c764c2e54
+    version: 1.6.1
 
   # Fail2ban
   - name: oefenweb.fail2ban
