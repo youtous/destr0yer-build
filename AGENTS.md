@@ -134,6 +134,7 @@ local pre-push hook blocks `deploy/*` to non-private remotes + GitHub branch rul
 - Pre-commit must always pass — fix failures even if they seem out of scope
 - USB disk storage uses existing `filesystems_to_create` from `disks_lvm_management` — no separate role. SMART monitoring via `smartmontools` + `monit_usb_storage`. See [doc/usb-storage.md](doc/usb-storage.md)
 - **UFW rules**: If a port is a dependency of an Ansible role, the role manages its own rule via `ufw_smart_rules` (self-contained). `ufw_additional_rules` in inventory is only for ports not managed by any Ansible role (e.g. HAProxy Ingress ports deployed via Kluctl).
+- **Binary download checksums — dynamic fetching, not hardcoded**: All Ansible roles that download binaries (Helm, K9s, Kluctl, Cilium CLI, Alloy, Monit, Kopia) must fetch the checksum file (`.sha256sum`, `checksums.txt`, etc.) at download time and verify against it — never hardcode a hash in `defaults/main.yml`. Pattern: (1) `get_url` the checksum file, (2) `shell` + `grep`/`awk` to extract the hash, (3) `get_url` the archive with `checksum: "sha256:{{ extracted }}"`. Rationale: hardcoded checksums block Renovate from auto-bumping versions (each bump needs a manual hash update), and offer no real security benefit since checksum and archive come from the same upstream origin. Exception: Helm chart from a Helm repo (e.g. Cilium chart from `helm.cilium.io`) — use `uri` + `from_yaml` to extract the digest from `index.yaml` instead.
 
 ### File permissions — least privilege by default
 
