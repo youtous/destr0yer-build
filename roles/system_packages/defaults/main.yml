@@ -34,7 +34,6 @@ system_packages:
   - uidmap  # rootless subuid mapping
   - fuse-overlayfs  # rootless overlay storage
   - slirp4netns  # rootless networking
-  - systemd-container  # machinectl for rootless session management
 
 # services to enable by default
 system_services_enabled_by_default:
