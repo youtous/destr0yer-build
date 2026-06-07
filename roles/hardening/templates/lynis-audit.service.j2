@@ -3,6 +3,7 @@
 Description=Lynis security audit
 After=network-online.target
 Wants=network-online.target
+OnFailure=lynis-failure-notify@%n.service
 
 [Service]
 Type=oneshot
@@ -26,10 +27,14 @@ ExecStart=/bin/sh -c '\
 
 # Hardening — Lynis is read-only (--no-log disables /var/log writes)
 ReadOnlyPaths=/
+ReadWritePaths=/var/spool/postfix
 NoNewPrivileges=true
 PrivateTmp=true
 PrivateDevices=true
+ProtectKernelTunables=true
 ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
 ProtectHostname=true
 ProtectClock=true
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK

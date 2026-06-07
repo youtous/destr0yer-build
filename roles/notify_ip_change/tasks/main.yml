@@ -30,6 +30,16 @@
     group: root
     mode: u=rwx,g=,o=
 
+- name: Deploy notify-ip failure notification service
+  become: true
+  ansible.builtin.template:
+    src: notify-ip-failure-notify@.service.j2
+    dest: /etc/systemd/system/notify-ip-failure-notify@.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload notify-ip-change systemd
+
 - name: Deploy notify-ip-change systemd service
   become: true
   ansible.builtin.template:

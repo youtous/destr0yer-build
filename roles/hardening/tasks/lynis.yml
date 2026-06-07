@@ -3,6 +3,16 @@
     that: lynis_notification_email | length > 0
     fail_msg: "lynis_audit_enabled is true but lynis_notification_email is empty"
 
+- name: Deploy lynis failure notification service
+  become: true
+  ansible.builtin.template:
+    src: lynis-failure-notify@.service.j2
+    dest: /etc/systemd/system/lynis-failure-notify@.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload lynis systemd
+
 - name: Deploy lynis audit systemd service
   become: true
   ansible.builtin.template:

@@ -2,8 +2,23 @@
 [Unit]
 Description=Create btrfs snapshot of backup volume
 After=local-fs.target
+OnFailure=btrfs-failure-notify@%n.service
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/sbin/btrfs-snapshot.sh hourly
 ExecStartPost=/usr/bin/touch /var/lib/btrfs-snapshot-ok
+
+# Hardening
+NoNewPrivileges=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

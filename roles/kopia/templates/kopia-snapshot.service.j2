@@ -3,6 +3,7 @@
 Description=Kopia backup snapshot
 After=network-online.target
 Wants=network-online.target
+OnFailure=kopia-failure-notify@%n.service
 
 [Service]
 Type=oneshot
@@ -14,4 +15,15 @@ ExecStart={{ kopia_binary_path }} snapshot create {{ kopia_snapshot_paths | join
 ReadOnlyPaths=/
 ReadWritePaths=/root/.config/kopia /root/.cache/kopia /root/.ssh /tmp
 NoNewPrivileges=yes
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

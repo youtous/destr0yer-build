@@ -2,6 +2,7 @@
 [Unit]
 Description=Btrfs scrub of backup volume
 After=local-fs.target
+OnFailure=btrfs-failure-notify@%n.service
 
 [Service]
 Type=oneshot
@@ -9,3 +10,17 @@ ExecStart=/usr/bin/btrfs scrub start -B {{ backup_root_directory }}
 ExecStartPost=/usr/bin/touch /var/lib/btrfs-scrub-ok
 IOSchedulingClass=idle
 Nice=19
+
+# Hardening
+NoNewPrivileges=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

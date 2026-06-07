@@ -22,6 +22,16 @@
     group: root
     mode: "u=rwx,g=rx"
 
+- name: Deploy btrfs failure notification service
+  become: true
+  ansible.builtin.template:
+    src: btrfs-failure-notify@.service.j2
+    dest: /etc/systemd/system/btrfs-failure-notify@.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+  notify: Reload systemd
+
 - name: Deploy btrfs snapshot systemd service
   become: true
   ansible.builtin.template:

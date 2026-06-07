@@ -180,6 +180,22 @@ When adding a new systemd service:
 5. Do **not** use `ProtectSystem=strict` together with `ReadOnlyPaths=/` (redundant, can conflict)
 6. Test with `systemd-analyze security <unit>` to verify the hardening score
 
+### Systemd timer services — failure notification rule
+
+**Every timer-triggered oneshot service must have `OnFailure=` and a success notification.** Pattern:
+
+```ini
+[Unit]
+OnFailure=<role>-failure-notify@%n.service
+```
+
+The `<role>-failure-notify@.service` template sends an email with the last 50 journal lines via `sendmail`. Each role deploys its own `@.service` (kopia, btrfs, lynis, notify-ip). Success notification is handled by the service itself (e.g. Lynis emails its report, Kopia logs to journal, btrfs touches a health marker file).
+
+If a new service uses a timer, it must:
+1. Add `OnFailure=<role>-failure-notify@%n.service` in its `[Unit]`
+2. Deploy the corresponding `<role>-failure-notify@.service` template (copy pattern from `kopia-failure-notify@.service.j2`)
+3. Include hardening in the notify service (`ProtectSystem=full` + sendmail-compatible `RestrictAddressFamilies`)
+
 ### Secrets in Kluctl manifests — zero plaintext rule
 
 **Every `secrets.*` value must end up in a `kind: Secret` resource.** No exceptions.
@@ -243,7 +259,7 @@ Implemented: SELinux (permissive), audit logging, PSA restricted, default-deny N
 
 Kyverno policies use `args.kyverno_validation_action` — `Audit` in dev, `Enforce` in prod.
 
-Systemd hardened services: Alloy, DNSCrypt-proxy, Monit, Fail2ban, Glances, Kopia (snapshot + verify). Each service has tailored restrictions — see `doc/security.md` for the full posture table.
+Systemd hardened services: Alloy, DNSCrypt-proxy, Monit, Fail2ban, Glances, Kopia (snapshot + verify + failure-notify), Lynis, notify-ip-change, btrfs (scrub + snapshot + cold-send + failure-notify). Each service has tailored restrictions — see `doc/security.md` for the full posture table.
 
 ## Cluster access model
 
@@ -346,7 +362,7 @@ Validated subsystems:
 | Seafile S3 + OIDC | Validated (encryption is client-side, Garage buckets exist) |
 | Multi-arch registry audit | Passed — few amd64-only exceptions (parsedmarc, mail-autodiscover) |
 | Lynis host audit | Installed, `just audit-lynis` available (target ≥ 80/100) |
-| Systemd hardening | 7 services sandboxed (Alloy, DNSCrypt, Monit, Fail2ban, Glances, Kopia×2) |
+| Systemd hardening | 14 services sandboxed (Alloy, DNSCrypt, Monit, Fail2ban, Glances, Kopia×3, Lynis×2, notify-ip×2, btrfs×4) |
 | Host hardening (Lynis-driven) | Sysctl, SSH, file permissions, login.defs SHA rounds, wpa_supplicant removed |
 
 ### ADRs needing live validation (cannot be done offline)

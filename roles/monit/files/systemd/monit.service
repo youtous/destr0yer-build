@@ -32,10 +32,13 @@ StandardOutput=null
 # Hardening — monit needs broad read access for system monitoring
 # but does not need to modify kernel or load modules
 NoNewPrivileges=true
+ProtectKernelTunables=true
 ProtectKernelModules=true
 ProtectKernelLogs=true
+ProtectControlGroups=true
 ProtectHostname=true
 ProtectClock=true
+RestrictNamespaces=true
 RestrictRealtime=true
 RestrictSUIDSGID=true
 LockPersonality=true
