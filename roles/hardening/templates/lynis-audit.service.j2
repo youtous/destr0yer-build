@@ -7,38 +7,7 @@ OnFailure=lynis-failure-notify@%n.service
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c '\
-  REPORT=$(mktemp) && \
-  lynis audit system --quick --no-log --auditor "systemd-timer" > "$REPORT" 2>&1; \
-  SCORE=$(grep "Hardening index" "$REPORT" | grep -oP "\d+" | head -1); \
-  WARNINGS=$(grep -c "Warning:" "$REPORT" || true); \
-  SUGGESTIONS=$(grep -c "Suggestion:" "$REPORT" || true); \
-  SUMMARY="Score: ${SCORE:-N/A}/100 | Warnings: $WARNINGS | Suggestions: $SUGGESTIONS"; \
-  echo "$SUMMARY"; \
-  { \
-    printf "Subject: [lynis] %s - {{ ansible_hostname }} (%s)\r\n" "$SUMMARY" "$(date +%%Y-%%m-%%d)"; \
-    printf "From: lynis@{{ ansible_hostname }}\r\n"; \
-    printf "To: {{ lynis_notification_email }}\r\n"; \
-    printf "MIME-Version: 1.0\r\n"; \
-    printf "Content-Type: text/html; charset=utf-8\r\n"; \
-    printf "\r\n"; \
-    printf "<html><body><pre style=\"font-family: monospace; font-size: 13px; background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; overflow-x: auto;\">"; \
-    sed \
-      -e "s/&/\&amp;/g" \
-      -e "s/</\&lt;/g" \
-      -e "s/>/\&gt;/g" \
-      -e "s/\x1b\[32m/<span style=\"color:#4ec9b0\">/g" \
-      -e "s/\x1b\[33m/<span style=\"color:#dcdcaa\">/g" \
-      -e "s/\x1b\[31m/<span style=\"color:#f44747\">/g" \
-      -e "s/\x1b\[35m/<span style=\"color:#c586c0\">/g" \
-      -e "s/\x1b\[36m/<span style=\"color:#9cdcfe\">/g" \
-      -e "s/\x1b\[1m/<span style=\"font-weight:bold\">/g" \
-      -e "s/\x1b\[0m/<\/span>/g" \
-      -e "s/\x1b\[[0-9;]*m//g" \
-      "$REPORT"; \
-    printf "</pre></body></html>"; \
-  } | /usr/sbin/sendmail -t -f "lynis@{{ ansible_hostname }}"; \
-  rm -f "$REPORT"'
+ExecStart=/usr/local/sbin/lynis-audit.sh
 
 # Hardening — ProtectSystem=full keeps /usr, /boot, /etc read-only; /var stays writable for sendmail
 ProtectSystem=full

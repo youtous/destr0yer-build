@@ -13,6 +13,15 @@
     mode: "u=rw,g=r,o=r"
   notify: Reload lynis systemd
 
+- name: Deploy lynis audit script
+  become: true
+  ansible.builtin.template:
+    src: lynis-audit.sh.j2
+    dest: /usr/local/sbin/lynis-audit.sh
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o="
+
 - name: Deploy lynis audit systemd service
   become: true
   ansible.builtin.template:
