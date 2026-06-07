@@ -123,7 +123,7 @@ spec:
       containers:
         # renovate: datasource=docker depName=seafileltd/seafile-mc
         - name: seafile
-          image: docker.io/seafileltd/seafile-mc:13.0.21
+          image: docker.io/seafileltd/seafile-mc:13.0.22
           command: ["/bin/bash", "-c"]
           args:
             - |
