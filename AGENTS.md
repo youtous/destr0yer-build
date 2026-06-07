@@ -135,6 +135,51 @@ local pre-push hook blocks `deploy/*` to non-private remotes + GitHub branch rul
 - USB disk storage uses existing `filesystems_to_create` from `disks_lvm_management` — no separate role. SMART monitoring via `smartmontools` + `monit_usb_storage`. See [doc/usb-storage.md](doc/usb-storage.md)
 - **UFW rules**: If a port is a dependency of an Ansible role, the role manages its own rule via `ufw_smart_rules` (self-contained). `ufw_additional_rules` in inventory is only for ports not managed by any Ansible role (e.g. HAProxy Ingress ports deployed via Kluctl).
 
+### File permissions — least privilege by default
+
+Always apply the most restrictive permissions possible:
+
+| Resource type | Mode | Owner | Rationale |
+|--------------|------|-------|-----------|
+| System binaries (`/usr/local/bin/*`) | `0755` | `root:root` | Must be executable by all users |
+| System config dirs (`/etc/haproxy`, `/etc/monit`) | `0755` | `root:root` | System services need read access |
+| Data files (`/etc/hosts`, config files) | `0644` | `root:root` | Readable, **never executable** |
+| Service data dirs (alloy, kopia cache) | `0750` | `svc_user:svc_group` | No world access |
+| Secrets (TLS keys, DKIM, vault) | `0600` | owner only | No group, no other |
+| User home dirs (functional users) | `0700` | user:user | No group, no other |
+| Backup chroot dirs | `0750` | `root:backup_group` | SFTP chroot requires root-owned, group-traversable |
+
+Rules when writing Ansible tasks:
+- **Never use `0755` on data files** — use `0644` (or `0640`/`0600` for sensitive data)
+- **Never use `o=rx` on service/user directories** — use `o=` unless there's a documented reason
+- **Functional users** (mail-dms, alloy, backup) get `0700` homes — no group/other access
+- **`failed_when: false`** must only swallow expected failures (e.g. "already initialized"). Always use `failed_when` with a condition, never bare `false`.
+
+### Systemd service hardening — sandboxing checklist
+
+All custom systemd services (Kopia, Alloy, custom oneshots) should apply these restrictions:
+
+```ini
+# Filesystem isolation
+ReadOnlyPaths=/                    # Entire filesystem read-only
+ReadWritePaths=/specific/paths     # Only paths the service needs to write
+WorkingDirectory=/appropriate/dir  # Explicit CWD (no reliance on defaults)
+
+# Privilege restriction
+NoNewPrivileges=yes                # Block setuid/capabilities escalation
+
+# Network restriction
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6  # Only needed socket types
+```
+
+When adding a new systemd service:
+1. Start with `ReadOnlyPaths=/` + explicit `ReadWritePaths` for known write targets
+2. Add `NoNewPrivileges=yes` unless the service needs to escalate (rare)
+3. Restrict socket families unless the service needs exotic sockets (netlink, bluetooth)
+4. Use `ExecStartPre=/bin/mkdir -p` for directories that may not exist yet
+5. Do **not** use `ProtectSystem=strict` together with `ReadOnlyPaths=/` (redundant, can conflict)
+6. Test with `systemd-analyze security <unit>` to verify the hardening score
+
 ### Secrets in Kluctl manifests — zero plaintext rule
 
 **Every `secrets.*` value must end up in a `kind: Secret` resource.** No exceptions.

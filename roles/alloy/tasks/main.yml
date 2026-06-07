@@ -48,7 +48,7 @@
     path: "{{ alloy_config_path | dirname }}"
     owner: "{{ alloy_user }}"
     group: "{{ alloy_group }}"
-    mode: "u=rwx,g=rx,o=rx"
+    mode: "u=rwx,g=rx,o="
   when: alloy_enabled | bool
 
 - name: Ensure Alloy data directory exists
@@ -58,7 +58,7 @@
     path: "{{ alloy_data_path }}"
     owner: "{{ alloy_user }}"
     group: "{{ alloy_group }}"
-    mode: "u=rwx,g=rx,o=rx"
+    mode: "u=rwx,g=rx,o="
   when: alloy_enabled | bool
 
 - name: Deploy Alloy environment file

@@ -3,7 +3,7 @@ podman_mailserver_container_name: "docker-mailserver"
 podman_mailserver_nginx_container_name: "nginx-mail"
 podman_mailserver_autodiscover_container_name: "autodiscover"
 
-podman_mailserver_quadlet_dir: "/home/{{ podman_mailserver_user }}/.config/containers/systemd"
+podman_mailserver_quadlet_dir: "{{ podman_mailserver_user_home }}/.config/containers/systemd"
 
 podman_mailserver_xdg_runtime_dir: "/run/user/{{ podman_mailserver_uid }}"
 

@@ -18,4 +18,4 @@
     owner: root
     group: root
     attributes: i  # ensure not writable
-    mode: u=rwx,g=rx,o=rx
+    mode: "u=rw,g=r,o=r"

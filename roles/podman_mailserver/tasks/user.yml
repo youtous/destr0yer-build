@@ -4,6 +4,13 @@
     cmd: podman --version
   changed_when: false
 
+- name: Ensure user home parent directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_user_home | dirname }}"
+    state: directory
+    mode: "u=rwx,g=rx,o="
+
 - name: Create mailserver rootless user
   become: true
   ansible.builtin.user:
@@ -11,9 +18,15 @@
     uid: "{{ podman_mailserver_uid }}"
     system: true
     create_home: true
-    home: "/home/{{ podman_mailserver_user }}"
+    home: "{{ podman_mailserver_user_home }}"
     shell: /usr/sbin/nologin
     comment: "Docker Mailserver (Podman rootless)"
+
+- name: Restrict user home permissions
+  become: true
+  ansible.builtin.file:
+    path: "{{ podman_mailserver_user_home }}"
+    mode: "u=rwx,g=,o="
 
 - name: Configure subuid for rootless Podman
   become: true

@@ -19,6 +19,7 @@ podman_mailserver_autodiscover_digest: "sha256:dc5c86993d166c0aa0a27ce086a48e5cd
 # Rootless Podman user
 podman_mailserver_user: "mail-dms"
 podman_mailserver_uid: 5200
+podman_mailserver_user_home: "{{ podman_mailserver_base_path }}/home/{{ podman_mailserver_user }}"
 
 # Storage — /srv/podman is the LV mount (managed by disks_lvm_management)
 podman_mailserver_base_path: "/srv/podman"
