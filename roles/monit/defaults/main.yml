@@ -4,7 +4,7 @@ monit_filesystems: []
 
 # Monit installation
 # renovate: datasource=bitbucket-tags depName=tildeslash/monit
-monit_version: "5.33.0"
+monit_version: "5.35.2"
 
 # list of services to monitor
 monit_services_monitored:
