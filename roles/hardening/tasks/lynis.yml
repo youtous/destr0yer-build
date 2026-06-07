@@ -3,6 +3,12 @@
     that: lynis_notification_email | length > 0
     fail_msg: "lynis_audit_enabled is true but lynis_notification_email is empty"
 
+- name: Install aha (ANSI to HTML converter)
+  become: true
+  ansible.builtin.apt:
+    name: aha
+    state: present
+
 - name: Deploy lynis failure notification service
   become: true
   ansible.builtin.template:
