@@ -27,7 +27,7 @@ spec:
           containers:
             # renovate: datasource=docker depName=alpine
             - name: prune
-              image: docker.io/alpine:3.22
+              image: docker.io/alpine:3.23
               command: ["/bin/sh", "-c"]
               args:
                 - |
