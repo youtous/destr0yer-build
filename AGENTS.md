@@ -362,7 +362,7 @@ Validated subsystems:
 | Grafana OIDC | Validated via Authelia login |
 | Seafile S3 + OIDC | Validated (encryption is client-side, Garage buckets exist) |
 | Multi-arch registry audit | Passed — few amd64-only exceptions (parsedmarc, mail-autodiscover) |
-| Lynis host audit | Installed, `just audit-lynis` available (target ≥ 80/100) |
+| Lynis host audit | Installed, `just audit-lynis` available (target ≥ 79/100) |
 | Systemd hardening | 14 services sandboxed (Alloy, DNSCrypt, Monit, Fail2ban, Glances, Kopia×3, Lynis×2, notify-ip×2, btrfs×4) |
 | Host hardening (Lynis-driven) | Sysctl, SSH, file permissions, login.defs SHA rounds, wpa_supplicant removed |
 
