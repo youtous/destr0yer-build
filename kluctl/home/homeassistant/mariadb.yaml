@@ -37,7 +37,7 @@ spec:
       backup.velero.io/backup-volumes-excludes: storage
 
   # renovate: datasource=docker depName=library/mariadb versioning=docker
-  image: docker.io/library/mariadb:11.8
+  image: docker.io/library/mariadb:12.3
 
   port: 3306
 
