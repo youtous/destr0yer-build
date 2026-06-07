@@ -176,49 +176,45 @@
 - name: Resolve Nginx UID from container image
   become: true
   become_user: "{{ podman_mailserver_user }}"
+  become_method: community.general.machinectl
   ansible.builtin.command:
     cmd: >-
       podman run --rm
       {{ podman_mailserver_nginx_image }}:{{ podman_mailserver_nginx_version }}@{{ podman_mailserver_nginx_digest }}
       id -u nginx
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
   changed_when: false
   register: _nginx_uid
 
 - name: Resolve Rspamd UID from DMS image
   become: true
   become_user: "{{ podman_mailserver_user }}"
+  become_method: community.general.machinectl
   ansible.builtin.command:
     cmd: >-
       podman run --rm
       {{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }}
       id -u _rspamd
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
   changed_when: false
   register: _rspamd_uid
 
 - name: Fix permissions for Nginx
   become: true
   become_user: "{{ podman_mailserver_user }}"
+  become_method: community.general.machinectl
   ansible.builtin.command:
     cmd: >-
       podman unshare chown -R {{ _nginx_uid.stdout }}:{{ _nginx_uid.stdout }}
       {{ podman_mailserver_home }}/nginx
       {{ podman_mailserver_home }}/tls
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
   changed_when: true
 
 - name: Fix permissions for Rspamd DKIM keys
   become: true
   become_user: "{{ podman_mailserver_user }}"
+  become_method: community.general.machinectl
   ansible.builtin.command:
     cmd: >-
       podman unshare chown -R {{ _rspamd_uid.stdout }}:{{ _rspamd_uid.stdout }}
       {{ podman_mailserver_home }}/config/rspamd/dkim
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
   changed_when: true
   when: podman_mailserver_domains | selectattr('dkim_private', 'defined') | list | length > 0

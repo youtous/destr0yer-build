@@ -6,7 +6,6 @@ podman_mailserver_autodiscover_container_name: "autodiscover"
 podman_mailserver_quadlet_dir: "{{ podman_mailserver_user_home }}/.config/containers/systemd"
 
 podman_mailserver_xdg_runtime_dir: "/run/user/{{ podman_mailserver_uid }}"
-podman_mailserver_dbus_address: "unix:path=/run/user/{{ podman_mailserver_uid }}/bus"
 
 # Directories owned by the container's docker user (UID 5000 → host-mapped UID).
 # In rootless Podman, host UID mail-dms maps to container UID 0 (root).

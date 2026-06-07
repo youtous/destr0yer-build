@@ -1,42 +1,34 @@
 - name: Restart mailserver container
   become: true
   become_user: "{{ podman_mailserver_user }}"
+  become_method: community.general.machinectl
   ansible.builtin.systemd:
     name: "{{ podman_mailserver_container_name }}"
     state: restarted
     scope: user
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
-    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
 
 - name: Restart nginx container
   become: true
   become_user: "{{ podman_mailserver_user }}"
+  become_method: community.general.machinectl
   ansible.builtin.systemd:
     name: "{{ podman_mailserver_nginx_container_name }}"
     state: restarted
     scope: user
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
-    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
 
 - name: Restart mailserver pod
   become: true
   become_user: "{{ podman_mailserver_user }}"
+  become_method: community.general.machinectl
   ansible.builtin.systemd:
     name: "{{ podman_mailserver_pod_name }}-pod"
     state: restarted
     scope: user
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
-    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
 
 - name: Reload systemd user daemon
   become: true
   become_user: "{{ podman_mailserver_user }}"
+  become_method: community.general.machinectl
   ansible.builtin.systemd:
     daemon_reload: true
     scope: user
-  environment:
-    XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
-    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
