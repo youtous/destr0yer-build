@@ -15,12 +15,28 @@
     mode: u=rwx,g=rx,o=rx
   when: monit_present is failed
 
+- name: Download Monit checksum
+  ansible.builtin.get_url:
+    url: "{{ monit_checksum_url }}"
+    dest: "{{ monit_download_dest_directory }}/monit.tar.gz.sha256"
+    mode: "u=rw,g=,o="
+  when: monit_present is failed
+
+- name: Extract expected checksum for Monit archive
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail && awk '{print $1}' {{ monit_download_dest_directory }}/monit.tar.gz.sha256
+    executable: /bin/bash
+  changed_when: false
+  register: monit_expected_checksum
+  when: monit_present is failed
+
 - name: Download Monit archive
   ansible.builtin.get_url:
     url: "{{ monit_download_uri }}"
     dest: "{{ monit_download_dest_directory }}/monit.tar.gz"
-    checksum: "{{ monit_download_checksum }}"
-    mode: u=rw,g=,o=
+    checksum: "sha256:{{ monit_expected_checksum.stdout }}"
+    mode: "u=rw,g=,o="
   when: monit_present is failed
 
 - name: Extract Monit archive

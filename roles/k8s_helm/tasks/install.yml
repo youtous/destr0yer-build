@@ -5,12 +5,26 @@
     path: "{{ ansible_env.HOME }}/.ansible/tmp"
   register: tmp_dir_build
 
+- name: Download helm checksum
+  ansible.builtin.get_url:
+    url: "{{ k8s_helm_checksum_url }}"
+    dest: "{{ tmp_dir_build.path }}/{{ k8s_helm_archive_name }}.sha256sum"
+    mode: "u=rw,g=,o="
+
+- name: Extract expected checksum for helm archive
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail && awk '{print $1}' {{ tmp_dir_build.path }}/{{ k8s_helm_archive_name }}.sha256sum
+    executable: /bin/bash
+  changed_when: false
+  register: k8s_helm_expected_checksum
+
 - name: Download helm release and verify checksum
   ansible.builtin.get_url:
     url: "{{ k8s_helm_download_release_url }}"
     dest: "{{ tmp_dir_build.path }}/{{ k8s_helm_archive_name }}"
-    checksum: "sha256:{{ k8s_helm_version_sha256sum }}"
-    mode: u=rw,g=,o=
+    checksum: "sha256:{{ k8s_helm_expected_checksum.stdout }}"
+    mode: "u=rw,g=,o="
     timeout: 120
   retries: 3
   delay: 10

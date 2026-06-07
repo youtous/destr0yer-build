@@ -4,4 +4,5 @@ k8s_helm_archive_channel: "https://get.helm.sh"
 
 k8s_helm_archive_name: "helm-{{ k8s_helm_version }}-{{ k8s_helm_os }}-{{ k8s_helm_arch }}.tar.gz"
 k8s_helm_download_release_url: "{{ k8s_helm_archive_channel }}/{{ k8s_helm_archive_name }}"
+k8s_helm_checksum_url: "{{ k8s_helm_archive_channel }}/{{ k8s_helm_archive_name }}.sha256sum"
 k8s_helm_download_signature_release_url: "{{ k8s_helm_release_channel }}/{{ k8s_helm_version }}/{{ k8s_helm_archive_name }}.asc"

@@ -4,6 +4,7 @@
   "labels": ["dependencies"],
   "schedule": ["before 8am on monday"],
   "timezone": "UTC",
+  "automerge": false,
   "enabledManagers": ["ansible-galaxy", "github-actions", "pip_requirements", "helmv3","custom.regex"],
   "packageRules": [
     {
@@ -12,8 +13,7 @@
     },
     {
       "matchManagers": ["github-actions"],
-      "groupName": "github actions",
-      "automerge": true
+      "groupName": "github actions"
     },
     {
       "description": "Pin Helm chart versions in Kluctl",

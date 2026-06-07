@@ -1,6 +1,5 @@
 # renovate: datasource=github-releases depName=cilium/cilium-cli
 k8s_cilium_cli_version: v0.19.4
-k8s_cilium_cli_version_sha256sum: '98ecd554591a592b0ee32f5d73871133bcee06639619f1c032bcba339340dc26'
 
 k8s_cilium_cli_os: "linux"
 k8s_cilium_cli_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
