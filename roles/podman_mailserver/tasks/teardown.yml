@@ -9,6 +9,7 @@
     scope: user
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
   failed_when: false
 
 # 2. Remove all Quadlet unit files
@@ -28,6 +29,7 @@
     scope: user
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
   failed_when: false
 
 # 4. Remove pod and containers
@@ -38,6 +40,7 @@
     cmd: "podman pod rm -f {{ podman_mailserver_pod_name }}"
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
   failed_when: false
   changed_when: true
 
@@ -48,6 +51,7 @@
     cmd: "podman rmi -f {{ item }}"
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
   loop:
     - "{{ podman_mailserver_image }}:{{ podman_mailserver_version }}@{{ podman_mailserver_digest }}"
     - "{{ podman_mailserver_nginx_image }}:{{ podman_mailserver_nginx_version }}@{{ podman_mailserver_nginx_digest }}"
@@ -63,6 +67,7 @@
     cmd: podman system prune -af
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
   failed_when: false
   changed_when: true
 

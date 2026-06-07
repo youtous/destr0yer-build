@@ -7,6 +7,7 @@
     scope: user
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
 
 - name: Restart nginx container
   become: true
@@ -17,6 +18,7 @@
     scope: user
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
 
 - name: Restart mailserver pod
   become: true
@@ -27,6 +29,7 @@
     scope: user
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
 
 - name: Reload systemd user daemon
   become: true
@@ -36,3 +39,4 @@
     scope: user
   environment:
     XDG_RUNTIME_DIR: "{{ podman_mailserver_xdg_runtime_dir }}"
+    DBUS_SESSION_BUS_ADDRESS: "{{ podman_mailserver_dbus_address }}"
