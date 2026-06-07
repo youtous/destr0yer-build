@@ -1,2 +1,4 @@
-relay_haproxy_config_dir: "/home/{{ relay_haproxy_user }}/haproxy"
-relay_haproxy_quadlet_dir: "/home/{{ relay_haproxy_user }}/.config/containers/systemd"
+relay_haproxy_image: "docker.io/haproxytech/haproxy-alpine:{{ relay_haproxy_version }}@{{ relay_haproxy_digest }}"
+relay_haproxy_xdg_runtime_dir: "/run/user/{{ relay_haproxy_uid }}"
+relay_haproxy_config_dir: "{{ relay_haproxy_user_home }}/haproxy"
+relay_haproxy_quadlet_dir: "{{ relay_haproxy_user_home }}/.config/containers/systemd"

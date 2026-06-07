@@ -65,7 +65,7 @@ Internet (IPv4 + IPv6)
 - **Rootless Podman**: dedicated `haproxy-relay` user, user namespace isolation
 - **Container isolation**: podman Quadlet, `ReadOnly=true`, `NoNewPrivileges=true`
 - **pasta networking**: preserves real client source IPs (required for PROXY protocol v2)
-- **Minimal capabilities**: `DropCapability=ALL`, `AddCapability=NET_BIND_SERVICE`
+- **Minimal capabilities**: `DropCapability=ALL` (port binding via kernel sysctl, not capabilities)
 - **Rate limiting**: stick-tables per source IP (configurable conn_rate/10s)
 - **Connection limits**: max simultaneous connections per IP (default 200)
 - **Healthcheck**: `haproxy -c -f ...` validates config integrity
@@ -125,9 +125,11 @@ GCP TCP LB).
 |---|---|---|
 | `relay_haproxy_user` | `haproxy-relay` | System user for rootless Podman |
 | `relay_haproxy_uid` | `5100` | UID for the rootless user |
+| `relay_haproxy_base_path` | `/srv/podman` | Base path for rootless user home |
+| `relay_haproxy_user_home` | `<base_path>/home/<user>` | User home directory |
 | `relay_wg_interface` | `wg-infra-ext` | WG interface name |
 | `relay_haproxy_ipv6` | `false` | Bind IPv6 on all frontends |
-| `relay_haproxy_image` | `docker.io/haproxytech/haproxy-alpine:3.3` | Container image (renovate-managed) |
+| `relay_haproxy_version` | `3.3` | Container image tag (renovate-managed) |
 | `relay_haproxy_sni_routes` | `[]` | HTTPS SNI routing table (see below) |
 | `relay_haproxy_sni_port` | `443` | SNI frontend listen port |
 | `relay_haproxy_http_redirect` | `true` | Enable port 80 → HTTPS redirect |

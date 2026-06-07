@@ -2,6 +2,15 @@
 # Quadlet container unit — rootless Podman with pasta networking.
 # Placed in ~/.config/containers/systemd/ for the {{ relay_haproxy_user }} user.
 # See: podman-systemd.unit(5)
+#
+# Networking: pasta preserves source IPs (Podman 4.7+). HAProxy also sends
+# PROXY protocol v2 at the application layer, so client IPs reach the backend
+# regardless of the network driver.
+#
+# Port binding: privileged ports (25, 80, 443, etc.) are allowed by the kernel
+# sysctl net.ipv4.ip_unprivileged_port_start (set via sysctl_configuration role),
+# not by the NET_BIND_SERVICE capability (which is a user-namespace capability
+# in rootless mode and has no effect on host port binding).
 
 [Container]
 ContainerName=haproxy-relay
@@ -10,7 +19,6 @@ Network=pasta
 ReadOnly=true
 NoNewPrivileges=true
 
-AddCapability=NET_BIND_SERVICE
 DropCapability=ALL
 
 Volume={{ relay_haproxy_config_dir }}/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro,Z

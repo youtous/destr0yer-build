@@ -1,13 +1,21 @@
+- name: Reload HAProxy systemd user daemon
+  become: true
+  become_user: "{{ relay_haproxy_user }}"
+  ansible.builtin.systemd:
+    daemon_reload: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "{{ relay_haproxy_xdg_runtime_dir }}"
+
 - name: Restart HAProxy container
   become: true
   become_user: "{{ relay_haproxy_user }}"
   ansible.builtin.systemd:
     name: haproxy-relay
     state: restarted
-    daemon_reload: true
     scope: user
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ relay_haproxy_uid }}"
+    XDG_RUNTIME_DIR: "{{ relay_haproxy_xdg_runtime_dir }}"
 
 - name: Restart ufw
   become: true

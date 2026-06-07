@@ -1,3 +1,4 @@
+{{ ansible_managed | comment }}
 global
     log stdout format raw local0 {{ relay_haproxy_log_level }}
     stats socket /run/haproxy/admin.sock mode 660 level admin

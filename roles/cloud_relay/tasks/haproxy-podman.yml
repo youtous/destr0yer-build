@@ -1,3 +1,10 @@
+- name: Ensure user home parent directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ relay_haproxy_user_home | dirname }}"
+    state: directory
+    mode: "u=rwx,g=rx,o=x"
+
 - name: Create HAProxy rootless user
   become: true
   ansible.builtin.user:
@@ -5,9 +12,15 @@
     uid: "{{ relay_haproxy_uid }}"
     system: true
     create_home: true
-    home: "/home/{{ relay_haproxy_user }}"
+    home: "{{ relay_haproxy_user_home }}"
     shell: /usr/sbin/nologin
     comment: "HAProxy relay (Podman rootless)"
+
+- name: Restrict user home permissions
+  become: true
+  ansible.builtin.file:
+    path: "{{ relay_haproxy_user_home }}"
+    mode: "u=rwx,g=,o="
 
 - name: Configure subuid for rootless Podman
   become: true
@@ -54,7 +67,18 @@
     owner: "{{ relay_haproxy_user }}"
     group: "{{ relay_haproxy_user }}"
     mode: "u=rw,g=r,o="
-  notify: Restart HAProxy container
+  notify:
+    - Reload HAProxy systemd user daemon
+    - Restart HAProxy container
+
+- name: Ensure Quadlet parent directories exist
+  become: true
+  ansible.builtin.file:
+    path: "{{ relay_haproxy_user_home }}/.config/containers"
+    state: directory
+    owner: "{{ relay_haproxy_user }}"
+    group: "{{ relay_haproxy_user }}"
+    mode: "u=rwx,g=,o="
 
 - name: Ensure Quadlet directory exists
   become: true
@@ -73,7 +97,9 @@
     owner: "{{ relay_haproxy_user }}"
     group: "{{ relay_haproxy_user }}"
     mode: "u=rw,g=r,o="
-  notify: Restart HAProxy container
+  notify:
+    - Reload HAProxy systemd user daemon
+    - Restart HAProxy container
 
 - name: Reload systemd user daemon
   become: true
@@ -82,7 +108,7 @@
     daemon_reload: true
     scope: user
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ relay_haproxy_uid }}"
+    XDG_RUNTIME_DIR: "{{ relay_haproxy_xdg_runtime_dir }}"
 
 - name: Enable and start HAProxy container service
   become: true
@@ -93,4 +119,4 @@
     state: started
     scope: user
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ relay_haproxy_uid }}"
+    XDG_RUNTIME_DIR: "{{ relay_haproxy_xdg_runtime_dir }}"
