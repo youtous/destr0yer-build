@@ -35,7 +35,7 @@ echo "$SUMMARY"
   printf "\r\n"
   printf '<html><body><pre style="font-family:monospace;font-size:13px;background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:8px;overflow-x:auto;">'
   if command -v aha >/dev/null 2>&1; then
-    aha -bn < "$REPORT"
+    aha -b -n < "$REPORT"
   else
     sed -e "s/${ESC}\[[0-9;]*m//g" -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' "$REPORT"
   fi
